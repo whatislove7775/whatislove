@@ -5,24 +5,23 @@ export default function NotFound() {
       flexDirection: 'column', 
       alignItems: 'center', 
       justifyContent: 'center', 
-      minHeight: '60vh', 
+      minHeight: '70vh', 
       textAlign: 'center',
-      width: '100%'
+      width: '100%',
+      textTransform: 'uppercase'
     }}>
-      <pre style={{ fontSize: '10px', lineHeight: '1.2', marginBottom: '20px', fontWeight: 'bold' }}>
-{`
-  _ __   _  ___ ___   | |_ _ __ _   _ 
- | '_ \\ | |/ __/ _ \\  | __| '__| | | |
- | | | || | (_|  __/  | |_| |  | |_| |
- |_| |_||_|\\___\\___|   \\__|_|   \\__, |
-                                |___/ 
-`}
-      </pre>
-      <div style={{ fontWeight: 'bold', fontSize: '16px', textTransform: 'uppercase' }}>
+      {/* SVG nice try вместо текста */}
+      <div style={{ marginBottom: '30px' }}>
+        <img src="/404.svg" alt="nice try" style={{ width: '100%', maxWidth: '400px', height: 'auto' }} />
+      </div>
+
+      <div style={{ fontWeight: 700, fontSize: '16px' }}>
         ⚠ ОШИБКА 404 ⚠<br/>
         СТРАНИЦА НЕ НАЙДЕНА
       </div>
-      <a href="/" style={{ marginTop: '20px', fontWeight: 'bold' }}>[ ВЕРНУТЬСЯ НА ГЛАВНУЮ ]</a>
+      <a href="/" style={{ marginTop: '30px', fontWeight: 700, fontSize: '14px' }}>
+         [ ВЕРНУТЬСЯ НА ГЛАВНУЮ ]
+      </a>
     </div>
   );
 }
