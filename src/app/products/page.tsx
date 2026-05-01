@@ -19,7 +19,7 @@ export default function ProductPage() {
   };
 
   return (
-{/* Верхняя панель "Путь вкладки" - Полностью кликабельная */}
+    {/* Верхняя панель "Путь вкладки" - Полностью кликабельная */}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', width: '100%', marginBottom: '20px' }}>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
           <Link href="/" style={{ color: '#000', textDecoration: 'none' }}>[&lt;]</Link>
