@@ -2,6 +2,13 @@
 import './globals.css';
 import { usePathname } from 'next/navigation';
 import Cart from '@/components/Cart';
+export const metadata = {
+  title: 'whatislove',
+  description: 'Digital platform and product store',
+  icons: {
+    icon: '/favicon.svg', // Указываем путь к твоему новому фавикону
+  },
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
