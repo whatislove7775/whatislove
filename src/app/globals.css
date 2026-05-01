@@ -1,4 +1,13 @@
 /* src/app/globals.css */
+a {
+  text-decoration: none !important;
+  color: inherit;
+}
+
+/* На всякий случай для кнопок-ссылок */
+a:hover {
+  text-decoration: none !important;
+}
 * {
   box-sizing: border-box;
 }
