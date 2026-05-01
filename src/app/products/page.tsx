@@ -1,26 +1,37 @@
-'use client';
-import Breadcrumbs from '@/components/Breadcrumbs';
-import Link from 'next/link';
+/* ... импорты ... */
 
-export default function AllProductsPage() {
-  return (
-    <div style={{ width: '100%', maxWidth: '1200px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Breadcrumbs path={[{ name: 'PRODUCT$', icon: '📦' }]} />
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px', width: '100%' }}>
-        {/* Исправленная ссылка: ведет на ту же страницу или на конкретный ID */}
-        <Link href="/products" style={{ color: '#000' }}>
-          <div style={{ border: '1px solid #000', padding: '10px', position: 'relative' }}>
-            <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '30px' }}>
-              3&lt;
-            </div>
-            <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', textTransform: 'uppercase' }}>
-              <span>КОЛЬЦО &lt;3</span>
-              <span style={{ color: 'red' }}>1.598₽</span>
-            </div>
+// Внутри компонента товара:
+
+      <div style={{ display: 'flex', gap: '60px', marginTop: '20px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        
+        {/* Левая часть: Фотография с SVG котиком */}
+        <div style={{ flex: '1', minWidth: '300px', position: 'relative' }}>
+          {/* ... крестики по углам ... */}
+          
+          <div style={{ width: '100%', aspectRatio: '1/1', border: '1px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            {/* Большой котик */}
+            <img src="/product-cat.svg" alt="product cat" style={{ width: '90%', height: 'auto' }} />
           </div>
-        </Link>
+        </div>
+
+        {/* Правая часть: Описание */}
+        <div style={{ flex: '1', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          
+          {/* ... цена и название ... */}
+
+          {/* Описание с маленьким SVG котиком вместо ASCII */}
+          <div style={{ borderTop: '1px solid #000', borderBottom: '1px solid #000', padding: '20px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', fontSize: '14px', lineHeight: '1.4' }}>
+            <span>made.with.love</span>
+            {/* Маленький котик */}
+            <img src="/desc-cat.svg" alt="cat" style={{ width: '80px', height: 'auto' }} />
+            <div style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between' }}>
+              <span>материал</span>
+              <b>хирургическая сталь</b>
+            </div>
+             {/* ... остальное описание ... */}
+          </div>
+          
+          {/* ... кнопки покупки ... */}
+          
+        </div>
       </div>
-    </div>
-  );
-}
