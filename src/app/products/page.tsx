@@ -1,7 +1,6 @@
 'use client';
-
 import { useState } from 'react';
-import Link from 'next/link';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 
 export default function ProductPage() {
@@ -19,36 +18,25 @@ export default function ProductPage() {
   };
 
   return (
-    {/* Верхняя панель "Путь вкладки" - Полностью кликабельная */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', width: '100%', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <Link href="/" style={{ color: '#000', textDecoration: 'none' }}>[&lt;]</Link>
-          <Link href="/" style={{ color: '#000', textDecoration: 'none' }}>📁 WH4T!SLOV3</Link>
-          <span>/</span>
-          <Link href="/products" style={{ color: '#000', textDecoration: 'none' }}>📦 PRODUCT$</Link>
-          <span>/</span>
-          <Link href="/products" style={{ color: '#000', textDecoration: 'none' }}>💍 에고 크리드,안녕하세요</Link>
-          <span>/</span>
-          <span>⚠ КОЛЬЦО &lt;3</span>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Link href="/" style={{ color: '#000', textDecoration: 'none' }}>[ 🏠 ]</Link>
-          <Link href="/" style={{ color: '#000', textDecoration: 'none' }}>[x]</Link>
-        </div>
-      </div>
+    <div style={{ width: '100%', maxWidth: '1200px', padding: '20px' }}>
+      
+      <Breadcrumbs path={[
+        { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+        { name: 'PRODUCT$', href: '/products', icon: '📦' },
+        { name: '에고 크리드,안녕하세요', icon: '💍' },
+        { name: 'КОЛЬЦО <3', icon: '⚠' }
+      ]} />
 
       {/* Основной блок товара */}
       <div style={{ display: 'flex', gap: '60px', marginTop: '20px', flexWrap: 'wrap' }}>
         
         {/* Левая часть: Фотография с крестиками */}
         <div style={{ flex: '1', minWidth: '300px', position: 'relative' }}>
-          {/* Крестики по углам */}
           <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontSize: '24px', fontWeight: '300' }}>+</div>
           <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '24px', fontWeight: '300' }}>+</div>
           <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontSize: '24px', fontWeight: '300' }}>+</div>
           <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontSize: '24px', fontWeight: '300' }}>+</div>
           
-          {/* Само фото (пока серый квадрат для имитации, позже вставим реальную ссылку на картинку) */}
           <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', border: '1px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: '40px', fontWeight: 'bold', color: '#fff', textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000' }}>
               3&lt;
@@ -78,7 +66,6 @@ export default function ProductPage() {
 .................. \\/ ............................выбери размер`}
           </pre>
 
-          {/* Выбор размера с логикой круглых скобок для активного */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', fontSize: '18px', fontWeight: 'bold', marginTop: '10px' }}>
             {[16, 17, 18, 19].map((size) => (
               <span 
@@ -91,7 +78,6 @@ export default function ProductPage() {
             ))}
           </div>
 
-          {/* Кнопка добавления в корзину */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '30px' }}>
             <div style={{ fontSize: '14px', lineHeight: '1.2' }}>
               произведём....<br/>
@@ -105,7 +91,6 @@ export default function ProductPage() {
               [ +добавить в 🛒'y ]
             </button>
           </div>
-          
         </div>
       </div>
     </div>
