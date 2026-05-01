@@ -1,54 +1,30 @@
-/* src/app/globals.css */
-a {
-  text-decoration: none !important;
-  color: inherit;
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
 
-/* На всякий случай для кнопок-ссылок */
-a:hover {
-  text-decoration: none !important;
-}
 * {
   box-sizing: border-box;
 }
 
 body {
-  font-family: 'Courier New', Courier, monospace; /* Главный шрифт для ASCII-эстетики */
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Medium */
   background-color: #ffffff;
   color: #000000;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  -webkit-font-smoothing: none; /* Делаем шрифт максимально резким, без сглаживания */
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Настройки для идеального отображения и копирования ASCII-арта */
-pre, .ascii-art {
-  white-space: pre;
-  font-family: inherit;
-  margin: 0;
-  user-select: all; /* Позволяет выделить весь блок текста в один клик */
-}
-
+/* Убираем подчеркивание и красим ссылки в черный */
 a {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-a:hover {
-  text-decoration: underline;
-  text-decoration-style: dashed;
-}
-
-/* Убираем стандартные стили для кнопок, чтобы они выглядели как текст */
-button {
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
+  text-decoration: none !important;
   color: inherit;
-  cursor: pointer;
+}
+
+/* Для жирных элементов (заголовки, кнопки) */
+b, strong, .bold {
+  font-weight: 700; /* Bold */
+}
+
+pre {
+  font-family: inherit; /* Чтобы ASCII тоже пытался быть в стиле, если не SVG */
 }
