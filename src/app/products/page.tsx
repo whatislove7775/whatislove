@@ -19,15 +19,21 @@ export default function ProductPage() {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '1200px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
-      
-      {/* Верхняя навигация из макета */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px' }}>
-        <div>
-          [<Link href="/">{'<'}</Link>] 📁 WH4T!SLOV3 / 📦 PRODUCT$ / 💍 에고 크리드,안녕하세요 / ⚠ КОЛЬЦО &lt;3
+{/* Верхняя панель "Путь вкладки" - Полностью кликабельная */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', width: '100%', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link href="/" style={{ color: '#000', textDecoration: 'none' }}>[&lt;]</Link>
+          <Link href="/" style={{ color: '#000', textDecoration: 'none' }}>📁 WH4T!SLOV3</Link>
+          <span>/</span>
+          <Link href="/products" style={{ color: '#000', textDecoration: 'none' }}>📦 PRODUCT$</Link>
+          <span>/</span>
+          <Link href="/products" style={{ color: '#000', textDecoration: 'none' }}>💍 에고 크리드,안녕하세요</Link>
+          <span>/</span>
+          <span>⚠ КОЛЬЦО &lt;3</span>
         </div>
-        <div>
-          [ 🏠 ][<Link href="/">x</Link>]
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Link href="/" style={{ color: '#000', textDecoration: 'none' }}>[ 🏠 ]</Link>
+          <Link href="/" style={{ color: '#000', textDecoration: 'none' }}>[x]</Link>
         </div>
       </div>
 
