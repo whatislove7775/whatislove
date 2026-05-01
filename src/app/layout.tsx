@@ -24,15 +24,33 @@ export default function RootLayout({
           {children}
         </main>
 
-        <footer style={{ textAlign: 'center', padding: '40px 20px', fontSize: '12px', lineHeight: '1.5' }}>
-          <a href="https://t.me/whatislove_r" style={{ color: '#0088cc', fontWeight: 'bold' }}>
-            <span style={{ fontSize: '16px' }}>💬</span> t.me/whatislove_r
-          </a>
-          <br /><br />
-          ДАННЫЙ САЙТ НИЧЕГО НЕ НАВЯЗЫВАЕТ И НЕ ПРОПАГАНДИРУЕТ.<br />
-          ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И НЕ ИМЕЕТ<br />
-          СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ<br />
-          COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ УЛУЧШЕНИЯ СЕРВИСА &lt;333*
+<footer style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '40px 20px', fontSize: '12px', lineHeight: '1.5', borderTop: '1px dashed #000', marginTop: '40px' }}>
+          
+          {/* Левый блок футера (Навигация) */}
+          <div style={{ fontWeight: 'bold', display: 'flex', flexDirection: 'column' }}>
+            <Link href="/info">ОФЕРТА / ПОЛИТИКА</Link>
+            <Link href="/info">КОНФИДЕНЦИАЛЬНОСТИ</Link>
+            <Link href="/info">/ КОНТАКТЫ / FAQ</Link>
+          </div>
+
+          {/* Центральный блок футера (Дисклеймер) */}
+          <div style={{ textAlign: 'center', flex: 1, padding: '0 20px' }}>
+            ДАННЫЙ САЙТ НИЧЕГО НЕ НАВЯЗЫВАЕТ И НЕ ПРОПАГАНДИРУЕТ.<br />
+            ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И НЕ ИМЕЕТ<br />
+            СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ<br />
+            COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ УЛУЧШЕНИЯ СЕРВИСА &lt;3333333*
+          </div>
+
+          {/* Правый блок футера (ASCII кот) */}
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <pre className="ascii-art" style={{ fontSize: '12px', fontWeight: 'bold' }}>
+{`
+ A___A
+ | •_• |
+  >   <
+`}
+            </pre>
+          </div>
         </footer>
       </body>
     </html>
