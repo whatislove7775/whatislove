@@ -1,35 +1,31 @@
 'use client';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
-import Link from 'next/link';
+const projects = [
+  { name: 'ACEIA', description: 'visual identity', year: '2024' },
+  { name: 'EGOR KREED', description: 'merch design', year: '2024' },
+  { name: 'JALAGONIA', description: 'branding', year: '2023' },
+  { name: 'OPTI OFFICE', description: 'ui/ux app', year: '2023' },
+];
 
 export default function PortfolioPage() {
   return (
-    <div style={{ width: '100%', maxWidth: '1000px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
+    <div style={{ width: '100%', maxWidth: '1200px', padding: '20px' }}>
+      <Breadcrumbs path={[{ name: 'PORTFOL1O', icon: '📁' }]} />
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px' }}>
-        <div>
-          [<Link href="/">{'<'}</Link>] 📁 WH4T!SLOV3 / 📁 PORTFOL1O
-        </div>
-        <div>
-          [ <Link href="/">🏠</Link> ][<Link href="/">x</Link>]
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', marginTop: '40px', justifyContent: 'center' }}>
-        {/* Имитация папок портфолио */}
-        {[1, 2, 3].map((item) => (
-          <div key={item} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-            <pre className="ascii-art" style={{ fontSize: '10px', fontWeight: 'bold' }}>
-{`
- _________________
-|  ___________  |
-| |           | |
-| | PROJECT_0${item}| |
-| |___________| |
-|_______________|
-`}
-            </pre>
-            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>[ открыть ]</span>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '40px', marginTop: '20px' }}>
+        {projects.map((proj, i) => (
+          <div key={i} style={{ border: '1px solid #000', position: 'relative', paddingBottom: '100%', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '15px', left: '15px', zIndex: 2, fontWeight: 'bold' }}>
+              {proj.name} / {proj.description}
+            </div>
+            <div style={{ position: 'absolute', bottom: '15px', right: '15px', zIndex: 2, fontWeight: 'bold' }}>
+              {proj.year}
+            </div>
+            {/* Сюда потом вставишь изображения через тег <img> */}
+            <div style={{ position: 'absolute', inset: 0, backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', color: '#ccc' }}>
+              IMG
+            </div>
           </div>
         ))}
       </div>
