@@ -1,23 +1,17 @@
 'use client';
-
-import Link from 'next/link';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 
 export default function CheckoutPage() {
-  const { items, totalPrice } = useCartStore();
-
   return (
-    <div style={{ width: '100%', maxWidth: '800px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
+    <div style={{ width: '100%', maxWidth: '800px', padding: '20px' }}>
+      <Breadcrumbs path={[
+        { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+        { name: 'PRODUCT$', href: '/products', icon: '📦' },
+        { name: 'ЗАКАЗ', icon: '💳' }
+      ]} />
       
-      {/* Верхняя навигация */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px' }}>
-        <div>
-          [<Link href="/products">{'<'}</Link>] 📁 WH4T!SLOV3 / 📦 PRODUCT$ / 💳 ЗАКАЗ
-        </div>
-        <div>
-          [ <Link href="/">🏠</Link> ][x]
-        </div>
-      </div>
+      {/* Дальше форма заказа... */}
 
       {/* Основной блок оформления */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', maxWidth: '400px', margin: '0 auto' }}>
