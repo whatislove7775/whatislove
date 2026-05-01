@@ -19,7 +19,6 @@ export default function RingProductPage() {
       
       <Breadcrumbs path={[
         { name: 'PRODUCT$', href: '/products', icon: '📦' },
-        { name: '에고 크리드,안녕하세요', icon: '💍' },
         { name: 'КОЛЬЦО <3', icon: '⚠' }
       ]} />
 
