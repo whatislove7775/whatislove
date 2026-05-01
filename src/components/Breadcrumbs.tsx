@@ -7,9 +7,11 @@ interface Props {
 
 export default function Breadcrumbs({ path }: Props) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontWeight: 'bold', fontSize: '14px', marginBottom: '30px' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontWeight: 'bold', fontSize: '14px', marginBottom: '30px', textTransform: 'uppercase' }}>
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
         <Link href="/">[{"<"}]</Link>
+        <Link href="/" style={{ textDecoration: 'none', color: '#000' }}>📁 WH4T!SLOV3</Link>
+        <span>/</span>
         {path.map((item, index) => (
           <span key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             {item.href ? (
