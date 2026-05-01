@@ -1,20 +1,17 @@
 'use client';
-
+import Breadcrumbs from '@/components/Breadcrumbs';
 import Link from 'next/link';
 
 export default function InfoPage() {
   return (
-    <div style={{ width: '100%', maxWidth: '1000px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
+    <div style={{ width: '100%', maxWidth: '1000px', padding: '20px' }}>
+      <Breadcrumbs path={[
+        { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+        { name: 'PRODUCT$', href: '/products', icon: '📦' },
+        { name: 'ИНФО', icon: '❓' }
+      ]} />
       
-      {/* Навигация из макета */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px' }}>
-        <div>
-          [<Link href="/">{'<'}</Link>] 📁 WH4T!SLOV3 / 📦 PRODUCT$ / ❓ ИНФО
-        </div>
-        <div>
-          [ <Link href="/">🏠</Link> ][<Link href="/">x</Link>]
-        </div>
-      </div>
+      {/* Остальной контент ИНФО... */}
 
       {/* Основной блок с информацией */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '60px' }}>
