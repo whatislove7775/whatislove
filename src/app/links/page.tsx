@@ -2,10 +2,9 @@
 import Breadcrumbs from '@/components/Breadcrumbs';
 
 const links = [
-  { name: 'telegram channel', url: 'https://t.me/whatislove_r' },
-  { name: 'telegram dm', url: 'https://t.me/babydonthurtmovich' },
-  { name: 'BEHANCE', url: 'https://behance.net/babydonthurtmovich' },
-  { name: 'GITHUB', url: 'https://github.com/' },
+  { label: 'КАНАЛ В ТГ', value: 't.me/whatislove_r', url: 'https://t.me/whatislove_r' },
+  { label: 'АВТОР В ТГ', value: 't.me/babydonthurtmovich', url: 'https://t.me/babydonthurtmovich' },
+  { label: 'ПОЧТА', value: 'babydonthurtmovich@mail.ru', url: 'mailto:babydonthurtmovich@mail.ru' },
 ];
 
 export default function LinksPage() {
@@ -13,32 +12,34 @@ export default function LinksPage() {
     <div style={{ width: '100%', maxWidth: '1200px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Breadcrumbs path={[{ name: 'LINK^S', icon: '🔗' }]} />
       
+      {/* Место под твой SVG @me */}
+      <div style={{ marginTop: '60px', marginBottom: '60px' }}>
+         {/* Сюда вставим <img> с твоим SVG в следующем шаге */}
+         <div style={{ fontSize: '40px', fontWeight: 700 }}>@me</div> 
+      </div>
+
+      {/* Кнопки в одну линию (как на фото 2) */}
       <div style={{ 
         display: 'flex', 
-        flexDirection: 'column', 
-        gap: '15px', 
-        width: '100%', 
-        maxWidth: '400px', 
-        marginTop: '50px' 
+        flexWrap: 'wrap', 
+        justifyContent: 'center', 
+        gap: '40px', 
+        width: '100%',
+        fontWeight: 700, // Bold
+        fontSize: '14px'
       }}>
         {links.map((link, i) => (
-          <a 
-            key={i} 
-            href={link.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{ 
-              border: '1px solid #000', 
-              padding: '12px', 
-              textAlign: 'center', 
-              fontWeight: 'bold',
-              fontSize: '14px',
-              color: '#000',
-              textTransform: 'uppercase'
-            }}
-          >
-            [ {link.name} ]
-          </a>
+          <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <span style={{ textTransform: 'uppercase' }}>[{link.label}]</span>
+            <a 
+              href={link.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ borderBottom: '1px solid transparent' }}
+            >
+              {link.value}
+            </a>
+          </div>
         ))}
       </div>
     </div>
