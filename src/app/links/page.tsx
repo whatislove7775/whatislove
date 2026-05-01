@@ -2,10 +2,9 @@
 import Breadcrumbs from '@/components/Breadcrumbs';
 
 const links = [
-  { name: 'TELEGRAM ЧАНЕЛ', url: 'https://t.me/whatislove_r' },
-  { name: 'TELEGRAM ЛИЧКА', url: 'https://t.me/vlad_markov' },
-  { name: 'PINTEREST', url: 'https://pinterest.com/' },
-  { name: 'BEHANCE', url: 'https://behance.net/' },
+  { name: 'telegram channel', url: 'https://t.me/whatislove_r' },
+  { name: 'telegram dm', url: 'https://t.me/babydonthurtmovich' },
+  { name: 'BEHANCE', url: 'https://behance.net/babydonthurtmovich' },
   { name: 'GITHUB', url: 'https://github.com/' },
 ];
 
