@@ -1,16 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useCartStore } from '@/store/cartStore';
 
-export default function ProductsPage() {
-  const [selectedSize, setSelectedSize] = useState<number>(17); // Размер по умолчанию
+export default function ProductPage() {
+  const [selectedSize, setSelectedSize] = useState<number>(17);
   const addItem = useCartStore((state) => state.addItem);
 
   const handleAddToCart = () => {
     addItem({
       id: 'ring-01',
-      name: 'кольцо<3',
+      name: 'кольцо <3',
       price: 1598,
       size: selectedSize,
       quantity: 1,
@@ -18,22 +19,49 @@ export default function ProductsPage() {
   };
 
   return (
-    <div style={{ display: 'flex', gap: '40px', maxWidth: '1000px', width: '100%', padding: '40px' }}>
+    <div style={{ width: '100%', maxWidth: '1200px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
       
-      {/* Левая часть - фото (пока заглушка в стиле брутализма) */}
-      <div style={{ flex: 1, border: '1px solid #000', height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
-        [ фото кольца ]
+      {/* Верхняя навигация из макета */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px' }}>
+        <div>
+          [<Link href="/">{'<'}</Link>] 📁 WH4T!SLOV3 / 📦 PRODUCT$ / 💍 에고 크리드,안녕하세요 / ⚠ КОЛЬЦО &lt;3
+        </div>
+        <div>
+          [ 🏠 ][<Link href="/">x</Link>]
+        </div>
       </div>
 
-      {/* Правая часть - информация и ASCII */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 'bold' }}>
-          <span>кольцо&lt;3</span>
-          <span style={{ color: 'red', textDecoration: 'line-through', fontSize: '14px' }}>3.600₽</span>
-          <span>1.598₽</span>
+      {/* Основной блок товара */}
+      <div style={{ display: 'flex', gap: '60px', marginTop: '20px', flexWrap: 'wrap' }}>
+        
+        {/* Левая часть: Фотография с крестиками */}
+        <div style={{ flex: '1', minWidth: '300px', position: 'relative' }}>
+          {/* Крестики по углам */}
+          <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontSize: '24px', fontWeight: '300' }}>+</div>
+          <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '24px', fontWeight: '300' }}>+</div>
+          <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontSize: '24px', fontWeight: '300' }}>+</div>
+          <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontSize: '24px', fontWeight: '300' }}>+</div>
+          
+          {/* Само фото (пока серый квадрат для имитации, позже вставим реальную ссылку на картинку) */}
+          <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', border: '1px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: '40px', fontWeight: 'bold', color: '#fff', textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000' }}>
+              3&lt;
+            </span>
+          </div>
         </div>
 
-        <pre className="ascii-art" style={{ fontSize: '12px', lineHeight: '1.2', borderTop: '1px dashed #000', borderBottom: '1px dashed #000', padding: '15px 0' }}>
+        {/* Правая часть: Описание и покупка */}
+        <div style={{ flex: '1', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <span style={{ fontWeight: 'bold', fontSize: '18px' }}>кольцо&lt;3...................................</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: '1' }}>
+              <span style={{ color: 'red', fontWeight: 'bold', fontSize: '18px', zIndex: 1 }}>1.598₽</span>
+              <span style={{ textDecoration: 'line-through', fontSize: '14px', position: 'relative', top: '-5px' }}>3.600₽</span>
+            </div>
+          </div>
+
+          <pre className="ascii-art" style={{ fontSize: '14px', lineHeight: '1.2', margin: '15px 0' }}>
 {`.......................made.with.love.......................
 ... /\\__/\\ .. ♡........................................материал
 > ( •  • ) <.....................хирургическая сталь
@@ -42,49 +70,38 @@ export default function ProductsPage() {
 ¨¨ L--L-- / /¨¨......................по всему РФ+СНГ
 ................ \\ \\ ...............................................
 .................. \\/ ............................выбери размер`}
-        </pre>
+          </pre>
 
-        {/* Выбор размера */}
-        <div style={{ display: 'flex', gap: '10px', fontSize: '16px' }}>
-          {[16, 17, 18, 19].map((size) => (
-            <span 
-              key={size}
-              onClick={() => setSelectedSize(size)}
-              style={{ 
-                cursor: 'pointer', 
-                border: selectedSize === size ? '1px solid red' : 'none',
-                color: selectedSize === size ? 'red' : 'black',
-                padding: '2px 5px'
-              }}
-            >
-              [ {size} ]
-            </span>
-          ))}
-        </div>
-
-        {/* Кнопка добавления в корзину */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-          <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
-            произведём....<br/>
-            упакуем..........<br/>
-            и доставим.....
+          {/* Выбор размера с логикой круглых скобок для активного */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', fontSize: '18px', fontWeight: 'bold', marginTop: '10px' }}>
+            {[16, 17, 18, 19].map((size) => (
+              <span 
+                key={size}
+                onClick={() => setSelectedSize(size)}
+                style={{ cursor: 'pointer', color: selectedSize === size ? 'red' : 'black' }}
+              >
+                [ {selectedSize === size ? `(${size})` : size} ]
+              </span>
+            ))}
           </div>
-          <button 
-            onClick={handleAddToCart}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontFamily: 'inherit',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}
-          >
-            [ +добавить в 🛒 ]
-          </button>
+
+          {/* Кнопка добавления в корзину */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '30px' }}>
+            <div style={{ fontSize: '14px', lineHeight: '1.2' }}>
+              произведём....<br/>
+              упакуем..........<br/>
+              и доставим.....
+            </div>
+            <button 
+              onClick={handleAddToCart}
+              style={{ fontWeight: 'bold', fontSize: '16px', letterSpacing: '1px' }}
+            >
+              [ +добавить в 🛒'y ]
+            </button>
+          </div>
+          
         </div>
       </div>
-
     </div>
   );
 }
