@@ -1,14 +1,52 @@
 'use client';
+import { useState, useEffect } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
+import Script from 'next/script';
 
 export default function CheckoutPage() {
   const items = useCartStore((state) => state.items);
+  const [address, setAddress] = useState('');
+
+  // Функция инициализации виджета СДЭК
+  const initCdekWidget = () => {
+    if (typeof window !== 'undefined' && (window as any).CDEKWidget) {
+      // Очищаем контейнер перед инициализацией, чтобы при переходах карта не дублировалась
+      const mapContainer = document.getElementById('cdek-map');
+      if (mapContainer) mapContainer.innerHTML = '';
+
+      new (window as any).CDEKWidget({
+        from: 'Москва',
+        root: 'cdek-map',
+        apiKey: 'СЮДА_ВСТАВИТЬ_КЛЮЧ_ЯНДЕКС_КАРТ', // Вставь свой ключ от Яндекса
+        servicePath: '/api/cdek', // Наш будущий бекенд-роут на Next.js
+        defaultLocation: 'Москва',
+        onChoose: (type: any, tariff: any, addressInfo: any) => {
+          // При клике на ПВЗ в карте, адрес автоматически впишется в инпут
+          setAddress(addressInfo.address || addressInfo.name || 'Выбран ПВЗ');
+        }
+      });
+    }
+  };
+
+  // На случай, если скрипт уже загрузился ранее, а мы просто перешли на эту страницу
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).CDEKWidget) {
+      initCdekWidget();
+    }
+  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center' }}>
       
-      {/* Навигация на всю ширину. Убрал дубль WH4T!SLOV3 */}
+      {/* Скрипт СДЭК 3.0 */}
+      <Script 
+        src="https://cdn.jsdelivr.net/npm/@cdek-it/widget@3" 
+        strategy="afterInteractive"
+        onLoad={initCdekWidget}
+      />
+
+      {/* Навигация (Исправлено дублирование, теперь всё на одной линии) */}
       <div style={{ width: '100%' }}>
         <Breadcrumbs path={[
           { name: 'PRODUCT$', href: '/products', icon: '📦' },
@@ -16,7 +54,7 @@ export default function CheckoutPage() {
         ]} />
       </div>
 
-      {/* Обертка для центрирования контента */}
+      {/* Обертка для жесткого центрирования контента */}
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '450px', marginTop: '20px' }}>
         
         {/* Карточка товара */}
@@ -93,14 +131,14 @@ export default function CheckoutPage() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>пункт выдачи</label>
             <div style={{ position: 'relative' }}>
-              <input type="text" placeholder="введите адрес" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="выберите на карте ниже" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
               <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>
             </div>
           </div>
 
-          {/* Заглушка под карту */}
-          <div style={{ width: '100%', height: '220px', border: '1px solid #ccc', padding: '20px', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', textTransform: 'uppercase', color: '#999', fontSize: '12px' }}>
-            ТУТ БУДЕТ ВИДЖЕТ КАРТЫ СДЭК ДЛЯ ВЫБОРА ПВЗ
+          {/* КОНТЕЙНЕР ДЛЯ КАРТЫ СДЭК */}
+          <div id="cdek-map" style={{ width: '100%', height: '400px', border: '1px solid #ccc', backgroundColor: '#f9f9f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ color: '#999', fontSize: '12px', textTransform: 'uppercase' }}>Здесь появится карта, когда будет добавлен ключ Яндекс.Карт</span>
           </div>
 
         </div>
