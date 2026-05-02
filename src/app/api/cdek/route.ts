@@ -7,7 +7,7 @@ const CDEK_BASE_URL = 'https://api.edu.cdek.ru'; // Тестовая среда
 let cachedToken = '';
 let tokenExpiry = 0;
 
-// Функция получения токена (живет 1 час)
+// Функция получения токена СДЭК
 async function getCdekToken() {
   if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
   
@@ -16,38 +16,39 @@ async function getCdekToken() {
   params.append('client_id', CDEK_ACCOUNT);
   params.append('client_secret', CDEK_SECURE_PASSWORD);
 
-  const response = await fetch(`${CDEK_BASE_URL}/v2/oauth/token?parameters`, {
+  // Исправлен URL: убрано ошибочное ?parameters
+  const response = await fetch(`${CDEK_BASE_URL}/v2/oauth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params.toString(),
   });
   
-  if (!response.ok) throw new Error('Ошибка авторизации СДЭК');
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Ошибка авторизации СДЭК: ${errText}`);
+  }
+  
   const data = await response.json();
   cachedToken = data.access_token;
   tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
   return cachedToken;
 }
 
-// Главная функция проксирования
+// Проксирование запросов к API СДЭК
 async function proxyRequest(req: NextRequest) {
   try {
     const token = await getCdekToken();
     const url = new URL(req.url);
     
-    // Смотрим, что просит виджет
     const action = url.searchParams.get('action');
-    url.searchParams.delete('action'); // Убираем, чтобы не смущать сервер СДЭКа
+    url.searchParams.delete('action');
     
-    let targetPath = '';
-    
-    // Переводим язык виджета на язык API СДЭК v2
+    // Маршрутизация запросов виджета
+    let targetPath = '/v2/deliverypoints'; 
     if (action === 'offices') {
       targetPath = '/v2/deliverypoints';
     } else if (action === 'calculate') {
       targetPath = '/v2/calculator/tariff';
-    } else {
-      targetPath = '/v2/deliverypoints'; // Фолбэк на всякий случай
     }
 
     const queryString = url.searchParams.toString();
@@ -72,14 +73,14 @@ async function proxyRequest(req: NextRequest) {
     try {
       data = JSON.parse(responseText);
     } catch (e) {
-      data = responseText; // Если СДЭК вернул не JSON (бывает при ошибках)
+      data = responseText;
     }
     
     return NextResponse.json(data, { status: response.status });
 
   } catch (error: any) {
-    console.error('Ошибка в прокси СДЭК:', error.message);
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера API' }, { status: 500 });
+    console.error('CDEK Proxy Error:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
