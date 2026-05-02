@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const CDEK_ACCOUNT = 'wqGwiQx0gg8mLtiEKsUinjVSICCjTTEP';
+// ИСПРАВЛЕНА ОПЕЧАТКА В ЛОГИНЕ (маленькая t)
+const CDEK_ACCOUNT = 'wqGwiQx0gg8mLtiEKsUinjVSICCjtTEP'; 
 const CDEK_SECURE_PASSWORD = 'RmAmgvSgSl1yirlz9QupbzOJVqhCxcP5';
 const CDEK_BASE_URL = 'https://api.edu.cdek.ru'; // Тестовая среда
 
 let cachedToken = '';
 let tokenExpiry = 0;
 
-// Функция получения токена СДЭК
+// Функция авторизации в СДЭК
 async function getCdekToken() {
   if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
   
@@ -16,8 +17,7 @@ async function getCdekToken() {
   params.append('client_id', CDEK_ACCOUNT);
   params.append('client_secret', CDEK_SECURE_PASSWORD);
 
-  // Исправлен URL: убрано ошибочное ?parameters
-  const response = await fetch(`${CDEK_BASE_URL}/v2/oauth/token`, {
+  const response = await fetch(`${CDEK_BASE_URL}/v2/oauth/token?parameters`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params.toString(),
@@ -25,6 +25,7 @@ async function getCdekToken() {
   
   if (!response.ok) {
     const errText = await response.text();
+    console.error('Ошибка авторизации СДЭК:', errText);
     throw new Error(`Ошибка авторизации СДЭК: ${errText}`);
   }
   
@@ -34,7 +35,7 @@ async function getCdekToken() {
   return cachedToken;
 }
 
-// Проксирование запросов к API СДЭК
+// Проксирование запросов
 async function proxyRequest(req: NextRequest) {
   try {
     const token = await getCdekToken();
@@ -43,7 +44,7 @@ async function proxyRequest(req: NextRequest) {
     const action = url.searchParams.get('action');
     url.searchParams.delete('action');
     
-    // Маршрутизация запросов виджета
+    // Переводим язык виджета на язык API СДЭК v2
     let targetPath = '/v2/deliverypoints'; 
     if (action === 'offices') {
       targetPath = '/v2/deliverypoints';
