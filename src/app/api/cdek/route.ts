@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const CDEK_ACCOUNT = 'wqGwiQx0gg8mLtiEKsUinjVSICCjTTEP';
 const CDEK_SECURE_PASSWORD = 'RmAmgvSgSl1yirlz9QupbzOJVqhCxcP5';
-const CDEK_BASE_URL = 'https://api.edu.cdek.ru'; // Тестовая песочница
+const CDEK_BASE_URL = 'https://api.edu.cdek.ru'; // Тестовая среда
 
 let cachedToken = '';
 let tokenExpiry = 0;
 
-// Получаем временный токен
+// Функция получения токена (живет 1 час)
 async function getCdekToken() {
   if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
   
@@ -29,18 +29,29 @@ async function getCdekToken() {
   return cachedToken;
 }
 
-// Универсальный обработчик запросов от виджета
-async function handleRequest(req: NextRequest) {
+// Главная функция проксирования
+async function proxyRequest(req: NextRequest) {
   try {
     const token = await getCdekToken();
     const url = new URL(req.url);
     
-    // Виджет 3.0 передает нужный метод API в параметре isdek_action
-    let targetPath = url.searchParams.get('isdek_action');
-    url.searchParams.delete('isdek_action'); // удаляем, чтобы не отправлять лишнее в сам СДЭК
+    // Смотрим, что просит виджет
+    const action = url.searchParams.get('action');
+    url.searchParams.delete('action'); // Убираем, чтобы не смущать сервер СДЭКа
     
+    let targetPath = '';
+    
+    // Переводим язык виджета на язык API СДЭК v2
+    if (action === 'offices') {
+      targetPath = '/v2/deliverypoints';
+    } else if (action === 'calculate') {
+      targetPath = '/v2/calculator/tariff';
+    } else {
+      targetPath = '/v2/deliverypoints'; // Фолбэк на всякий случай
+    }
+
     const queryString = url.searchParams.toString();
-    const targetUrl = `${CDEK_BASE_URL}/${targetPath || ''}${queryString ? `?${queryString}` : ''}`;
+    const targetUrl = `${CDEK_BASE_URL}${targetPath}${queryString ? `?${queryString}` : ''}`;
 
     const fetchOptions: RequestInit = {
       method: req.method,
@@ -55,21 +66,22 @@ async function handleRequest(req: NextRequest) {
     }
 
     const response = await fetch(targetUrl, fetchOptions);
-    const contentType = response.headers.get("content-type");
+    const responseText = await response.text();
     
     let data;
-    if (contentType && contentType.includes("application/json")) {
-      data = await response.json();
-    } else {
-      data = await response.text();
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      data = responseText; // Если СДЭК вернул не JSON (бывает при ошибках)
     }
     
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error('CDEK API Error:', error);
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 });
+
+  } catch (error: any) {
+    console.error('Ошибка в прокси СДЭК:', error.message);
+    return NextResponse.json({ error: 'Внутренняя ошибка сервера API' }, { status: 500 });
   }
 }
 
-export async function GET(req: NextRequest) { return handleRequest(req); }
-export async function POST(req: NextRequest) { return handleRequest(req); }
+export async function GET(req: NextRequest) { return proxyRequest(req); }
+export async function POST(req: NextRequest) { return proxyRequest(req); }
