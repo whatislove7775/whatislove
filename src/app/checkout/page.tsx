@@ -18,7 +18,7 @@ export default function CheckoutPage() {
       new (window as any).CDEKWidget({
         from: 'Москва',
         root: 'cdek-map',
-        apiKey: 'СЮДА_ВСТАВИТЬ_КЛЮЧ_ЯНДЕКС_КАРТ', // Вставь свой ключ от Яндекса
+        apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', // Вставь свой ключ от Яндекса
         servicePath: '/api/cdek', // Наш будущий бекенд-роут на Next.js
         defaultLocation: 'Москва',
         onChoose: (type: any, tariff: any, addressInfo: any) => {
