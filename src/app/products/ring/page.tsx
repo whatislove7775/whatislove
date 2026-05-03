@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 
-// Идеальная пунктирная линия, подогнанная под 14px шрифт
+// Пунктирная линия (заполняет пространство)
 const DottedLine = () => (
   <div style={{ 
     flex: 1, 
@@ -14,10 +14,11 @@ const DottedLine = () => (
   }}></div>
 );
 
-// Строка с котом: жестко фиксирует левую и правую часть, заполняя пустоту точками
-const SpecRow = ({ cat, text, isBold = false }: { cat: string, text: string, isBold?: boolean }) => (
+// Строка характеристик. ls = letterSpacing для подгона кота
+const SpecRow = ({ cat, text, isBold = false, ls = '0px' }: { cat: string, text: string, isBold?: boolean, ls?: string }) => (
   <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '4px', lineHeight: 1.2 }}>
-    <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{cat}</span>
+    {/* whiteSpace: 'pre' сохраняет твои пробелы, ls меняет межбуквенный интервал */}
+    <span style={{ whiteSpace: 'pre', letterSpacing: ls }}>{cat}</span>
     {text ? <DottedLine /> : <div style={{ flex: 1 }}></div>}
     <span style={{ fontWeight: isBold ? 800 : 500, textAlign: 'right' }}>{text}</span>
   </div>
@@ -49,14 +50,14 @@ export default function ProductPage() {
         ]} />
       </div>
 
-      {/* ОСНОВНОЙ БЛОК ТОВАРА (с отступом справа для корзины) */}
+      {/* ОСНОВНОЙ БЛОК ТОВАРА */}
       <div style={{ 
         display: 'flex', 
         width: '100%', 
         gap: '40px', 
         marginTop: '20px',
         alignItems: 'flex-start',
-        paddingRight: '140px', // Блокировка от наезда на корзину
+        paddingRight: '140px', // Блокировка от наезда корзины
         boxSizing: 'border-box'
       }}>
         
@@ -65,22 +66,19 @@ export default function ProductPage() {
           
           {/* Главное фото */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            {/* Обертка с padding, чтобы крестики торчали по углам */}
-            <div style={{ position: 'relative', width: '100%', padding: '15px', boxSizing: 'border-box' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, fontWeight: 300 }}>+</div>
-              <div style={{ position: 'absolute', top: 0, right: 0, fontWeight: 300 }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, fontWeight: 300 }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, right: 0, fontWeight: 300 }}>+</div>
-              
-              {/* Заглушка для фото */}
-              <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}>
+              {/* Крестики строго по углам через transform */}
+              <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
             </div>
             
-            <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800 }}>&lt;333*</div>
+            <div style={{ textAlign: 'center', marginTop: '20px', fontWeight: 800 }}>&lt;333*</div>
           </div>
 
           {/* Вертикальные миниатюры */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '70px', paddingTop: '15px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '70px', flexShrink: 0 }}>
             {[1, 2, 3, 4].map(i => (
               <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
             ))}
@@ -90,25 +88,15 @@ export default function ProductPage() {
         {/* ПРАВАЯ КОЛОНКА: ИНФО */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '350px' }}>
           
-          {/* Заголовок и Цена (Цена сделана как наклейка поверх зачеркнутой) */}
+          {/* Заголовок и Цена */}
           <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '15px' }}>
             <span style={{ fontWeight: 800 }}>кольцо&lt;3</span>
             <DottedLine />
-            <div style={{ position: 'relative', display: 'inline-block', lineHeight: 1 }}>
+            {/* Цены выровнены одна над другой */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1.1 }}>
+              <span style={{ color: '#d32f2f', fontWeight: 800 }}>1.598₽</span>
               <span style={{ fontWeight: 800, textDecoration: 'line-through', textDecorationThickness: '1.5px' }}>
                 3.600₽
-              </span>
-              <span style={{ 
-                color: '#d32f2f', 
-                fontWeight: 800, 
-                position: 'absolute', 
-                top: '-12px', 
-                right: '-10px', 
-                transform: 'rotate(-5deg)',
-                backgroundColor: '#fff', // Чтобы перекрывать линию под собой
-                padding: '0 2px'
-              }}>
-                1.598₽
               </span>
             </div>
           </div>
@@ -120,24 +108,27 @@ export default function ProductPage() {
             <DottedLine />
           </div>
 
-          {/* ASCII Кот и Характеристики (Идеальная сетка, шрифт 14px monospace) */}
+          {/* ASCII Кот и Характеристики */}
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-            <SpecRow cat="... /\_/\ .. ♡" text="материал" isBold={true} />
-            <SpecRow cat="> ( •  • ) <" text="хирургическая сталь" />
-            <SpecRow cat="...   |    | \_" text="" />
-            <SpecRow cat="...   | |  |  )_" text="доставка" isBold={true} />
-            <SpecRow cat="```L--L-- / /````" text="по всему РФ+СНГ" />
-            <SpecRow cat="........ \\ " text="" />
-            <SpecRow cat="......... V " text="выбери размер" isBold={true} />
+            {/* Тут ты можешь менять пробелы внутри строк и крутить параметр ls (letterSpacing), 
+              чтобы линии кота идеально сошлись в твоем шрифте.
+            */}
+            <SpecRow cat="... /\_/\ .. ♡" text="материал" isBold={true} ls="1px" />
+            <SpecRow cat="> ( •  • ) <" text="хирургическая сталь" ls="1.8px" />
+            <SpecRow cat="...   |    | \_" text="" ls="1px" />
+            <SpecRow cat="...   | |  |  )_" text="доставка" isBold={true} ls="1px" />
+            <SpecRow cat="```L--L-- / /````" text="по всему РФ+СНГ" ls="1px" />
+            <SpecRow cat="........ \\ " text="" ls="2.5px" />
+            <SpecRow cat="......... V " text="выбери размер" isBold={true} ls="2.6px" />
           </div>
 
-          {/* Выбор размера (Красный круг точно по макету) */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '30px', fontWeight: 800 }}>
-            <span style={{ marginRight: '10px' }}>[</span>
-            {[16, 17, 18, 19].map((size, index) => {
+          {/* Выбор размера (без лишних скобок, как в макете) */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '30px', fontWeight: 800 }}>
+            {[16, 17, 18, 19].map((size) => {
               const isSelected = selectedSize === size;
               return (
                 <span key={size} style={{ display: 'flex', alignItems: 'center' }}>
+                  [ 
                   <span 
                     onClick={() => setSelectedSize(size)}
                     style={{ 
@@ -150,17 +141,16 @@ export default function ProductPage() {
                       justifyContent: 'center',
                       width: '24px',
                       height: '24px',
-                      margin: '0 5px',
+                      margin: '0 4px',
                       userSelect: 'none'
                     }}
                   >
                     {size}
-                  </span>
-                  {index < 3 && <span style={{ margin: '0 5px' }}>][</span>}
+                  </span> 
+                  ]
                 </span>
               );
             })}
-            <span style={{ marginLeft: '10px' }}>]</span>
           </div>
 
           {/* Нижний блок: Текст слева, Кнопка справа */}
