@@ -108,28 +108,35 @@ export default function ProductPage() {
             <span style={{ fontWeight: 800, margin: '0 10px' }}>made.with.love</span>
             <div style={{ flex: 1, borderBottom: '1.5px dotted #000' }}></div>
           </div>
-
-          {/* ASCII Кот и Характеристики (ЕДИНЫЙ ТЕКСТОВЫЙ БЛОК) */}
-          <pre style={{ 
+          {/* ASCII Кот и Характеристики (ТУПО ТЕКСТ И ТОЧКИ) */}
+          <div style={{ 
             width: '100%', 
-            whiteSpace: 'pre', 
-            fontFamily: 'inherit',
-            fontSize: '14px',
+            whiteSpace: 'pre-wrap', 
             lineHeight: '1.4', 
             fontWeight: 500,
-            overflow: 'hidden',
-            margin: 0
-          }}>
-            {/* ТУТ ВСТАВЛЯЕШЬ ОДНУ СТРОКУ КОДА С КОТОМ, ЧТОБЫ УБРАТЬ ВСЕ ПЕРЕНОСЫ ИЗ РЕДАКТОРА */}
-            <span style={{ fontWeight: 800 }}>материал</span><div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '0px' }}>... /\_/\ .. ♡</span>{'\n'}хирургическая сталь<div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '1px' }}>{'> ( •  • ) <'}</span>{'\n'}<div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '0px' }}>{`...   |    | \\_`}</span>{'\n'}<span style={{ fontWeight: 800 }}>доставка</span><div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '0px' }}>{`...   | |  |  )_`}</span>{'\n'}по всему РФ+СНГ<div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '1px' }}>{`\`\`\`L--L-- / /\`\`\`\``}</span>{'\n'}<div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '2.5px' }}>{`........ \\\\ `}</span>{'\n'}<span style={{ fontWeight: 800 }}>выбери размер</span><div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '2.6px' }}>{`......... V `}</span>
-          </pre>
+            fontSize: '14px'}}>
+            <span style={{ letterSpacing: '0px' }}>{`... /\\_/\\ .. ♡`}</span>{`........................................ `}<span style={{ fontWeight: 800 }}>материал</span>{'\n'}
+            <span style={{ letterSpacing: '1px' }}>{`> ( •  • ) <`}</span>{`............................. хирургическая сталь`}{'\n'}
+            <span style={{ letterSpacing: '1px' }}>{`...   |    | \\_`}</span>{`................................................`}{'\n'}
+            <span style={{ letterSpacing: '1px' }}>{`...   | |  |  )_`}</span>{`........................................ `}<span style={{ fontWeight: 800 }}>доставка</span>{'\n'}
+            <span style={{ letterSpacing: '0.8px' }}>{`\`\`\`L--L-- / /\`\`\`\``}</span>{`................................. по всему РФ+СНГ`}{'\n'}
+            <span style={{ letterSpacing: '2.5px' }}>{`........ \\\\ `}</span>{`....................................................`}{'\n'}
+            <span style={{ letterSpacing: '2.6px' }}>{`......... V `}</span>{`....................................... `}<span style={{ fontWeight: 800 }}>выбери размер</span>
+          </div>
 
-          {/* Выбор размера [16][(17)][18][19] */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px', fontWeight: 800 }}>
-            <span>[16]</span>
-            <span style={{ color: '#d32f2f' }}>[(17)]</span>
-            <span>[18]</span>
-            <span>[19]</span>
+          {/* Выбор размера [16] (17) [18] [19] */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px', fontWeight: 800, alignItems: 'center' }}>
+            {[16, 17, 18, 19].map((size) => (
+              <span key={size}>
+                {selectedSize === size ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#d32f2f', border: '1.5px solid #d32f2f', borderRadius: '50%', width: '24px', height: '24px', margin: '0 2px' }}>
+                    {size}
+                  </span>
+                ) : (
+                  `[${size}]`
+                )}
+              </span>
+            ))}
           </div>
 
           {/* Нижний блок: Оставляем, как было (фото 1) */}
