@@ -17,6 +17,7 @@ export default function RingPage() {
     });
   };
 
+  // Компонент для строки с идеально ровными текстовыми краями
   const InfoRow = ({ label, value, isBold = false, isRed = false }: any) => (
     <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
       <span style={{ fontWeight: 800 }}>{label}</span>
@@ -41,42 +42,45 @@ export default function RingPage() {
 
       {/* ОСНОВНОЙ БЛОК ТОВАРА */}
       <div style={{ 
-        display: 'flex', 
-        width: '100%', 
-        gap: '40px', 
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr', // Две колонки: фото-блок и инфо-блок
+        gap: '60px', 
         marginTop: '30px',
         alignItems: 'flex-start',
         paddingRight: '140px',
         boxSizing: 'border-box'
       }}>
         
-        {/* ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ */}
-        <div style={{ display: 'flex', gap: '20px', flexShrink: 0, width: '450px' }}> 
+        {/* ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ (используем GRID для жесткого выравнивания) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '20px', width: '480px' }}>
           
           {/* Главное фото */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* Обертка для крестиков (+15px padding) */}
             <div style={{ position: 'relative', width: '100%', padding: '15px', boxSizing: 'border-box' }}>
-              {/* Крестики по углам контейнера */}
-              <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+              {/* Крестики - они НЕ равняются, они торчат наружу */}
+              <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
               
-              {/* Прямоугольник фото */}
-              <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
+              {/* Сама СЕРАЯ ФОТО-КАРТОЧКА */}
+              <div id="main-photo" style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
             </div>
+            {/* Подпись снизу, НЕ равняется, просто торчит */}
             <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
           </div>
 
-          {/* Миниатюры: Выровнены строго по высоте фото */}
+          {/* МИНИАТЮРЫ - ВЫРАВНИВАЕМ ЖЕСТКО ПО ВЫСОТЕ ФОТО-КАРТОЧКИ */}
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
-            justifyContent: 'space-between', 
-            width: '70px',
-            alignSelf: 'stretch',
-            marginTop: '15px', // Выравнивание с верхним краем фото (учитывая padding)
-            marginBottom: '35px' // Выравнивание с нижним краем фото
+            width: '80px',
+            // Начинаем ровно по верхней границе серого фото (учитываем padding 15px)
+            marginTop: '15px', 
+            // Заканчиваем ровно по нижней границе серого фото (учитываем aspectRatio)
+            height: 'calc(100% - 30px)', // Высота = 100% контейнера минус padding
+            justifyContent: 'space-between', // Плотная расстановка миниатюр
           }}>
             {[1, 2, 3, 4].map(i => (
               <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
@@ -84,11 +88,13 @@ export default function RingPage() {
           </div>
         </div>
 
-        {/* ПРАВАЯ КОЛОНКА: ИНФО */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '350px', fontSize: '14px', marginTop: '15px' }}>
+        {/* ПРАВАЯ КОЛОНКА: ИНФО (Текстовый блок) */}
+        {/* Добавляем marginTop: '15px', чтобы текстовый блок начинался ПРЯМО НА УРОВНЕ ВЕРХНЕЙ ГРАНИЦЫ СЕРОГО ФОТО */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '380px', fontSize: '14px', marginTop: '15px' }}>
           
           <InfoRow label="наименование" value="кольцо <3" isBold={true} />
           
+          {/* Специальная строка для цены с зачеркиванием */}
           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
             <span style={{ fontWeight: 800 }}>цена</span>
             <div style={{ margin: '0 8px', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, position: 'relative', top: '-1px' }}>
@@ -100,6 +106,7 @@ export default function RingPage() {
             </div>
           </div>
 
+          {/* сделано с любовью */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
             <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>....................................................................................................</div>
             <span style={{ margin: '0 10px', fontWeight: 500 }}>сделано с любовью</span>
