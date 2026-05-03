@@ -6,7 +6,6 @@ import { useCartStore } from '@/store/cartStore';
 export default function CheckoutPage() {
   const items = useCartStore((state: any) => state.items) || [];
   
-  // Вытягиваем методы для изменения корзины (если они есть)
   const updateQuantity = useCartStore((state: any) => state.updateQuantity);
   const updateSize = useCartStore((state: any) => state.updateSize);
   const removeItem = useCartStore((state: any) => state.removeItem);
@@ -20,7 +19,6 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [deliveryCost, setDeliveryCost] = useState<number>(0);
 
-  // Загрузка официального виджета СДЭК
   useEffect(() => {
     if (delivery === 'СДЭК') {
       const scriptId = 'cdek-widget-script';
@@ -44,7 +42,6 @@ export default function CheckoutPage() {
         };
         document.body.appendChild(script);
       } else {
-        // Если скрипт уже загружен, перерисовываем карту
         const mapDiv = document.getElementById('cdek-map');
         if (mapDiv) mapDiv.innerHTML = '';
         // @ts-ignore
@@ -226,4 +223,31 @@ export default function CheckoutPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
               <label>адрес (город, улица, дом, индекс / пункт выдачи)</label>
-              <input type="text" name="address" value={address} onChange={(e) => setAddress(e
+              <input type="text" name="address" value={address} onChange={(e) => setAddress(e.target.value)} required style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none' }} />
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={isLoading || !address}
+              style={{ 
+                marginTop: '10px',
+                background: 'transparent', 
+                border: 'none', 
+                fontWeight: 800, 
+                fontSize: '15px', 
+                cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', 
+                fontFamily: 'inherit', 
+                opacity: (isLoading || !address) ? 0.5 : 1,
+                alignSelf: 'flex-start',
+                padding: 0
+              }}
+            >
+              {isLoading ? '[ОЖИДАНИЕ...]' : '[заказать] 📦'}
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  );
+}
