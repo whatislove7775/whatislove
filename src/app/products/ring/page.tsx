@@ -3,6 +3,20 @@ import { useState } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 
+// Компонент для текстовых точек, который сам заполняет пустоту
+const TextDots = () => (
+  <span style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', margin: '0 8px', opacity: 0.8, userSelect: 'none' }}>
+    ........................................................................................................................................................................................................
+  </span>
+);
+
+// Сплошная линия из текстовых точек
+const FullTextDots = () => (
+  <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', userSelect: 'none', lineHeight: 1.2, marginTop: '6px', marginBottom: '6px', opacity: 0.8 }}>
+    ........................................................................................................................................................................................................
+  </div>
+);
+
 export default function RingPage() {
   const [selectedSize, setSelectedSize] = useState(17);
   const addItem = useCartStore((state) => state.addItem);
@@ -63,32 +77,63 @@ export default function RingPage() {
         {/* ПРАВАЯ КОЛОНКА: ИНФО */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '350px' }}>
           
-          {/* ЧИСТО ТЕКСТОВЫЙ БЛОК + ВЫРАВНИВАНИЕ ПО ШИРИНЕ */}
-          <div style={{ 
-            width: '100%', 
-            whiteSpace: 'pre-wrap', // Изменено для работы justify
-            lineHeight: '1.6', 
-            fontWeight: 500,
-            fontSize: '14px',
-            overflow: 'hidden',
-            textAlign: 'justify', // Выравнивание по ширине
-            textAlignLast: 'justify' // Растягивает короткие/одиночные строки от края до края
-          }}>
-            <span style={{ fontWeight: 800 }}>наименование</span>{` ................................................................ `}<span style={{ fontWeight: 800 }}>кольцо &lt;3</span>{'\n'}
-            <span style={{ fontWeight: 800 }}>цена</span>{` .......................................................... `}<span style={{ color: '#999', textDecoration: 'line-through', fontWeight: 800 }}>3 600</span> <span style={{ color: '#d32f2f', fontWeight: 800 }}>1 598 руб</span>{'\n'}
-            {`................................ `}<span style={{ fontWeight: 500 }}>сделано с любовью</span>{` ................................`}{'\n'}
-            {`....................................................................................................`}{'\n'}
-            <span style={{ fontWeight: 800 }}>материал</span>{` ................................................................ `}<span style={{ fontWeight: 500 }}>ювелирная сталь</span>{'\n'}
-            {`....................................................................................................`}{'\n'}
-            <span style={{ fontWeight: 800 }}>доставка</span>{` ................................................................... `}<span style={{ fontWeight: 500 }}>по всей России</span>{'\n'}
-            {`....................................................................................... `}<span style={{ fontWeight: 500 }}>+страны СНГ</span>{'\n'}
-            {`....................................................................................................`}{'\n'}
-            {`................................ `}<span style={{ fontWeight: 800 }}>выбери размер ниже</span>{` ...............................`}{'\n'}
-            {`....................................................................................................`}
+          {/* ЧИСТЫЙ ТЕКСТ С ТОЧКАМИ БЕЗ ДЫРОК */}
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', fontSize: '14px', lineHeight: '1.4', fontWeight: 500 }}>
+            
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <span style={{ fontWeight: 800 }}>наименование</span>
+              <TextDots />
+              <span style={{ fontWeight: 800 }}>кольцо &lt;3</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'flex-end', marginTop: '4px' }}>
+              <span style={{ fontWeight: 800 }}>цена</span>
+              <TextDots />
+              <span style={{ color: '#999', textDecoration: 'line-through', fontWeight: 800, marginRight: '8px' }}>3 600</span>
+              <span style={{ color: '#d32f2f', fontWeight: 800 }}>1 598 руб</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'flex-end', marginTop: '4px' }}>
+              <TextDots />
+              <span style={{ fontWeight: 500 }}>сделано с любовью</span>
+              <TextDots />
+            </div>
+
+            <FullTextDots />
+
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <span style={{ fontWeight: 800 }}>материал</span>
+              <TextDots />
+              <span style={{ fontWeight: 500 }}>ювелирная сталь</span>
+            </div>
+
+            <FullTextDots />
+
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <span style={{ fontWeight: 800 }}>доставка</span>
+              <TextDots />
+              <span style={{ fontWeight: 500 }}>по всей России</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'flex-end', marginTop: '4px' }}>
+              <TextDots />
+              <span style={{ fontWeight: 500 }}>+страны СНГ</span>
+            </div>
+
+            <FullTextDots />
+
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <TextDots />
+              <span style={{ fontWeight: 800 }}>выбери размер ниже</span>
+              <TextDots />
+            </div>
+
+            <FullTextDots />
+            
           </div>
 
           {/* ВЫБОР РАЗМЕРА */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '15px', fontWeight: 800, alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', fontWeight: 800, alignItems: 'center' }}>
             {[16, 17, 18, 19].map((size) => (
               <span 
                 key={size} 
@@ -117,7 +162,7 @@ export default function RingPage() {
 
           {/* НИЖНИЙ БЛОК */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '40px' }}>
-            <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px', textAlign: 'justify' }}>
+            <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px' }}>
               произведём, упакуем,<br/>
               и доставим
             </div>
