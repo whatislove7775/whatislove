@@ -5,12 +5,15 @@ import Link from 'next/link';
 export default function Cart() {
   const { items, removeItem, totalPrice } = useCartStore();
 
+  // Считаем общее количество вещей (если 2 кольца 16го размера и 1 кольцо 17го = 3)
+  const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
+
   return (
     <div style={{
       position: 'absolute',
       top: '20px', 
       right: '20px',
-      width: '120px',
+      width: '160px', // Сделали чуть шире, чтобы влез текст
       zIndex: 1000,
       fontWeight: 700
     }}>
@@ -19,7 +22,7 @@ export default function Cart() {
       </div>
 
       <div style={{ marginBottom: '10px', textTransform: 'lowercase' }}>
-        корзина [{items.length}]
+        корзина [{totalItemsCount}]
       </div>
 
       {items.length === 0 ? (
@@ -27,8 +30,11 @@ export default function Cart() {
       ) : (
         <>
           {items.map((item, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontWeight: 500, textTransform: 'lowercase' }}>
-              <span>{item.name}</span>
+            <div key={`${item.id}-${item.size}-${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', fontWeight: 500, textTransform: 'lowercase', fontSize: '13px' }}>
+              <span style={{ lineHeight: '1.2' }}>
+                {item.name} <span style={{ color: 'red' }}>[{item.size}]</span><br/>
+                x{item.quantity}
+              </span>
               <span onClick={() => removeItem(item.id, item.size)} style={{ cursor: 'pointer' }}>[x]</span>
             </div>
           ))}
