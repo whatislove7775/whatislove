@@ -5,7 +5,8 @@ import Link from 'next/link';
 export default function ProductsPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-      <Breadcrumbs path={[{ name: 'PRODUCT$', icon: '📦' }]} />
+      <Breadcrumbs path={[{ name: 'WH4T!SLOV3', href: '/', icon: '📁' }, { name: 'PRODUCT$', icon: '📦' }, { name: product.name, icon: '💍' } // <--- ВОТ ЗДЕСЬ МЕНЯЕШЬ НА КОЛЬЦО
+]} />]} />
 
       <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap' }}>
 
