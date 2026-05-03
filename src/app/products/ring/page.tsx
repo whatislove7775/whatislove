@@ -3,16 +3,13 @@ import { useState } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 
-// Идеальная пунктирная линия для выравнивания
-const DottedLine = () => (
-  <div style={{ 
-    flex: 1, 
-    borderBottom: '2px dotted #000', 
-    margin: '0 8px', 
-    position: 'relative', 
-    top: '-4px',
-    opacity: 0.8 
-  }}></div>
+// Железобетонная строка для характеристик и кота
+const SpecRow = ({ cat, text, isBold = false }: { cat: string, text: string, isBold?: boolean }) => (
+  <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', lineHeight: '1.3', marginBottom: '2px' }}>
+    <span style={{ fontFamily: 'monospace', whiteSpace: 'pre', fontSize: '13px' }}>{cat}</span>
+    <div style={{ flex: 1, borderBottom: '2px dotted #000', margin: '0 8px', position: 'relative', top: '-4px', opacity: 0.5 }}></div>
+    <span style={{ fontWeight: isBold ? 800 : 500, fontSize: '13px', textAlign: 'right' }}>{text}</span>
+  </div>
 );
 
 export default function ProductPage() {
@@ -41,60 +38,60 @@ export default function ProductPage() {
         ]} />
       </div>
 
-      {/* ОСНОВНОЙ БЛОК ТОВАРА */}
+      {/* ОСНОВНОЙ БЛОК ТОВАРА (с отступом справа от корзины!) */}
       <div style={{ 
         display: 'flex', 
         width: '100%', 
-        gap: '60px', 
-        marginTop: '30px',
+        gap: '40px', 
+        marginTop: '20px',
         alignItems: 'flex-start',
-        flexWrap: 'wrap' // Для адаптивности на мелких экранах
+        paddingRight: '140px', // ЖЕСТКАЯ БЛОКИРОВКА ОТ НАЕЗДА НА КОРЗИНУ
+        boxSizing: 'border-box'
       }}>
         
         {/* ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ */}
-        <div style={{ display: 'flex', gap: '15px', flex: '1 1 45%', minWidth: '350px' }}>
+        <div style={{ display: 'flex', gap: '15px', flexShrink: 0, width: '450px' }}>
           
           {/* Главное фото */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', width: '100%' }}>
-              {/* Крестики по углам */}
-              <div style={{ position: 'absolute', top: -20, left: -10, fontSize: '24px', fontWeight: 300, lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', top: -20, right: -10, fontSize: '24px', fontWeight: 300, lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: -15, left: -10, fontSize: '24px', fontWeight: 300, lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: -15, right: -10, fontSize: '24px', fontWeight: 300, lineHeight: 1 }}>+</div>
+              {/* Крестики по углам (вынесены за пределы квадрата) */}
+              <div style={{ position: 'absolute', top: -25, left: -15, fontSize: '24px', fontWeight: 300 }}>+</div>
+              <div style={{ position: 'absolute', top: -25, right: -15, fontSize: '24px', fontWeight: 300 }}>+</div>
+              <div style={{ position: 'absolute', bottom: -25, left: -15, fontSize: '24px', fontWeight: 300 }}>+</div>
+              <div style={{ position: 'absolute', bottom: -25, right: -15, fontSize: '24px', fontWeight: 300 }}>+</div>
               
-              {/* Серый квадрат (заглушка) / Сюда вставь тег <img> с твоей фоткой кольца */}
+              {/* Квадрат под фото */}
               <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
             </div>
             {/* Надпись под главным фото */}
-            <div style={{ textAlign: 'center', marginTop: '20px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
+            <div style={{ textAlign: 'center', marginTop: '25px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
           </div>
 
           {/* Вертикальные миниатюры (4 штуки) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '80px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '70px', flexShrink: 0 }}>
             {[1, 2, 3, 4].map(i => (
               <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
             ))}
           </div>
-
         </div>
 
         {/* ПРАВАЯ КОЛОНКА: ИНФО */}
-        <div style={{ flex: '1 1 45%', minWidth: '350px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '350px' }}>
           
           {/* Заголовок и Цена */}
           <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '15px' }}>
             <span style={{ fontWeight: 800, fontSize: '18px' }}>кольцо&lt;3</span>
-            <DottedLine />
+            <div style={{ flex: 1, borderBottom: '2px dotted #000', margin: '0 8px', position: 'relative', top: '-4px', opacity: 0.5 }}></div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1 }}>
-              <span style={{ color: '#d32f2f', fontWeight: 800, fontSize: '22px' }}>1.598₽</span>
+              <span style={{ color: '#d32f2f', fontWeight: 800, fontSize: '20px' }}>1.598₽</span>
               <span style={{ 
                 fontWeight: 800, 
                 fontSize: '14px', 
                 textDecoration: 'line-through', 
                 textDecorationColor: '#d32f2f', 
                 textDecorationThickness: '2px', 
-                marginTop: '6px' 
+                marginTop: '4px' 
               }}>
                 3.600₽
               </span>
@@ -103,57 +100,23 @@ export default function ProductPage() {
 
           {/* made.with.love */}
           <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '20px' }}>
-            <DottedLine />
+            <div style={{ flex: 1, borderBottom: '2px dotted #000', opacity: 0.5 }}></div>
             <span style={{ fontWeight: 800, fontSize: '12px', margin: '0 10px' }}>made.with.love</span>
-            <DottedLine />
+            <div style={{ flex: 1, borderBottom: '2px dotted #000', opacity: 0.5 }}></div>
           </div>
 
-          {/* ASCII Кот и Характеристики (Идеально выровненные) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '13px', lineHeight: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
-              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>... /\_/\ .. ♡</span>
-              <DottedLine />
-              <span style={{ fontWeight: 800, textAlign: 'right' }}>материал</span>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
-              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'> ( •  • ) <'}</span>
-              <DottedLine />
-              <span style={{ fontWeight: 500, textAlign: 'right' }}>хирургическая сталь</span>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
-              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'...   |    | \\_'}</span>
-              <DottedLine />
-              <span></span>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
-              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'...   | |  |  )_'}</span>
-              <DottedLine />
-              <span style={{ fontWeight: 800, textAlign: 'right' }}>доставка</span>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
-              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'```L--L-- / /````'}</span>
-              <DottedLine />
-              <span style={{ fontWeight: 500, textAlign: 'right' }}>по всему РФ+СНГ</span>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
-              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'........ \\\\ '}</span>
-              <DottedLine />
-              <span></span>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
-              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'......... V '}</span>
-              <DottedLine />
-              <span style={{ fontWeight: 800, textAlign: 'right' }}>выбери размер</span>
-            </div>
+          {/* ASCII Кот и Характеристики (Идеальная сетка) */}
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            <SpecRow cat="... /\_/\ .. ♡" text="материал" isBold={true} />
+            <SpecRow cat="> ( •  • ) <" text="хирургическая сталь" />
+            <SpecRow cat="...   |    | \_" text="" />
+            <SpecRow cat="...   | |  |  )_" text="доставка" isBold={true} />
+            <SpecRow cat="```L--L-- / /````" text="по всему РФ+СНГ" />
+            <SpecRow cat="........ \\ " text="" />
+            <SpecRow cat="......... V " text="выбери размер" isBold={true} />
           </div>
 
-          {/* Выбор размера (Красный круг как в макете) */}
+          {/* Выбор размера */}
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', marginTop: '30px', fontWeight: 800, fontSize: '16px' }}>
             {[16, 17, 18, 19].map((size) => {
               const isSelected = selectedSize === size;
@@ -203,7 +166,6 @@ export default function ProductPage() {
 
         </div>
       </div>
-      
     </div>
   );
 }
