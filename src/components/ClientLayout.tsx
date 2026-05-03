@@ -2,12 +2,9 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import Cart from '@/components/Cart';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const showCart = pathname.startsWith('/products') || pathname === '/info';
-  
   const noScrollPages = ['/', '/links', '/info', '/oferta', '/privacy'];
   const isNoScrollPage = noScrollPages.includes(pathname);
 
@@ -51,24 +48,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </header>
 
         <main style={{
-          flex: 1, 
+          flex: 1,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           width: '100%',
           maxWidth: '1200px',
           margin: '0 auto',
-          position: 'relative', // Относительно этого блока будет позиционироваться корзина
           padding: '20px', 
           boxSizing: 'border-box'
         }}>
-          {/* КОРЗИНА ОПУЩЕНА НИЖЕ (top: 60px), ЧТОБЫ НЕ ПЕРЕКРЫВАТЬ ХЛЕБНЫЕ КРОШКИ */}
-          {showCart && (
-            <div style={{ position: 'absolute', top: '60px', right: '20px', zIndex: 100 }}>
-              <Cart />
-            </div>
-          )}
-          
           {children}
         </main>
 
@@ -84,30 +73,44 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           </footer>
         ) : (
           <footer style={{ 
-            display: 'flex', 
-            alignItems: 'flex-end', 
+            display: 'grid', 
+            gridTemplateColumns: 'auto 1fr', // 2 колонки
+            gridTemplateRows: 'auto auto',   // 2 строки (Телега+Машина сверху, Ссылки+Текст снизу)
+            columnGap: '60px', 
+            rowGap: '20px',
             padding: '20px 40px', 
             borderTop: '1px dashed #ccc',
             flexShrink: 0,
             width: '100%',
-            boxSizing: 'border-box',
-            gap: '40px' 
+            boxSizing: 'border-box'
           }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 800, textTransform: 'uppercase', flexShrink: 0 }}>
-              <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '10px', textDecoration: 'none' }}>
+            {/* Строка 1, Колонка 1: Телеграм */}
+            <div style={{ fontWeight: 800, textTransform: 'uppercase' }}>
+              <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'none' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
                 t.me/whatislove_r
               </a>
+            </div>
+
+            {/* Строка 1, Колонка 2: Машина */}
+            <div style={{ textAlign: 'left' }}>
+              <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '12px', lineHeight: 1 }}>
+                 000<br/>
+              =  .  .  =<br/>
+              ...O.......O...
+              </pre>
+            </div>
+
+            {/* Строка 2, Колонка 1: Ссылки */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 800, textTransform: 'uppercase' }}>
               <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>ОФЕРТА / ПОЛИТИКА</Link>
               <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>КОНФИДЕНЦИАЛЬНОСТИ</Link>
               <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>/ ИНФО</Link>
             </div>
 
-            <div style={{ textAlign: 'left', maxWidth: '750px' }}>
-              {/* МАШИНА УДАЛЕНА ИЗ КОДА */}
-              <div style={{ textTransform: 'uppercase', fontWeight: 500, fontSize: '12px', lineHeight: 1.4 }}>
-                ДАННЫЙ САЙТ НИЧЕГО НЕ НАВЯЗЫВАЕТ И НЕ ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И НЕ ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ УЛУЧШЕНИЯ СЕРВИСА &lt;333*
-              </div>
+            {/* Строка 2, Колонка 2: Текст (Идеально выровнен с кнопкой ОФЕРТА) */}
+            <div style={{ fontWeight: 800, fontSize: '14px', textTransform: 'uppercase', lineHeight: 1.4, maxWidth: '850px' }}>
+              ДАННЫЙ САЙТ НИЧЕГО НЕ НАВЯЗЫВАЕТ И НЕ ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И НЕ ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ УЛУЧШЕНИЯ СЕРВИСА &lt;333*
             </div>
           </footer>
         )}
