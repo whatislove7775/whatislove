@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server';
 
+// Функция для защиты от HTML-багов (превращает <3 в безопасный текст)
+const escapeHtml = (text: string) => {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+};
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -12,18 +22,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ключи Telegram не найдены в Vercel! Сделай Redeploy.' }, { status: 400 });
     }
 
+    // Собираем корзину, пропуская названия через защиту
+    const itemsList = orderData.items
+      .map((i: any) => `- ${escapeHtml(i.name)} (Размер: ${i.size}) x${i.quantity} = ${i.price * i.quantity}₽`)
+      .join('\n');
+
     const message = `
 📦 <b>НОВЫЙ ЗАКАЗ!</b>
-👤 <b>ФИО:</b> ${orderData.name}
-📧 <b>Email:</b> ${orderData.email}
-📞 <b>Телефон:</b> ${orderData.phone}
-✈️ <b>TG:</b> ${orderData.tg}
-🏙 <b>Город:</b> ${orderData.city}
-🚚 <b>Служба:</b> ${orderData.delivery}
-📍 <b>ПВЗ:</b> ${orderData.address}
+👤 <b>ФИО:</b> ${escapeHtml(orderData.name)}
+📧 <b>Email:</b> ${escapeHtml(orderData.email)}
+📞 <b>Телефон:</b> ${escapeHtml(orderData.phone)}
+✈️ <b>TG:</b> ${escapeHtml(orderData.tg)}
+🏙 <b>Город:</b> ${escapeHtml(orderData.city)}
+🚚 <b>Служба:</b> ${escapeHtml(orderData.delivery)}
+📍 <b>ПВЗ:</b> ${escapeHtml(orderData.address)}
 
 🛒 <b>Корзина:</b>
-${orderData.items.map((i: any) => `- ${i.name} (Размер: ${i.size}) x${i.quantity} = ${i.price * i.quantity}₽`).join('\n')}
+${itemsList}
 
 🚚 <b>Стоимость доставки:</b> ${orderData.deliveryCost > 0 ? orderData.deliveryCost + '₽' : 'Не рассчитана / Другой сервис'}
 💰 <b>ИТОГО С ДОСТАВКОЙ:</b> ${orderData.total + orderData.deliveryCost}₽
@@ -42,7 +57,6 @@ ${orderData.items.map((i: any) => `- ${i.name} (Размер: ${i.size}) x${i.qu
 
     const tgData = await response.json();
     
-    // Если Телеграм ругается (например, не нажат Start)
     if (!tgData.ok) {
       console.error('Ошибка от самого Telegram:', tgData);
       return NextResponse.json({ error: `Telegram отклонил сообщение: ${tgData.description}` }, { status: 400 });
