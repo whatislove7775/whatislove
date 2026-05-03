@@ -1,56 +1,64 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import Cart from '@/components/Cart';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const showCart = pathname.startsWith('/products');
+  
+  // Убиваем скролл ТОЛЬКО на главной и странице ссылок
+  const isNoScrollPage = pathname === '/' || pathname === '/links';
 
-  const [isLoaded, setIsLoaded] = useState(false);
+  // Жесткий экран загрузки
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoaded(true);
-  }, []);
+    setIsLoading(true);
+    // Держим глухой белый экран ровно 600мс, чтобы всё успело прорисоваться без дерганий
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   return (
     <>
-      {/* 1. ПРЕЛОАДЕР (ЭКРАН ЗАГРУЗКИ) */}
+      {/* ПРЕЛОАДЕР (Резкий, без прозрачностей) */}
       <div style={{
         position: 'fixed',
         top: 0, left: 0, right: 0, bottom: 0,
         backgroundColor: '#fff',
-        zIndex: 9999,
-        display: 'flex',
+        zIndex: 99999,
+        display: isLoading ? 'flex' : 'none',
         alignItems: 'center',
         justifyContent: 'center',
-        opacity: isLoaded ? 0 : 1,
-        pointerEvents: isLoaded ? 'none' : 'all',
-        transition: 'opacity 0.5s ease-out'
       }}>
         <div style={{ fontWeight: 800, fontSize: '20px', textTransform: 'uppercase', letterSpacing: '2px' }}>
           загрузка...
         </div>
       </div>
 
-      {/* 2. ИДЕАЛЬНЫЙ КАРКАС БЕЗ УМЕНЬШЕНИЯ ШРИФТА */}
+      {/* КАРКАС */}
       <div style={{ 
         fontFamily: 'Inter, sans-serif', 
-        fontSize: '14px', // СТРОГО 14px ДЛЯ ВСЕГО САЙТА
+        fontSize: '14px', 
         color: '#000', 
         display: 'flex', 
         flexDirection: 'column', 
-        flex: 1, // ВОТ ОНО! То, что я случайно затер в прошлый раз. Никаких minHeight!
+        height: isNoScrollPage ? '100dvh' : 'auto', // Жесткая фиксация высоты
+        minHeight: '100dvh',
+        overflow: isNoScrollPage ? 'hidden' : 'auto', // ФИЗИЧЕСКИЙ БЛОК СКРОЛЛА
         width: '100%'
       }}>
         <header style={{ textAlign: 'center', padding: '20px 0', fontWeight: 500, flexShrink: 0 }}>
-          whatislove ©
+          <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>whatislove ©</Link>
         </header>
 
         <main style={{
-          flex: 1, // Расталкивает шапку и футер
+          flex: 1,
           display: 'flex',
           flexDirection: 'column',
+          justifyContent: isNoScrollPage ? 'center' : 'flex-start', // Центруем контент на коротких страницах
           width: '100%',
           maxWidth: '1200px',
           margin: '0 auto',
@@ -63,21 +71,63 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           {children}
         </main>
 
-        <footer style={{ textAlign: 'center', padding: '20px', lineHeight: '1.5', flexShrink: 0 }}>
-          <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '15px', textDecoration: 'none' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
-            t.me/whatislove_r
-          </a>
-          <div style={{ 
-            textTransform: 'uppercase', 
-            fontWeight: 500, 
-            // УБРАЛ УМЕНЬШЕННЫЙ ШРИФТ. Теперь он наследует 14px из главного контейнера.
-            maxWidth: '800px', 
-            margin: '0 auto' 
+        {/* ДИНАМИЧЕСКИЙ ФУТЕР */}
+        {pathname === '/' ? (
+          // Простой футер для главной страницы
+          <footer style={{ textAlign: 'center', padding: '20px', lineHeight: '1.5', flexShrink: 0 }}>
+            <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '15px', textDecoration: 'none' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
+              t.me/whatislove_r
+            </a>
+            <div style={{ textTransform: 'uppercase', fontWeight: 500, maxWidth: '800px', margin: '0 auto' }}>
+              ДАННЫЙ САЙТ НИЧЕГО НЕ НАВЯЗЫВАЕТ И НЕ ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И НЕ ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ УЛУЧШЕНИЯ СЕРВИСА &lt;333*
+            </div>
+          </footer>
+        ) : (
+          // Сложный футер для всех остальных страниц (из макета)
+          <footer style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'flex-end', 
+            padding: '20px', 
+            borderTop: '1px dashed #ccc', // Пунктирная линия сверху
+            flexShrink: 0,
+            flexWrap: 'wrap',
+            gap: '20px'
           }}>
-            ДАННЫЙ САЙТ НИЧЕГО НЕ НАВЯЗЫВАЕТ И НЕ ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И НЕ ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ УЛУЧШЕНИЯ СЕРВИСА &lt;333*
-          </div>
-        </footer>
+            {/* ЛЕВЫЙ БЛОК: Ссылки */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 800, textTransform: 'uppercase' }}>
+              <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '10px', textDecoration: 'none' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
+                t.me/whatislove_r
+              </a>
+              <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>ОФЕРТА / ПОЛИТИКА</Link>
+              <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>КОНФИДЕНЦИАЛЬНОСТИ</Link>
+              <Link href="/contacts" style={{ color: '#000', textDecoration: 'none' }}>/ КОНТАКТЫ / FAQ</Link>
+            </div>
+
+            {/* ЦЕНТРАЛЬНЫЙ БЛОК: Машина + Текст */}
+            <div style={{ flex: 1, maxWidth: '600px', textAlign: 'center' }}>
+              <pre style={{ margin: '0 auto 10px auto', fontFamily: 'monospace', fontSize: '12px', lineHeight: 1 }}>
+                 000<br/>
+              =  .  .  =<br/>
+              ...O.......O...
+              </pre>
+              <div style={{ textTransform: 'uppercase', fontWeight: 500, fontSize: '12px' }}>
+                ДАННЫЙ САЙТ НИЧЕГО НЕ НАВЯЗЫВАЕТ И НЕ ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И НЕ ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ УЛУЧШЕНИЯ СЕРВИСА &lt;333*
+              </div>
+            </div>
+
+            {/* ПРАВЫЙ БЛОК: Кот */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+              <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '12px', lineHeight: 1.2 }}>
+                {` A___A `}<br/>
+                {`( • . • )`}<br/>
+                {` >  C `}
+              </pre>
+            </div>
+          </footer>
+        )}
       </div>
     </>
   );
