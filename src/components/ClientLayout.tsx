@@ -103,8 +103,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             </div>
 
             {/* Строка 2, Колонка 2: Текст */}
-            <div style={{ fontWeight: 800, fontSize: '14px', textTransform: 'uppercase', lineHeight: 1.4, maxWidth: '850px' }}>
-              ДАННЫЙ САЙТ НИЧЕГО НЕ НАВЯЗЫВАЕТ И НЕ ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И НЕ ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ УЛУЧШЕНИЯ СЕРВИСА &lt;333* ИНН 231222682431
+            <div style={{ fontWeight: 800, fontSize: '14px', textTransform: 'uppercase', lineHeight: 1.4, maxWidth: '850px', textAlign: 'justify' // Выравнивание по ширине 
+            }}>
+              ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333* ИНН&nbsp;231222682431
             </div>
           </footer>
         )}
