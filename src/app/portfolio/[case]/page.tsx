@@ -2,30 +2,43 @@
 import { useParams } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
 
-// Имитация данных (потом можно вынести в отдельный файл или API)
+// Те же данные
 const projectsData: any = {
   'asiya-site': {
-    title: 'САЙТ ДЛЯ АСИИ',
+    title: 'сайт для Асии',
     year: '2025',
     client: 'ASIYA',
     task: 'DESIGN, FRONTEND, BACKEND',
     desc: 'ПОЛНАЯ РАЗРАБОТКА ЭКОСИСТЕМЫ ДЛЯ АРТИСТА: ТРЕКИ, КОНЦЕРТЫ, МЕРЧ. МИНИМАЛИСТИЧНЫЙ ИНТЕРФЕЙС С АКЦЕНТОМ НА КОНТЕНТ.',
-    tags: ['NEXT.JS', 'TYPESCRIPT', 'GSAP']
   },
   'creed-rings': {
-    title: 'КОЛЬЦА ДЛЯ КРИДА',
+    title: 'кольца для Крида',
     year: '2025',
     client: 'EGOR CREED',
     task: 'DESIGN, 3D MODELING, PRODUCTION',
     desc: 'РАЗРАБОТКА УНИКАЛЬНЫХ ЮВЕЛИРНЫХ ИЗДЕЛИЙ. ОТ ЭСКИЗА ДО ФИНАЛЬНОЙ УПАКОВКИ И ЛОГИСТИКИ.',
-    tags: ['RHINO', 'BLENDER', 'PRODUCTION']
+  },
+  'asiya-merch': {
+    title: 'мерч для Асии',
+    year: '2024',
+    client: 'ASIYA',
+    task: 'DESIGN, MERCH',
+    desc: 'ДИЗАЙН ПРИНТОВ И БИРОК ДЛЯ НОВОЙ КОЛЛЕКЦИИ МЕРЧА.',
+  },
+  'pins-bans': {
+    title: 'значки PINS-BANS',
+    year: '2025',
+    client: 'PINS-BANS',
+    task: 'PRODUCTION',
+    desc: 'СЕРИЯ ЛИМИТИРОВАННЫХ ПИНОВ С УНИКАЛЬНЫМ ДИЗАЙНОМ.',
   }
 };
 
 export default function CasePage() {
   const params = useParams();
-  const id = params.id as string;
-  const project = projectsData[id] || projectsData['asiya-site'];
+  // Теперь берем case, потому что папка называется [case]
+  const caseId = params.case as string; 
+  const project = projectsData[caseId] || projectsData['asiya-site'];
 
   const InfoRow = ({ label, value }: { label: string, value: string }) => (
     <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
@@ -49,7 +62,7 @@ export default function CasePage() {
         
         {/* ТЕХНИЧЕСКИЙ ПАСПОРТ КЕЙСА */}
         <div style={{ maxWidth: '600px', width: '100%' }}>
-          <InfoRow label="ПРОЕКТ" value={project.title} />
+          <InfoRow label="ПРОЕКТ" value={project.title.toUpperCase()} />
           <InfoRow label="КЛИЕНТ" value={project.client} />
           <InfoRow label="ЗАДАЧА" value={project.task} />
           <InfoRow label="ГОД" value={project.year} />
@@ -61,7 +74,7 @@ export default function CasePage() {
           </div>
         </div>
 
-        {/* ГЛАВНЫЙ ВИЗУАЛ */}
+        {/* ГЛАВНЫЙ ВИЗУАЛ С КРЕСТИКАМИ */}
         <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#e5e5e5', padding: '20px', boxSizing: 'border-box' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '24px' }}>+</div>
           <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '24px' }}>+</div>
@@ -69,17 +82,8 @@ export default function CasePage() {
           <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '24px' }}>+</div>
           
           <div style={{ width: '100%', height: '100%', backgroundColor: '#d0d0d0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontWeight: 800, opacity: 0.2, fontSize: '24px' }}>[ MAIN_VISUAL_01 ]</span>
+            <span style={{ fontWeight: 800, opacity: 0.2, fontSize: '24px' }}>[ VISUAL_DATA_01 ]</span>
           </div>
-        </div>
-
-        {/* СЕТКА ДОПОЛНИТЕЛЬНЫХ ИЗОБРАЖЕНИЙ */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '60px' }}>
-          {[2, 3].map(i => (
-            <div key={i} style={{ position: 'relative', width: '100%', aspectRatio: '4/3', backgroundColor: '#e5e5e5' }}>
-               <div style={{ position: 'absolute', top: 0, left: 0, fontWeight: 300, fontSize: '14px', padding: '5px' }}>+{i}</div>
-            </div>
-          ))}
         </div>
       </div>
     </div>
