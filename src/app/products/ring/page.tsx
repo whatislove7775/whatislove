@@ -3,88 +3,199 @@ import { useState } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 
-const Dots = () => <div style={{ flex: 1, borderBottom: '2px dotted #000', margin: '0 5px 4px 5px' }} />;
+// Идеальная пунктирная линия для выравнивания
+const DottedLine = () => (
+  <div style={{ 
+    flex: 1, 
+    borderBottom: '2px dotted #000', 
+    margin: '0 8px', 
+    position: 'relative', 
+    top: '-4px',
+    opacity: 0.8 
+  }}></div>
+);
 
-export default function RingProductPage() {
-  const [selectedSize, setSelectedSize] = useState<number>(17);
+export default function ProductPage() {
+  const [selectedSize, setSelectedSize] = useState(17);
   const addItem = useCartStore((state) => state.addItem);
 
+  const handleAddToCart = () => {
+    addItem({
+      id: 'ring-1',
+      name: 'кольцо <3',
+      price: 1598,
+      size: selectedSize,
+      quantity: 1
+    });
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-      <Breadcrumbs path={[
-        { name: 'PRODUCT$', href: '/products', icon: '📦' },
-        { name: 'КОЛЬЦО <3', icon: '⚠' }
-      ]} />
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1 }}>
+      
+      {/* НАВИГАЦИЯ */}
+      <div style={{ width: '100%', alignSelf: 'flex-start' }}>
+        <Breadcrumbs path={[
+          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+          { name: 'PRODUCT$', href: '/products', icon: '📦' },
+          { name: 'КОЛЬЦО <3', icon: '💍' }
+        ]} />
+      </div>
 
-      <div style={{ display: 'flex', gap: '40px' }}>
-
-        {/* ЛЕВАЯ ЧАСТЬ - Фото + миниатюры */}
-        <div style={{ display: 'flex' }}>
-          <div style={{ width: '350px', height: '350px', border: '1px solid #000', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ position: 'absolute', top: '-10px', left: '-5px', fontWeight: 300 }}>+</div>
-            <div style={{ position: 'absolute', top: '-10px', right: '-5px', fontWeight: 300 }}>+</div>
-            <div style={{ position: 'absolute', bottom: '-10px', left: '-5px', fontWeight: 300 }}>+</div>
-            <div style={{ position: 'absolute', bottom: '-10px', right: '-5px', fontWeight: 300 }}>+</div>
-            <img src="/product-cat.svg" alt="ring" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
+      {/* ОСНОВНОЙ БЛОК ТОВАРА */}
+      <div style={{ 
+        display: 'flex', 
+        width: '100%', 
+        gap: '60px', 
+        marginTop: '30px',
+        alignItems: 'flex-start',
+        flexWrap: 'wrap' // Для адаптивности на мелких экранах
+      }}>
+        
+        {/* ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ */}
+        <div style={{ display: 'flex', gap: '15px', flex: '1 1 45%', minWidth: '350px' }}>
+          
+          {/* Главное фото */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ position: 'relative', width: '100%' }}>
+              {/* Крестики по углам */}
+              <div style={{ position: 'absolute', top: -20, left: -10, fontSize: '24px', fontWeight: 300, lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', top: -20, right: -10, fontSize: '24px', fontWeight: 300, lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: -15, left: -10, fontSize: '24px', fontWeight: 300, lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: -15, right: -10, fontSize: '24px', fontWeight: 300, lineHeight: 1 }}>+</div>
+              
+              {/* Серый квадрат (заглушка) / Сюда вставь тег <img> с твоей фоткой кольца */}
+              <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
+            </div>
+            {/* Надпись под главным фото */}
+            <div style={{ textAlign: 'center', marginTop: '20px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+          {/* Вертикальные миниатюры (4 штуки) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '80px', flexShrink: 0 }}>
             {[1, 2, 3, 4].map(i => (
-              <div key={i} style={{ width: '60px', flex: 1, border: '1px solid #000', borderLeft: 'none', borderBottom: i === 4 ? '1px solid #000' : 'none', backgroundColor: '#e5e5e5' }}></div>
+              <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
             ))}
           </div>
+
         </div>
 
-        {/* ПРАВАЯ ЧАСТЬ - Описание (Один размер шрифта 14px везде) */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: '450px' }}>
-
-          <div style={{ display: 'flex', alignItems: 'flex-end', fontWeight: 700 }}>
-            <span style={{ textTransform: 'lowercase' }}>кольцо&lt;3</span>
-            <Dots />
-            <span style={{ color: 'red' }}>1.598₽</span>
-          </div>
-          <div style={{ textAlign: 'right', fontWeight: 700, textDecoration: 'line-through', textDecorationColor: 'red', marginTop: '2px' }}>
-            <span style={{ color: '#000' }}>3.600₽</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', fontWeight: 700, marginTop: '20px' }}>
-            <Dots /><span style={{ textTransform: 'lowercase' }}>made.with.love</span><Dots />
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '10px' }}>
-            <img src="/desc-cat.svg" alt="cat" style={{ width: '80px', flexShrink: 0 }} />
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '15px', fontWeight: 700 }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'flex-end' }}><Dots /><span style={{ textTransform: 'lowercase' }}>материал</span></div>
-                <div style={{ textAlign: 'right', fontWeight: 400, marginTop: '2px' }}>хирургическая сталь</div>
-              </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'flex-end' }}><Dots /><span style={{ textTransform: 'lowercase' }}>доставка</span></div>
-                <div style={{ textAlign: 'right', fontWeight: 400, marginTop: '2px' }}>по всему РФ+СНГ</div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'flex-end', fontWeight: 700, marginTop: '20px' }}>
-            <Dots /><span style={{ textTransform: 'lowercase' }}>выбери размер</span>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '20px', fontWeight: 700 }}>
-            {[16, 17, 18, 19].map((size) => (
-              <span key={size} onClick={() => setSelectedSize(size)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                [ <span style={{ color: selectedSize === size ? 'red' : '#000', border: selectedSize === size ? '1px solid red' : 'none', borderRadius: '50%', padding: '2px 4px', margin: '0 4px' }}>
-                  {size}
-                </span> ]
+        {/* ПРАВАЯ КОЛОНКА: ИНФО */}
+        <div style={{ flex: '1 1 45%', minWidth: '350px', display: 'flex', flexDirection: 'column' }}>
+          
+          {/* Заголовок и Цена */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '15px' }}>
+            <span style={{ fontWeight: 800, fontSize: '18px' }}>кольцо&lt;3</span>
+            <DottedLine />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1 }}>
+              <span style={{ color: '#d32f2f', fontWeight: 800, fontSize: '22px' }}>1.598₽</span>
+              <span style={{ 
+                fontWeight: 800, 
+                fontSize: '14px', 
+                textDecoration: 'line-through', 
+                textDecorationColor: '#d32f2f', 
+                textDecorationThickness: '2px', 
+                marginTop: '6px' 
+              }}>
+                3.600₽
               </span>
-            ))}
+            </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', paddingTop: '40px' }}>
-            <div style={{ fontWeight: 400, textTransform: 'lowercase', lineHeight: '1.4' }}>
-              произведём....<br/>упакуем.......<br/>и доставим....
+          {/* made.with.love */}
+          <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '20px' }}>
+            <DottedLine />
+            <span style={{ fontWeight: 800, fontSize: '12px', margin: '0 10px' }}>made.with.love</span>
+            <DottedLine />
+          </div>
+
+          {/* ASCII Кот и Характеристики (Идеально выровненные) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '13px', lineHeight: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>... /\_/\ .. ♡</span>
+              <DottedLine />
+              <span style={{ fontWeight: 800, textAlign: 'right' }}>материал</span>
             </div>
-            <button
-              onClick={() => addItem({ id: 'ring-01', name: 'кольцо <3', price: 1598, size: selectedSize, quantity: 1 })}
-              style={{ background: 'transparent', border: 'none', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0 }}
+            
+            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'> ( •  • ) <'}</span>
+              <DottedLine />
+              <span style={{ fontWeight: 500, textAlign: 'right' }}>хирургическая сталь</span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'...   |    | \\_'}</span>
+              <DottedLine />
+              <span></span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'...   | |  |  )_'}</span>
+              <DottedLine />
+              <span style={{ fontWeight: 800, textAlign: 'right' }}>доставка</span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'```L--L-- / /````'}</span>
+              <DottedLine />
+              <span style={{ fontWeight: 500, textAlign: 'right' }}>по всему РФ+СНГ</span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'........ \\\\ '}</span>
+              <DottedLine />
+              <span></span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre' }}>{'......... V '}</span>
+              <DottedLine />
+              <span style={{ fontWeight: 800, textAlign: 'right' }}>выбери размер</span>
+            </div>
+          </div>
+
+          {/* Выбор размера (Красный круг как в макете) */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', marginTop: '30px', fontWeight: 800, fontSize: '16px' }}>
+            {[16, 17, 18, 19].map((size) => {
+              const isSelected = selectedSize === size;
+              return (
+                <span 
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', userSelect: 'none' }}
+                >
+                  [ <span style={{ 
+                    margin: '0 4px', 
+                    color: isSelected ? '#d32f2f' : '#000',
+                    border: isSelected ? '1.5px solid #d32f2f' : '1.5px solid transparent',
+                    borderRadius: '50%',
+                    padding: '2px 5px',
+                    lineHeight: 1
+                  }}>
+                    {size}
+                  </span> ]
+                </span>
+              );
+            })}
+          </div>
+
+          {/* Нижний блок: Текст слева, Кнопка справа */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '40px' }}>
+            <div style={{ fontWeight: 500, fontSize: '13px', lineHeight: 1.4 }}>
+              произведём....<br/>
+              упакуем.......<br/>
+              и доставим....
+            </div>
+            <button 
+              onClick={handleAddToCart}
+              style={{ 
+                background: 'transparent', 
+                border: 'none', 
+                fontWeight: 800, 
+                fontSize: '15px', 
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                padding: 0
+              }}
             >
               [+добавить в 🛒'y]
             </button>
@@ -92,6 +203,7 @@ export default function RingProductPage() {
 
         </div>
       </div>
+      
     </div>
   );
 }
