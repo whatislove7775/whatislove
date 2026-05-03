@@ -27,13 +27,16 @@ export default function CheckoutPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // ОБНОВЛЕННАЯ И УМНАЯ ЗАГРУЗКА ВИДЖЕТА
   useEffect(() => {
     const container = document.getElementById('cdek-map');
     if (!container || items.length === 0) return;
 
     const init = () => {
-      if (!(window as any)._cdekWidgetLoaded && container.innerHTML === '') {
-        (window as any)._cdekWidgetLoaded = true;
+      // Убрали проверку window._cdekWidgetLoaded.
+      // Теперь мы просто проверяем, пустой ли текущий контейнер. 
+      // Если пустой — значит мы только что перешли на страницу и надо рисовать карту.
+      if (container.innerHTML === '') {
         new (window as any).CDEKWidget({
           from: 'Москва',
           root: 'cdek-map',
@@ -57,13 +60,20 @@ export default function CheckoutPage() {
       }
     };
 
+    // Проверяем, загружен ли сам скрипт от СДЭКа
     if ((window as any).CDEKWidget) {
       init();
     } else {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/@cdek-it/widget@3';
-      script.onload = init;
-      document.body.appendChild(script);
+      // Ищем скрипт в DOM, чтобы не дублировать теги при переключениях страниц
+      const existingScript = document.querySelector('script[src="https://cdn.jsdelivr.net/npm/@cdek-it/widget@3"]');
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@cdek-it/widget@3';
+        script.onload = init;
+        document.body.appendChild(script);
+      } else {
+        existingScript.addEventListener('load', init);
+      }
     }
   }, [items.length]);
 
@@ -114,26 +124,12 @@ export default function CheckoutPage() {
     }
   };
 
-  // ОБНОВЛЕННЫЙ ЭКРАН УСПЕХА
-if (isSuccess) {
+  if (isSuccess) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        flex: 1, // Работает как пружина, занимает ровно доступное место
-        width: '100%',
-        textAlign: 'center' 
-      }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '70vh', width: '100%', textAlign: 'center' }}>
         <h1 style={{ fontWeight: 800, textTransform: 'uppercase' }}>ЗАКАЗ УСПЕШНО ОФОРМЛЕН! &lt;3</h1>
         <p style={{ fontWeight: 500, marginTop: '20px' }}>Мы свяжемся с тобой в Telegram для подтверждения.</p>
-        <Link href="/" style={{ 
-          marginTop: '40px', 
-          fontWeight: 700, 
-          textDecoration: 'none', 
-          color: '#000' 
-        }}>
+        <Link href="/" style={{ marginTop: '40px', fontWeight: 700, textDecoration: 'none', color: '#000' }}>
           [ вернуться в магазин ]
         </Link>
       </div>
