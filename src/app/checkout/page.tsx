@@ -115,14 +115,14 @@ export default function CheckoutPage() {
   };
 
   // ОБНОВЛЕННЫЙ ЭКРАН УСПЕХА
-  if (isSuccess) {
+if (isSuccess) {
     return (
       <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        height: '70vh', // Ограничиваем высоту, чтобы не было скролла
+        flex: 1, // Работает как пружина, занимает ровно доступное место
         width: '100%',
         textAlign: 'center' 
       }}>
@@ -133,7 +133,6 @@ export default function CheckoutPage() {
           fontWeight: 700, 
           textDecoration: 'none', 
           color: '#000' 
-          // Убрали border и padding
         }}>
           [ вернуться в магазин ]
         </Link>
