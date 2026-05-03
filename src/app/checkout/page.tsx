@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
-import Script from 'next/script';
 import Link from 'next/link';
 
 export default function CheckoutPage() {
@@ -11,29 +10,36 @@ export default function CheckoutPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const initCdekWidget = () => {
-    if (typeof window !== 'undefined' && (window as any).CDEKWidget) {
-      const mapContainer = document.getElementById('cdek-map');
-      if (mapContainer) mapContainer.innerHTML = '';
-
-      new (window as any).CDEKWidget({
-        from: 'Москва',
-        root: 'cdek-map',
-        apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', 
-        servicePath: '/api/cdek',
-        defaultLocation: 'Москва',
-        onChoose: (type: any, tariff: any, addressInfo: any) => {
-          setAddress(addressInfo.address || addressInfo.name || 'Выбран ПВЗ');
-        }
-      });
-    }
-  };
-
+  // Безопасная загрузка виджета СДЭК (защита от дублирования внизу страницы)
   useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any).CDEKWidget) {
-      initCdekWidget();
+    const container = document.getElementById('cdek-map');
+    if (!container || items.length === 0) return; // Ждем пока появится блок карты
+
+    const init = () => {
+      if (!(window as any)._cdekWidgetLoaded && container.innerHTML === '') {
+        (window as any)._cdekWidgetLoaded = true;
+        new (window as any).CDEKWidget({
+          from: 'Москва',
+          root: 'cdek-map',
+          apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', // Твой рабочий ключ Яндекса
+          servicePath: '/api/cdek',
+          defaultLocation: 'Москва',
+          onChoose: (type: any, tariff: any, addressInfo: any) => {
+            setAddress(addressInfo.address || addressInfo.name || 'Выбран ПВЗ');
+          }
+        });
+      }
+    };
+
+    if ((window as any).CDEKWidget) {
+      init();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@cdek-it/widget@3';
+      script.onload = init;
+      document.body.appendChild(script);
     }
-  }, []);
+  }, [items.length]); // Перезапускаем, если корзина обновилась
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -82,8 +88,7 @@ export default function CheckoutPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center' }}>
-      <Script src="https://cdn.jsdelivr.net/npm/@cdek-it/widget@3" strategy="afterInteractive" onLoad={initCdekWidget} />
-
+      
       <div style={{ width: '100%' }}>
         <Breadcrumbs path={[
           { name: 'PRODUCT$', href: '/products', icon: '📦' },
@@ -98,47 +103,53 @@ export default function CheckoutPage() {
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
             
-            {/* Отрисовка товаров в корзине */}
             {items.map((item, idx) => (
               <div key={`${item.id}-${item.size}-${idx}`} style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
                 
-                {/* Идеальная рамка из макета */}
+                {/* Идеальная рамка с крестиками прямо на границах */}
                 <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', border: '1px solid #000', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
-                  <div style={{ position: 'absolute', top: '-7px', left: '-4.5px', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
-                  <div style={{ position: 'absolute', top: '-7px', right: '-4.5px', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
-                  <div style={{ position: 'absolute', bottom: '-7.5px', left: '-4.5px', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
-                  <div style={{ position: 'absolute', bottom: '-7.5px', right: '-4.5px', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                  <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                  <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
                   <span style={{ fontWeight: 800, fontSize: '20px' }}>3&lt;</span>
                 </div>
                 
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', fontSize: '14px', textTransform: 'lowercase' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
                     <span style={{ fontSize: '16px' }}>{item.name}</span>
-                    <span>
+                    
+                    {/* Функциональные плюсики и минусики */}
+                    <span style={{ userSelect: 'none' }}>
                       {item.quantity} 
-                      <span onClick={() => updateQuantity(item.id, item.size, 1)} style={{ cursor: 'pointer', margin: '0 4px' }}>[+]</span>
-                      <span onClick={() => updateQuantity(item.id, item.size, -1)} style={{ cursor: 'pointer' }}>[-]</span>
+                      <span onClick={() => updateQuantity(item.id, item.size, 1)} style={{ cursor: 'pointer', margin: '0 4px', color: '#000' }}>[+]</span>
+                      <span onClick={() => updateQuantity(item.id, item.size, -1)} style={{ cursor: 'pointer', color: '#000' }}>[-]</span>
                     </span>
                   </div>
+                  
+                  {/* РЕАЛЬНАЯ ЦЕНА (Умножаем на количество) */}
                   <div style={{ fontWeight: 800, marginTop: '5px' }}>
-                    {item.price}₽ со скидкой
+                    {item.price * item.quantity}₽ со скидкой
                   </div>
+                  
                   <div style={{ marginTop: '15px', lineHeight: '1.4' }}>
                     хирургическая сталь<br/>
                     размер:<br/>
                     <span style={{ fontWeight: 800, fontSize: '15px' }}>
-                      {[16, 17, 18, 19].map((s) => (
-                        <span key={s} style={{ color: item.size === s ? 'red' : '#000' }}>
-                          [{item.size === s ? `(${s})` : s}]
-                        </span>
-                      ))}
+                      {[16, 17, 18, 19].map((s) => {
+                        const isSelected = item.size === s;
+                        return (
+                          <span key={s} style={{ color: isSelected ? 'red' : '#000' }}>
+                            [{isSelected ? `(${s})` : s}]
+                          </span>
+                        );
+                      })}
                     </span>
                   </div>
                 </div>
               </div>
             ))}
 
-            {/* Форма доставки */}
             <div style={{ fontWeight: 700, marginBottom: '20px', textTransform: 'lowercase' }}>данные для доставки:</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               
