@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <div style={{ width: '100%', maxWidth: '900px', padding: '20px', margin: '0 auto', fontFamily: 'inherit' }}>
       <Breadcrumbs path={[
         { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-        { name: 'ПОЛИТИКА', icon: '🔒' }
+        { name: 'ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ', icon: '🔒' }
       ]} />
       
       <div style={{ marginTop: '40px', fontWeight: 500, lineHeight: '1.6', textAlign: 'left', fontSize: '13px' }}>
