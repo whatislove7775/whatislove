@@ -29,11 +29,11 @@ export const useCartStore = create<CartStore>((set, get) => ({
   removeItem: (id, size) => set((state) => ({
     items: state.items.filter((i) => !(i.id === id && i.size === size))
   })),
+  // Вот эта функция отвечает за плюсики и минусики:
   updateQuantity: (id, size, delta) => set((state) => ({
     items: state.items.map(i => {
       if (i.id === id && i.size === size) {
-        // Не даем сделать количество меньше 1
-        const newQuantity = Math.max(1, i.quantity + delta);
+        const newQuantity = Math.max(1, i.quantity + delta); // не даем уйти в ноль
         return { ...i, quantity: newQuantity };
       }
       return i;
