@@ -5,7 +5,7 @@ import { useCartStore } from '@/store/cartStore';
 
 export default function RingPage() {
   const [selectedSize, setSelectedSize] = useState(17);
-  const addItem = useCartStore((state) => state.addItem);
+  const addItem = useCartStore((state: any) => state.addItem);
 
   const handleAddToCart = () => {
     addItem({
@@ -17,7 +17,7 @@ export default function RingPage() {
     });
   };
 
-  // Компонент для строки с идеально ровными краями
+  // Компонент для строки с идеально ровными текстовыми краями
   const InfoRow = ({ label, value, isBold = false, isRed = false }: any) => (
     <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
       <span style={{ fontWeight: 800 }}>{label}</span>
@@ -45,7 +45,7 @@ export default function RingPage() {
         display: 'flex', 
         width: '100%', 
         gap: '60px', 
-        marginTop: '20px',
+        marginTop: '30px',
         alignItems: 'flex-start',
         paddingRight: '140px',
         boxSizing: 'border-box'
@@ -53,9 +53,7 @@ export default function RingPage() {
         
         {/* ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ */}
         <div style={{ display: 'flex', gap: '20px', flexShrink: 0, width: '480px' }}>
-          
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            {/* Крестики с отступом от фото */}
             <div style={{ position: 'relative', width: '100%', padding: '15px', boxSizing: 'border-box' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
               <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
@@ -67,7 +65,6 @@ export default function RingPage() {
             <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
           </div>
 
-          {/* Миниатюры */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '80px', flexShrink: 0, paddingTop: '15px' }}>
             {[1, 2, 3, 4].map(i => (
               <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
@@ -75,12 +72,11 @@ export default function RingPage() {
           </div>
         </div>
 
-        {/* ПРАВАЯ КОЛОНКА: ИНФО */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '380px', fontSize: '14px' }}>
+        {/* ПРАВАЯ КОЛОНКА: ИНФО (С подгоном высоты к верхушке фото) */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '380px', fontSize: '14px', marginTop: '15px' }}>
           
           <InfoRow label="наименование" value="кольцо <3" isBold={true} />
           
-          {/* Специальная строка для цены с зачеркиванием */}
           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
             <span style={{ fontWeight: 800 }}>цена</span>
             <div style={{ margin: '0 8px', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, position: 'relative', top: '-1px' }}>
@@ -92,7 +88,6 @@ export default function RingPage() {
             </div>
           </div>
 
-          {/* сделано с любовью */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
             <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>....................................................................................................</div>
             <span style={{ margin: '0 10px', fontWeight: 500 }}>сделано с любовью</span>
