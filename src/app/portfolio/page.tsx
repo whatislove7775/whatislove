@@ -11,7 +11,9 @@ const projects = [
 export default function PortfolioPage() {
   return (
     <div style={{ width: '100%', maxWidth: '1200px', padding: '20px' }}>
-      <Breadcrumbs path={[{ name: 'PORTFOL1O', icon: '📁' }]} />
+      <Breadcrumbs path={[
+      { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+      { name: 'PORTFOL1O', icon: '📁' }]} />
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '40px', marginTop: '20px' }}>
         {projects.map((proj, i) => (
