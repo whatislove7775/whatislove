@@ -8,13 +8,21 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const showCart = pathname.startsWith('/products');
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', color: '#000', display: 'flex', flexDirection: 'column', minHeight: '100vh', margin: 0 }}>
+    <div style={{ 
+      fontFamily: 'Inter, sans-serif', 
+      fontSize: '14px', 
+      color: '#000', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      flex: 1, // ЗАМЕНИЛИ minHeight НА flex: 1 (он идеально растянется внутри body)
+      width: '100%' 
+    }}>
       <header style={{ textAlign: 'center', padding: '20px 0', fontWeight: 500, flexShrink: 0 }}>
         whatislove ©
       </header>
 
       <main style={{
-        flex: 1,
+        flex: 1, // Главная пружина: расталкивает шапку и футер
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
@@ -22,7 +30,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         margin: '0 auto',
         position: 'relative',
         padding: '20px',
-        paddingRight: showCart ? '160px' : '20px' // Отступ под корзину!
+        paddingRight: showCart ? '160px' : '20px',
+        boxSizing: 'border-box' // ГАРАНТИЯ, что padding не выдавит контент за экран
       }}>
         {showCart && <Cart />}
         {children}
