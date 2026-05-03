@@ -15,15 +15,16 @@ export default function Breadcrumbs({ path }: { path: Breadcrumb[] }) {
     <div style={{ 
       display: 'flex', 
       justifyContent: 'space-between', 
-      alignItems: 'center', // ЖЕСТКОЕ ВЫРАВНИВАНИЕ ПО ВЕРТИКАЛИ
+      alignItems: 'center', 
       width: '100%',
       fontWeight: 800,
       textTransform: 'uppercase',
       fontSize: '14px',
-      marginBottom: '20px'
+      marginBottom: '20px',
+      position: 'relative', // ВЫТАЩИЛИ ПОВЕРХ ВСЕГО
+      zIndex: 50            // ТЕПЕРЬ 100% КЛИКАБЕЛЬНО
     }}>
       
-      {/* Левая часть: Назад и Путь */}
       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
         <span onClick={() => router.back()} style={{ cursor: 'pointer', marginRight: '10px' }}>
           [&lt;]
@@ -44,7 +45,6 @@ export default function Breadcrumbs({ path }: { path: Breadcrumb[] }) {
         ))}
       </div>
 
-      {/* Правая часть: Домой и Закрыть */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <Link href="/" style={{ textDecoration: 'none', color: '#000' }}>[ 🏠 ]</Link>
         <span onClick={() => router.back()} style={{ cursor: 'pointer' }}>[x]</span>
