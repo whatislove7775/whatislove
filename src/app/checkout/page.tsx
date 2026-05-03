@@ -6,22 +6,78 @@ import { useCartStore } from '@/store/cartStore';
 export default function CheckoutPage() {
   const items = useCartStore((state: any) => state.items) || [];
   
-  // ЖЕСТКО ГОВОРИМ TYPESCRIPT, ЧТО ЭТО ЧИСЛО
+  // Вытягиваем методы для изменения корзины (если они есть)
+  const updateQuantity = useCartStore((state: any) => state.updateQuantity);
+  const updateSize = useCartStore((state: any) => state.updateSize);
+  const removeItem = useCartStore((state: any) => state.removeItem);
+
   const storeTotal = useCartStore((state: any) => state.totalPrice);
   const totalPrice: number = typeof storeTotal === 'function' ? storeTotal() : Number(storeTotal || 0);
     
   const [isLoading, setIsLoading] = useState(false);
-  
   const [city, setCity] = useState('');
   const [delivery, setDelivery] = useState('');
   const [address, setAddress] = useState('');
   const [deliveryCost, setDeliveryCost] = useState<number>(0);
 
+  // Загрузка официального виджета СДЭК
   useEffect(() => {
     if (delivery === 'СДЭК') {
-      console.log('Загрузка виджета СДЭК для города:', city);
+      const scriptId = 'cdek-widget-script';
+      if (!document.getElementById(scriptId)) {
+        const script = document.createElement('script');
+        script.id = scriptId;
+        script.src = 'https://widget.cdek.ru/widget/widjet.js';
+        script.onload = () => {
+          // @ts-ignore
+          if (window.ISDEKWidjet) {
+            // @ts-ignore
+            new window.ISDEKWidjet({
+              defaultCity: city || 'Москва',
+              cityFrom: 'Москва',
+              link: 'cdek-map',
+              onChoose: (info: any) => {
+                setAddress(`ПВЗ СДЭК: г. ${info.cityName}, ${info.PVZ.Address}`);
+              }
+            });
+          }
+        };
+        document.body.appendChild(script);
+      } else {
+        // Если скрипт уже загружен, перерисовываем карту
+        const mapDiv = document.getElementById('cdek-map');
+        if (mapDiv) mapDiv.innerHTML = '';
+        // @ts-ignore
+        if (window.ISDEKWidjet) {
+          // @ts-ignore
+          new window.ISDEKWidjet({
+            defaultCity: city || 'Москва',
+            cityFrom: 'Москва',
+            link: 'cdek-map',
+            onChoose: (info: any) => {
+              setAddress(`ПВЗ СДЭК: г. ${info.cityName}, ${info.PVZ.Address}`);
+            }
+          });
+        }
+      }
     }
   }, [delivery, city]);
+
+  const handleIncrease = (id: string, currentQty: number) => {
+    if (updateQuantity) updateQuantity(id, currentQty + 1);
+  };
+
+  const handleDecrease = (id: string, currentQty: number) => {
+    if (currentQty > 1 && updateQuantity) {
+      updateQuantity(id, currentQty - 1);
+    } else if (currentQty === 1 && removeItem) {
+      removeItem(id);
+    }
+  };
+
+  const handleSizeChange = (id: string, newSize: number) => {
+    if (updateSize) updateSize(id, newSize);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,7 +88,6 @@ export default function CheckoutPage() {
 
     try {
       const formData = new FormData(e.currentTarget);
-      
       const orderData = {
         name: formData.get('name'),
         email: formData.get('email'),
@@ -52,7 +107,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({ orderData })
       });
 
-      alert('Заказ успешно оформлен! Мы свяжемся с вами.');
+      alert('Заказ успешно оформлен!');
     } catch (error) {
       alert('Ошибка при оформлении заказа');
     } finally {
@@ -75,7 +130,7 @@ export default function CheckoutPage() {
         <div style={{ width: '100%', maxWidth: '400px' }}>
 
           {items.map((item: any) => (
-            <div key={item.id} style={{ display: 'flex', gap: '20px', marginBottom: '30px', alignItems: 'center' }}>
+            <div key={item.id} style={{ display: 'flex', gap: '20px', marginBottom: '30px', alignItems: 'flex-start' }}>
               
               <div style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
@@ -88,7 +143,11 @@ export default function CheckoutPage() {
               <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', lineHeight: '1.4' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                   <span style={{ fontWeight: 800, fontSize: '16px' }}>{item.name}</span>
-                  <span style={{ fontWeight: 800 }}>{item.quantity} [+] [-]</span>
+                  <span style={{ fontWeight: 800 }}>
+                    {item.quantity} 
+                    <span onClick={() => handleIncrease(item.id, item.quantity)} style={{ cursor: 'pointer', userSelect: 'none', marginLeft: '5px' }}>[+]</span> 
+                    <span onClick={() => handleDecrease(item.id, item.quantity)} style={{ cursor: 'pointer', userSelect: 'none', marginLeft: '3px' }}>[-]</span>
+                  </span>
                 </div>
                 
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline', fontWeight: 800, marginTop: '2px' }}>
@@ -100,7 +159,11 @@ export default function CheckoutPage() {
                 <div>размер:</div>
                 <div style={{ fontWeight: 800, marginTop: '2px', display: 'flex', alignItems: 'center' }}>
                   {[16, 17, 18, 19].map((size) => (
-                    <span key={size}>
+                    <span 
+                      key={size} 
+                      onClick={() => handleSizeChange(item.id, size)}
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                    >
                       {item.size === size ? (
                         <span style={{ color: '#d32f2f' }}>[({size})]</span>
                       ) : (
@@ -155,7 +218,7 @@ export default function CheckoutPage() {
             {delivery === 'СДЭК' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
                 <label>выберите пункт выдачи на карте:</label>
-                <div id="cdek-map" style={{ width: '100%', height: '300px', backgroundColor: '#f9f9f9', border: '1px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div id="cdek-map" style={{ width: '100%', height: '400px', backgroundColor: '#f9f9f9', border: '1px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ color: '#999' }}>[карта СДЭК загружается...]</span>
                 </div>
               </div>
@@ -163,31 +226,4 @@ export default function CheckoutPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
               <label>адрес (город, улица, дом, индекс / пункт выдачи)</label>
-              <input type="text" name="address" value={address} onChange={(e) => setAddress(e.target.value)} required style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none' }} />
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={isLoading || !address}
-              style={{ 
-                marginTop: '10px',
-                background: 'transparent', 
-                border: 'none', 
-                fontWeight: 800, 
-                fontSize: '15px', 
-                cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', 
-                fontFamily: 'inherit', 
-                opacity: (isLoading || !address) ? 0.5 : 1,
-                alignSelf: 'flex-start',
-                padding: 0
-              }}
-            >
-              {isLoading ? '[ОЖИДАНИЕ...]' : '[заказать] 📦'}
-            </button>
-          </form>
-
-        </div>
-      </div>
-    </div>
-  );
-}
+              <input type="text" name="address" value={address} onChange={(e) => setAddress(e
