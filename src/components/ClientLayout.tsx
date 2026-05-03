@@ -67,45 +67,67 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
               t.me/whatislove_r
             </a>
-            <div style={{ textTransform: 'uppercase', fontWeight: 500, maxWidth: '800px', margin: '0 auto' }}>
-              ДАННЫЙ САЙТ НИЧЕГО НЕ НАВЯЗЫВАЕТ И НЕ ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И НЕ ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ УЛУЧШЕНИЯ СЕРВИСА &lt;333*
+            <div style={{ 
+              fontWeight: 500, 
+              fontSize: '14px', 
+              textTransform: 'uppercase', 
+              lineHeight: 1.4, 
+              maxWidth: '800px', 
+              margin: '0 auto',
+              textAlign: 'justify' 
+            }}>
+              ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333*
             </div>
           </footer>
         ) : (
           <footer style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'auto 1fr', 
-            gridTemplateRows: 'auto auto',   
-            columnGap: '60px', 
-            rowGap: '20px',
-            padding: '20px 40px', 
             borderTop: '1px dashed #ccc',
             flexShrink: 0,
             width: '100%',
             boxSizing: 'border-box'
           }}>
-            {/* Строка 1, Колонка 1: Телеграм */}
-            <div style={{ fontWeight: 800, textTransform: 'uppercase' }}>
-              <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'none' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
-                t.me/whatislove_r
-              </a>
-            </div>
-
-            {/* Строка 1, Колонка 2: ПУСТАЯ БЛОК (чтобы текст снизу не съехал) */}
-            <div></div>
-
-            {/* Строка 2, Колонка 1: Ссылки */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 800, textTransform: 'uppercase' }}>
-              <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>ОФЕРТА / ПОЛИТИКА</Link>
-              <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>КОНФИДЕНЦИАЛЬНОСТИ</Link>
-              <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>/ ИНФО</Link>
-            </div>
-
-            {/* Строка 2, Колонка 2: Текст */}
-            <div style={{ fontWeight: 800, fontSize: '14px', textTransform: 'uppercase', lineHeight: 1.4, maxWidth: '850px', textAlign: 'justify' // Выравнивание по ширине 
+            {/* Контейнер 1200px для идеального выравнивания с main */}
+            <div style={{
+              display: 'grid', 
+              gridTemplateColumns: '260px 1fr', // Жесткая ширина левой колонки
+              gridTemplateRows: 'auto auto',   
+              columnGap: '40px', // Жесткий отступ
+              rowGap: '20px',
+              width: '100%',
+              maxWidth: '1200px',
+              margin: '0 auto',
+              padding: '20px',
+              boxSizing: 'border-box'
             }}>
-              ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333* ИНН&nbsp;231222682431
+              {/* Строка 1, Колонка 1: Телеграм */}
+              <div style={{ fontWeight: 800, textTransform: 'uppercase' }}>
+                <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'none' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
+                  t.me/whatislove_r
+                </a>
+              </div>
+
+              {/* Строка 1, Колонка 2: ПУСТО */}
+              <div></div>
+
+              {/* Строка 2, Колонка 1: Ссылки */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 800, textTransform: 'uppercase' }}>
+                <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>ОФЕРТА / ПОЛИТИКА</Link>
+                <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>КОНФИДЕНЦИАЛЬНОСТИ</Link>
+                <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>/ ИНФО</Link>
+              </div>
+
+              {/* Строка 2, Колонка 2: Текст (ТОЛЩИНА 500) */}
+              <div style={{ 
+                fontWeight: 500, // ВЕРНУЛИ 500
+                fontSize: '14px', 
+                textTransform: 'uppercase', 
+                lineHeight: 1.4, 
+                maxWidth: '850px',
+                textAlign: 'justify' 
+              }}>
+                ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333* ИНН&nbsp;231222682431
+              </div>
             </div>
           </footer>
         )}
