@@ -3,8 +3,38 @@ import { useState } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 
+// Цены вынесены в компонент, чтобы код был чище
+const ProductPrice = () => (
+  <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1.1 }}>
+    <span style={{ 
+      color: '#d32f2f', 
+      fontWeight: 800, 
+      position: 'absolute', 
+      top: '-15px', 
+      right: '-10px', 
+      transform: 'rotate(-5deg)',
+      backgroundColor: '#fff',
+      padding: '0 2px'
+    }}>
+      1.598₽
+    </span>
+    <span style={{ fontWeight: 800 }}>3.600₽</span>
+  </div>
+);
+
+// Вспомогательный компонент для строки кота
+const CatLine = ({ cat, ls = '0px', text = '', isBold = false }: { cat: string, ls?: string, text?: string, isBold?: boolean }) => (
+  <div style={{ display: 'flex', width: '100%', marginBottom: '-2px' }}>
+    {/* ls - letterSpacing для подгона кота */}
+    <span style={{ whiteSpace: 'pre', letterSpacing: ls, fontWeight: 500 }}>{cat}</span>
+    <div style={{ flex: 1, position: 'relative' }}>
+      <div style={{ position: 'absolute', bottom: '6px', left: 0, right: 0, borderBottom: '1.5px dotted #000', opacity: 0.8 }}></div>
+    </div>
+    <span style={{ fontWeight: isBold ? 800 : 500, paddingLeft: '8px', textAlign: 'right' }}>{text}</span>
+  </div>
+);
+
 export default function ProductPage() {
-  const [selectedSize, setSelectedSize] = useState(17);
   const addItem = useCartStore((state) => state.addItem);
 
   const handleAddToCart = () => {
@@ -12,7 +42,7 @@ export default function ProductPage() {
       id: 'ring-1',
       name: 'кольцо <3',
       price: 1598,
-      size: selectedSize,
+      size: 17,
       quantity: 1
     });
   };
@@ -24,8 +54,7 @@ export default function ProductPage() {
       <div style={{ width: '100%', alignSelf: 'flex-start' }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'PRODUCT$', href: '/products', icon: '📦' },
-          { name: 'КОЛЬЦО <3', icon: '💍' }
+          { name: 'ИНФО', icon: '❓' }
         ]} />
       </div>
 
@@ -36,7 +65,6 @@ export default function ProductPage() {
         gap: '40px', 
         marginTop: '20px',
         alignItems: 'flex-start',
-        paddingRight: '140px', // Блокировка от наезда корзины
         boxSizing: 'border-box'
       }}>
         
@@ -46,13 +74,11 @@ export default function ProductPage() {
           {/* Главное фото */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}>
-              {/* Крестики строго по углам */}
-              <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
-              
-              {/* Сюда вставишь <img ... /> */}
+              {/* Крестики по углам */}
+              <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
             </div>
             
             <div style={{ textAlign: 'center', marginTop: '20px', fontWeight: 800 }}>&lt;333*</div>
@@ -73,62 +99,43 @@ export default function ProductPage() {
           <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '15px' }}>
             <span style={{ fontWeight: 800 }}>кольцо&lt;3</span>
             <div style={{ flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div>
-            {/* Цены выровнены одна над другой */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1.1 }}>
-              <span style={{ color: '#d32f2f', fontWeight: 800 }}>1.598₽</span>
-              <span style={{ fontWeight: 800, textDecoration: 'line-through', textDecorationThickness: '1.5px' }}>
-                3.600₽
-              </span>
-            </div>
+            <ProductPrice />
           </div>
 
           {/* made.with.love */}
           <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '20px' }}>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', position: 'relative', top: '-1px' }}></div>
+            <div style={{ flex: 1, borderBottom: '1.5px dotted #000' }}></div>
             <span style={{ fontWeight: 800, margin: '0 10px' }}>made.with.love</span>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', position: 'relative', top: '-1px' }}></div>
+            <div style={{ flex: 1, borderBottom: '1.5px dotted #000' }}></div>
           </div>
 
           {/* ASCII Кот и Характеристики (ЕДИНЫЙ ТЕКСТОВЫЙ БЛОК) */}
-          <div style={{ 
+          <pre style={{ 
             width: '100%', 
-            whiteSpace: 'pre-wrap', 
+            whiteSpace: 'pre', 
+            fontFamily: 'inherit',
+            fontSize: '14px',
             lineHeight: '1.4', 
             fontWeight: 500,
-            overflow: 'hidden' 
+            overflow: 'hidden',
+            margin: 0
           }}>
-            <span style={{ letterSpacing: '0px' }}>... /\_/\ .. ♡</span>.................................................................... <span style={{ fontWeight: 800 }}>материал</span>{'\n'}
-            <span style={{ letterSpacing: '0px' }}>{'> ( •  • ) <'}</span>......................................................... хирургическая сталь{'\n'}
-            <span style={{ letterSpacing: '0px' }}>{`...   |    | \\_`}</span>............................................................................{'\n'}
-            <span style={{ letterSpacing: '0px' }}>{`...   | |  |  )_`}</span>.................................................................... <span style={{ fontWeight: 800 }}>доставка</span>{'\n'}
-            <span style={{ letterSpacing: '0px' }}>{`\`\`\`L--L-- / /\`\`\`\``}</span>............................................................. по всему РФ+СНГ{'\n'}
-            <span style={{ letterSpacing: '0px' }}>{`........ \\\\ `}</span>................................................................................{'\n'}
-            <span style={{ letterSpacing: '0px' }}>{`......... V `}</span>................................................................... <span style={{ fontWeight: 800 }}>выбери размер</span>
-          </div>
+            {/* ТУТ ВСТАВЛЯЕШЬ ОДНУ СТРОКУ КОДА С КОТОМ, ЧТОБЫ УБРАТЬ ВСЕ ПЕРЕНОСЫ ИЗ РЕДАКТОРА */}
+            <span style={{ fontWeight: 800 }}>материал</span><div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '0px' }}>... /\_/\ .. ♡</span>{'\n'}хирургическая сталь<div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '1px' }}>{'> ( •  • ) <'}</span>{'\n'}<div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '0px' }}>{`...   |    | \\_`}</span>{'\n'}<span style={{ fontWeight: 800 }}>доставка</span><div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '0px' }}>{`...   | |  |  )_`}</span>{'\n'}по всему РФ+СНГ<div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '1px' }}>{`\`\`\`L--L-- / /\`\`\`\``}</span>{'\n'}<div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '2.5px' }}>{`........ \\\\ `}</span>{'\n'}<span style={{ fontWeight: 800 }}>выбери размер</span><div style={{ display: 'inline-block', flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div><span style={{ letterSpacing: '2.6px' }}>{`......... V `}</span>
+          </pre>
 
           {/* Выбор размера [16][(17)][18][19] */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '5px', fontWeight: 800 }}>
-            {[16, 17, 18, 19].map((size) => {
-              const isSelected = selectedSize === size;
-              return (
-                <span 
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  style={{ cursor: 'pointer', userSelect: 'none' }}
-                >
-                  {isSelected ? (
-                    <span style={{ color: '#d32f2f' }}>[({size})]</span>
-                  ) : (
-                    <span>[{size}]</span>
-                  )}
-                </span>
-              );
-            })}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px', fontWeight: 800 }}>
+            <span>[16]</span>
+            <span style={{ color: '#d32f2f' }}>[(17)]</span>
+            <span>[18]</span>
+            <span>[19]</span>
           </div>
 
-          {/* Нижний блок: Текст слева, Кнопка справа */}
+          {/* Нижний блок: Оставляем, как было (фото 1) */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '40px' }}>
-            <div style={{ fontWeight: 500, lineHeight: 1.4 }}>
+            {/* Твой текстовый блок "произведём.... упакуем....... и доставим...." */}
+            <div style={{ fontWeight: 500, lineHeight: 1.4, textAlign: 'left' }}>
               произведём....<br/>
               упакуем.......<br/>
               и доставим....
