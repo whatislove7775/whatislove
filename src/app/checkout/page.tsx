@@ -3,50 +3,87 @@ import { useState, useEffect } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 import Script from 'next/script';
+import Link from 'next/link';
 
 export default function CheckoutPage() {
-  const items = useCartStore((state) => state.items);
+  const { items, updateQuantity, totalPrice, clearCart } = useCartStore();
   const [address, setAddress] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Функция инициализации виджета СДЭК
   const initCdekWidget = () => {
     if (typeof window !== 'undefined' && (window as any).CDEKWidget) {
-      // Очищаем контейнер перед инициализацией, чтобы при переходах карта не дублировалась
       const mapContainer = document.getElementById('cdek-map');
       if (mapContainer) mapContainer.innerHTML = '';
 
       new (window as any).CDEKWidget({
         from: 'Москва',
         root: 'cdek-map',
-        apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', // Вставь свой ключ от Яндекса
-        servicePath: '/api/cdek', // Наш будущий бекенд-роут на Next.js
+        apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', 
+        servicePath: '/api/cdek',
         defaultLocation: 'Москва',
         onChoose: (type: any, tariff: any, addressInfo: any) => {
-          // При клике на ПВЗ в карте, адрес автоматически впишется в инпут
           setAddress(addressInfo.address || addressInfo.name || 'Выбран ПВЗ');
         }
       });
     }
   };
 
-  // На случай, если скрипт уже загрузился ранее, а мы просто перешли на эту страницу
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).CDEKWidget) {
       initCdekWidget();
     }
   }, []);
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (items.length === 0) return;
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const orderData = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      tg: formData.get('tg'),
+      city: formData.get('city'),
+      delivery: formData.get('delivery'),
+      address: address,
+      items: items,
+      total: totalPrice()
+    };
+
+    try {
+      await fetch('/api/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderData })
+      });
+      setIsSuccess(true);
+      clearCart();
+    } catch (error) {
+      alert('Произошла ошибка при оформлении заказа. Попробуйте еще раз.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isSuccess) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', textAlign: 'center' }}>
+        <h1 style={{ fontWeight: 800, textTransform: 'uppercase' }}>ЗАКАЗ УСПЕШНО ОФОРМЛЕН! &lt;3</h1>
+        <p style={{ fontWeight: 500, marginTop: '20px' }}>Мы свяжемся с тобой в Telegram для подтверждения.</p>
+        <Link href="/" style={{ marginTop: '40px', fontWeight: 700, textDecoration: 'none', color: '#000', border: '1px solid #000', padding: '10px 20px' }}>
+          [ вернуться на главную ]
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center' }}>
-      
-      {/* Скрипт СДЭК 3.0 */}
-      <Script 
-        src="https://cdn.jsdelivr.net/npm/@cdek-it/widget@3" 
-        strategy="afterInteractive"
-        onLoad={initCdekWidget}
-      />
+      <Script src="https://cdn.jsdelivr.net/npm/@cdek-it/widget@3" strategy="afterInteractive" onLoad={initCdekWidget} />
 
-      {/* Навигация (Исправлено дублирование, теперь всё на одной линии) */}
       <div style={{ width: '100%' }}>
         <Breadcrumbs path={[
           { name: 'PRODUCT$', href: '/products', icon: '📦' },
@@ -54,94 +91,113 @@ export default function CheckoutPage() {
         ]} />
       </div>
 
-      {/* Обертка для жесткого центрирования контента */}
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '450px', marginTop: '20px' }}>
         
-        {/* Карточка товара */}
-        {items.length > 0 && (
-          <div style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
-            <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', border: '1px solid #000', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div style={{ position: 'absolute', top: '-7px', left: '-4px', fontWeight: 300 }}>+</div>
-              <div style={{ position: 'absolute', top: '-7px', right: '-4px', fontWeight: 300 }}>+</div>
-              <div style={{ position: 'absolute', bottom: '-7px', left: '-4px', fontWeight: 300 }}>+</div>
-              <div style={{ position: 'absolute', bottom: '-7px', right: '-4px', fontWeight: 300 }}>+</div>
-              <span style={{ fontWeight: 700, fontSize: '18px' }}>3&lt;</span>
-            </div>
+        {items.length === 0 ? (
+          <div style={{ textAlign: 'center', fontWeight: 700, marginTop: '50px' }}>корзина пуста...</div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
             
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', fontSize: '14px', textTransform: 'lowercase' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
-                <span>{items[0].name}</span>
-                <span>{items[0].quantity} [+] [-]</span>
+            {/* Отрисовка товаров в корзине */}
+            {items.map((item, idx) => (
+              <div key={`${item.id}-${item.size}-${idx}`} style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
+                
+                {/* Идеальная рамка из макета */}
+                <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', border: '1px solid #000', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+                  <div style={{ position: 'absolute', top: '-7px', left: '-4.5px', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'absolute', top: '-7px', right: '-4.5px', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'absolute', bottom: '-7.5px', left: '-4.5px', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'absolute', bottom: '-7.5px', right: '-4.5px', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+                  <span style={{ fontWeight: 800, fontSize: '20px' }}>3&lt;</span>
+                </div>
+                
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', fontSize: '14px', textTransform: 'lowercase' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
+                    <span style={{ fontSize: '16px' }}>{item.name}</span>
+                    <span>
+                      {item.quantity} 
+                      <span onClick={() => updateQuantity(item.id, item.size, 1)} style={{ cursor: 'pointer', margin: '0 4px' }}>[+]</span>
+                      <span onClick={() => updateQuantity(item.id, item.size, -1)} style={{ cursor: 'pointer' }}>[-]</span>
+                    </span>
+                  </div>
+                  <div style={{ fontWeight: 800, marginTop: '5px' }}>
+                    {item.price}₽ со скидкой
+                  </div>
+                  <div style={{ marginTop: '15px', lineHeight: '1.4' }}>
+                    хирургическая сталь<br/>
+                    размер:<br/>
+                    <span style={{ fontWeight: 800, fontSize: '15px' }}>
+                      {[16, 17, 18, 19].map((s) => (
+                        <span key={s} style={{ color: item.size === s ? 'red' : '#000' }}>
+                          [{item.size === s ? `(${s})` : s}]
+                        </span>
+                      ))}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div style={{ fontWeight: 700, marginTop: '5px' }}>
-                {items[0].price}₽ со скидкой
+            ))}
+
+            {/* Форма доставки */}
+            <div style={{ fontWeight: 700, marginBottom: '20px', textTransform: 'lowercase' }}>данные для доставки:</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>ФИО получателя (полностью)</label>
+                <input name="name" required type="text" placeholder="Петров Петр Петрович" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
               </div>
-              <div style={{ marginTop: '15px', lineHeight: '1.4' }}>
-                хирургическая сталь<br/>
-                размер:<br/>
-                <span style={{ fontWeight: 700 }}>
-                  [{items[0].size === 16 ? '(16)' : '16'}][{items[0].size === 17 ? '(17)' : '17'}][{items[0].size === 18 ? '(18)' : '18'}][{items[0].size === 19 ? '(19)' : '19'}]
-                </span>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>email</label>
+                <input name="email" required type="email" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
               </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>телефон</label>
+                <input name="phone" required type="tel" placeholder="+7 (000) 000-00 00" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>telegram</label>
+                <input name="tg" required type="text" placeholder="@username" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>город</label>
+                <div style={{ position: 'relative' }}>
+                  <input name="city" required type="text" placeholder="Москва" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+                  <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>служба доставки</label>
+                <select name="delivery" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', appearance: 'none', background: 'white' }}>
+                  <option value="СДЭК">СДЭК ▾</option>
+                  <option value="5post">5post</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>пункт выдачи</label>
+                <div style={{ position: 'relative' }}>
+                  <input type="text" value={address} readOnly placeholder="выберите на карте ниже" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: '#f5f5f5' }} />
+                  <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>
+                </div>
+              </div>
+
+              <div id="cdek-map" style={{ width: '100%', height: '400px', border: '1px solid #ccc', backgroundColor: '#f9f9f9' }}></div>
+
+              <button 
+                type="submit" 
+                disabled={isLoading || !address}
+                style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textAlign: 'right', marginTop: '20px', opacity: (isLoading || !address) ? 0.5 : 1 }}
+              >
+                {isLoading ? '[отправка...]' : '[заказать] 📦'}
+              </button>
             </div>
-          </div>
+          </form>
         )}
-
-        {/* Форма доставки */}
-        <div style={{ fontWeight: 700, marginBottom: '20px', textTransform: 'lowercase' }}>данные для доставки:</div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>ФИО получателя (полностью)</label>
-            <input type="text" placeholder="Петров Петр Петрович" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>email</label>
-            <input type="email" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>телефон</label>
-            <input type="tel" placeholder="+7 (000) 000-00 00" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>telegram</label>
-            <input type="text" placeholder="@username" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>город</label>
-            <div style={{ position: 'relative' }}>
-              <input type="text" placeholder="Москва" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
-              <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>служба доставки</label>
-            <select style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', appearance: 'none', background: 'white' }}>
-              <option>СДЭК ▾</option>
-              <option>5post</option>
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>пункт выдачи</label>
-            <div style={{ position: 'relative' }}>
-              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="выберите на карте ниже" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
-              <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>
-            </div>
-          </div>
-
-          {/* КОНТЕЙНЕР ДЛЯ КАРТЫ СДЭК */}
-          <div id="cdek-map" style={{ width: '100%', height: '400px', border: '1px solid #ccc', backgroundColor: '#f9f9f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: '#999', fontSize: '12px', textTransform: 'uppercase' }}>Здесь появится карта, когда будет добавлен ключ Яндекс.Карт</span>
-          </div>
-
-        </div>
       </div>
     </div>
   );
