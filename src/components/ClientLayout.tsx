@@ -6,7 +6,9 @@ import Cart from '@/components/Cart';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const showCart = pathname.startsWith('/products');
+  // Корзина рендерится на страницах товаров И на странице ИНФО (как в макете)
+  const showCart = pathname.startsWith('/products') || pathname === '/info';
+  
   
   // Добавляем новые страницы в список без скролла
   const noScrollPages = ['/', '/links', '/info', '/oferta', '/privacy'];
