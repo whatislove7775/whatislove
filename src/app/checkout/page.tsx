@@ -5,10 +5,10 @@ import { useCartStore } from '@/store/cartStore';
 import Link from 'next/link';
 
 export default function CheckoutPage() {
-  const { items, updateQuantity, totalPrice, clearCart } = useCartStore();
+  const { items, updateQuantity, updateItemSize, totalPrice, clearCart } = useCartStore();
   const [address, setAddress] = useState('');
   const [deliveryService, setDeliveryService] = useState('СДЭК');
-  const [deliveryCost, setDeliveryCost] = useState(0); // Цена доставки
+  const [deliveryCost, setDeliveryCost] = useState(0);
   
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,16 +21,14 @@ export default function CheckoutPage() {
       if (!(window as any)._cdekWidgetLoaded && container.innerHTML === '') {
         (window as any)._cdekWidgetLoaded = true;
         new (window as any).CDEKWidget({
-          from: 'Москва', // Откуда едет товар
+          from: 'Москва',
           root: 'cdek-map',
           apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', 
           servicePath: '/api/cdek',
           defaultLocation: 'Москва',
-          // ЗАДАЕМ ГАБАРИТЫ ПОСЫЛКИ ДЛЯ РАСЧЕТА (Размер XS, вес 0.5кг)
           goods: [{ length: 15, width: 15, height: 10, weight: 0.5 }],
           onChoose: (type: any, tariff: any, addressInfo: any) => {
             setAddress(addressInfo.address || addressInfo.name || 'Выбран ПВЗ');
-            // Если виджет смог рассчитать цену, сохраняем ее
             if (tariff && tariff.delivery_sum) {
               setDeliveryCost(tariff.delivery_sum);
             } else {
@@ -51,7 +49,6 @@ export default function CheckoutPage() {
     }
   }, [items.length]);
 
-  // Сбрасываем адрес и цену при смене доставки
   useEffect(() => {
     setAddress('');
     setDeliveryCost(0);
@@ -86,7 +83,6 @@ export default function CheckoutPage() {
       const data = await res.json();
       
       if (!res.ok) {
-        // Выводим точную ошибку телеграма прямо на экран
         alert(`Ошибка отправки: ${data.error}`);
         setIsLoading(false);
         return;
@@ -129,45 +125,64 @@ export default function CheckoutPage() {
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
             
-            {items.map((item, idx) => (
-              <div key={`${item.id}-${item.size}-${idx}`} style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
-                <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', border: '1px solid #000', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
-                  <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
-                  <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
-                  <span style={{ fontWeight: 800, fontSize: '20px' }}>3&lt;</span>
+            {items.map((item, idx) => {
+              // Имитация старой цены (текущая цена + 40%). Можно заменить на точное число.
+              const oldPrice = Math.round(item.price * 1.4); 
+
+              return (
+                <div key={`${item.id}-${item.size}-${idx}`} style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
+                  <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', border: '1px solid #000', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                    <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                    <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                    <span style={{ fontWeight: 800, fontSize: '20px' }}>3&lt;</span>
+                  </div>
+                  
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', fontSize: '14px', textTransform: 'lowercase' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
+                      <span style={{ fontSize: '16px' }}>{item.name}</span>
+                      <span style={{ userSelect: 'none' }}>
+                        {item.quantity} 
+                        <span onClick={() => updateQuantity(item.id, item.size, 1)} style={{ cursor: 'pointer', margin: '0 4px', color: '#000' }}>[+]</span>
+                        <span onClick={() => updateQuantity(item.id, item.size, -1)} style={{ cursor: 'pointer', color: '#000' }}>[-]</span>
+                      </span>
+                    </div>
+
+                    {/* Блок с ценами (зачеркнутая старая + актуальная) */}
+                    <div style={{ fontWeight: 800, marginTop: '5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '13px' }}>
+                        {oldPrice * item.quantity}₽
+                      </span>
+                      <span>{item.price * item.quantity}₽ со скидкой</span>
+                    </div>
+
+                    <div style={{ marginTop: '15px', lineHeight: '1.4' }}>
+                      хирургическая сталь<br/>
+                      размер:<br/>
+                      <span style={{ fontWeight: 800, fontSize: '15px', letterSpacing: '0.5px' }}>
+                        {[16, 17, 18, 19].map((s) => {
+                          const isSelected = item.size === s;
+                          return (
+                            <span 
+                              key={s} 
+                              onClick={() => updateItemSize(item.id, item.size, s)}
+                              style={{ 
+                                color: isSelected ? 'red' : '#000', 
+                                cursor: 'pointer',
+                                transition: 'color 0.2s ease'
+                              }}
+                            >
+                              {isSelected ? `[(${s})]` : `[${s}]`}
+                            </span>
+                          );
+                        })}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', fontSize: '14px', textTransform: 'lowercase' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
-                    <span style={{ fontSize: '16px' }}>{item.name}</span>
-                    <span style={{ userSelect: 'none' }}>
-                      {item.quantity} 
-                      <span onClick={() => updateQuantity(item.id, item.size, 1)} style={{ cursor: 'pointer', margin: '0 4px', color: '#000' }}>[+]</span>
-                      <span onClick={() => updateQuantity(item.id, item.size, -1)} style={{ cursor: 'pointer', color: '#000' }}>[-]</span>
-                    </span>
-                  </div>
-                  <div style={{ fontWeight: 800, marginTop: '5px' }}>
-                    {item.price * item.quantity}₽ со скидкой
-                  </div>
-                  <div style={{ marginTop: '15px', lineHeight: '1.4' }}>
-                    хирургическая сталь<br/>
-                    размер:<br/>
-                    <span style={{ fontWeight: 800, fontSize: '15px' }}>
-                      {[16, 17, 18, 19].map((s) => {
-                        const isSelected = item.size === s;
-                        return (
-                          <span key={s} style={{ color: isSelected ? 'red' : '#000' }}>
-                            [{isSelected ? `(${s})` : s}]
-                          </span>
-                        );
-                      })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
             <div style={{ fontWeight: 700, marginBottom: '20px', textTransform: 'lowercase' }}>данные для доставки:</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -241,9 +256,17 @@ export default function CheckoutPage() {
                 {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>+ {deliveryCost}₽ за доставку СДЭК</span>}
               </div>
 
-              <div id="cdek-map" style={{ width: '100%', height: '400px', border: '1px solid #ccc', backgroundColor: '#f9f9f9', display: deliveryService === 'СДЭК' ? 'block' : 'none' }}></div>
+              {/* УБРАН БОРДЕР border: '1px solid #ccc' */}
+              <div 
+                id="cdek-map" 
+                style={{ 
+                  width: '100%', 
+                  height: '400px', 
+                  backgroundColor: '#f9f9f9', 
+                  display: deliveryService === 'СДЭК' ? 'block' : 'none' 
+                }}
+              ></div>
 
-              {/* БЛОК ИТОГО И КНОПКИ */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', borderTop: '1px solid #000', paddingTop: '20px' }}>
                 <div style={{ fontWeight: 800, fontSize: '18px', textTransform: 'lowercase' }}>
                   итог: {totalPrice() + deliveryCost}₽
