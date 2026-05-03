@@ -1,252 +1,363 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
+import Link from 'next/link';
 
 export default function CheckoutPage() {
-  const items = useCartStore((state: any) => state.items) || [];
-  
-  const updateQuantity = useCartStore((state: any) => state.updateQuantity);
-  const updateSize = useCartStore((state: any) => state.updateSize);
-  const removeItem = useCartStore((state: any) => state.removeItem);
-
-  const storeTotal = useCartStore((state: any) => state.totalPrice);
-  const totalPrice: number = typeof storeTotal === 'function' ? storeTotal() : Number(storeTotal || 0);
-    
-  const [isLoading, setIsLoading] = useState(false);
-  const [city, setCity] = useState('');
-  const [delivery, setDelivery] = useState('');
+  const { items, updateQuantity, updateItemSize, totalPrice, clearCart } = useCartStore();
   const [address, setAddress] = useState('');
-  const [deliveryCost, setDeliveryCost] = useState<number>(0);
+  const [deliveryService, setDeliveryService] = useState('СДЭК');
+  const [deliveryCost, setDeliveryCost] = useState(0);
+  
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const deliveryOptions = ['СДЭК', 'Яндекс Доставка', 'Ozon', 'Wildberries', '5post'];
 
   useEffect(() => {
-    if (delivery === 'СДЭК') {
-      const scriptId = 'cdek-widget-script';
-      if (!document.getElementById(scriptId)) {
-        const script = document.createElement('script');
-        script.id = scriptId;
-        script.src = 'https://widget.cdek.ru/widget/widjet.js';
-        script.onload = () => {
-          // @ts-ignore
-          if (window.ISDEKWidjet) {
-            // @ts-ignore
-            new window.ISDEKWidjet({
-              defaultCity: city || 'Москва',
-              cityFrom: 'Москва',
-              link: 'cdek-map',
-              onChoose: (info: any) => {
-                setAddress(`ПВЗ СДЭК: г. ${info.cityName}, ${info.PVZ.Address}`);
-              }
-            });
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // ОБНОВЛЕННАЯ И УМНАЯ ЗАГРУЗКА ВИДЖЕТА
+  useEffect(() => {
+    const container = document.getElementById('cdek-map');
+    if (!container || items.length === 0) return;
+
+    const init = () => {
+      // Убрали проверку window._cdekWidgetLoaded.
+      // Теперь мы просто проверяем, пустой ли текущий контейнер. 
+      // Если пустой — значит мы только что перешли на страницу и надо рисовать карту.
+      if (container.innerHTML === '') {
+        new (window as any).CDEKWidget({
+          from: 'Москва',
+          root: 'cdek-map',
+          apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', 
+          servicePath: '/api/cdek',
+          defaultLocation: 'Москва',
+          hideDeliveryOptions: {
+            door: true 
+          },
+          onChoose: (type: any, tariff: any, addressInfo: any) => {
+            const finalAddress = addressInfo.address ? `${addressInfo.cityName || ''}, ${addressInfo.address}`.trim() : (addressInfo.name || 'Выбран ПВЗ');
+            setAddress(finalAddress.startsWith(',') ? finalAddress.substring(1).trim() : finalAddress);
+            
+            if (tariff && tariff.delivery_sum) {
+              setDeliveryCost(tariff.delivery_sum);
+            } else {
+              setDeliveryCost(350); 
+            }
           }
-        };
+        });
+      }
+    };
+
+    // Проверяем, загружен ли сам скрипт от СДЭКа
+    if ((window as any).CDEKWidget) {
+      init();
+    } else {
+      // Ищем скрипт в DOM, чтобы не дублировать теги при переключениях страниц
+      const existingScript = document.querySelector('script[src="https://cdn.jsdelivr.net/npm/@cdek-it/widget@3"]');
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@cdek-it/widget@3';
+        script.onload = init;
         document.body.appendChild(script);
       } else {
-        const mapDiv = document.getElementById('cdek-map');
-        if (mapDiv) mapDiv.innerHTML = '';
-        // @ts-ignore
-        if (window.ISDEKWidjet) {
-          // @ts-ignore
-          new window.ISDEKWidjet({
-            defaultCity: city || 'Москва',
-            cityFrom: 'Москва',
-            link: 'cdek-map',
-            onChoose: (info: any) => {
-              setAddress(`ПВЗ СДЭК: г. ${info.cityName}, ${info.PVZ.Address}`);
-            }
-          });
-        }
+        existingScript.addEventListener('load', init);
       }
     }
-  }, [delivery, city]);
+  }, [items.length]);
 
-  const handleIncrease = (id: string, currentQty: number) => {
-    if (updateQuantity) updateQuantity(id, currentQty + 1);
-  };
-
-  const handleDecrease = (id: string, currentQty: number) => {
-    if (currentQty > 1 && updateQuantity) {
-      updateQuantity(id, currentQty - 1);
-    } else if (currentQty === 1 && removeItem) {
-      removeItem(id);
-    }
-  };
-
-  const handleSizeChange = (id: string, newSize: number) => {
-    if (updateSize) updateSize(id, newSize);
-  };
+  useEffect(() => {
+    setAddress('');
+    setDeliveryCost(0);
+  }, [deliveryService]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (items.length === 0) return;
     setIsLoading(true);
 
-    const fullTotal = totalPrice + deliveryCost;
+    const formData = new FormData(e.currentTarget);
+    const orderData = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      tg: formData.get('tg'),
+      city: formData.get('city'),
+      delivery: formData.get('delivery'),
+      address: address,
+      deliveryCost: deliveryCost,
+      items: items,
+      total: totalPrice()
+    };
 
     try {
-      const formData = new FormData(e.currentTarget);
-      const orderData = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        tg: formData.get('tg'),
-        city: city,
-        delivery: delivery,
-        address: address,
-        deliveryCost: deliveryCost,
-        items: items,
-        total: fullTotal,
-      };
-
-      await fetch('/api/telegram', {
+      const res = await fetch('/api/telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderData })
       });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        alert(`Ошибка отправки: ${data.error}`);
+        setIsLoading(false);
+        return;
+      }
 
-      alert('Заказ успешно оформлен!');
+      setIsSuccess(true);
+      clearCart();
     } catch (error) {
-      alert('Ошибка при оформлении заказа');
-    } finally {
+      alert('Произошла критическая ошибка при отправке запроса.');
       setIsLoading(false);
     }
   };
 
+  if (isSuccess) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '70vh', width: '100%', textAlign: 'center' }}>
+        <h1 style={{ fontWeight: 800, textTransform: 'uppercase' }}>ЗАКАЗ УСПЕШНО ОФОРМЛЕН! &lt;3</h1>
+        <p style={{ fontWeight: 500, marginTop: '20px' }}>Мы свяжемся с тобой в Telegram для подтверждения.</p>
+        <Link href="/" style={{ marginTop: '40px', fontWeight: 700, textDecoration: 'none', color: '#000' }}>
+          [ вернуться в магазин ]
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, fontFamily: 'inherit' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center' }}>
       
-      <div style={{ width: '100%', alignSelf: 'flex-start' }}>
+      <div style={{ width: '100%' }}>
         <Breadcrumbs path={[
-          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'PRODUCT$', href: '/products', icon: '📦' },
+          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },{ name: 'PRODUCT$', href: '/products', icon: '📦' },
           { name: 'ЗАКАЗ', icon: '💳' }
         ]} />
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '40px', width: '100%' }}>
-        <div style={{ width: '100%', maxWidth: '400px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '450px', marginTop: '20px' }}>
+        
+        {items.length === 0 ? (
+          <div style={{ textAlign: 'center', fontWeight: 700, marginTop: '50px' }}>корзина пуста...</div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+            
+            {items.map((item, idx) => {
+              const oldPrice = Math.round(item.price * 1.4); 
 
-          {items.map((item: any) => (
-            <div key={item.id} style={{ display: 'flex', gap: '20px', marginBottom: '30px', alignItems: 'flex-start' }}>
+              return (
+                <div key={`${item.id}-${item.size}-${idx}`} style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
+                  <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', border: '1px solid #000', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                    <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                    <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
+                    <span style={{ fontWeight: 800, fontSize: '20px' }}>3&lt;</span>
+                  </div>
+                  
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', fontSize: '14px', textTransform: 'lowercase' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
+                      <span style={{ fontSize: '16px' }}>{item.name}</span>
+                      <span style={{ userSelect: 'none' }}>
+                        {item.quantity} 
+                        <span onClick={() => updateQuantity(item.id, item.size, 1)} style={{ cursor: 'pointer', margin: '0 4px', color: '#000' }}>[+]</span>
+                        <span onClick={() => updateQuantity(item.id, item.size, -1)} style={{ cursor: 'pointer', color: '#000' }}>[-]</span>
+                      </span>
+                    </div>
+
+                    <div style={{ fontWeight: 800, marginTop: '5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '13px' }}>
+                        {oldPrice * item.quantity}₽
+                      </span>
+                      <span>{item.price * item.quantity}₽ со скидкой</span>
+                    </div>
+
+                    <div style={{ marginTop: '15px', lineHeight: '1.4' }}>
+                      хирургическая сталь<br/>
+                      размер:<br/>
+                      <span style={{ fontWeight: 800, fontSize: '15px', letterSpacing: '0.5px' }}>
+                        {[16, 17, 18, 19].map((s) => {
+                          const isSelected = item.size === s;
+                          return (
+                            <span 
+                              key={s} 
+                              onClick={() => updateItemSize(item.id, item.size, s)}
+                              style={{ color: isSelected ? 'red' : '#000', cursor: 'pointer', transition: 'color 0.2s ease' }}
+                            >
+                              {isSelected ? `[(${s})]` : `[${s}]`}
+                            </span>
+                          );
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div style={{ fontWeight: 700, marginBottom: '20px', textTransform: 'lowercase' }}>данные для доставки:</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               
-              <div style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
-                <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
-                <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
-                <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
-                <div style={{ width: '100%', height: '100%', backgroundColor: '#e5e5e5' }}></div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>ФИО получателя (полностью)</label>
+                <input name="name" required type="text" placeholder="Петров Петр Петрович" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', lineHeight: '1.4' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <span style={{ fontWeight: 800, fontSize: '16px' }}>{item.name}</span>
-                  <span style={{ fontWeight: 800 }}>
-                    {item.quantity} 
-                    <span onClick={() => handleIncrease(item.id, item.quantity)} style={{ cursor: 'pointer', userSelect: 'none', marginLeft: '5px' }}>[+]</span> 
-                    <span onClick={() => handleDecrease(item.id, item.quantity)} style={{ cursor: 'pointer', userSelect: 'none', marginLeft: '3px' }}>[-]</span>
-                  </span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>email</label>
+                <input name="email" required type="email" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>телефон</label>
+                <input name="phone" required type="tel" placeholder="+7 (000) 000-00 00" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>telegram</label>
+                <input name="tg" required type="text" placeholder="@username" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>город</label>
+                <div style={{ position: 'relative' }}>
+                  <input name="city" required type="text" placeholder="Москва" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+                  <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>служба доставки</label>
+                
+                <input type="hidden" name="delivery" value={deliveryService} />
+                
+                <div ref={dropdownRef} style={{ position: 'relative', width: '100%', userSelect: 'none' }}>
+                  <div 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    style={{ 
+                      padding: '12px', 
+                      border: '1px solid #ccc', 
+                      fontFamily: 'inherit', 
+                      fontSize: '14px', 
+                      width: '100%', 
+                      boxSizing: 'border-box', 
+                      backgroundColor: 'white',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <span>{deliveryService}</span>
+                    <span style={{ 
+                      fontSize: '12px', 
+                      transform: isDropdownOpen ? 'rotate(180deg)' : 'none', 
+                      transition: 'transform 0.2s ease',
+                      lineHeight: 1
+                    }}>
+                      ▼
+                    </span>
+                  </div>
+
+                  {isDropdownOpen && (
+                    <div style={{ 
+                      position: 'absolute', 
+                      top: '100%', 
+                      left: 0, 
+                      right: 0, 
+                      backgroundColor: 'white', 
+                      border: '1px solid #000', 
+                      zIndex: 10,
+                      marginTop: '-1px' 
+                    }}>
+                      {deliveryOptions.map((option) => (
+                        <div
+                          key={option}
+                          onClick={() => {
+                            setDeliveryService(option);
+                            setIsDropdownOpen(false);
+                          }}
+                          style={{ 
+                            padding: '12px', 
+                            fontSize: '14px',
+                            cursor: 'pointer', 
+                            borderBottom: option !== '5post' ? '1px solid #eee' : 'none',
+                            transition: 'background-color 0.1s'
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                        >
+                          {option}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>пункт выдачи</label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type="text" 
+                    value={address} 
+                    onChange={(e) => setAddress(e.target.value)} 
+                    readOnly={deliveryService === 'СДЭК'} 
+                    required
+                    placeholder={deliveryService === 'СДЭК' ? "выберите на карте ниже" : "введите адрес пункта выдачи текстом"} 
+                    style={{ 
+                      padding: '12px', 
+                      border: '1px solid #ccc', 
+                      fontFamily: 'inherit', 
+                      fontSize: '14px', 
+                      width: '100%', 
+                      boxSizing: 'border-box', 
+                      backgroundColor: deliveryService === 'СДЭК' ? '#f5f5f5' : '#fff' 
+                    }} 
+                  />
+                  {deliveryService === 'СДЭК' && <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>}
+                </div>
+                {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>+ {deliveryCost}₽ за доставку {deliveryService}</span>}
+              </div>
+
+              <div 
+                id="cdek-map" 
+                style={{ 
+                  width: '100%', 
+                  height: '400px', 
+                  backgroundColor: '#f9f9f9', 
+                  display: deliveryService === 'СДЭК' ? 'block' : 'none' 
+                }}
+              ></div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', borderTop: '1px solid #000', paddingTop: '20px' }}>
+                <div style={{ fontWeight: 800, fontSize: '18px', textTransform: 'lowercase' }}>
+                  итог: {totalPrice() + deliveryCost}₽
                 </div>
                 
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline', fontWeight: 800, marginTop: '2px' }}>
-                  <span style={{ color: '#999', textDecoration: 'line-through' }}>{item.quantity * 3600}₽</span>
-                  <span>{item.quantity * item.price}₽ со скидкой</span>
-                </div>
-
-                <div style={{ marginTop: '4px' }}>хирургическая сталь</div>
-                <div>размер:</div>
-                <div style={{ fontWeight: 800, marginTop: '2px', display: 'flex', alignItems: 'center' }}>
-                  {[16, 17, 18, 19].map((size) => (
-                    <span 
-                      key={size} 
-                      onClick={() => handleSizeChange(item.id, size)}
-                      style={{ cursor: 'pointer', userSelect: 'none' }}
-                    >
-                      {item.size === size ? (
-                        <span style={{ color: '#d32f2f' }}>[({size})]</span>
-                      ) : (
-                        `[${size}]`
-                      )}
-                    </span>
-                  ))}
-                </div>
+                <button 
+                  type="submit" 
+                  disabled={isLoading || !address}
+                  style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isLoading || !address) ? 0.5 : 1 }}
+                >
+                  {isLoading ? '[отправка...]' : '[заказать] 📦'}
+                </button>
               </div>
+
             </div>
-          ))}
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', fontSize: '14px', marginTop: '20px' }}>
-            <div style={{ marginBottom: '5px' }}>данные для доставки:</div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label>ФИО получателя (полностью)</label>
-              <input type="text" name="name" placeholder="Петров Петр Петрович" required style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none' }} />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label>email</label>
-              <input type="email" name="email" required style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none' }} />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label>телефон</label>
-              <input type="tel" name="phone" placeholder="+7 (000) 000-00 00" required style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none' }} />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label>telegram</label>
-              <input type="text" name="tg" placeholder="@username" style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none' }} />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label>город</label>
-              <input type="text" name="city" value={city} onChange={(e) => setCity(e.target.value)} required style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none' }} />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label>служба доставки</label>
-              <select name="delivery" value={delivery} onChange={(e) => setDelivery(e.target.value)} required style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none', backgroundColor: '#fff', cursor: 'pointer' }}>
-                <option value="">выберите службу...</option>
-                <option value="СДЭК">СДЭК (до пункта выдачи)</option>
-                <option value="Почта России">Почта России</option>
-                <option value="Озон">Озон доставка</option>
-                <option value="5Post">5Post</option>
-              </select>
-            </div>
-
-            {delivery === 'СДЭК' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
-                <label>выберите пункт выдачи на карте:</label>
-                <div id="cdek-map" style={{ width: '100%', height: '400px', backgroundColor: '#f9f9f9', border: '1px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ color: '#999' }}>[карта СДЭК загружается...]</span>
-                </div>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
-              <label>адрес (город, улица, дом, индекс / пункт выдачи)</label>
-              <input type="text" name="address" value={address} onChange={(e) => setAddress(e.target.value)} required style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none' }} />
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={isLoading || !address}
-              style={{ 
-                marginTop: '10px',
-                background: 'transparent', 
-                border: 'none', 
-                fontWeight: 800, 
-                fontSize: '15px', 
-                cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', 
-                fontFamily: 'inherit', 
-                opacity: (isLoading || !address) ? 0.5 : 1,
-                alignSelf: 'flex-start',
-                padding: 0
-              }}
-            >
-              {isLoading ? '[ОЖИДАНИЕ...]' : '[заказать] 📦'}
-            </button>
           </form>
-
-        </div>
+        )}
       </div>
     </div>
   );
