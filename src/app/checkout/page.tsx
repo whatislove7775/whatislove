@@ -26,13 +26,19 @@ export default function CheckoutPage() {
           apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', 
           servicePath: '/api/cdek',
           defaultLocation: 'Москва',
-          goods: [{ length: 15, width: 15, height: 10, weight: 0.5 }],
+          // УБРАЛИ параметр goods, чтобы тестовый аккаунт не блокировал кнопку выбора ПВЗ!
           onChoose: (type: any, tariff: any, addressInfo: any) => {
-            setAddress(addressInfo.address || addressInfo.name || 'Выбран ПВЗ');
+            // Надежно вытаскиваем адрес из объекта СДЭКа
+            const finalAddress = addressInfo.address ? `${addressInfo.cityName || ''}, ${addressInfo.address}`.trim() : (addressInfo.name || 'Выбран ПВЗ');
+            
+            // Убираем возможную запятую в начале, если города нет в объекте
+            setAddress(finalAddress.startsWith(',') ? finalAddress.substring(1).trim() : finalAddress);
+            
+            // Если тариф пришел - ставим его, иначе заглушка 350₽ для вида (т.к. мы убрали goods)
             if (tariff && tariff.delivery_sum) {
               setDeliveryCost(tariff.delivery_sum);
             } else {
-              setDeliveryCost(0);
+              setDeliveryCost(350); 
             }
           }
         });
@@ -126,7 +132,6 @@ export default function CheckoutPage() {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
             
             {items.map((item, idx) => {
-              // Имитация старой цены (текущая цена + 40%). Можно заменить на точное число.
               const oldPrice = Math.round(item.price * 1.4); 
 
               return (
@@ -149,7 +154,6 @@ export default function CheckoutPage() {
                       </span>
                     </div>
 
-                    {/* Блок с ценами (зачеркнутая старая + актуальная) */}
                     <div style={{ fontWeight: 800, marginTop: '5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '13px' }}>
                         {oldPrice * item.quantity}₽
@@ -167,11 +171,7 @@ export default function CheckoutPage() {
                             <span 
                               key={s} 
                               onClick={() => updateItemSize(item.id, item.size, s)}
-                              style={{ 
-                                color: isSelected ? 'red' : '#000', 
-                                cursor: 'pointer',
-                                transition: 'color 0.2s ease'
-                              }}
+                              style={{ color: isSelected ? 'red' : '#000', cursor: 'pointer', transition: 'color 0.2s ease' }}
                             >
                               {isSelected ? `[(${s})]` : `[${s}]`}
                             </span>
@@ -253,10 +253,9 @@ export default function CheckoutPage() {
                   />
                   {deliveryService === 'СДЭК' && <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>}
                 </div>
-                {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>+ {deliveryCost}₽ за доставку СДЭК</span>}
+                {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>+ {deliveryCost}₽ за доставку {deliveryService}</span>}
               </div>
 
-              {/* УБРАН БОРДЕР border: '1px solid #ccc' */}
               <div 
                 id="cdek-map" 
                 style={{ 
