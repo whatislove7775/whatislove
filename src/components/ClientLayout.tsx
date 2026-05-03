@@ -74,8 +74,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         ) : (
           <footer style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'auto 1fr', // 2 колонки
-            gridTemplateRows: 'auto auto',   // 2 строки (Телега+Машина сверху, Ссылки+Текст снизу)
+            gridTemplateColumns: 'auto 1fr', 
+            gridTemplateRows: 'auto auto',   
             columnGap: '60px', 
             rowGap: '20px',
             padding: '20px 40px', 
@@ -92,14 +92,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               </a>
             </div>
 
-            {/* Строка 1, Колонка 2: Машина */}
-            <div style={{ textAlign: 'left' }}>
-              <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '12px', lineHeight: 1 }}>
-                 000<br/>
-              =  .  .  =<br/>
-              ...O.......O...
-              </pre>
-            </div>
+            {/* Строка 1, Колонка 2: ПУСТАЯ БЛОК (чтобы текст снизу не съехал) */}
+            <div></div>
 
             {/* Строка 2, Колонка 1: Ссылки */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 800, textTransform: 'uppercase' }}>
@@ -108,7 +102,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>/ ИНФО</Link>
             </div>
 
-            {/* Строка 2, Колонка 2: Текст (Идеально выровнен с кнопкой ОФЕРТА) */}
+            {/* Строка 2, Колонка 2: Текст */}
             <div style={{ fontWeight: 800, fontSize: '14px', textTransform: 'uppercase', lineHeight: 1.4, maxWidth: '850px' }}>
               ДАННЫЙ САЙТ НИЧЕГО НЕ НАВЯЗЫВАЕТ И НЕ ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И НЕ ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ УЛУЧШЕНИЯ СЕРВИСА &lt;333*
             </div>
