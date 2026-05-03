@@ -40,7 +40,6 @@ export default function CheckoutPage() {
           apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', 
           servicePath: '/api/cdek',
           defaultLocation: 'Москва',
-          // ОТКЛЮЧАЕМ ВКЛАДКУ ДОСТАВКИ КУРЬЕРОМ
           hideDeliveryOptions: {
             door: true 
           },
@@ -115,13 +114,28 @@ export default function CheckoutPage() {
     }
   };
 
+  // ОБНОВЛЕННЫЙ ЭКРАН УСПЕХА
   if (isSuccess) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', textAlign: 'center' }}>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '70vh', // Ограничиваем высоту, чтобы не было скролла
+        width: '100%',
+        textAlign: 'center' 
+      }}>
         <h1 style={{ fontWeight: 800, textTransform: 'uppercase' }}>ЗАКАЗ УСПЕШНО ОФОРМЛЕН! &lt;3</h1>
         <p style={{ fontWeight: 500, marginTop: '20px' }}>Мы свяжемся с тобой в Telegram для подтверждения.</p>
-        <Link href="/" style={{ marginTop: '40px', fontWeight: 700, textDecoration: 'none', color: '#000', border: '1px solid #000', padding: '10px 20px' }}>
-          [ вернуться на главную ]
+        <Link href="/" style={{ 
+          marginTop: '40px', 
+          fontWeight: 700, 
+          textDecoration: 'none', 
+          color: '#000' 
+          // Убрали border и padding
+        }}>
+          [ вернуться в магазин ]
         </Link>
       </div>
     );
@@ -231,4 +245,125 @@ export default function CheckoutPage() {
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>служба доставки</label>
                 
-                <input type="hidden" name="
+                <input type="hidden" name="delivery" value={deliveryService} />
+                
+                <div ref={dropdownRef} style={{ position: 'relative', width: '100%', userSelect: 'none' }}>
+                  <div 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    style={{ 
+                      padding: '12px', 
+                      border: '1px solid #ccc', 
+                      fontFamily: 'inherit', 
+                      fontSize: '14px', 
+                      width: '100%', 
+                      boxSizing: 'border-box', 
+                      backgroundColor: 'white',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <span>{deliveryService}</span>
+                    <span style={{ 
+                      fontSize: '12px', 
+                      transform: isDropdownOpen ? 'rotate(180deg)' : 'none', 
+                      transition: 'transform 0.2s ease',
+                      lineHeight: 1
+                    }}>
+                      ▼
+                    </span>
+                  </div>
+
+                  {isDropdownOpen && (
+                    <div style={{ 
+                      position: 'absolute', 
+                      top: '100%', 
+                      left: 0, 
+                      right: 0, 
+                      backgroundColor: 'white', 
+                      border: '1px solid #000', 
+                      zIndex: 10,
+                      marginTop: '-1px' 
+                    }}>
+                      {deliveryOptions.map((option) => (
+                        <div
+                          key={option}
+                          onClick={() => {
+                            setDeliveryService(option);
+                            setIsDropdownOpen(false);
+                          }}
+                          style={{ 
+                            padding: '12px', 
+                            fontSize: '14px',
+                            cursor: 'pointer', 
+                            borderBottom: option !== '5post' ? '1px solid #eee' : 'none',
+                            transition: 'background-color 0.1s'
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                        >
+                          {option}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>пункт выдачи</label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type="text" 
+                    value={address} 
+                    onChange={(e) => setAddress(e.target.value)} 
+                    readOnly={deliveryService === 'СДЭК'} 
+                    required
+                    placeholder={deliveryService === 'СДЭК' ? "выберите на карте ниже" : "введите адрес пункта выдачи текстом"} 
+                    style={{ 
+                      padding: '12px', 
+                      border: '1px solid #ccc', 
+                      fontFamily: 'inherit', 
+                      fontSize: '14px', 
+                      width: '100%', 
+                      boxSizing: 'border-box', 
+                      backgroundColor: deliveryService === 'СДЭК' ? '#f5f5f5' : '#fff' 
+                    }} 
+                  />
+                  {deliveryService === 'СДЭК' && <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>}
+                </div>
+                {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>+ {deliveryCost}₽ за доставку {deliveryService}</span>}
+              </div>
+
+              <div 
+                id="cdek-map" 
+                style={{ 
+                  width: '100%', 
+                  height: '400px', 
+                  backgroundColor: '#f9f9f9', 
+                  display: deliveryService === 'СДЭК' ? 'block' : 'none' 
+                }}
+              ></div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', borderTop: '1px solid #000', paddingTop: '20px' }}>
+                <div style={{ fontWeight: 800, fontSize: '18px', textTransform: 'lowercase' }}>
+                  итог: {totalPrice() + deliveryCost}₽
+                </div>
+                
+                <button 
+                  type="submit" 
+                  disabled={isLoading || !address}
+                  style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isLoading || !address) ? 0.5 : 1 }}
+                >
+                  {isLoading ? '[отправка...]' : '[заказать] 📦'}
+                </button>
+              </div>
+
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
