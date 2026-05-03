@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 import Link from 'next/link';
@@ -12,6 +12,22 @@ export default function CheckoutPage() {
   
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Состояния для нашего кастомного меню
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const deliveryOptions = ['СДЭК', 'Яндекс Доставка', 'Ozon', 'Wildberries', '5post'];
+
+  // Закрытие дропдауна при клике мимо него
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const container = document.getElementById('cdek-map');
@@ -26,15 +42,10 @@ export default function CheckoutPage() {
           apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', 
           servicePath: '/api/cdek',
           defaultLocation: 'Москва',
-          // УБРАЛИ параметр goods, чтобы тестовый аккаунт не блокировал кнопку выбора ПВЗ!
           onChoose: (type: any, tariff: any, addressInfo: any) => {
-            // Надежно вытаскиваем адрес из объекта СДЭКа
             const finalAddress = addressInfo.address ? `${addressInfo.cityName || ''}, ${addressInfo.address}`.trim() : (addressInfo.name || 'Выбран ПВЗ');
-            
-            // Убираем возможную запятую в начале, если города нет в объекте
             setAddress(finalAddress.startsWith(',') ? finalAddress.substring(1).trim() : finalAddress);
             
-            // Если тариф пришел - ставим его, иначе заглушка 350₽ для вида (т.к. мы убрали goods)
             if (tariff && tariff.delivery_sum) {
               setDeliveryCost(tariff.delivery_sum);
             } else {
@@ -72,7 +83,7 @@ export default function CheckoutPage() {
       phone: formData.get('phone'),
       tg: formData.get('tg'),
       city: formData.get('city'),
-      delivery: deliveryService,
+      delivery: formData.get('delivery'), // Теперь это берется из скрытого инпута
       address: address,
       deliveryCost: deliveryCost,
       items: items,
@@ -215,20 +226,76 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
+              {/* КАСТОМНЫЙ ДРОПДАУН СЛУЖБЫ ДОСТАВКИ */}
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>служба доставки</label>
-                <select 
-                  name="delivery" 
-                  value={deliveryService}
-                  onChange={(e) => setDeliveryService(e.target.value)}
-                  style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', appearance: 'none', background: 'white' }}
-                >
-                  <option value="СДЭК">СДЭК ▾</option>
-                  <option value="Яндекс Доставка">Яндекс Доставка ▾</option>
-                  <option value="Ozon">Ozon ▾</option>
-                  <option value="Wildberries">Wildberries ▾</option>
-                  <option value="5post">5post ▾</option>
-                </select>
+                
+                {/* Скрытый инпут, чтобы форма отправила нужное значение */}
+                <input type="hidden" name="delivery" value={deliveryService} />
+                
+                <div ref={dropdownRef} style={{ position: 'relative', width: '100%', userSelect: 'none' }}>
+                  <div 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    style={{ 
+                      padding: '12px', 
+                      border: '1px solid #ccc', 
+                      fontFamily: 'inherit', 
+                      fontSize: '14px', 
+                      width: '100%', 
+                      boxSizing: 'border-box', 
+                      backgroundColor: 'white',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <span>{deliveryService}</span>
+                    <span style={{ 
+                      fontSize: '12px', 
+                      transform: isDropdownOpen ? 'rotate(180deg)' : 'none', 
+                      transition: 'transform 0.2s ease',
+                      lineHeight: 1
+                    }}>
+                      ▼
+                    </span>
+                  </div>
+
+                  {/* Выпадающий список */}
+                  {isDropdownOpen && (
+                    <div style={{ 
+                      position: 'absolute', 
+                      top: '100%', 
+                      left: 0, 
+                      right: 0, 
+                      backgroundColor: 'white', 
+                      border: '1px solid #000', 
+                      zIndex: 10,
+                      marginTop: '-1px' // Чтобы границы наложились друг на друга красиво
+                    }}>
+                      {deliveryOptions.map((option) => (
+                        <div
+                          key={option}
+                          onClick={() => {
+                            setDeliveryService(option);
+                            setIsDropdownOpen(false);
+                          }}
+                          style={{ 
+                            padding: '12px', 
+                            fontSize: '14px',
+                            cursor: 'pointer', 
+                            borderBottom: option !== '5post' ? '1px solid #eee' : 'none',
+                            transition: 'background-color 0.1s'
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                        >
+                          {option}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column' }}>
