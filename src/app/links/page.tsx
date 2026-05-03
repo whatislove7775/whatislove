@@ -4,7 +4,9 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 export default function LinksPage() {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <Breadcrumbs path={[{ name: 'LINK^S', icon: '🔗' }]} />
+      <Breadcrumbs path={[
+      { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+      { name: 'LINK^S', icon: '🔗' }]} />
       
       {/* Контейнер для центрирования посередине экрана */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginTop: '-60px' }}>
