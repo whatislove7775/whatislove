@@ -41,33 +41,6 @@ export default function ProductsPage() {
           <Link href="/products/ring" style={{ marginTop: '15px', fontWeight: 700, textTransform: 'lowercase', textDecoration: 'none', color: '#000' }}>
             [ открыть карточку ]
           </Link>
-        </div>
-
-        {/* Товар 2: Рамочки */}
-        <div style={{ width: '300px', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', border: 'none', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px' }}>
-              <div style={{ position: 'absolute', top: '-7px', left: '-4px', fontWeight: 300 }}>+</div>
-              <div style={{ position: 'absolute', top: '-7px', right: '-4px', fontWeight: 300 }}>+</div>
-              <div style={{ position: 'absolute', bottom: '-7px', left: '-4px', fontWeight: 300 }}>+</div>
-              <div style={{ position: 'absolute', bottom: '-7px', right: '-4px', fontWeight: 300 }}>+</div>
-              <span style={{ fontWeight: 700 }}>РАМКИ</span>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, textTransform: 'lowercase' }}>
-            <span>рам[о]чки</span>
-            <span style={{ textAlign: 'right' }}>3.499₽</span>
-          </div>
-
-          <div style={{ marginTop: '10px', textTransform: 'lowercase', lineHeight: '1.4' }}>
-            сплав стали<br/>
-            доставка по всему РФ+СНГ
-          </div>
-
-          <div style={{ marginTop: '15px', fontWeight: 700, textTransform: 'lowercase', cursor: 'pointer' }}>
-            [ +добавить в 🛒'y ]
-          </div>
-        </div>
-
       </div>
     </div>
   );
