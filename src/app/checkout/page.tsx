@@ -4,26 +4,22 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 
 export default function CheckoutPage() {
-  const items = useCartStore((state) => state.items) || [];
+  const items = useCartStore((state: any) => state.items) || [];
   
-  // Получаем общую цену. Проверка на то, является ли это функцией или значением
-  const totalPrice = typeof useCartStore((state) => state.totalPrice) === 'function' 
-    ? useCartStore((state) => state.totalPrice)() 
-    : useCartStore((state) => state.totalPrice) || 0;
+  // ЖЕСТКО ГОВОРИМ TYPESCRIPT, ЧТО ЭТО ЧИСЛО
+  const storeTotal = useCartStore((state: any) => state.totalPrice);
+  const totalPrice: number = typeof storeTotal === 'function' ? storeTotal() : Number(storeTotal || 0);
     
   const [isLoading, setIsLoading] = useState(false);
   
-  // ВЕРНУЛ ВСЕ ПРОПАВШИЕ СТЕЙТЫ
   const [city, setCity] = useState('');
   const [delivery, setDelivery] = useState('');
   const [address, setAddress] = useState('');
-  const [deliveryCost, setDeliveryCost] = useState(0);
+  const [deliveryCost, setDeliveryCost] = useState<number>(0);
 
-  // Имитация загрузки виджета СДЭК (сюда вернешь свой скрипт)
   useEffect(() => {
     if (delivery === 'СДЭК') {
       console.log('Загрузка виджета СДЭК для города:', city);
-      // Если у тебя был скрипт, он будет цепляться к div с id="cdek-map"
     }
   }, [delivery, city]);
 
@@ -37,7 +33,6 @@ export default function CheckoutPage() {
     try {
       const formData = new FormData(e.currentTarget);
       
-      // ВЕРНУЛ ПОЛНЫЙ СБОР ДАННЫХ ДЛЯ ТВОЕГО ТЕЛЕГРАМ БОТА
       const orderData = {
         name: formData.get('name'),
         email: formData.get('email'),
@@ -58,7 +53,6 @@ export default function CheckoutPage() {
       });
 
       alert('Заказ успешно оформлен! Мы свяжемся с вами.');
-      // Тут можно добавить очистку корзины
     } catch (error) {
       alert('Ошибка при оформлении заказа');
     } finally {
@@ -80,7 +74,6 @@ export default function CheckoutPage() {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '40px', width: '100%' }}>
         <div style={{ width: '100%', maxWidth: '400px' }}>
 
-          {/* СПИСОК ТОВАРОВ (с ровным визуалом и размерами [(17)]) */}
           {items.map((item: any) => (
             <div key={item.id} style={{ display: 'flex', gap: '20px', marginBottom: '30px', alignItems: 'center' }}>
               
@@ -120,7 +113,6 @@ export default function CheckoutPage() {
             </div>
           ))}
 
-          {/* ПОЛНАЯ ФОРМА С ГОРОДОМ, ДОСТАВКОЙ И СДЭКОМ */}
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', fontSize: '14px', marginTop: '20px' }}>
             <div style={{ marginBottom: '5px' }}>данные для доставки:</div>
             
@@ -144,7 +136,6 @@ export default function CheckoutPage() {
               <input type="text" name="tg" placeholder="@username" style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none' }} />
             </div>
 
-            {/* ВЕРНУЛ ГОРОД И СЛУЖБУ ДОСТАВКИ */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label>город</label>
               <input type="text" name="city" value={city} onChange={(e) => setCity(e.target.value)} required style={{ border: '1px solid #ccc', padding: '10px', fontFamily: 'inherit', outline: 'none' }} />
@@ -161,12 +152,10 @@ export default function CheckoutPage() {
               </select>
             </div>
 
-            {/* КОНТЕЙНЕР ДЛЯ ВИДЖЕТА СДЭК */}
             {delivery === 'СДЭК' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
                 <label>выберите пункт выдачи на карте:</label>
                 <div id="cdek-map" style={{ width: '100%', height: '300px', backgroundColor: '#f9f9f9', border: '1px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {/* ТУТ БУДЕТ РЕНДЕРИТСЯ ТВОЯ КАРТА СДЭКА */}
                   <span style={{ color: '#999' }}>[карта СДЭК загружается...]</span>
                 </div>
               </div>
@@ -189,7 +178,8 @@ export default function CheckoutPage() {
                 cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', 
                 fontFamily: 'inherit', 
                 opacity: (isLoading || !address) ? 0.5 : 1,
-                alignSelf: 'flex-start'
+                alignSelf: 'flex-start',
+                padding: 0
               }}
             >
               {isLoading ? '[ОЖИДАНИЕ...]' : '[заказать] 📦'}
