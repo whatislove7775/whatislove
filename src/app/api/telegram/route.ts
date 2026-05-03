@@ -5,11 +5,13 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { orderData } = body;
 
-    // Эти переменные мы добавим в Vercel позже
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
-    // Собираем красивое сообщение
+    if (!token || !chatId) {
+      return NextResponse.json({ error: 'Ключи Telegram не найдены в Vercel! Сделай Redeploy.' }, { status: 400 });
+    }
+
     const message = `
 📦 <b>НОВЫЙ ЗАКАЗ!</b>
 👤 <b>ФИО:</b> ${orderData.name}
@@ -23,18 +25,12 @@ export async function POST(req: Request) {
 🛒 <b>Корзина:</b>
 ${orderData.items.map((i: any) => `- ${i.name} (Размер: ${i.size}) x${i.quantity} = ${i.price * i.quantity}₽`).join('\n')}
 
-💰 <b>ИТОГО:</b> ${orderData.total}₽
+🚚 <b>Стоимость доставки:</b> ${orderData.deliveryCost > 0 ? orderData.deliveryCost + '₽' : 'Не рассчитана / Другой сервис'}
+💰 <b>ИТОГО С ДОСТАВКОЙ:</b> ${orderData.total + orderData.deliveryCost}₽
     `;
 
-    // Если ключей пока нет, просто имитируем успех для тестов фронтенда
-    if (!token || !chatId) {
-      console.warn('Telegram ключи не настроены, но заказ прошел!');
-      return NextResponse.json({ success: true });
-    }
-
-    // Отправляем запрос в Telegram API
     const tgUrl = `https://api.telegram.org/bot${token}/sendMessage`;
-    await fetch(tgUrl, {
+    const response = await fetch(tgUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -44,9 +40,17 @@ ${orderData.items.map((i: any) => `- ${i.name} (Размер: ${i.size}) x${i.qu
       })
     });
 
+    const tgData = await response.json();
+    
+    // Если Телеграм ругается (например, не нажат Start)
+    if (!tgData.ok) {
+      console.error('Ошибка от самого Telegram:', tgData);
+      return NextResponse.json({ error: `Telegram отклонил сообщение: ${tgData.description}` }, { status: 400 });
+    }
+
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Ошибка отправки в TG:', error);
-    return NextResponse.json({ error: 'Ошибка отправки' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Ошибка сервера TG:', error);
+    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 });
   }
 }
