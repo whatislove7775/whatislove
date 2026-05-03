@@ -4,20 +4,16 @@ import Link from 'next/link';
 
 export default function Cart() {
   const { items, removeItem, totalPrice } = useCartStore();
-
   const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <div style={{
-      position: 'absolute',
-      top: '20px', 
-      right: '20px',
-      width: '120px', // ВЕРНУЛИ СТАНДАРТНЫЙ РАЗМЕР
+      width: '120px', 
       zIndex: 1000,
       fontWeight: 700
     }}>
       <div style={{ width: '100%', marginBottom: '15px' }}>
-        <img src="/куаркод над корзиной.svg" alt="QR" style={{ width: '100%', height: 'auto' }} />
+        <img src="/куаркод над корзиной.svg" alt="QR" style={{ width: '100%', height: 'auto', display: 'block' }} />
       </div>
 
       <div style={{ marginBottom: '10px', textTransform: 'lowercase' }}>
@@ -29,12 +25,22 @@ export default function Cart() {
       ) : (
         <>
           {items.map((item, i) => (
-            <div key={`${item.id}-${item.size}-${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', fontWeight: 500, textTransform: 'lowercase', fontSize: '14px' }}>
-              <span style={{ lineHeight: '1.2' }}>
-                {item.name} <span style={{ color: 'red' }}>[{item.size}]</span><br/>
-                x{item.quantity}
+            // Flex-настройки для выравнивания строки
+            <div key={`${item.id}-${item.size}-${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', fontWeight: 500, textTransform: 'lowercase', fontSize: '14px', lineHeight: 1.2 }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span>{item.name}</span>
+                  <span style={{ color: 'red' }}>[{item.size}]</span>
+                </div>
+                <span>x{item.quantity}</span>
+              </div>
+              
+              {/* Крестик удаления */}
+              <span onClick={() => removeItem(item.id, item.size)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', height: '16px' }}>
+                [x]
               </span>
-              <span onClick={() => removeItem(item.id, item.size)} style={{ cursor: 'pointer' }}>[x]</span>
+              
             </div>
           ))}
           <div style={{ marginTop: '20px', textTransform: 'lowercase' }}>
