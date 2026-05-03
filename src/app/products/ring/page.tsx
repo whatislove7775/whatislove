@@ -79,7 +79,7 @@ export default function RingPage() {
             // Начинаем ровно по верхней границе серого фото (учитываем padding 15px)
             marginTop: '15px', 
             // Заканчиваем ровно по нижней границе серого фото (учитываем aspectRatio)
-            height: 'calc(100% - 50px)', // Высота = 100% контейнера минус padding
+            height: 'calc(100% - 40px)', // Высота = 100% контейнера минус padding
             justifyContent: 'space-between', // Плотная расстановка миниатюр
           }}>
             {[1, 2, 3, 4].map(i => (
