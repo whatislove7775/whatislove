@@ -30,7 +30,7 @@ export default function InfoPage() {
             </div>
             <div style={{ fontWeight: 500, lineHeight: '1.4', maxWidth: '450px' }}>
               Доставка осуществляется почтовой службой СДЭК,<br/>
-              Почта России, Озон доставка. Отправка в течение 60 дней
+              Яндекс доставка, OZON доставка, Wildberries доставка, 5post. Отправка в течение 60 дней
             </div>
           </div>
 
