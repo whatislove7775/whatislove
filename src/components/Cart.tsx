@@ -5,7 +5,6 @@ import Link from 'next/link';
 export default function Cart() {
   const { items, removeItem, totalPrice } = useCartStore();
 
-  // Считаем общее количество вещей (если 2 кольца 16го размера и 1 кольцо 17го = 3)
   const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
@@ -13,7 +12,7 @@ export default function Cart() {
       position: 'absolute',
       top: '20px', 
       right: '20px',
-      width: '160px', // Сделали чуть шире, чтобы влез текст
+      width: '120px', // ВЕРНУЛИ СТАНДАРТНЫЙ РАЗМЕР
       zIndex: 1000,
       fontWeight: 700
     }}>
@@ -30,7 +29,7 @@ export default function Cart() {
       ) : (
         <>
           {items.map((item, i) => (
-            <div key={`${item.id}-${item.size}-${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', fontWeight: 500, textTransform: 'lowercase', fontSize: '13px' }}>
+            <div key={`${item.id}-${item.size}-${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', fontWeight: 500, textTransform: 'lowercase', fontSize: '14px' }}>
               <span style={{ lineHeight: '1.2' }}>
                 {item.name} <span style={{ color: 'red' }}>[{item.size}]</span><br/>
                 x{item.quantity}
