@@ -36,7 +36,7 @@ export default function RingPage() {
         gap: '40px', 
         marginTop: '20px',
         alignItems: 'flex-start',
-        paddingRight: '140px', // Отступ от корзины
+        paddingRight: '140px',
         boxSizing: 'border-box'
       }}>
         
@@ -63,14 +63,16 @@ export default function RingPage() {
         {/* ПРАВАЯ КОЛОНКА: ИНФО */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '350px' }}>
           
-          {/* ЧИСТО ТЕКСТОВЫЙ БЛОК. МЕНЯЙ КОЛИЧЕСТВО ТОЧЕК ПРЯМО ТУТ */}
+          {/* ЧИСТО ТЕКСТОВЫЙ БЛОК + ВЫРАВНИВАНИЕ ПО ШИРИНЕ */}
           <div style={{ 
             width: '100%', 
-            whiteSpace: 'pre', 
+            whiteSpace: 'pre-wrap', // Изменено для работы justify
             lineHeight: '1.6', 
             fontWeight: 500,
             fontSize: '14px',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            textAlign: 'justify', // Выравнивание по ширине
+            textAlignLast: 'justify' // Растягивает короткие/одиночные строки от края до края
           }}>
             <span style={{ fontWeight: 800 }}>наименование</span>{` ................................................................ `}<span style={{ fontWeight: 800 }}>кольцо &lt;3</span>{'\n'}
             <span style={{ fontWeight: 800 }}>цена</span>{` .......................................................... `}<span style={{ color: '#999', textDecoration: 'line-through', fontWeight: 800 }}>3 600</span> <span style={{ color: '#d32f2f', fontWeight: 800 }}>1 598 руб</span>{'\n'}
@@ -115,7 +117,7 @@ export default function RingPage() {
 
           {/* НИЖНИЙ БЛОК */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '40px' }}>
-            <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px' }}>
+            <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px', textAlign: 'justify' }}>
               произведём, упакуем,<br/>
               и доставим
             </div>
