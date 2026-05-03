@@ -8,7 +8,6 @@ export default function InfoPage() {
       <div style={{ width: '100%', alignSelf: 'flex-start' }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'PRODUCT$', href: '/products', icon: '📦' },
           { name: 'ИНФО', icon: '❓' }
         ]} />
       </div>
