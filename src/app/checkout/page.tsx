@@ -141,7 +141,7 @@ export default function CheckoutPage() {
       
       <div style={{ width: '100%' }}>
         <Breadcrumbs path={[
-          { name: 'PRODUCT$', href: '/products', icon: '📦' },
+          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },{ name: 'PRODUCT$', href: '/products', icon: '📦' },
           { name: 'ЗАКАЗ', icon: '💳' }
         ]} />
       </div>
