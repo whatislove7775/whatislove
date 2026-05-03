@@ -3,27 +3,6 @@ import { useState } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 
-// Пунктирная линия (заполняет пространство)
-const DottedLine = () => (
-  <div style={{ 
-    flex: 1, 
-    borderBottom: '1.5px dotted #000', 
-    margin: '0 8px', 
-    position: 'relative', 
-    top: '-4px' 
-  }}></div>
-);
-
-// Строка характеристик. ls = letterSpacing для подгона кота
-const SpecRow = ({ cat, text, isBold = false, ls = '0px' }: { cat: string, text: string, isBold?: boolean, ls?: string }) => (
-  <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '4px', lineHeight: 1.2 }}>
-    {/* whiteSpace: 'pre' сохраняет твои пробелы, ls меняет межбуквенный интервал */}
-    <span style={{ whiteSpace: 'pre', letterSpacing: ls }}>{cat}</span>
-    {text ? <DottedLine /> : <div style={{ flex: 1 }}></div>}
-    <span style={{ fontWeight: isBold ? 800 : 500, textAlign: 'right' }}>{text}</span>
-  </div>
-);
-
 export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState(17);
   const addItem = useCartStore((state) => state.addItem);
@@ -39,7 +18,7 @@ export default function ProductPage() {
   };
 
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, fontFamily: 'inherit' }}>
       
       {/* НАВИГАЦИЯ */}
       <div style={{ width: '100%', alignSelf: 'flex-start' }}>
@@ -67,11 +46,13 @@ export default function ProductPage() {
           {/* Главное фото */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}>
-              {/* Крестики строго по углам через transform */}
-              <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
+              {/* Крестики строго по углам */}
+              <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, lineHeight: 1 }}>+</div>
+              
+              {/* Сюда вставишь <img ... /> */}
             </div>
             
             <div style={{ textAlign: 'center', marginTop: '20px', fontWeight: 800 }}>&lt;333*</div>
@@ -91,7 +72,7 @@ export default function ProductPage() {
           {/* Заголовок и Цена */}
           <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '15px' }}>
             <span style={{ fontWeight: 800 }}>кольцо&lt;3</span>
-            <DottedLine />
+            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div>
             {/* Цены выровнены одна над другой */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1.1 }}>
               <span style={{ color: '#d32f2f', fontWeight: 800 }}>1.598₽</span>
@@ -103,51 +84,43 @@ export default function ProductPage() {
 
           {/* made.with.love */}
           <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '20px' }}>
-            <DottedLine />
+            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', position: 'relative', top: '-1px' }}></div>
             <span style={{ fontWeight: 800, margin: '0 10px' }}>made.with.love</span>
-            <DottedLine />
+            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', position: 'relative', top: '-1px' }}></div>
           </div>
 
-          {/* ASCII Кот и Характеристики */}
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-            {/* Тут ты можешь менять пробелы внутри строк и крутить параметр ls (letterSpacing), 
-              чтобы линии кота идеально сошлись в твоем шрифте.
-            */}
-            <SpecRow cat="... /\_/\ .. ♡" text="материал" isBold={true} ls="1px" />
-            <SpecRow cat="> ( •  • ) <" text="хирургическая сталь" ls="1.8px" />
-            <SpecRow cat="...   |    | \_" text="" ls="1px" />
-            <SpecRow cat="...   | |  |  )_" text="доставка" isBold={true} ls="1px" />
-            <SpecRow cat="```L--L-- / /````" text="по всему РФ+СНГ" ls="1px" />
-            <SpecRow cat="........ \\ " text="" ls="2.5px" />
-            <SpecRow cat="......... V " text="выбери размер" isBold={true} ls="2.6px" />
+          {/* ASCII Кот и Характеристики (ЕДИНЫЙ ТЕКСТОВЫЙ БЛОК) */}
+          <div style={{ 
+            width: '100%', 
+            whiteSpace: 'pre-wrap', 
+            lineHeight: '1.4', 
+            fontWeight: 500,
+            overflow: 'hidden' 
+          }}>
+            <span style={{ letterSpacing: '0px' }}>... /\_/\ .. ♡</span>.................................................................... <span style={{ fontWeight: 800 }}>материал</span>{'\n'}
+            <span style={{ letterSpacing: '0px' }}>{'> ( •  • ) <'}</span>......................................................... хирургическая сталь{'\n'}
+            <span style={{ letterSpacing: '0px' }}>{`...   |    | \\_`}</span>............................................................................{'\n'}
+            <span style={{ letterSpacing: '0px' }}>{`...   | |  |  )_`}</span>.................................................................... <span style={{ fontWeight: 800 }}>доставка</span>{'\n'}
+            <span style={{ letterSpacing: '0px' }}>{`\`\`\`L--L-- / /\`\`\`\``}</span>............................................................. по всему РФ+СНГ{'\n'}
+            <span style={{ letterSpacing: '0px' }}>{`........ \\\\ `}</span>................................................................................{'\n'}
+            <span style={{ letterSpacing: '0px' }}>{`......... V `}</span>................................................................... <span style={{ fontWeight: 800 }}>выбери размер</span>
           </div>
 
-          {/* Выбор размера (без лишних скобок, как в макете) */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '30px', fontWeight: 800 }}>
+          {/* Выбор размера [16][(17)][18][19] */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '5px', fontWeight: 800 }}>
             {[16, 17, 18, 19].map((size) => {
               const isSelected = selectedSize === size;
               return (
-                <span key={size} style={{ display: 'flex', alignItems: 'center' }}>
-                  [ 
-                  <span 
-                    onClick={() => setSelectedSize(size)}
-                    style={{ 
-                      cursor: 'pointer', 
-                      color: isSelected ? '#d32f2f' : '#000',
-                      border: isSelected ? '1.5px solid #d32f2f' : '1.5px solid transparent',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '24px',
-                      height: '24px',
-                      margin: '0 4px',
-                      userSelect: 'none'
-                    }}
-                  >
-                    {size}
-                  </span> 
-                  ]
+                <span 
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  style={{ cursor: 'pointer', userSelect: 'none' }}
+                >
+                  {isSelected ? (
+                    <span style={{ color: '#d32f2f' }}>[({size})]</span>
+                  ) : (
+                    <span>[{size}]</span>
+                  )}
                 </span>
               );
             })}
