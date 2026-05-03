@@ -3,8 +3,8 @@ import ClientLayout from '@/components/ClientLayout';
 
 // Вот она — метадата с твоим фавиконом
 export const metadata = {
-  title: 'whatislove',
-  description: 'Digital platform and product store',
+  title: 'WH4T!SLOV3',
+  description: 'Дизай-студия/производство от whatislove^a',
   icons: {
     icon: '/favicon.svg',
   },
