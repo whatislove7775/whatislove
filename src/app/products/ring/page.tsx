@@ -61,101 +61,61 @@ export default function RingPage() {
         </div>
 
         {/* ПРАВАЯ КОЛОНКА: ИНФО */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '350px', fontSize: '14px', lineHeight: '1.2' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '350px' }}>
           
-          {/* наименование ... кольцо <3 */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
-            <span style={{ fontWeight: 800 }}>наименование</span>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div>
-            <span style={{ fontWeight: 800 }}>кольцо &lt;3</span>
+          {/* ЧИСТО ТЕКСТОВЫЙ БЛОК. МЕНЯЙ КОЛИЧЕСТВО ТОЧЕК ПРЯМО ТУТ */}
+          <div style={{ 
+            width: '100%', 
+            whiteSpace: 'pre', 
+            lineHeight: '1.6', 
+            fontWeight: 500,
+            fontSize: '14px',
+            overflow: 'hidden'
+          }}>
+            <span style={{ fontWeight: 800 }}>наименование</span>{` ................................................................ `}<span style={{ fontWeight: 800 }}>кольцо &lt;3</span>{'\n'}
+            <span style={{ fontWeight: 800 }}>цена</span>{` .......................................................... `}<span style={{ color: '#999', textDecoration: 'line-through', fontWeight: 800 }}>3 600</span> <span style={{ color: '#d32f2f', fontWeight: 800 }}>1 598 руб</span>{'\n'}
+            {`................................ `}<span style={{ fontWeight: 500 }}>сделано с любовью</span>{` ................................`}{'\n'}
+            {`....................................................................................................`}{'\n'}
+            <span style={{ fontWeight: 800 }}>материал</span>{` ................................................................ `}<span style={{ fontWeight: 500 }}>ювелирная сталь</span>{'\n'}
+            {`....................................................................................................`}{'\n'}
+            <span style={{ fontWeight: 800 }}>доставка</span>{` ................................................................... `}<span style={{ fontWeight: 500 }}>по всей России</span>{'\n'}
+            {`....................................................................................... `}<span style={{ fontWeight: 500 }}>+страны СНГ</span>{'\n'}
+            {`....................................................................................................`}{'\n'}
+            {`................................ `}<span style={{ fontWeight: 800 }}>выбери размер ниже</span>{` ...............................`}{'\n'}
+            {`....................................................................................................`}
           </div>
-
-          {/* цена ... 3 600 1 598 руб */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
-            <span style={{ fontWeight: 800 }}>цена</span>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#999', textDecoration: 'line-through', fontWeight: 800 }}>3 600</span>
-              <span style={{ color: '#d32f2f', fontWeight: 800 }}>1 598 руб</span>
-            </div>
-          </div>
-
-          {/* ... сделано с любовью ... */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', position: 'relative', top: '-4px' }}></div>
-            <span style={{ fontWeight: 500, margin: '0 8px' }}>сделано с любовью</span>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', position: 'relative', top: '-4px' }}></div>
-          </div>
-
-          {/* Разделитель */}
-          <div style={{ width: '100%', borderBottom: '1.5px dotted #000', marginBottom: '8px' }}></div>
-
-          {/* материал ... ювелирная сталь */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
-            <span style={{ fontWeight: 800 }}>материал</span>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div>
-            <span style={{ fontWeight: 500 }}>ювелирная сталь</span>
-          </div>
-
-          {/* Разделитель */}
-          <div style={{ width: '100%', borderBottom: '1.5px dotted #000', marginBottom: '8px' }}></div>
-
-          {/* доставка ... по всей России */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
-            <span style={{ fontWeight: 800 }}>доставка</span>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div>
-            <span style={{ fontWeight: 500 }}>по всей России</span>
-          </div>
-
-          {/* ... +страны СНГ */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', margin: '0 8px', position: 'relative', top: '-4px' }}></div>
-            <span style={{ fontWeight: 500 }}>+страны СНГ</span>
-          </div>
-
-          {/* Разделитель */}
-          <div style={{ width: '100%', borderBottom: '1.5px dotted #000', marginBottom: '8px' }}></div>
-
-          {/* ... выбери размер ниже ... */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', position: 'relative', top: '-4px' }}></div>
-            <span style={{ fontWeight: 800, margin: '0 8px' }}>выбери размер ниже</span>
-            <div style={{ flex: 1, borderBottom: '1.5px dotted #000', position: 'relative', top: '-4px' }}></div>
-          </div>
-
-          {/* Разделитель */}
-          <div style={{ width: '100%', borderBottom: '1.5px dotted #000', marginBottom: '25px' }}></div>
 
           {/* ВЫБОР РАЗМЕРА */}
-          <div style={{ display: 'flex', justifyContent: 'center', fontWeight: 800, alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '15px', fontWeight: 800, alignItems: 'center' }}>
             {[16, 17, 18, 19].map((size) => (
               <span 
                 key={size} 
                 onClick={() => setSelectedSize(size)}
-                style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', margin: '0 5px' }}
+                style={{ cursor: 'pointer', userSelect: 'none', margin: '0 8px', display: 'flex', alignItems: 'center' }}
               >
-                [ 
-                <span style={{ 
-                  display: 'inline-flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  color: '#000', 
-                  border: selectedSize === size ? '1.5px solid #d32f2f' : '1.5px solid transparent', 
-                  borderRadius: '50%', 
-                  width: '24px', 
-                  height: '24px', 
-                  margin: '0 4px' 
-                }}>
-                  {size}
-                </span> 
-                ]
+                {selectedSize === size ? (
+                  <span style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    color: '#d32f2f', 
+                    border: '1.5px solid #d32f2f', 
+                    borderRadius: '50%', 
+                    width: '26px', 
+                    height: '26px' 
+                  }}>
+                    {size}
+                  </span>
+                ) : (
+                  `[ ${size} ]`
+                )}
               </span>
             ))}
           </div>
 
           {/* НИЖНИЙ БЛОК */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '40px' }}>
-            <div style={{ fontWeight: 500, lineHeight: 1.4 }}>
+            <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px' }}>
               произведём, упакуем,<br/>
               и доставим
             </div>
