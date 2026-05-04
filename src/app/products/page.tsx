@@ -1,110 +1,103 @@
 'use client';
-import Link from 'next/link';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import Link from 'next/link';
+import { useCartStore } from '@/store/cartStore';
 
-// 1. ДАННЫЕ (Можешь добавлять сюда новые товары)
-const productsData = [
-  {
-    id: 'ring-heart',
-    title: 'кольцо <3',
-    price: '1598₽',
-    oldPrice: '3600₽',
+const products = [
+  { 
+    id: 'ring-1', 
+    name: 'КОЛЬЦО <3', 
+    price: 1598, 
+    oldPrice: 3600, 
+    slug: 'ring',
     material: 'сплав стали',
-    delivery: 'доставка по всему рф+снг',
-    href: '/products/ring-heart' // Ссылка на страницу конкретного товара
+    delivery: 'доставка по всему рф+снг'
   }
 ];
 
-// 2. ГЛАВНАЯ ФУНКЦИЯ СТРАНИЦЫ (которую ты случайно удалил)
 export default function ProductsPage() {
-  return (
-    <div style={{ 
-      width: '100%', 
-      maxWidth: '1000px', 
-      margin: '0 auto', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      fontFamily: 'inherit',
-      boxSizing: 'border-box',
-      padding: '40px 20px'
-    }}>
-      
-      {/* НАВИГАЦИЯ */}
-      <div style={{ position: 'relative', zIndex: 100 }}>
-        <Breadcrumbs path={[
-          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'PRODUCT$', href: '/products', icon: '📦' }
-        ]} />
-      </div>
+  const addItem = useCartStore((state: any) => state.addItem);
 
-      {/* СЕТКА ТОВАРОВ */}
+  const handleQuickAdd = (e: React.MouseEvent, product: any) => {
+    e.preventDefault(); // Чтобы не переходить на страницу товара при клике на кнопку
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      size: 17, // Размер по умолчанию для быстрой покупки
+      quantity: 1
+    });
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'inherit' }}>
+      
+      <Breadcrumbs path={[
+        { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+        { name: 'PRODUCT$', href: '/products', icon: '📦' }
+      ]} />
+
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', // Адаптивная сетка
-        gap: '80px 40px', // Отступы между товарами (80px по вертикали, чтобы не слипались)
-        width: '100%',
-        marginTop: '20px'
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
+        gap: '60px', 
+        marginTop: '30px' 
       }}>
-        
-        {productsData.map((product) => (
-          <div key={product.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        {products.map((product) => (
+          <div key={product.id} style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '400px' }}>
             
-            {/* КЛИКАБЕЛЬНЫЙ КВАДРАТ ТОВАРА */}
-            {/* display: 'block' делает так, чтобы ссылка обернула весь квадрат */}
-            <Link 
-              href={product.href} 
-              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-            >
-              {/* marginBottom: '30px' отодвигает текст вниз от крестиков */}
-              <div style={{ position: 'relative', width: '100%', marginBottom: '30px' }}> 
-                
-                {/* Крестики вынесены наружу на 15px */}
-                <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-                <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-                <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-                <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-                
-                {/* Сам серый квадрат */}
-                <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
-              </div>
-            </Link>
-
-            {/* ИНФО О ТОВАРЕ */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-              <div style={{ fontWeight: 800, fontSize: '20px' }}>{product.title}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontWeight: 800 }}>
-                <span style={{ color: '#d93a3a', fontSize: '16px' }}>{product.price}</span>
-                <span style={{ color: '#999', textDecoration: 'line-through', fontSize: '14px' }}>{product.oldPrice}</span>
+            {/* Контейнер картинки с добавленным отступом снизу */}
+            <div style={{ position: 'relative', width: '100%', marginBottom: '30px' }}> 
+              
+              {/* Крестики снаружи */}
+              <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              
+              {/* Сам квадрат товара */}
+              <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}>
+                {/* Тут картинка */}
               </div>
             </div>
 
-            <div style={{ fontWeight: 500, fontSize: '14px', lineHeight: 1.4, marginBottom: '25px' }}>
-              <div>{product.material}</div>
-              <div>{product.delivery}</div>
+            {/* Инфо и Кнопка */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontWeight: 800 }}>
+              <div style={{ fontSize: '18px' }}>{product.name.toLowerCase()}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <span style={{ color: '#d32f2f' }}>{product.price}₽</span>
+                <span style={{ fontSize: '14px', textDecoration: 'line-through', color: '#999' }}>{product.oldPrice}₽</span>
+              </div>
             </div>
-
-            {/* КНОПКИ */}
-            <div style={{ display: 'flex', gap: '15px', fontWeight: 800, fontSize: '14px' }}>
-              <Link href={product.href} style={{ textDecoration: 'none', color: 'inherit' }}>
+            
+            <div style={{ fontSize: '14px', marginTop: '5px', fontWeight: 500 }}>
+              {product.material}<br />
+              {product.delivery}
+            </div>
+            
+            {/* КНОПКА ДОБАВЛЕНИЯ В КОРЗИНУ */}
+            <div style={{ display: 'flex', gap: '20px', marginTop: '15px' }}>
+              <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', fontWeight: 800 }}>
                 [ подробнее ]
               </Link>
-              <button style={{ 
-                background: 'none', 
-                border: 'none', 
-                padding: 0, 
-                fontFamily: 'inherit', 
-                fontWeight: 800, 
-                fontSize: '14px', 
-                cursor: 'pointer',
-                color: 'inherit'
-              }}>
+              <button 
+                onClick={(e) => handleQuickAdd(e, product)}
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  fontWeight: 800, 
+                  cursor: 'pointer', 
+                  fontFamily: 'inherit',
+                  padding: 0,
+                  fontSize: '14px'
+                }}
+              >
                 [ +в 🛒'у ]
               </button>
             </div>
 
           </div>
         ))}
-
       </div>
     </div>
   );
