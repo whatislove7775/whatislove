@@ -6,7 +6,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 export default function SiteNav({ paths, backLink = '/', closeLink = '/' }: any) {
   const pathname = usePathname();
 
-  // Если мы на главной странице ( / ) — компонент возвращает пустоту и прячется
+  // Прячем навигацию на главной странице
   if (pathname === '/') return null;
 
   return (
@@ -20,15 +20,15 @@ export default function SiteNav({ paths, backLink = '/', closeLink = '/' }: any)
       marginBottom: '40px',
       flexShrink: 0
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <Link href={backLink} style={{ textDecoration: 'none', color: 'inherit' }}>
-          [{"<"}]
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <Link href={backLink} style={{ textDecoration: 'none', color: 'inherit', whiteSpace: 'nowrap' }}>
+          [ {'<'} ]
         </Link>
         <Breadcrumbs path={paths} />
       </div>
       
-      <Link href={closeLink} style={{ textDecoration: 'none', color: 'inherit', fontSize: '16px' }}>
-        [×]
+      <Link href={closeLink} style={{ textDecoration: 'none', color: 'inherit', fontSize: '16px', whiteSpace: 'nowrap' }}>
+        [ × ]
       </Link>
     </div>
   );
