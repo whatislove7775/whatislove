@@ -1,23 +1,21 @@
 'use client';
 import Link from 'next/link';
-// ВАЖНО: Проверь, правильный ли здесь путь до твоего файла Cart.tsx
-// Если он лежит в другой папке, поправь путь (например, '../components/Cart')
+// Путь до компонента корзины. Поправь, если он другой
 import Cart from '@/components/Cart'; 
 
 export default function Breadcrumbs({ path }: any) {
-  // Автоматически определяем ссылку для возврата
   const backLink = path.length > 1 && path[path.length - 2].href ? path[path.length - 2].href : '/';
 
   return (
     <div style={{ 
       display: 'flex', 
       justifyContent: 'space-between', 
-      alignItems: 'flex-start', // flex-start чтобы корзина ровно свисала вниз и не ломала шапку
+      alignItems: 'center', // ВОЗВРАЩАЕМ ВЫРАВНИВАНИЕ ПО ЦЕНТРУ (тонкая шапка)
       width: '100%', 
       fontWeight: 800, 
       fontSize: '14px', 
       marginBottom: '40px',
-      position: 'relative', 
+      position: 'relative', // Для позиционирования корзины относительно шапки
       zIndex: 100           
     }}>
       
@@ -42,17 +40,36 @@ export default function Breadcrumbs({ path }: any) {
         </span>
       </div>
 
-      {/* ПРАВАЯ ЧАСТЬ: ТВОЯ КОРЗИНА + Домик и Крестик */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '40px' }}>
+      {/* ПРАВАЯ ЧАСТЬ: Группа управления */}
+      {/* gap: '15px' — отступ между иконкой корзины и домиком */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative' }}>
         
-        {/* ВОТ ОНА: Вызываем твой настоящий компонент корзины */}
-        <Cart />
+        {/* Иконка корзины в шапке */}
+        <Link href="/cart" style={{ textDecoration: 'none', color: 'inherit' }}>
+          [ 🛒 ]
+        </Link>
 
-        {/* Домик и Крестик */}
-        <div style={{ display: 'flex', gap: '8px', whiteSpace: 'nowrap' }}>
-          <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-            [ 🏠 ]
-          </Link>
+        {/* Группа кнопок Домик + Крестик */}
+        <div style={{ display: 'flex', gap: '8px', whiteSpace: 'nowrap', alignItems: 'center' }}>
+          
+          {/* Контейнер ДОМИКА (к нему мы привяжем выравнивание корзины) */}
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+              [ 🏠 ]
+            </Link>
+
+            {/* МАГИЯ ЗДЕСЬ: Огромная корзина, прибитая к левому краю домика */}
+            <div style={{ 
+              position: 'absolute', 
+              top: 'calc(100% + 20px)', // Свисает на 20px ниже шапки
+              left: 0,                 // Идеально выравнивается по левому краю [🏠]
+              zIndex: 1000
+            }}>
+              <Cart />
+            </div>
+          </div>
+
+          {/* Крестик закрытия */}
           <Link href={backLink} style={{ textDecoration: 'none', color: 'inherit', fontSize: '16px' }}>
             [ × ]
           </Link>
