@@ -46,8 +46,10 @@ export default function ProductsPage() {
         {products.map((product) => (
           <div key={product.id} style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '400px' }}>
             
-            <div style={{ position: 'relative', width: '100%' }}>
-              {/* Плюсики отклеены от квадрата (вынесены на 15px наружу) */}
+            {/* Контейнер картинки с добавленным отступом снизу */}
+            <div style={{ position: 'relative', width: '100%', marginBottom: '30px' }}> 
+              
+              {/* Крестики снаружи */}
               <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
               <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
               <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
@@ -55,7 +57,7 @@ export default function ProductsPage() {
               
               {/* Сам квадрат товара */}
               <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}>
-                {/* Тут будет <Image /> или img */}
+                {/* Тут картинка */}
               </div>
             </div>
 
