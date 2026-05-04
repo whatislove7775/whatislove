@@ -6,7 +6,17 @@ export default function Breadcrumbs({ path }: any) {
   const backLink = path.length > 1 && path[path.length - 2].href ? path[path.length - 2].href : '/';
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontWeight: 800, fontSize: '14px', marginBottom: '40px' }}>
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      width: '100%', 
+      fontWeight: 800, 
+      fontSize: '14px', 
+      marginBottom: '40px',
+      position: 'relative', // <--- Защита от перекрытия невидимыми блоками
+      zIndex: 100           // <--- Выносит навигацию поверх всех остальных элементов
+    }}>
       
       {/* ЛЕВАЯ ЧАСТЬ: Назад и Путь */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
