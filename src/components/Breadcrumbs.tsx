@@ -41,13 +41,10 @@ export default function Breadcrumbs({ path }: any) {
       </div>
 
       {/* ПРАВАЯ ЧАСТЬ: Группа управления */}
-      {/* gap: '15px' — отступ между иконкой корзины и домиком */}
+      {/* gap: '15px' — отступ между группой домик/корзина и крестиком (если он был бы) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative' }}>
         
-        {/* Иконка корзины в шапке */}
-        <Link href="/cart" style={{ textDecoration: 'none', color: 'inherit' }}>
-          [ 🛒 ]
-        </Link>
+        {/* КОРЗИНЫ В ЛИНИИ НАВИГАЦИИ НЕТ. НАХУЙ УБРАЛ. */}
 
         {/* Группа кнопок Домик + Крестик */}
         <div style={{ display: 'flex', gap: '8px', whiteSpace: 'nowrap', alignItems: 'center' }}>
@@ -58,7 +55,7 @@ export default function Breadcrumbs({ path }: any) {
               [ 🏠 ]
             </Link>
 
-            {/* МАГИЯ ЗДЕСЬ: Огромная корзина, прибитая к левому краю домика */}
+            {/* МАГИЯ ЗДЕСЬ: Огромная корзина (с куаркодом) свисает вниз */}
             <div style={{ 
               position: 'absolute', 
               top: 'calc(100% + 20px)', // Свисает на 20px ниже шапки
