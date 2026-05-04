@@ -4,18 +4,19 @@ import Link from 'next/link';
 
 export default function Cart() {
   const { items, removeItem, totalPrice } = useCartStore();
-  const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
+  const totalItemsCount = items.reduce((acc: any, item: any) => acc + item.quantity, 0);
 
   return (
     <div style={{
-      width: '120px', // Четко фиксируем ширину
+      width: '120px', 
       zIndex: 1000,
       fontWeight: 700,
-      fontFamily: 'inherit' // Чтобы шрифт наследовался
+      fontFamily: 'inherit' 
     }}>
-      {/* КУАР-КОД ВЕРНУЛСЯ НА МЕСТО */}
+      
+      {/* ПУТЬ К КАРТИНКЕ ИЗМЕНЕН НА АНГЛИЙСКИЙ БЕЗ ПРОБЕЛОВ */}
       <div style={{ width: '100%', marginBottom: '15px' }}>
-        <img src="/куаркод над корзиной.svg" alt="QR" style={{ width: '100%', height: 'auto', display: 'block' }} />
+        <img src="/qr.svg" alt="QR" style={{ width: '100%', height: 'auto', display: 'block' }} />
       </div>
 
       <div style={{ marginBottom: '10px', textTransform: 'lowercase', fontSize: '14px' }}>
@@ -26,7 +27,7 @@ export default function Cart() {
         <div style={{ fontWeight: 500, textTransform: 'lowercase', fontSize: '14px' }}>пусто...</div>
       ) : (
         <>
-          {items.map((item, i) => (
+          {items.map((item: any, i: number) => (
             <div key={`${item.id}-${item.size}-${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', fontWeight: 500, textTransform: 'lowercase', fontSize: '12px', lineHeight: 1.2 }}>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
