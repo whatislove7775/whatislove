@@ -1,66 +1,42 @@
 'use client';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import Cart from './Cart'; // Подтянули корзину сюда
 
-interface Breadcrumb {
-  name: string;
-  href?: string;
-  icon?: string;
-}
-
-export default function Breadcrumbs({ path }: { path: Breadcrumb[] }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  // Показываем корзину только там, где нужно
-  const showCart = pathname.startsWith('/products') || pathname === '/info';
+export default function Breadcrumbs({ path }: any) {
+  // Автоматически определяем ссылку для возврата (предпоследний элемент)
+  const backLink = path.length > 1 && path[path.length - 2].href ? path[path.length - 2].href : '/';
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'space-between', 
-      alignItems: 'center', 
-      width: '100%',
-      fontWeight: 800,
-      textTransform: 'uppercase',
-      fontSize: '14px',
-      marginBottom: '20px',
-      position: 'relative', 
-      zIndex: 50            
-    }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontWeight: 800, fontSize: '14px', marginBottom: '40px' }}>
       
-      {/* Левая часть (Крошки) */}
-      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-        <span onClick={() => router.back()} style={{ cursor: 'pointer', marginRight: '10px' }}>
-          [&lt;]
+      {/* ЛЕВАЯ ЧАСТЬ: Назад и Путь */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Link href={backLink} style={{ textDecoration: 'none', color: 'inherit', whiteSpace: 'nowrap' }}>
+          [{"<"}]
+        </Link>
+        <span style={{ whiteSpace: 'nowrap' }}>
+          {path.map((item: any, index: number) => (
+            <span key={index}>
+              {item.href ? (
+                <Link href={item.href} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  {item.icon && `${item.icon} `}{item.name}
+                </Link>
+              ) : (
+                <span>{item.icon && `${item.icon} `}{item.name}</span>
+              )}
+              {index < path.length - 1 && ' / '}
+            </span>
+          ))}
         </span>
-        
-        {path.map((item, index) => (
-          <span key={item.name} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            {item.icon && <span>{item.icon}</span>}
-            {item.href ? (
-              <Link href={item.href} style={{ textDecoration: 'none', color: '#000' }}>
-                {item.name}
-              </Link>
-            ) : (
-              <span>{item.name}</span>
-            )}
-            {index < path.length - 1 && <span style={{ margin: '0 4px' }}>/</span>}
-          </span>
-        ))}
       </div>
 
-      {/* Правая часть (Домой, Крестик и КОРЗИНА) */}
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <Link href="/" style={{ textDecoration: 'none', color: '#000' }}>[ 🏠 ]</Link>
-        <span onClick={() => router.back()} style={{ cursor: 'pointer' }}>[x]</span>
-        
-        {/* Корзина выровнена ровно по левому краю этого блока (по домику) */}
-        {showCart && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, paddingTop: '15px' }}>
-            <Cart />
-          </div>
-        )}
+      {/* ПРАВАЯ ЧАСТЬ: Домик и Крестик */}
+      <div style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit', marginRight: '8px' }}>
+          [ 🏠 ]
+        </Link>
+        <Link href={backLink} style={{ textDecoration: 'none', color: 'inherit' }}>
+          [ × ]
+        </Link>
       </div>
       
     </div>
