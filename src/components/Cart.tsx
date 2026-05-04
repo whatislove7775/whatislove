@@ -14,9 +14,13 @@ export default function Cart() {
       fontFamily: 'inherit' 
     }}>
       
-      {/* ПУТЬ К КАРТИНКЕ ИЗМЕНЕН НА АНГЛИЙСКИЙ БЕЗ ПРОБЕЛОВ */}
+      {/* ИСПОЛЬЗУЕМ ТВОЙ ФАЙЛ С КИРИЛЛИЦЕЙ И ПРОБЕЛАМИ */}
       <div style={{ width: '100%', marginBottom: '15px' }}>
-        <img src="/qr.svg" alt="QR" style={{ width: '100%', height: 'auto', display: 'block' }} />
+        <img 
+          src={encodeURI("/куаркод над корзиной.svg")} 
+          alt="QR" 
+          style={{ width: '100%', height: 'auto', display: 'block' }} 
+        />
       </div>
 
       <div style={{ marginBottom: '10px', textTransform: 'lowercase', fontSize: '14px' }}>
