@@ -9,7 +9,6 @@ const projectsData: any = {
     task: 'дизайн сайта, фронтенд, бэкенд',
     year: '2026',
     tags: '[ веб-дизайн, разработка ]',
-    // Описание с маленькой буквы
     desc: 'полная разработка экосистемы для артиста: треки, концерты, магазин мерча и минималистичный интерфейс с акцентом на контент',
     credits: [
       { role: '[дизайн, дирекшен]', display: 't.me/Влад Марков (я)', url: 'https://t.me/babydonthurtmovich' },
@@ -17,7 +16,6 @@ const projectsData: any = {
       { role: '[бэкенд]', display: 't.me/Илья Дахновский', url: 'https://t.me/to_id_hide' }
     ]
   },
-  // Остальные кейсы
   'creed-rings': {
     title: 'кольца для Крида',
     client: 'Егор Крид',
@@ -36,16 +34,15 @@ export default function CasePage() {
   const caseId = params.case as string;
   const project = projectsData[caseId] || projectsData['asiya-site'];
 
-  // Идеальная строка: текст слева и справа зафиксированы (max-content), а точки ужимаются (minmax(0, 1fr))
+  // Выравнивание строго по базовой линии (baseline), никаких смещений top: -4px
   const InfoRow = ({ label, value, isValueBold = false }: any) => (
-    <div style={{ display: 'grid', gridTemplateColumns: 'max-content minmax(0, 1fr) max-content', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
+    <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', marginBottom: '8px' }}>
       <span style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{label}</span>
       <div style={{ 
+        flex: 1,
         overflow: 'hidden', 
         whiteSpace: 'nowrap', 
         opacity: 0.8, 
-        position: 'relative', 
-        top: '-4px',
         margin: '0 8px',
         letterSpacing: '2px' 
       }}>
@@ -60,8 +57,7 @@ export default function CasePage() {
       width: '100%', 
       maxWidth: '1000px', 
       margin: '0 auto', 
-      height: '100vh', 
-      overflow: 'hidden', // Никакого скролла
+      // Убрали height: 100vh, чтобы подвал мог подняться наверх
       display: 'flex', 
       flexDirection: 'column', 
       fontFamily: 'inherit',
@@ -69,7 +65,7 @@ export default function CasePage() {
       padding: '40px 20px'
     }}>
       
-      {/* НАВИГАЦИЯ (Написана вручную, чтобы не двоились кнопки из компонента Breadcrumbs) */}
+      {/* НАВИГАЦИЯ */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontWeight: 800, fontSize: '14px', marginBottom: '40px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit', whiteSpace: 'nowrap' }}>
@@ -84,12 +80,12 @@ export default function CasePage() {
             [ 🏠 ]
           </Link>
           <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit' }}>
-            [×]
+            [ × ]
           </Link>
         </div>
       </div>
 
-      {/* ОСНОВНАЯ СЕТКА (minmax(0, 1fr) спасает от растягивания за край экрана!) */}
+      {/* ОСНОВНАЯ СЕТКА */}
       <div style={{ 
         display: 'grid',
         gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr)', 
@@ -123,11 +119,11 @@ export default function CasePage() {
           <InfoRow label="название проекта" value={project.title} isValueBold={true} />
           <InfoRow label="клиент" value={project.client} />
           
-          {/* Сделано с любовью */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) max-content minmax(0, 1fr)', alignItems: 'flex-end', width: '100%', margin: '4px 0 10px 0' }}>
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px', position: 'relative', top: '-4px' }}>....................................................................................................</div>
+          {/* Сделано с любовью (точки на базовой линии) */}
+          <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', margin: '4px 0 10px 0' }}>
+            <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
             <span style={{ margin: '0 15px', fontWeight: 500, whiteSpace: 'nowrap' }}>сделано с любовью</span>
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px', position: 'relative', top: '-4px' }}>....................................................................................................</div>
+            <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
           </div>
 
           <InfoRow label="задача" value={project.task} />
@@ -140,7 +136,6 @@ export default function CasePage() {
                 <div style={{ fontWeight: 500 }}>{index === 0 ? 'авторы:' : ''}</div>
                 <div style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{credit.role}</div>
                 
-                {/* Ссылки жестко прижаты к правому краю */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', overflow: 'hidden' }}>
                   <a 
                     href={credit.url} 
@@ -160,19 +155,19 @@ export default function CasePage() {
             ))}
           </div>
 
-          {/* ОПИСАНИЕ С АВТОМАТИЧЕСКИМИ ТОЧКАМИ */}
+          {/* ОПИСАНИЕ С АВТОМАТИЧЕСКИМИ ТОЧКАМИ (Выравнивание по ширине) */}
           <div style={{ 
             fontWeight: 500, 
             lineHeight: 1.5, 
-            textAlign: 'left', // Строго по левому краю
+            textAlign: 'justify', // Текст растягивается от края до края
             width: '100%',
-            overflow: 'hidden' // Обрезает хвост точек
+            maxHeight: '4.5em', // Максимум 3 строки, чтобы точки не плодились бесконечно вниз
+            overflow: 'hidden'
           }}>
             <span>{project.desc}</span>
             <span style={{ 
               opacity: 0.8, 
               letterSpacing: '2px', 
-              wordBreak: 'break-all', 
               marginLeft: '5px' 
             }}>
               ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
