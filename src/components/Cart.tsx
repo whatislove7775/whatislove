@@ -13,6 +13,7 @@ export default function Cart() {
       fontWeight: 700,
       fontFamily: 'inherit' // Чтобы шрифт наследовался
     }}>
+      {/* КУАР-КОД ВЕРНУЛСЯ НА МЕСТО */}
       <div style={{ width: '100%', marginBottom: '15px' }}>
         <img src="/куаркод над корзиной.svg" alt="QR" style={{ width: '100%', height: 'auto', display: 'block' }} />
       </div>
