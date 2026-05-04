@@ -13,6 +13,14 @@ body {
   padding: 0;
   -webkit-font-smoothing: antialiased;
 }
+/* src/app/globals.css */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Блокирует скролл на уровне всей страницы */
+  height: 100%;
+  width: 100%;
+}
 
 /* Убираем подчеркивание и красим ссылки в черный */
 a {
