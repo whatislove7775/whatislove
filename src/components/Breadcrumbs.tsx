@@ -14,8 +14,8 @@ export default function Breadcrumbs({ path }: any) {
       fontWeight: 800, 
       fontSize: '14px', 
       marginBottom: '40px',
-      position: 'relative', // <--- Защита от перекрытия невидимыми блоками
-      zIndex: 100           // <--- Выносит навигацию поверх всех остальных элементов
+      position: 'relative', 
+      zIndex: 100           
     }}>
       
       {/* ЛЕВАЯ ЧАСТЬ: Назад и Путь */}
@@ -39,8 +39,14 @@ export default function Breadcrumbs({ path }: any) {
         </span>
       </div>
 
-      {/* ПРАВАЯ ЧАСТЬ: Домик и Крестик */}
+      {/* ПРАВАЯ ЧАСТЬ: Корзина, Домик и Крестик */}
       <div style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+        
+        {/* КОРЗИНА ВЕРНУЛАСЬ */}
+        <Link href="/cart" style={{ textDecoration: 'none', color: 'inherit', marginRight: '8px' }}>
+          [ 🛒 ]
+        </Link>
+        
         <Link href="/" style={{ textDecoration: 'none', color: 'inherit', marginRight: '8px' }}>
           [ 🏠 ]
         </Link>
