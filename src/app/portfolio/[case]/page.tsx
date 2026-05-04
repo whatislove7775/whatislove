@@ -10,7 +10,6 @@ const projectsData: any = {
     task: 'дизайн сайта, фронтенд, бэкенд',
     year: '2026',
     tags: '[ веб-дизайн, разработка ]',
-    // Описание теперь без ручных точек, они добавляются автоматически в верстке
     desc: 'полная разработка экосистемы для артиста: треки, концерты, магазин мерча и минималистичный интерфейс с акцентом на контент',
     credits: [
       { role: '[дизайн, дирекшен]', display: 't.me/Влад Марков (я)', url: 'https://t.me/babydonthurtmovich' },
@@ -38,60 +37,57 @@ export default function CasePage() {
 
   // Идеально ровная строка с точками БЕЗ пробелов
   const InfoRow = ({ label, value, isValueBold = false }: any) => (
-    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
-      <span style={{ fontWeight: 800 }}>{label}</span>
+    <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
+      <span style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{label}</span>
       <div style={{ 
+        flex: 1,
         overflow: 'hidden', 
         whiteSpace: 'nowrap', 
         opacity: 0.8, 
         position: 'relative', 
         top: '-4px',
         margin: '0 8px',
-        letterSpacing: '2px' 
+        letterSpacing: '2px' // Разреженные точки как в макете
       }}>
         ..........................................................................................................................................................................................
       </div>
-      <span style={{ fontWeight: isValueBold ? 800 : 500, textAlign: 'right' }}>{value}</span>
+      <span style={{ fontWeight: isValueBold ? 800 : 500, whiteSpace: 'nowrap' }}>{value}</span>
     </div>
   );
 
   return (
     <div style={{ 
       width: '100%', 
-      maxWidth: '1000px', 
+      maxWidth: '1000px', // Выравнивает контент с подвалом
       margin: '0 auto', 
+      height: '100vh', // Жесткая высота экрана
+      overflow: 'hidden', // УБИВАЕТ ЛЮБОЙ СКРОЛЛ
       display: 'flex', 
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '20px 20px 40px 20px' 
+      padding: '40px 20px' // Компактные отступы
     }}>
       
-      {/* НАВИГАЦИЯ (Строго как на остальных страницах: с Breadcrumbs, домиком и крестиком) */}
+      {/* НАВИГАЦИЯ (Строго по макету: [<], путь и [×]) */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontWeight: 800, fontSize: '14px', marginBottom: '40px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit' }}>[{'<'}]</Link>
-          {/* Родной компонент Breadcrumbs со всеми ссылками */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit' }}>[{"<"}]</Link>
           <Breadcrumbs path={[
             { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
             { name: 'PORTFOL1O', href: '/portfolio', icon: '📁' },
             { name: project.title.toUpperCase(), icon: '📄' }
           ]} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-            [ 🏠 ]
-          </Link>
-          <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit' }}>
-            [ × ]
-          </Link>
-        </div>
+        <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit', fontSize: '16px' }}>
+          [×]
+        </Link>
       </div>
 
       {/* ОСНОВНАЯ СЕТКА */}
       <div style={{ 
         display: 'grid',
-        gridTemplateColumns: '400px 1fr', 
+        gridTemplateColumns: '400px 1fr', // 400px жестко под фото, остаток под текст
         gap: '60px', 
         alignItems: 'flex-start',
         width: '100%',
@@ -102,10 +98,11 @@ export default function CasePage() {
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           
           <div style={{ position: 'relative', width: '100%' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-            <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-            <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-            <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+            {/* Крестики вынесены ровно по углам */}
+            <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+            <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+            <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+            <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
             
             <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5' }}></div>
           </div>
@@ -122,28 +119,29 @@ export default function CasePage() {
           <InfoRow label="название проекта" value={project.title} isValueBold={true} />
           <InfoRow label="клиент" value={project.client} />
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'flex-end', width: '100%', margin: '4px 0 10px 0' }}>
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px', position: 'relative', top: '-4px' }}>....................................................................................................</div>
-            <span style={{ margin: '0 10px', fontWeight: 500 }}>сделано с любовью</span>
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px', position: 'relative', top: '-4px' }}>....................................................................................................</div>
+          {/* Центральный разделитель */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', margin: '4px 0 10px 0' }}>
+            <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px', position: 'relative', top: '-4px' }}>....................................................................................................</div>
+            <span style={{ margin: '0 15px', fontWeight: 500, whiteSpace: 'nowrap' }}>сделано с любовью</span>
+            <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px', position: 'relative', top: '-4px' }}>....................................................................................................</div>
           </div>
 
           <InfoRow label="задача" value={project.task} />
           <InfoRow label="год" value={project.year} />
 
-          {/* АВТОРЫ (Выравнивание ссылок строго по правому краю блока) */}
-          <div style={{ display: 'flex', marginTop: '30px', marginBottom: '30px' }}>
-            <div style={{ width: '90px', fontWeight: 500 }}>авторы:</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
-              {project.credits.map((credit: any, index: number) => (
-                <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', width: '100%' }}>
-                  <span style={{ fontWeight: 800 }}>{credit.role}</span>
+          {/* АВТОРЫ (Идеальная сетка, ссылки прибиты к правому краю) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
+            {project.credits.map((credit: any, index: number) => (
+              <div key={index} style={{ display: 'grid', gridTemplateColumns: '70px auto 1fr', alignItems: 'baseline', gap: '20px' }}>
+                <div style={{ fontWeight: 500 }}>{index === 0 ? 'авторы:' : ''}</div>
+                <div style={{ fontWeight: 800 }}>{credit.role}</div>
+                <div style={{ textAlign: 'right' }}>
                   <a 
                     href={credit.url} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     style={{ 
-                      color: '#3b00ff', 
+                      color: '#3b00ff', // Фиолетовый
                       textDecoration: 'none', 
                       fontWeight: 800 
                     }}
@@ -151,26 +149,28 @@ export default function CasePage() {
                     {credit.display}
                   </a>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
 
-          {/* ОПИСАНИЕ С АВТОМАТИЧЕСКИМИ ТОЧКАМИ ДО КРАЯ */}
+          {/* ОПИСАНИЕ (Текст слева + автоматические точки до конца блока) */}
           <div style={{ 
             fontWeight: 500, 
             lineHeight: 1.5, 
-            textAlign: 'justify', 
+            textAlign: 'left', // СТРОГО СЛЕВА, без дырок в тексте
             width: '100%',
-            overflow: 'hidden' // Обрезает длинный хвост точек по границе контейнера
+            maxHeight: '4.5em', // Ограничение на 3 строки
+            overflow: 'hidden', // Обрезает лишние точки
+            position: 'relative'
           }}>
             <span>{project.desc}</span>
             <span style={{ 
               opacity: 0.8, 
               letterSpacing: '2px', 
-              whiteSpace: 'nowrap', 
+              wordBreak: 'break-all', // Позволяет точкам аккуратно переноситься и заполнять пустоту
               marginLeft: '5px' 
             }}>
-              ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+              ........................................................................................................................................................................................................................................................................................................................................................................................................................
             </span>
           </div>
 
