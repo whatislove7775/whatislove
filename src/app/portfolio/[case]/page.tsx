@@ -1,6 +1,6 @@
 'use client';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 const projectsData: any = {
   'asiya-site': {
@@ -34,7 +34,7 @@ export default function CasePage() {
   const caseId = params.case as string;
   const project = projectsData[caseId] || projectsData['asiya-site'];
 
-  // Выравнивание строго по базовой линии (baseline), никаких смещений top: -4px
+  // Идеально ровная строка с точками на базовой линии
   const InfoRow = ({ label, value, isValueBold = false }: any) => (
     <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', marginBottom: '8px' }}>
       <span style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{label}</span>
@@ -57,33 +57,19 @@ export default function CasePage() {
       width: '100%', 
       maxWidth: '1000px', 
       margin: '0 auto', 
-      // Убрали height: 100vh, чтобы подвал мог подняться наверх
       display: 'flex', 
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '40px 20px'
+      padding: '40px 20px' // Без жесткой высоты экрана — подвал сам поднимется наверх
     }}>
       
-      {/* НАВИГАЦИЯ */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontWeight: 800, fontSize: '14px', marginBottom: '40px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit', whiteSpace: 'nowrap' }}>
-            [{"<"}]
-          </Link>
-          <span style={{ whiteSpace: 'nowrap' }}>
-            📁 WH4T!SLOV3 / 📁 PORTFOL1O / 📄 {project.title.toUpperCase()}
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
-          <Link href="/" style={{ textDecoration: 'none', color: 'inherit', marginRight: '4px' }}>
-            [ 🏠 ]
-          </Link>
-          <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit' }}>
-            [ × ]
-          </Link>
-        </div>
-      </div>
+      {/* НАВИГАЦИЯ (Только компонент, он сам отрисует и крошки, и крестик) */}
+      <Breadcrumbs path={[
+        { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+        { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
+        { name: project.title.toUpperCase(), icon: '📄' }
+      ]} />
 
       {/* ОСНОВНАЯ СЕТКА */}
       <div style={{ 
@@ -129,7 +115,7 @@ export default function CasePage() {
           <InfoRow label="задача" value={project.task} />
           <InfoRow label="год" value={project.year} />
 
-          {/* АВТОРЫ */}
+          {/* АВТОРЫ (Ссылки прибиты к правому краю) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
             {project.credits.map((credit: any, index: number) => (
               <div key={index} style={{ display: 'grid', gridTemplateColumns: '90px max-content minmax(0, 1fr)', alignItems: 'baseline', width: '100%' }}>
@@ -155,22 +141,20 @@ export default function CasePage() {
             ))}
           </div>
 
-          {/* ОПИСАНИЕ С АВТОМАТИЧЕСКИМИ ТОЧКАМИ (Выравнивание по ширине) */}
+          {/* ОПИСАНИЕ С АВТОМАТИЧЕСКИМИ ТОЧКАМИ */}
           <div style={{ 
             fontWeight: 500, 
             lineHeight: 1.5, 
-            textAlign: 'justify', // Текст растягивается от края до края
+            textAlign: 'justify', // Идеально растягивает текст по ширине до ссылок
             width: '100%',
-            maxHeight: '4.5em', // Максимум 3 строки, чтобы точки не плодились бесконечно вниз
             overflow: 'hidden'
           }}>
-            <span>{project.desc}</span>
+            {project.desc}
             <span style={{ 
               opacity: 0.8, 
-              letterSpacing: '2px', 
-              marginLeft: '5px' 
+              letterSpacing: '2px'
             }}>
-              ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+              {` ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................`}
             </span>
           </div>
 
