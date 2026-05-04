@@ -2,7 +2,6 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
-// Данные строго по макету "портфолиока.jpg"
 const projectsData: any = {
   'asiya-site': {
     title: 'сайт для Асии',
@@ -35,55 +34,53 @@ export default function CasePage() {
   const caseId = params.case as string;
   const project = projectsData[caseId] || projectsData['asiya-site'];
 
-  // Идеально ровная строка с точками
+  // Идеально ровная строка с точками БЕЗ пробелов благодаря CSS Grid
   const InfoRow = ({ label, value, isValueBold = false }: any) => (
-    <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '12px' }}>
-      <span style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{label}</span>
+    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '8px' }}>
+      <span style={{ fontWeight: 800 }}>{label}</span>
       <div style={{ 
-        flex: 1, 
-        margin: '0 10px', 
         overflow: 'hidden', 
         whiteSpace: 'nowrap', 
         opacity: 0.8, 
         position: 'relative', 
         top: '-4px',
+        margin: '0 8px',
         letterSpacing: '2px' // Разреженные точки
       }}>
         ..........................................................................................................................................................................................
       </div>
-      <span style={{ fontWeight: isValueBold ? 800 : 500, whiteSpace: 'nowrap' }}>{value}</span>
+      <span style={{ fontWeight: isValueBold ? 800 : 500, textAlign: 'right' }}>{value}</span>
     </div>
   );
 
   return (
     <div style={{ 
-      width: '100vw', 
-      height: '100vh', 
-      overflow: 'hidden', // ЖЕСТКО БЛОКИРУЕТ СКРОЛЛ
+      width: '100%', 
+      maxWidth: '1000px', // ЖЕСТКОЕ ОГРАНИЧЕНИЕ ШИРИНЫ (выровняет с подвалом)
+      margin: '0 auto', // ЦЕНТРИРОВАНИЕ
       display: 'flex', 
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '40px 60px' // ОТСТУПЫ ОТ КРАЕВ ЭКРАНА (крестики больше не режутся)
+      padding: '20px 20px 40px 20px' // Компактные отступы, чтобы подвал влез на экран
     }}>
       
-      {/* НАВИГАЦИЯ (Шапка в точности как на макете) */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontWeight: 800, fontSize: '16px' }}>
+      {/* НАВИГАЦИЯ (Компактная, крестик и кнопки как были) */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontWeight: 800, fontSize: '14px', marginBottom: '40px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit' }}>[ {"<"} ]</Link>
-          <span style={{ marginLeft: '10px' }}>📁 WH4T!SLOV3 / 📁 PORTFOL1O / 📄 {project.title.toUpperCase()}</span>
+          <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit' }}>[{'<'}]</Link>
+          <span>📁 WH4T!SLOV3 / 📁 PORTFOL1O / 📄 {project.title.toUpperCase()}</span>
         </div>
-        <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit', fontSize: '18px' }}>
-          [ × ]
+        <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit' }}>
+          [×]
         </Link>
       </div>
 
       {/* ОСНОВНАЯ СЕТКА */}
       <div style={{ 
         display: 'grid',
-        gridTemplateColumns: '450px 1fr', // 450px на фото, остаток на текст
-        gap: '80px', // Увеличенный гап для воздуха, как в макете
-        marginTop: '60px',
+        gridTemplateColumns: '400px 1fr', // 400px на фото, остаток на текст
+        gap: '60px', 
         alignItems: 'flex-start',
         width: '100%',
         boxSizing: 'border-box'
@@ -93,33 +90,33 @@ export default function CasePage() {
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           
           <div style={{ position: 'relative', width: '100%' }}>
-            {/* Крестики вынесены за пределы фото с помощью отрицательных координат */}
-            <div style={{ position: 'absolute', top: '-25px', left: '-25px', fontWeight: 300, fontSize: '24px', lineHeight: 1 }}>+</div>
-            <div style={{ position: 'absolute', top: '-25px', right: '-25px', fontWeight: 300, fontSize: '24px', lineHeight: 1 }}>+</div>
-            <div style={{ position: 'absolute', bottom: '-25px', left: '-25px', fontWeight: 300, fontSize: '24px', lineHeight: 1 }}>+</div>
-            <div style={{ position: 'absolute', bottom: '-25px', right: '-25px', fontWeight: 300, fontSize: '24px', lineHeight: 1 }}>+</div>
+            {/* Крестики строго по углам фото */}
+            <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+            <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+            <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
             
-            {/* Само фото (Пропорция как на макете) */}
+            {/* Само фото */}
             <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5' }}></div>
           </div>
           
           {/* Теги под фото */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px', fontWeight: 800, fontSize: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', fontWeight: 800, fontSize: '13px' }}>
             <span>{project.tags}</span>
             <span>[ {project.year} ]</span>
           </div>
         </div>
 
         {/* ПРАВАЯ КОЛОНКА (Текст) */}
-        <div style={{ display: 'flex', flexDirection: 'column', fontSize: '15px', maxWidth: '650px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', width: '100%' }}>
           
           <InfoRow label="название проекта" value={project.title} isValueBold={true} />
           <InfoRow label="клиент" value={project.client} />
           
           {/* Центральный разделитель */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'flex-end', width: '100%', margin: '8px 0 16px 0' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'flex-end', width: '100%', margin: '4px 0 10px 0' }}>
             <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px', position: 'relative', top: '-4px' }}>....................................................................................................</div>
-            <span style={{ margin: '0 15px', fontWeight: 500 }}>сделано с любовью</span>
+            <span style={{ margin: '0 10px', fontWeight: 500 }}>сделано с любовью</span>
             <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px', position: 'relative', top: '-4px' }}>....................................................................................................</div>
           </div>
 
@@ -127,11 +124,11 @@ export default function CasePage() {
           <InfoRow label="год" value={project.year} />
 
           {/* АВТОРЫ */}
-          <div style={{ display: 'flex', marginTop: '40px', marginBottom: '40px' }}>
-            <div style={{ width: '100px', fontWeight: 500 }}>авторы:</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+          <div style={{ display: 'flex', marginTop: '30px', marginBottom: '30px' }}>
+            <div style={{ width: '90px', fontWeight: 500 }}>авторы:</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
               {project.credits.map((credit: any, index: number) => (
-                <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <div key={index} style={{ display: 'grid', gridTemplateColumns: '180px 1fr', alignItems: 'baseline' }}>
                   <span style={{ fontWeight: 800 }}>{credit.role}</span>
                   <a 
                     href={credit.url} 
@@ -154,7 +151,7 @@ export default function CasePage() {
           <div style={{ 
             fontWeight: 500, 
             lineHeight: 1.5, 
-            textAlign: 'left', 
+            textAlign: 'justify', // ВЫРАВНИВАЕТ ТЕКСТ ПО ШИРИНЕ БЛОКА
             width: '100%',
             overflow: 'hidden'
           }}>
