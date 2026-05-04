@@ -1,13 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Cart from '@/components/Cart'; 
+import Cart from '@/app/cart/Cart'; // Проверь, что путь до файла Cart правильный
 
 export default function Breadcrumbs({ path }: any) {
   const pathname = usePathname();
   const backLink = path.length > 1 && path[path.length - 2].href ? path[path.length - 2].href : '/';
 
-  // УСЛОВИЕ ПОКАЗА: только на страницах каталога/товаров (/products...) или чекаута (/checkout)
+  // ЖЕСТКОЕ УСЛОВИЕ: только каталог, товары и чекаут
   const shouldShowCart = pathname.startsWith('/products') || pathname.startsWith('/checkout');
 
   return (
@@ -23,7 +23,6 @@ export default function Breadcrumbs({ path }: any) {
       zIndex: 100           
     }}>
       
-      {/* ЛЕВАЯ ЧАСТЬ: Назад и Путь */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Link href={backLink} style={{ textDecoration: 'none', color: 'inherit', whiteSpace: 'nowrap' }}>
           [{"<"}]
@@ -44,9 +43,7 @@ export default function Breadcrumbs({ path }: any) {
         </span>
       </div>
 
-      {/* ПРАВАЯ ЧАСТЬ */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative' }}>
-        
         <div style={{ display: 'flex', gap: '8px', whiteSpace: 'nowrap', alignItems: 'center' }}>
           
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -54,7 +51,7 @@ export default function Breadcrumbs({ path }: any) {
               [ 🏠 ]
             </Link>
 
-            {/* КОРЗИНА ПОЯВИТСЯ ТОЛЬКО ТАМ, ГДЕ ТЫ РАЗРЕШИЛ */}
+            {/* Корзина только там, где разрешено */}
             {shouldShowCart && (
               <div style={{ 
                 position: 'absolute', 
