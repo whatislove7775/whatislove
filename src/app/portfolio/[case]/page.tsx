@@ -1,42 +1,33 @@
 'use client';
 import { useParams } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import Link from 'next/link';
 
-// Данные кейсов с командой
+// Точные данные по твоему макету
 const projectsData: any = {
-  'creed-rings': {
-    title: 'кольца для Крида',
-    year: '2025',
-    desc: 'сделали дизайн, модели, произвели, упаковали',
-    credits: [
-      { role: 'дизайн / 3d', display: 't.me/Влад Марков', url: 'https://t.me/babydonthurtmovich' },
-      { role: 'менеджмент', display: 't.me/Никита Оленёв', url: 'https://t.me/nekitocka' },
-      { role: 'производство', display: 't.me/Илья Дахновский', url: 'https://t.me/to_id_hide' } // @ убран из ссылки для корректного перехода
-    ]
-  },
   'asiya-site': {
     title: 'сайт для Асии',
-    year: '2025',
-    desc: 'сделали дизайн, фронтенд, бэкенд и т.д.',
+    client: 'Асия',
+    task: 'дизайн сайта, фронтенд, бэкенд',
+    year: '2026',
+    tags: '[ веб-дизайн, разработка ]',
+    desc: 'полная разработка экосистемы для артиста: треки, концерты, магазин мерча и минималистичный интерфейс с акцентом на контент.......................................................................................................',
     credits: [
-      { role: 'фуллстек', display: 't.me/Влад Марков', url: 'https://t.me/babydonthurtmovich' }
+      { role: '[дизайн, дирекшен]', display: 't.me/Влад Марков (я)', url: 'https://t.me/babydonthurtmovich' },
+      { role: '[фронтенд]', display: 't.me/Никита Оленёв', url: 'https://t.me/nekitocka' },
+      { role: '[бэкенд]', display: 't.me/Илья Дахновский', url: 'https://t.me/to_id_hide' }
     ]
   },
-  'asiya-merch': {
-    title: 'мерч для Асии',
-    year: '2024',
-    desc: 'сделали дизайн принтов и дизайн бирок',
-    credits: [
-      { role: 'дизайн', display: 't.me/Влад Марков', url: 'https://t.me/babydonthurtmovich' }
-    ]
-  },
-  'pins-bans': {
-    title: 'значки PINS-BANS',
+  // Остальные кейсы можно добавить по аналогии
+  'creed-rings': {
+    title: 'кольца для Крида',
+    client: 'Егор Крид',
+    task: 'дизайн, 3d, производство',
     year: '2025',
-    desc: 'сделали дизайн, модели, произвели, упаковали',
+    tags: '[ предметный дизайн ]',
+    desc: 'разработка и производство уникальных ювелирных изделий для артиста.......................................................................',
     credits: [
-      { role: 'дизайн / 3d', display: 't.me/Влад Марков', url: 'https://t.me/babydonthurtmovich' },
-      { role: 'менеджмент', display: 't.me/Никита Оленёв', url: 'https://t.me/nekitocka' }
+      { role: '[дизайн / 3d]', display: 't.me/Влад Марков', url: 'https://t.me/babydonthurtmovich' }
     ]
   }
 };
@@ -44,113 +35,95 @@ const projectsData: any = {
 export default function CasePage() {
   const params = useParams();
   const caseId = params.case as string;
-  const project = projectsData[caseId] || projectsData['creed-rings'];
+  const project = projectsData[caseId] || projectsData['asiya-site'];
 
-  const InfoRow = ({ label, value, isBold = false }: any) => (
-    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
-      <span style={{ fontWeight: 800 }}>{label}</span>
-      <div style={{ margin: '0 8px', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, position: 'relative', top: '-1px' }}>
+  // Компонент для строк с точками
+  const InfoRow = ({ label, value, isValueBold = false }: any) => (
+    <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
+      <span style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{label}</span>
+      <div style={{ flex: 1, margin: '0 8px', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, position: 'relative', top: '-3px' }}>
         ..........................................................................................................................................................................................
       </div>
-      <span style={{ fontWeight: isBold ? 800 : 500, textAlign: 'right' }}>{value}</span>
+      <span style={{ fontWeight: isValueBold ? 800 : 500, whiteSpace: 'nowrap' }}>{value}</span>
     </div>
   );
 
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, fontFamily: 'inherit' }}>
       
-      {/* НАВИГАЦИЯ */}
-      <div style={{ width: '100%', alignSelf: 'flex-start' }}>
+      {/* НАВИГАЦИЯ: Крошки слева, крестик закрытия справа */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'PORTFOLIO', href: '/portfolio', icon: '📂' },
+          { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
           { name: project.title.toUpperCase(), icon: '📄' }
         ]} />
+        <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit', fontWeight: 800, fontSize: '18px' }}>
+          [ × ]
+        </Link>
       </div>
 
-      {/* ОСНОВНОЙ КОНТЕЙНЕР (GRID как в товарах) */}
+      {/* ОСНОВНОЙ КОНТЕЙНЕР (2 равные колонки) */}
       <div style={{ 
         display: 'grid',
-        gridTemplateColumns: '480px 1fr', 
+        gridTemplateColumns: '1fr 1fr', 
         gap: '60px', 
         marginTop: '30px',
-        alignItems: 'stretch',
-        paddingRight: '140px',
+        alignItems: 'flex-start',
+        width: '100%',
         boxSizing: 'border-box'
       }}>
         
-        {/* ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ КЕЙСА */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px', gap: '20px' }}>
+        {/* ЛЕВАЯ КОЛОНКА: Изображение и теги */}
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           
-          <div style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
-            <div style={{ position: 'relative', width: '100%', padding: '15px', boxSizing: 'border-box' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '20px' }}>+</div>
-              <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '20px' }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '20px' }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '20px' }}>+</div>
-              
-              <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
-            </div>
-            <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px', opacity: 0.5 }}>[ главная пикча ]</div>
+          <div style={{ position: 'relative', width: '100%', padding: '15px', boxSizing: 'border-box' }}>
+            {/* Крестики по углам */}
+            <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '20px' }}>+</div>
+            <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '20px' }}>+</div>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '20px' }}>+</div>
+            <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '20px' }}>+</div>
+            
+            {/* Главное фото (формат ~ 16:10) */}
+            <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5' }}></div>
           </div>
-
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            justifyContent: 'space-between',
-            width: '80px',
-            marginTop: '15px',
-            aspectRatio: '80 / 450',
-            maxHeight: '390px'
-          }}>
-            {[1, 2, 3].map(i => (
-              <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
-            ))}
+          
+          {/* Теги под фото */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontWeight: 800, fontSize: '14px', padding: '0 15px' }}>
+            <span>{project.tags}</span>
+            <span>[ {project.year} ]</span>
           </div>
         </div>
 
-        {/* ПРАВАЯ КОЛОНКА: ИНФО */}
-        <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            marginTop: '15px', 
-            height: '390px', 
-            justifyContent: 'space-between',
-            fontSize: '14px'
-        }}>
+        {/* ПРАВАЯ КОЛОНКА: Инфо, авторы и описание */}
+        <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', paddingTop: '15px' }}>
           
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <InfoRow label="проект" value={project.title} isBold={true} />
-            <InfoRow label="год" value={`[ ${project.year} ]`} isBold={true} />
+          {/* Верхние строки характеристик */}
+          <InfoRow label="название проекта" value={project.title} isValueBold={true} />
+          <InfoRow label="клиент" value={project.client} />
+          
+          <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%', margin: '4px 0' }}>
+            <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>....................................................................................................</div>
+            <span style={{ margin: '0 10px', fontWeight: 500 }}>сделано с любовью</span>
+            <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>....................................................................................................</div>
+          </div>
 
-            <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, margin: '15px 0 10px 0' }}>
-              ..........................................................................................................................................................................................
-            </div>
+          <InfoRow label="задача" value={project.task} />
+          <InfoRow label="год" value={project.year} />
 
-            <div style={{ fontWeight: 500, lineHeight: 1.4, textAlign: 'left' }}>
-              {project.desc}
-            </div>
-
-            <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, margin: '15px 0 10px 0' }}>
-              ..........................................................................................................................................................................................
-            </div>
-
-            {/* КОМАНДА С ФИОЛЕТОВЫМИ ССЫЛКАМИ */}
-            <div style={{ fontWeight: 800, marginBottom: '8px' }}>команда:</div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {/* Блок Авторы */}
+          <div style={{ display: 'flex', marginTop: '30px', marginBottom: '30px' }}>
+            <div style={{ width: '70px', fontWeight: 500 }}>авторы:</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
               {project.credits.map((credit: any, index: number) => (
-                <div key={index} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%' }}>
-                  <span style={{ fontWeight: 500 }}>{credit.role}</span>
-                  <div style={{ margin: '0 8px', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, position: 'relative', top: '-1px' }}>
-                    ..........................................................................................................................................................................................
-                  </div>
+                <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <span style={{ fontWeight: 800 }}>{credit.role}</span>
                   <a 
                     href={credit.url} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     style={{ 
-                      color: '#9333ea', // Фиолетовый цвет ссылок
+                      color: '#3b00ff', // Тот самый фиолетово-синий цвет из макета
                       textDecoration: 'none', 
                       fontWeight: 800 
                     }}
@@ -160,8 +133,13 @@ export default function CasePage() {
                 </div>
               ))}
             </div>
-
           </div>
+
+          {/* Описание */}
+          <div style={{ fontWeight: 500, lineHeight: 1.4, textAlign: 'justify', wordBreak: 'break-word' }}>
+            {project.desc}
+          </div>
+
         </div>
       </div>
     </div>
