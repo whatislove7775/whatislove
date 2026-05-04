@@ -34,7 +34,7 @@ export default function CasePage() {
   const caseId = params.case as string;
   const project = projectsData[caseId] || projectsData['asiya-site'];
 
-  // Идеально ровная строка с точками на базовой линии
+  // Выравнивание строго по базовой линии (baseline), точки в нижнем регистре
   const InfoRow = ({ label, value, isValueBold = false }: any) => (
     <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', marginBottom: '8px' }}>
       <span style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{label}</span>
@@ -61,15 +61,20 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '40px 20px' // Без жесткой высоты экрана — подвал сам поднимется наверх
+      // Верхний отступ уменьшен до 15px, чтобы поднять навигацию выше
+      padding: '15px 20px 40px 20px',
+      position: 'relative'
     }}>
       
-      {/* НАВИГАЦИЯ (Только компонент, он сам отрисует и крошки, и крестик) */}
-      <Breadcrumbs path={[
-        { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-        { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
-        { name: project.title.toUpperCase(), icon: '📄' }
-      ]} />
+      {/* НАВИГАЦИЯ */}
+      {/* Обертка с zIndex: 100 гарантирует, что невидимые шапки не перекроют клики */}
+      <div style={{ width: '100%', position: 'relative', zIndex: 100 }}>
+        <Breadcrumbs path={[
+          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+          { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
+          { name: project.title.toUpperCase(), icon: '📄' }
+        ]} />
+      </div>
 
       {/* ОСНОВНАЯ СЕТКА */}
       <div style={{ 
@@ -105,7 +110,7 @@ export default function CasePage() {
           <InfoRow label="название проекта" value={project.title} isValueBold={true} />
           <InfoRow label="клиент" value={project.client} />
           
-          {/* Сделано с любовью (точки на базовой линии) */}
+          {/* Сделано с любовью */}
           <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', margin: '4px 0 10px 0' }}>
             <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
             <span style={{ margin: '0 15px', fontWeight: 500, whiteSpace: 'nowrap' }}>сделано с любовью</span>
@@ -115,7 +120,7 @@ export default function CasePage() {
           <InfoRow label="задача" value={project.task} />
           <InfoRow label="год" value={project.year} />
 
-          {/* АВТОРЫ (Ссылки прибиты к правому краю) */}
+          {/* АВТОРЫ */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
             {project.credits.map((credit: any, index: number) => (
               <div key={index} style={{ display: 'grid', gridTemplateColumns: '90px max-content minmax(0, 1fr)', alignItems: 'baseline', width: '100%' }}>
@@ -131,7 +136,9 @@ export default function CasePage() {
                       color: '#3b00ff', 
                       textDecoration: 'none', 
                       fontWeight: 800,
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      position: 'relative',
+                      zIndex: 100 // Делаем ссылки авторов тоже защищенными от перекрытия
                     }}
                   >
                     {credit.display}
@@ -145,16 +152,18 @@ export default function CasePage() {
           <div style={{ 
             fontWeight: 500, 
             lineHeight: 1.5, 
-            textAlign: 'justify', // Идеально растягивает текст по ширине до ссылок
+            textAlign: 'justify', // Растягивает текст от края до края ссылок
             width: '100%',
+            maxHeight: '4.5em', 
             overflow: 'hidden'
           }}>
-            {project.desc}
+            <span>{project.desc}</span>
             <span style={{ 
               opacity: 0.8, 
-              letterSpacing: '2px'
+              letterSpacing: '2px', 
+              marginLeft: '5px' 
             }}>
-              {` ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................`}
+              ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
             </span>
           </div>
 
