@@ -8,45 +8,44 @@ export default function Cart() {
 
   return (
     <div style={{
-      width: '120px', 
+      width: '120px', // Четко фиксируем ширину
       zIndex: 1000,
-      fontWeight: 700
+      fontWeight: 700,
+      fontFamily: 'inherit' // Чтобы шрифт наследовался
     }}>
       <div style={{ width: '100%', marginBottom: '15px' }}>
-        <img src="/куаркод над корзиной.svg" alt="QR" style={{ width: '100%', height: 'auto', display: 'block' }} />
+        <img src="/куаркод над корзиной.svg" alt="QR" style={{ width: '100%', height: 'auto', display: 'block' }} />
       </div>
 
-      <div style={{ marginBottom: '10px', textTransform: 'lowercase' }}>
+      <div style={{ marginBottom: '10px', textTransform: 'lowercase', fontSize: '14px' }}>
         корзина [{totalItemsCount}]
       </div>
 
       {items.length === 0 ? (
-        <div style={{ fontWeight: 500, textTransform: 'lowercase' }}>пусто...</div>
+        <div style={{ fontWeight: 500, textTransform: 'lowercase', fontSize: '14px' }}>пусто...</div>
       ) : (
         <>
           {items.map((item, i) => (
-            // Flex-настройки для выравнивания строки
-            <div key={`${item.id}-${item.size}-${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', fontWeight: 500, textTransform: 'lowercase', fontSize: '14px', lineHeight: 1.2 }}>
+            <div key={`${item.id}-${item.size}-${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', fontWeight: 500, textTransform: 'lowercase', fontSize: '12px', lineHeight: 1.2 }}>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span>{item.name}</span>
-                  <span style={{ color: 'red' }}>[{item.size}]</span>
+                  <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{item.name}</span>
+                  <span style={{ color: 'red', whiteSpace: 'nowrap' }}>[{item.size}]</span>
                 </div>
                 <span>x{item.quantity}</span>
               </div>
               
-              {/* Крестик удаления */}
-              <span onClick={() => removeItem(item.id, item.size)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', height: '16px' }}>
+              <span onClick={() => removeItem(item.id, item.size)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', height: '16px', marginLeft: '4px' }}>
                 [x]
               </span>
               
             </div>
           ))}
-          <div style={{ marginTop: '20px', textTransform: 'lowercase' }}>
+          <div style={{ marginTop: '20px', textTransform: 'lowercase', fontSize: '14px' }}>
             итого:<br/>{totalPrice()}₽
           </div>
-          <Link href="/checkout" style={{ display: 'block', marginTop: '10px', textTransform: 'lowercase', textDecoration: 'none', color: '#000' }}>[заказать] 📦</Link>
+          <Link href="/checkout" style={{ display: 'block', marginTop: '10px', textTransform: 'lowercase', textDecoration: 'none', color: '#000', fontSize: '14px' }}>[заказать] 📦</Link>
         </>
       )}
     </div>
