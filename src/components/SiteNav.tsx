@@ -20,16 +20,23 @@ export default function SiteNav({ paths, backLink = '/', closeLink = '/' }: any)
       marginBottom: '40px',
       flexShrink: 0
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+      {/* ЛЕВАЯ ЧАСТЬ: Назад и Крошки */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <Link href={backLink} style={{ textDecoration: 'none', color: 'inherit', whiteSpace: 'nowrap' }}>
-          [ {'<'} ]
+          [{"<"}]
         </Link>
         <Breadcrumbs path={paths} />
       </div>
       
-      <Link href={closeLink} style={{ textDecoration: 'none', color: 'inherit', fontSize: '16px', whiteSpace: 'nowrap' }}>
-        [ × ]
-      </Link>
+      {/* ПРАВАЯ ЧАСТЬ: Домик и Крестик в едином блоке */}
+      <div style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit', fontSize: '14px', marginRight: '5px' }}>
+          [ 🏠 ]
+        </Link>
+        <Link href={closeLink} style={{ textDecoration: 'none', color: 'inherit', fontSize: '16px' }}>
+          [ × ]
+        </Link>
+      </div>
     </div>
   );
 }
