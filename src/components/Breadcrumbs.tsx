@@ -1,21 +1,24 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Cart from '@/app/cart/Cart'; 
+import Cart from '@/components/Cart'; // Теперь путь всегда верный
 
 export default function Breadcrumbs({ path }: any) {
   const pathname = usePathname();
   const backLink = path.length > 1 && path[path.length - 2].href ? path[path.length - 2].href : '/';
+
+  // Жесткий фильтр страниц для показа корзины
   const shouldShowCart = pathname.startsWith('/products') || pathname.startsWith('/checkout');
 
-  // Единый стиль для всех кнопок в навигации
+  // Единый стиль для всех элементов 14px
   const navItemStyle: React.CSSProperties = {
     fontSize: '14px',
     fontWeight: 800,
     textDecoration: 'none',
     color: 'inherit',
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    lineHeight: 1
   };
 
   return (
@@ -54,7 +57,7 @@ export default function Breadcrumbs({ path }: any) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          {/* ДОМИК */}
+          {/* ДОМИК (строго 14px) */}
           <Link href="/" style={navItemStyle}>
             [ 🏠 ]
           </Link>
@@ -72,7 +75,7 @@ export default function Breadcrumbs({ path }: any) {
           )}
         </div>
 
-        {/* КРЕСТИК (теперь строго 14px) */}
+        {/* КРЕСТИК (строго 14px) */}
         <Link href={backLink} style={navItemStyle}>
           [ × ]
         </Link>
