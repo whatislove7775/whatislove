@@ -46,20 +46,29 @@ export default function ProductsPage() {
         {products.map((product) => (
           <div key={product.id} style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '400px' }}>
             
-            {/* Контейнер картинки с добавленным отступом снизу */}
-            <div style={{ position: 'relative', width: '100%', marginBottom: '30px' }}> 
-              
-              {/* Крестики снаружи */}
-              <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              
-              {/* Сам квадрат товара */}
-              <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}>
-                {/* Тут картинка */}
-              </div>
-            </div>
+            import Link from 'next/link';
+            {/* Оборачиваем весь визуальный блок в Link с display: 'block' */
+              <Link 
+                href="/твой-путь-к-товару" // <-- укажи правильную ссылку на товар
+                style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+              >
+                {/* Тот самый контейнер с отступом */}
+                <div style={{ position: 'relative', width: '100%', marginBottom: '25px' }}> 
+                  
+                  {/* Крестики снаружи */}
+                  <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+                  
+                  {/* Сам квадрат товара */}
+                  <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}>
+                    {/* Тут картинка */}
+                  </div>
+                </div>
+              </Link>
+
+{/* Ниже уже идет блок с названием, ценой и кнопками корзины */}
 
             {/* Инфо и Кнопка */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontWeight: 800 }}>
