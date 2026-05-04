@@ -9,7 +9,7 @@ const projectsData: any = {
     task: 'дизайн сайта, фронтенд, бэкенд',
     year: '2026',
     tags: '[ веб-дизайн, разработка ]',
-    // Описание с маленькой буквы
+    // Описание с маленькой буквы, как ты просил
     desc: 'полная разработка экосистемы для артиста: треки, концерты, магазин мерча и минималистичный интерфейс с акцентом на контент',
     credits: [
       { role: '[дизайн, дирекшен]', display: 't.me/Влад Марков (я)', url: 'https://t.me/babydonthurtmovich' },
@@ -51,7 +51,7 @@ export default function CasePage() {
       }}>
         ..........................................................................................................................................................................................
       </div>
-      <span style={{ fontWeight: isValueBold ? 800 : 500, whiteSpace: 'nowrap' }}>{value}</span>
+      <span style={{ fontWeight: isValueBold ? 800 : 500, whiteSpace: 'nowrap', textAlign: 'right' }}>{value}</span>
     </div>
   );
 
@@ -123,13 +123,13 @@ export default function CasePage() {
           <InfoRow label="задача" value={project.task} />
           <InfoRow label="год" value={project.year} />
 
-          {/* АВТОРЫ (Выравнивание ссылок строго по правому краю блока) */}
-          <div style={{ display: 'flex', marginTop: '30px', marginBottom: '30px' }}>
-            <div style={{ width: '90px', fontWeight: 500 }}>авторы:</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
-              {project.credits.map((credit: any, index: number) => (
-                <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', width: '100%' }}>
-                  <span style={{ fontWeight: 800 }}>{credit.role}</span>
+          {/* АВТОРЫ */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
+            {project.credits.map((credit: any, index: number) => (
+              <div key={index} style={{ display: 'flex', width: '100%', alignItems: 'baseline' }}>
+                <div style={{ width: '90px', fontWeight: 500, flexShrink: 0 }}>{index === 0 ? 'авторы:' : ''}</div>
+                <div style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{credit.role}</div>
+                <div style={{ flex: 1, textAlign: 'right' }}>
                   <a 
                     href={credit.url} 
                     target="_blank" 
@@ -143,17 +143,17 @@ export default function CasePage() {
                     {credit.display}
                   </a>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
 
-          {/* ОПИСАНИЕ (Текст с выравниванием по ширине + точки до конца) */}
+          {/* ОПИСАНИЕ (Текст по левому краю + точки до конца) */}
           <div style={{ 
             fontWeight: 500, 
             lineHeight: 1.5, 
-            textAlign: 'justify', // Выравнивание по ширине
+            textAlign: 'left', // Выровняли нормально по левому краю (без дырок)
             width: '100%',
-            overflow: 'hidden' 
+            overflow: 'hidden' // Обрезает длинный хвост точек
           }}>
             <span>{project.desc}</span>
             <span style={{ 
