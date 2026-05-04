@@ -1,7 +1,6 @@
 'use client';
 import { useParams } from 'next/navigation';
-import Breadcrumbs from '@/components/Breadcrumbs';
-import Link from 'next/link';
+import SiteNav from '@/components/SiteNav';
 
 const projectsData: any = {
   'asiya-site': {
@@ -10,7 +9,7 @@ const projectsData: any = {
     task: 'дизайн сайта, фронтенд, бэкенд',
     year: '2026',
     tags: '[ веб-дизайн, разработка ]',
-    // Текст с маленькой буквы
+    // Описание с маленькой буквы
     desc: 'полная разработка экосистемы для артиста: треки, концерты, магазин мерча и минималистичный интерфейс с акцентом на контент',
     credits: [
       { role: '[дизайн, дирекшен]', display: 't.me/Влад Марков (я)', url: 'https://t.me/babydonthurtmovich' },
@@ -67,20 +66,19 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '30px 20px' // Отступы скомпенсированы, чтобы подвал влезал
+      padding: '40px 20px' // Отступы для выравнивания с подвалом
     }}>
       
-      {/* НАВИГАЦИЯ (Только Breadcrumbs и крестик) */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontWeight: 800, fontSize: '14px', marginBottom: '40px' }}>
-        <Breadcrumbs path={[
+      {/* ЕДИНАЯ НАВИГАЦИЯ */}
+      <SiteNav 
+        backLink="/portfolio" 
+        closeLink="/portfolio" 
+        paths={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
           { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
           { name: project.title.toUpperCase(), icon: '📄' }
-        ]} />
-        <Link href="/portfolio" style={{ textDecoration: 'none', color: 'inherit', fontSize: '18px' }}>
-          [ × ]
-        </Link>
-      </div>
+        ]} 
+      />
 
       {/* ОСНОВНАЯ СЕТКА */}
       <div style={{ 
@@ -153,11 +151,11 @@ export default function CasePage() {
           <div style={{ 
             fontWeight: 500, 
             lineHeight: 1.5, 
-            textAlign: 'justify', 
+            textAlign: 'justify', // Выравнивание по ширине
             width: '100%',
-            overflow: 'hidden' // Обрезает длинный хвост точек по границе контейнера
+            overflow: 'hidden' 
           }}>
-            <span style={{ textTransform: 'lowercase' }}>{project.desc}</span>
+            <span>{project.desc}</span>
             <span style={{ 
               opacity: 0.8, 
               letterSpacing: '2px', 
