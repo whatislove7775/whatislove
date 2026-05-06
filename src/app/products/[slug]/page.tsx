@@ -109,11 +109,11 @@ export default function ProductPage() {
             ))}
           </div>
         </div>
-
+        
         {/* ПРАВАЯ КОЛОНКА: ИНФО */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '350px', fontSize: '14px', marginTop: '15px' }}>
           
-          <InfoRow label="наименование" value="кольцо <3" isBold={true} />
+          <InfoRow label="наименование" value={product.name.toLowerCase()} isBold={true} />
           
           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
             <span style={{ fontWeight: 800 }}>цена</span>
@@ -121,8 +121,10 @@ export default function ProductPage() {
               ..........................................................................................................................................................................................
             </div>
             <div style={{ display: 'flex', gap: '10px', fontWeight: 800 }}>
-              <span style={{ color: '#999', textDecoration: 'line-through' }}>3 600</span>
-              <span style={{ color: '#d32f2f' }}>1 598 руб</span>
+              {product.oldPrice && (
+                <span style={{ color: '#999', textDecoration: 'line-through' }}>{product.oldPrice}</span>
+              )}
+              <span style={{ color: '#d32f2f' }}>{product.price} руб</span>
             </div>
           </div>
 
@@ -136,17 +138,20 @@ export default function ProductPage() {
             ..........................................................................................................................................................................................
           </div>
 
-          <InfoRow label="материал" value="ювелирная сталь" />
+          <InfoRow label="материал" value={product.material} />
 
           <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, marginBottom: '4px' }}>
             ..........................................................................................................................................................................................
           </div>
 
-          <InfoRow label="доставка" value="по всей России" />
+          <InfoRow label="доставка" value={product.delivery.split('+')[0]} />
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
             <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>............................................................................................................................</div>
-            <span style={{ fontWeight: 500, paddingLeft: '8px' }}>+страны СНГ</span>
+            {/* Безопасный вывод второй части доставки (СНГ), если она есть */}
+            <span style={{ fontWeight: 500, paddingLeft: '8px' }}>
+              {product.delivery.includes('+') ? `+${product.delivery.split('+')[1]}` : ''}
+            </span>
           </div>
 
           <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, marginBottom: '4px' }}>
@@ -163,7 +168,7 @@ export default function ProductPage() {
             ..........................................................................................................................................................................................
           </div>
 
-          {/* ВЫБОР РАЗМЕРА */}
+          {/* ВЫБОР РАЗМЕРА (Тут всё ок, оставляем твое) */}
           <div style={{ display: 'flex', justifyContent: 'center', fontWeight: 800, alignItems: 'center' }}>
             {[16, 17, 18, 19].map((size) => (
               <span 
@@ -214,7 +219,3 @@ export default function ProductPage() {
           </div>
 
         </div>
-      </div>
-    </div>
-  );
-}
