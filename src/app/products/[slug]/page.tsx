@@ -1,12 +1,13 @@
 'use client';
-import { useState, useEffect } from 'react'; // ОБЯЗАТЕЛЬНО ДОБАВЬ useEffect СЮДА
+import { useState, useEffect } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 import { supabase } from '@/lib/supabase';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 export default function ProductPage() {
   const params = useParams();
+  const router = useRouter();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(17);
@@ -14,18 +15,26 @@ export default function ProductPage() {
 
   useEffect(() => {
     async function fetchProduct() {
+      // Ищем товар в базе по его slug
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .eq('slug', params.slug)
-        .single();
+        .single(); // Нам нужен только один результат
 
-      if (!error && data) {
+      if (error || !data) {
+        console.error('Товар не найден');
+        // Если товара нет в базе, можно раскомментировать редирект
+        // router.push('/products'); 
+      } else {
         setProduct(data);
       }
       setLoading(false);
     }
-    if (params.slug) fetchProduct();
+
+    if (params.slug) {
+      fetchProduct();
+    }
   }, [params.slug]);
 
   const handleAddToCart = () => {
@@ -52,6 +61,12 @@ export default function ProductPage() {
       <span style={{ fontWeight: isBold ? 800 : 500, color: isRed ? '#d32f2f' : '#000', textAlign: 'right' }}>{value}</span>
     </div>
   );
+
+  // Безопасно разбиваем строку доставки (например "доставка по РФ+СНГ")
+  const deliveryText = product.delivery || '';
+  const deliveryParts = deliveryText.split('+');
+  const deliveryMain = deliveryParts[0] || '';
+  const deliveryExtra = deliveryParts[1] ? `+${deliveryParts[1]}` : '';
 
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, fontFamily: 'inherit' }}>
@@ -89,7 +104,11 @@ export default function ProductPage() {
               <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
               
               {/* Прямоугольник фото */}
-              <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
+              <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
+                {product.image_url && (
+                  <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+              </div>
             </div>
             <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
           </div>
@@ -101,15 +120,15 @@ export default function ProductPage() {
             justifyContent: 'space-between', 
             width: '70px',
             alignSelf: 'stretch',
-            marginTop: '15px', // Выравнивание с верхним краем фото (учитывая padding)
-            marginBottom: '35px' // Выравнивание с нижним краем фото
+            marginTop: '15px', 
+            marginBottom: '35px' 
           }}>
             {[1, 2, 3, 4].map(i => (
               <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
             ))}
           </div>
         </div>
-        
+
         {/* ПРАВАЯ КОЛОНКА: ИНФО */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '350px', fontSize: '14px', marginTop: '15px' }}>
           
@@ -144,15 +163,14 @@ export default function ProductPage() {
             ..........................................................................................................................................................................................
           </div>
 
-          <InfoRow label="доставка" value={product.delivery.split('+')[0]} />
+          <InfoRow label="доставка" value={deliveryMain} />
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>............................................................................................................................</div>
-            {/* Безопасный вывод второй части доставки (СНГ), если она есть */}
-            <span style={{ fontWeight: 500, paddingLeft: '8px' }}>
-              {product.delivery.includes('+') ? `+${product.delivery.split('+')[1]}` : ''}
-            </span>
-          </div>
+          {deliveryExtra && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
+              <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>............................................................................................................................</div>
+              <span style={{ fontWeight: 500, paddingLeft: '8px' }}>{deliveryExtra}</span>
+            </div>
+          )}
 
           <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, marginBottom: '4px' }}>
             ..........................................................................................................................................................................................
@@ -168,7 +186,7 @@ export default function ProductPage() {
             ..........................................................................................................................................................................................
           </div>
 
-          {/* ВЫБОР РАЗМЕРА (Тут всё ок, оставляем твое) */}
+          {/* ВЫБОР РАЗМЕРА */}
           <div style={{ display: 'flex', justifyContent: 'center', fontWeight: 800, alignItems: 'center' }}>
             {[16, 17, 18, 19].map((size) => (
               <span 
@@ -219,3 +237,7 @@ export default function ProductPage() {
           </div>
 
         </div>
+      </div>
+    </div>
+  );
+}
