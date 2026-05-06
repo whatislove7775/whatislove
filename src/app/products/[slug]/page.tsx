@@ -118,7 +118,7 @@ export default function ProductPage() {
             display: 'flex', 
             flexDirection: 'column', 
             justifyContent: 'space-between', 
-            width: '70px',
+            width: '58px',
             alignSelf: 'stretch',
             marginTop: '15px', 
             marginBottom: '35px' 
