@@ -1,13 +1,12 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'; // ОБЯЗАТЕЛЬНО ДОБАВЬ useEffect СЮДА
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 import { supabase } from '@/lib/supabase';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
 export default function ProductPage() {
   const params = useParams();
-  const router = useRouter();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(17);
@@ -15,26 +14,18 @@ export default function ProductPage() {
 
   useEffect(() => {
     async function fetchProduct() {
-      // Ищем товар в базе по его slug
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .eq('slug', params.slug)
-        .single(); // Нам нужен только один результат
+        .single();
 
-      if (error || !data) {
-        console.error('Товар не найден');
-        // Если товара нет в базе, можно редиректнуть обратно в каталог
-        // router.push('/products'); 
-      } else {
+      if (!error && data) {
         setProduct(data);
       }
       setLoading(false);
     }
-
-    if (params.slug) {
-      fetchProduct();
-    }
+    if (params.slug) fetchProduct();
   }, [params.slug]);
 
   const handleAddToCart = () => {
