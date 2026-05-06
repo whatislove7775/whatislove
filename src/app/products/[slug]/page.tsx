@@ -1,199 +1,137 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 
-export default function RingPage() {
+export default function ProductPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(17);
+
   const addItem = useCartStore((state: any) => state.addItem);
 
-  const handleAddToCart = () => {
-    addItem({
-      id: 'ring-1',
-      name: 'кольцо <3',
-      price: 1598,
-      size: selectedSize,
-      quantity: 1
-    });
+  useEffect(() => {
+    async function fetchProduct() {
+      // Ищем товар в базе по его slug
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('slug', params.slug)
+        .single(); // Нам нужен только один результат
+
+      if (error || !data) {
+        console.error('Товар не найден');
+        // Если товара нет в базе, можно редиректнуть обратно в каталог
+        // router.push('/products'); 
+      } else {
+        setProduct(data);
+      }
+      setLoading(false);
+    }
+
+    if (params.slug) {
+      fetchProduct();
+    }
+  }, [params.slug]);
+
+  const handleAdd = () => {
+    if (product) {
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        size: selectedSize,
+        quantity: 1
+      });
+    }
   };
 
-  // Компонент для строки с идеально ровными текстовыми краями
-  const InfoRow = ({ label, value, isBold = false, isRed = false }: any) => (
-    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
-      <span style={{ fontWeight: 800 }}>{label}</span>
-      <div style={{ margin: '0 8px', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, position: 'relative', top: '-1px' }}>
-        ..........................................................................................................................................................................................
-      </div>
-      <span style={{ fontWeight: isBold ? 800 : 500, color: isRed ? '#d32f2f' : '#000', textAlign: 'right' }}>{value}</span>
-    </div>
-  );
+  if (loading) return <div style={{ padding: '20px', fontWeight: 800 }}>ЗАГРУЗКА...</div>;
+  if (!product) return <div style={{ padding: '20px', fontWeight: 800 }}>ТОВАР НЕ НАЙДЕН [404]</div>;
 
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, fontFamily: 'inherit' }}>
+    <div style={{ width: '100%', maxWidth: '1000px', margin: '0 auto', padding: '40px 20px', fontFamily: 'inherit' }}>
       
-      {/* НАВИГАЦИЯ */}
-      <div style={{ width: '100%', alignSelf: 'flex-start' }}>
-        <Breadcrumbs path={[
-          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'PRODUCT$', href: '/products', icon: '📦' },
-          { name: 'КОЛЬЦО <3', icon: '💍' }
-        ]} />
-      </div>
+      <Breadcrumbs path={[
+        { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+        { name: 'PRODUCT$', href: '/products', icon: '📦' },
+        { name: product.name.toLowerCase() }
+      ]} />
 
-      {/* ОСНОВНОЙ БЛОК ТОВАРА */}
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: 'auto 1fr', // Две колонки: фото-блок и инфо-блок
-        gap: '60px', 
-        marginTop: '30px',
-        alignItems: 'flex-start',
-        paddingRight: '140px',
-        boxSizing: 'border-box'
-      }}>
-        
-        {/* ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ (используем GRID для жесткого выравнивания) */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '20px', width: '480px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', marginTop: '40px' }}>
+        {/* БЛОК КАРТИНКИ */}
+        <div style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontSize: '20px', fontWeight: 300 }}>+</div>
+          <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '20px', fontWeight: 300 }}>+</div>
+          <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontSize: '20px', fontWeight: 300 }}>+</div>
+          <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontSize: '20px', fontWeight: 300 }}>+</div>
           
-          {/* Главное фото */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {/* Обертка для крестиков (+15px padding) */}
-            <div style={{ position: 'relative', width: '100%', padding: '15px', boxSizing: 'border-box' }}>
-              {/* Крестики - они НЕ равняются, они торчат наружу */}
-              <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              
-              {/* Сама СЕРАЯ ФОТО-КАРТОЧКА */}
-              <div id="main-photo" style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
-            </div>
-            {/* Подпись снизу, НЕ равняется, просто торчит */}
-            <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
-          </div>
-
-          {/* МИНИАТЮРЫ - ВЫРАВНИВАЕМ ЖЕСТКО ПО ВЫСОТЕ ФОТО-КАРТОЧКИ */}
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            width: '80px',
-            // Начинаем ровно по верхней границе серого фото (учитываем padding 15px)
-            marginTop: '15px', 
-            // Заканчиваем ровно по нижней границе серого фото (учитываем aspectRatio)
-            height: 'calc(100% - 58px)', // Высота = 100% контейнера минус padding
-            justifyContent: 'space-between', // Плотная расстановка миниатюр
-          }}>
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
-            ))}
+          <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
+            {product.image_url && (
+              <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            )}
           </div>
         </div>
 
-        {/* ПРАВАЯ КОЛОНКА: ИНФО (Текстовый блок) */}
-        {/* Добавляем marginTop: '15px', чтобы текстовый блок начинался ПРЯМО НА УРОВНЕ ВЕРХНЕЙ ГРАНИЦЫ СЕРОГО ФОТО */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '380px', fontSize: '14px', marginTop: '15px' }}>
+        {/* БЛОК ИНФО */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ fontSize: '24px', fontWeight: 800 }}>{product.name.toLowerCase()}</div>
+          <div style={{ fontSize: '18px', fontWeight: 800, color: '#d32f2f' }}>
+            {product.price}₽ 
+            {product.oldPrice && (
+              <span style={{ fontSize: '14px', textDecoration: 'line-through', color: '#999', marginLeft: '10px' }}>{product.oldPrice}₽</span>
+            )}
+          </div>
           
-          <InfoRow label="наименование" value="кольцо <3" isBold={true} />
-          
-          {/* Специальная строка для цены с зачеркиванием */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
-            <span style={{ fontWeight: 800 }}>цена</span>
-            <div style={{ margin: '0 8px', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, position: 'relative', top: '-1px' }}>
-              ..........................................................................................................................................................................................
+          <div style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.5 }}>
+            материал: {product.material}<br/>
+            доставка: {product.delivery}
+          </div>
+
+          <div style={{ marginTop: '20px' }}>
+            <div style={{ fontWeight: 800, marginBottom: '10px', fontSize: '14px' }}>выбери размер ниже</div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {[16, 17, 18, 19].map(size => (
+                <button 
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  style={{
+                    padding: '5px 10px',
+                    border: '1px solid #000',
+                    backgroundColor: selectedSize === size ? '#000' : 'transparent',
+                    color: selectedSize === size ? '#fff' : '#000',
+                    cursor: 'pointer',
+                    fontWeight: 800,
+                    fontFamily: 'inherit',
+                    fontSize: '14px'
+                  }}
+                >
+                  [ {size} ]
+                </button>
+              ))}
             </div>
-            <div style={{ display: 'flex', gap: '10px', fontWeight: 800 }}>
-              <span style={{ color: '#999', textDecoration: 'line-through' }}>3 600</span>
-              <span style={{ color: '#d32f2f' }}>1 598 руб</span>
-            </div>
           </div>
 
-          {/* сделано с любовью */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>....................................................................................................</div>
-            <span style={{ margin: '0 10px', fontWeight: 500 }}>сделано с любовью</span>
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>....................................................................................................</div>
-          </div>
-
-          <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, marginBottom: '4px' }}>
-            ..........................................................................................................................................................................................
-          </div>
-
-          <InfoRow label="материал" value="ювелирная сталь" />
-
-          <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, marginBottom: '4px' }}>
-            ..........................................................................................................................................................................................
-          </div>
-
-          <InfoRow label="доставка" value="по всей России" />
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>............................................................................................................................</div>
-            <span style={{ fontWeight: 500, paddingLeft: '8px' }}>+страны СНГ</span>
-          </div>
-
-          <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, marginBottom: '4px' }}>
-            ..........................................................................................................................................................................................
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>................................................................................</div>
-            <span style={{ margin: '0 10px', fontWeight: 800 }}>выбери размер ниже</span>
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>................................................................................</div>
-          </div>
-
-          <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, marginBottom: '20px' }}>
-            ..........................................................................................................................................................................................
-          </div>
-
-          {/* ВЫБОР РАЗМЕРА */}
-          <div style={{ display: 'flex', justifyContent: 'center', fontWeight: 800, alignItems: 'center' }}>
-            {[16, 17, 18, 19].map((size) => (
-              <span 
-                key={size} 
-                onClick={() => setSelectedSize(size)}
-                style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', margin: '0 8px' }}
-              >
-                {selectedSize === size ? (
-                  <span style={{ 
-                    display: 'inline-flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    color: '#d32f2f', 
-                    border: '1.5px solid #d32f2f', 
-                    borderRadius: '50%', 
-                    width: '26px', 
-                    height: '26px' 
-                  }}>
-                    {size}
-                  </span>
-                ) : (
-                  `[ ${size} ]`
-                )}
-              </span>
-            ))}
-          </div>
-
-          {/* НИЖНИЙ БЛОК */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '40px' }}>
-            <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px' }}>
-              произведём, упакуем,<br/>
-              и доставим
-            </div>
-            <button 
-              onClick={handleAddToCart}
-              style={{ 
-                background: 'transparent', 
-                border: 'none', 
-                fontWeight: 800, 
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                padding: 0,
-                fontSize: '14px'
-              }}
-            >
-              [ +добавить в 🛒'y ]
-            </button>
-          </div>
-
+          <button 
+            onClick={handleAdd}
+            style={{ 
+              marginTop: '30px', 
+              padding: '15px', 
+              backgroundColor: '#000', 
+              color: '#fff', 
+              border: 'none', 
+              fontWeight: 800, 
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontSize: '14px'
+            }}
+          >
+            [ +добавить в 🛒'у ]
+          </button>
         </div>
       </div>
     </div>
