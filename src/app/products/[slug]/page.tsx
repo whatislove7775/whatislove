@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 import { supabase } from '@/lib/supabase';
@@ -37,7 +37,7 @@ export default function ProductPage() {
     }
   }, [params.slug]);
 
-  const handleAdd = () => {
+  const handleAddToCart = () => {
     if (product) {
       addItem({
         id: product.id,
@@ -70,7 +70,7 @@ export default function ProductPage() {
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
           { name: 'PRODUCT$', href: '/products', icon: '📦' },
-          { name: 'КОЛЬЦО <3', icon: '💍' }
+          { name: product.name.toLowerCase(), icon: '💍' }
         ]} />
       </div>
 
