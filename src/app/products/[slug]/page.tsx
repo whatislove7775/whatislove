@@ -118,10 +118,10 @@ export default function ProductPage() {
             display: 'flex', 
             flexDirection: 'column', 
             justifyContent: 'space-between', 
-            width: '58px',
+            width: '70px',
             alignSelf: 'stretch',
             marginTop: '15px', 
-            marginBottom: '35px' 
+            marginBottom: '15px' 
           }}>
             {[1, 2, 3, 4].map(i => (
               <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
