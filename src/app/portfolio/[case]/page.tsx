@@ -57,19 +57,18 @@ export default function CasePage() {
   const creditsList = project.credits || [];
 
   return (
-    // ГЛАВНЫЙ КОНТЕЙНЕР
+    // 1. КОРНЕВОЙ КОНТЕЙНЕР
     <div style={{ 
       width: '100%', 
       flex: 1,
       display: 'flex', 
       flexDirection: 'column', 
       fontFamily: 'inherit',
-      boxSizing: 'border-box',
-      padding: '0 40px' // Отступы, чтобы всё выровнялось по краям
+      boxSizing: 'border-box'
     }}>
       
       {/* НАВИГАЦИЯ */}
-      <div style={{ width: '100%', padding: '15px 0', position: 'relative', zIndex: 100 }}>
+      <div style={{ width: '100%', alignSelf: 'flex-start', padding: '15px 0', position: 'relative', zIndex: 100 }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
           { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
@@ -77,7 +76,7 @@ export default function CasePage() {
         ]} />
       </div>
 
-      {/* КОНТЕЙНЕР КОНТЕНТА */}
+      {/* 2. КОНТЕЙНЕР КОНТЕНТА КЕЙСА (Тянется на 100% ширины для выравнивания по навигации) */}
       <div style={{
         width: '100%', 
         display: 'flex', 
@@ -86,15 +85,10 @@ export default function CasePage() {
         paddingBottom: '40px'
       }}>
         
-        {/* 
-          СЕТКА:
-          1. Фото (до 450px)
-          2. Текст (minmax(0, 1fr) — ЖЕСТКИЙ ОГРАНИЧИТЕЛЬ, спасает от разъезжания точек)
-          3. QR-код (100px — выравнивает левый край QR по левому краю [Домика])
-        */}
+        {/* ОСНОВНАЯ СЕТКА (Теперь 3 колонки: Фото, Текст, QR-код) */}
         <div style={{ 
           display: 'grid',
-          gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr) 100px', 
+          gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr) max-content', 
           gap: '60px', 
           alignItems: 'flex-start',
           width: '100%',
@@ -124,7 +118,7 @@ export default function CasePage() {
           </div>
 
           {/* ЦЕНТРАЛЬНАЯ КОЛОНКА (Текст) */}
-          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', width: '100%', maxWidth: '600px' }}>
             
             <InfoRow label="название проекта" value={parseTextForLinks(project.title)} isValueBold={true} />
             <InfoRow label="клиент" value={project.client} />
@@ -184,8 +178,8 @@ export default function CasePage() {
             </div>
           </div>
 
-          {/* ПРАВАЯ КОЛОНКА (QR-код) */}
-          <div style={{ display: 'flex', justifyContent: 'flex-start', width: '100%' }}>
+          {/* ПРАВАЯ КОЛОНКА (QR-код с переходом в ТГ) */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
             <a 
               href="https://t.me/whatislove_r" 
               target="_blank" 
@@ -193,13 +187,13 @@ export default function CasePage() {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center', // Центрируем подпись относительно самого QR
+                alignItems: 'center',
                 textDecoration: 'none',
                 color: 'inherit',
-                cursor: 'pointer',
-                width: '100px' // Жесткая ширина, равная колонке
+                cursor: 'pointer'
               }}
             >
+              {/* Исправленное имя файла qr-code.svg */}
               <img src="/qr-code.svg" alt="QR code" style={{ width: '100px', height: '100px' }} />
               <span style={{
                 fontWeight: 800,
