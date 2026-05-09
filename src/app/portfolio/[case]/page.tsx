@@ -113,7 +113,9 @@ export default function CasePage() {
         {/* ПРАВАЯ КОЛОНКА (Текст) */}
         <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', width: '100%' }}>
           
+          {/* ВОТ ЗДЕСЬ ИЗМЕНЕНИЕ: */}
           <InfoRow label="название проекта" value={parseTextForLinks(project.title)} isValueBold={true} />
+          
           <InfoRow label="клиент" value={project.client} />
           
           {/* Сделано с любовью */}
