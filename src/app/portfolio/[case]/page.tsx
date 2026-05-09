@@ -84,7 +84,7 @@ export default function CasePage() {
         paddingBottom: '40px'
       }}>
         
-        {/* ОРИГИНАЛЬНАЯ СЕТКА: ТОЛЬКО 2 КОЛОНКИ (Фото и Текст) */}
+        {/* ОРИГИНАЛЬНАЯ СЕТКА: 2 КОЛОНКИ */}
         <div style={{ 
           display: 'grid',
           gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr)', 
@@ -118,28 +118,26 @@ export default function CasePage() {
 
           {/* ПРАВАЯ КОЛОНКА (Текст + Абсолютный QR-код) */}
           <div style={{ 
-            position: 'relative', // Важно для абсолютного позиционирования QR
+            position: 'relative', 
             display: 'flex', 
             flexDirection: 'column', 
             fontSize: '14px', 
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '120px' // Пустая зона справа, чтобы текст не залез на QR
+            paddingRight: '120px' 
           }}>
             
             {/* 
-              ВЕСЯЩИЙ QR-КОД
-              Если левый край всё еще не идеально совпадает с домиком, просто
-              поменяй width: '85px' на 80px или 90px.
+              ВЫРАВНИВАНИЕ СТРОГО ПО ЛЕВОМУ КРАЮ 
+              Если край не сошелся идеально с домиком, просто меняй цифру 85px 
             */}
             <div style={{ 
               position: 'absolute', 
               top: 0, 
-              right: 0, 
-              width: '85px', 
+              left: 'calc(100% - 85px)', // Ищем левую координату
               display: 'flex', 
               flexDirection: 'column', 
-              alignItems: 'center' 
+              alignItems: 'flex-start' // Внутри всё тоже ровняем строго по левой стороне
             }}>
               <a 
                 href="https://t.me/whatislove_r" 
@@ -148,19 +146,18 @@ export default function CasePage() {
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   textDecoration: 'none',
                   color: 'inherit',
-                  cursor: 'pointer',
-                  width: '100%'
+                  cursor: 'pointer'
                 }}
               >
-                <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
+                <img src="/qr-code.svg" alt="QR code" style={{ width: '85px', height: '85px' }} />
                 <span style={{
                   fontWeight: 800,
                   fontSize: '10px',
-                  marginTop: '10px',
-                  textAlign: 'center',
+                  marginTop: '8px',
+                  textAlign: 'left',
                   whiteSpace: 'nowrap',
                   lineHeight: '1.2'
                 }}>
@@ -209,7 +206,6 @@ export default function CasePage() {
               ))}
             </div>
 
-            {/* Убрал maxHeight вообще, чтобы описание точно не обрезалось */}
             <div style={{ 
               fontWeight: 500, 
               lineHeight: 1.5, 
