@@ -57,20 +57,18 @@ export default function CasePage() {
   const creditsList = project.credits || [];
 
   return (
+    // 1. КОРНЕВОЙ КОНТЕЙНЕР (Без maxWidth, чтобы навигация тянулась на 100%)
     <div style={{ 
       width: '100%', 
-      maxWidth: '1000px', 
-      margin: '0 auto', 
+      flex: 1,
       display: 'flex', 
       flexDirection: 'column', 
       fontFamily: 'inherit',
-      boxSizing: 'border-box',
-      padding: '15px 20px 40px 20px',
-      position: 'relative'
+      boxSizing: 'border-box'
     }}>
       
-      {/* НАВИГАЦИЯ */}
-      <div style={{ width: '100%', position: 'relative', zIndex: 100 }}>
+      {/* НАВИГАЦИЯ (Теперь она автоматически выровняется по краям футера) */}
+      <div style={{ width: '100%', alignSelf: 'flex-start', padding: '15px 0', position: 'relative', zIndex: 100 }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
           { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
@@ -78,103 +76,115 @@ export default function CasePage() {
         ]} />
       </div>
 
-      {/* ОСНОВНАЯ СЕТКА */}
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr)', 
-        gap: '60px', 
-        alignItems: 'flex-start',
-        width: '100%',
-        boxSizing: 'border-box'
+      {/* 2. КОНТЕЙНЕР КОНТЕНТА КЕЙСА (Центрируем и ограничиваем до 1000px) */}
+      <div style={{
+        width: '100%', 
+        maxWidth: '1000px', 
+        margin: '0 auto', 
+        display: 'flex', 
+        flexDirection: 'column',
+        boxSizing: 'border-box',
+        padding: '20px 20px 40px 20px'
       }}>
         
-        {/* ЛЕВАЯ КОЛОНКА (Фото + Теги) */}
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        {/* ОСНОВНАЯ СЕТКА */}
+        <div style={{ 
+          display: 'grid',
+          gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr)', 
+          gap: '60px', 
+          alignItems: 'flex-start',
+          width: '100%',
+          boxSizing: 'border-box'
+        }}>
           
-          <div style={{ position: 'relative', width: '100%' }}>
-            <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-            <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-            <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-            <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+          {/* ЛЕВАЯ КОЛОНКА (Фото + Теги) */}
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
             
-            <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
-              {project.image_url && (
-                <img src={project.image_url} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              )}
+            <div style={{ position: 'relative', width: '100%' }}>
+              <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              
+              <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
+                {project.image_url && (
+                  <img src={project.image_url} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', fontWeight: 800, fontSize: '13px' }}>
+              <span>{project.tags}</span>
+              <span>[ {project.year} ]</span>
             </div>
           </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', fontWeight: 800, fontSize: '13px' }}>
-            <span>{project.tags}</span>
-            <span>[ {project.year} ]</span>
-          </div>
-        </div>
 
-        {/* ПРАВАЯ КОЛОНКА (Текст) */}
-        <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', width: '100%' }}>
-          
-          {/* ВОТ ЗДЕСЬ ИЗМЕНЕНИЕ: */}
-          <InfoRow label="название проекта" value={parseTextForLinks(project.title)} isValueBold={true} />
-          
-          <InfoRow label="клиент" value={project.client} />
-          
-          {/* Сделано с любовью */}
-          <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', margin: '4px 0 10px 0' }}>
-            <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
-            <span style={{ margin: '0 15px', fontWeight: 500, whiteSpace: 'nowrap' }}>сделано с любовью</span>
-            <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
-          </div>
+          {/* ПРАВАЯ КОЛОНКА (Текст) */}
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', width: '100%' }}>
+            
+            {/* ВОТ ЗДЕСЬ ИЗМЕНЕНИЕ: */}
+            <InfoRow label="название проекта" value={parseTextForLinks(project.title)} isValueBold={true} />
+            
+            <InfoRow label="клиент" value={project.client} />
+            
+            {/* Сделано с любовью */}
+            <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', margin: '4px 0 10px 0' }}>
+              <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
+              <span style={{ margin: '0 15px', fontWeight: 500, whiteSpace: 'nowrap' }}>сделано с любовью</span>
+              <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
+            </div>
 
-          <InfoRow label="задача" value={project.task} />
-          <InfoRow label="год" value={project.year} />
+            <InfoRow label="задача" value={project.task} />
+            <InfoRow label="год" value={project.year} />
 
-          {/* АВТОРЫ */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
-            {creditsList.map((credit: any, index: number) => (
-              <div key={index} style={{ display: 'grid', gridTemplateColumns: '90px max-content minmax(0, 1fr)', alignItems: 'baseline', width: '100%' }}>
-                <div style={{ fontWeight: 500 }}>{index === 0 ? 'авторы:' : ''}</div>
-                <div style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{credit.role}</div>
-                
-                <div style={{ display: 'flex', justifyContent: 'flex-end', overflow: 'hidden' }}>
-                  <a 
-                    href={credit.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    style={{ 
-                      color: '#3b00ff', 
-                      textDecoration: 'none', 
-                      fontWeight: 800,
-                      whiteSpace: 'nowrap',
-                      position: 'relative',
-                      zIndex: 100
-                    }}
-                  >
-                    {credit.display}
-                  </a>
+            {/* АВТОРЫ */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
+              {creditsList.map((credit: any, index: number) => (
+                <div key={index} style={{ display: 'grid', gridTemplateColumns: '90px max-content minmax(0, 1fr)', alignItems: 'baseline', width: '100%' }}>
+                  <div style={{ fontWeight: 500 }}>{index === 0 ? 'авторы:' : ''}</div>
+                  <div style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{credit.role}</div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', overflow: 'hidden' }}>
+                    <a 
+                      href={credit.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{ 
+                        color: '#3b00ff', 
+                        textDecoration: 'none', 
+                        fontWeight: 800,
+                        whiteSpace: 'nowrap',
+                        position: 'relative',
+                        zIndex: 100
+                      }}
+                    >
+                      {credit.display}
+                    </a>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          {/* ОПИСАНИЕ: ТЕПЕРЬ ОБОРАЧИВАЕТСЯ В ПАРСЕР */}
-          <div style={{ 
-            fontWeight: 500, 
-            lineHeight: 1.5, 
-            textAlign: 'justify', 
-            width: '100%',
-            maxHeight: '4.5em', 
-            overflow: 'hidden'
-          }}>
-            <span>{parseTextForLinks(project.desc)}</span>
-            <span style={{ 
-              opacity: 0.8, 
-              letterSpacing: '2px', 
-              marginLeft: '5px' 
+            {/* ОПИСАНИЕ: ТЕПЕРЬ ОБОРАЧИВАЕТСЯ В ПАРСЕР */}
+            <div style={{ 
+              fontWeight: 500, 
+              lineHeight: 1.5, 
+              textAlign: 'justify', 
+              width: '100%',
+              maxHeight: '4.5em', 
+              overflow: 'hidden'
             }}>
-              ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
-            </span>
-          </div>
+              <span>{parseTextForLinks(project.desc)}</span>
+              <span style={{ 
+                opacity: 0.8, 
+                letterSpacing: '2px', 
+                marginLeft: '5px' 
+              }}>
+                ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+              </span>
+            </div>
 
+          </div>
         </div>
       </div>
     </div>
