@@ -164,7 +164,7 @@ export default function CasePage() {
               lineHeight: 1.5, 
               textAlign: 'justify', 
               width: '100%',
-              maxHeight: '4.5em', 
+              maxHeight: '7.5em', 
               overflow: 'hidden'
             }}>
               <span>{parseTextForLinks(project.desc)}</span>
