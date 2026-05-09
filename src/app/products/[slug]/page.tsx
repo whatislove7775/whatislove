@@ -10,15 +10,17 @@ export default function ProductPage() {
   const router = useRouter();
   
   const [product, setProduct] = useState<any>(null);
-  const [bottomText, setBottomText] = useState('произведём, упакуем,\nи доставим'); // Текст по умолчанию
+  const [bottomText, setBottomText] = useState('произведём, упакуем,\nи доставим');
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(17);
+  
+  // НОВОЕ: Состояние для текущей большой картинки
+  const [activeImage, setActiveImage] = useState<string | null>(null);
   
   const addItem = useCartStore((state: any) => state.addItem);
 
   useEffect(() => {
     async function fetchData() {
-      // 1. Ищем товар в базе
       const { data: productData, error: productError } = await supabase
         .from('products')
         .select('*')
@@ -29,9 +31,14 @@ export default function ProductPage() {
         console.error('Товар не найден');
       } else {
         setProduct(productData);
+        // Устанавливаем первую картинку из массива как главную по умолчанию
+        if (productData.images && productData.images.length > 0) {
+          setActiveImage(productData.images[0]);
+        } else if (productData.image_url) {
+          setActiveImage(productData.image_url); // Фолбек на старую колонку, если она еще есть
+        }
       }
 
-      // 2. Ищем текст для нижнего блока в site_settings
       const { data: textData } = await supabase
         .from('site_settings')
         .select('value')
@@ -50,7 +57,6 @@ export default function ProductPage() {
     }
   }, [params.slug]);
 
-  // Проверяем наличие выбранного размера (если stock пустой, считаем что товара 0)
   const currentStock = product?.stock ? product.stock[selectedSize.toString()] || 0 : 0;
   const isAvailable = currentStock > 0;
 
@@ -87,16 +93,12 @@ export default function ProductPage() {
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, fontFamily: 'inherit' }}>
       
-      {/* НАВИГАЦИЯ */}
+      
       <div style={{ width: '100%', alignSelf: 'flex-start' }}>
-        <Breadcrumbs path={[
-          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'PRODUCT$', href: '/products', icon: '📦' },
-          { name: product.name.toLowerCase(), icon: '💍' }
-        ]} />
+        <Breadcrumbs path="{[" { name: 'WH4T!SLOV3', href: '/', icon: '📁' }, 'PRODUCT$', '/products', '📦' product.name.toLowerCase(), '💍' } ]}/>
       </div>
 
-      {/* ОСНОВНОЙ БЛОК ТОВАРА */}
+      
       <div style={{ 
         display: 'flex', 
         width: '100%', 
@@ -107,8 +109,10 @@ export default function ProductPage() {
         boxSizing: 'border-box'
       }}>
         
-        {/* ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ */}
+        
         <div style={{ display: 'flex', gap: '20px', flexShrink: 0, width: '450px' }}> 
+          
+          
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', width: '100%', padding: '15px', boxSizing: 'border-box' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
@@ -117,14 +121,16 @@ export default function ProductPage() {
               <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
               
               <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
-                {product.image_url && (
-                  <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                
+                {activeImage && (
+                  <img src={activeImage} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
               </div>
             </div>
             <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
           </div>
 
+          
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
@@ -134,16 +140,35 @@ export default function ProductPage() {
             marginTop: '15px', 
             marginBottom: '35px' 
           }}>
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
-            ))}
+            
+            {[0, 1, 2, 3].map(i => {
+              const imgUrl = product.images ? product.images[i] : null;
+              const isActive = activeImage === imgUrl;
+              
+              return (
+                <div 
+                  key={i} 
+                  onClick={() => imgUrl && setActiveImage(imgUrl)} // При клике меняем главную картинку
+                  style={{ 
+                    width: '100%', 
+                    aspectRatio: '1/1', 
+                    backgroundColor: '#e5e5e5',
+                    overflow: 'hidden',
+                    cursor: imgUrl ? 'pointer' : 'default',
+                    opacity: (isActive && imgUrl) ? 0.6 : 1 // Активная фотка будет чуть прозрачной для эффекта выбора
+                  }}
+                >
+                  {imgUrl && <img src={imgUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* ПРАВАЯ КОЛОНКА: ИНФО */}
+        
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '350px', fontSize: '14px', marginTop: '15px' }}>
           
-          <InfoRow label="наименование" value={product.name.toLowerCase()} isBold={true} />
+          <InfoRow label="наименование" value="{product.name.toLowerCase()}" isBold="{true}"/>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
             <span style={{ fontWeight: 800 }}>цена</span>
@@ -168,13 +193,13 @@ export default function ProductPage() {
             ..........................................................................................................................................................................................
           </div>
 
-          <InfoRow label="материал" value={product.material} />
+          <InfoRow label="материал" value="{product.material}"/>
 
           <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, marginBottom: '4px' }}>
             ..........................................................................................................................................................................................
           </div>
 
-          <InfoRow label="доставка" value={deliveryMain} />
+          <InfoRow label="доставка" value="{deliveryMain}"/>
           
           {deliveryExtra && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
@@ -197,10 +222,9 @@ export default function ProductPage() {
             ..........................................................................................................................................................................................
           </div>
 
-          {/* ВЫБОР РАЗМЕРА */}
+          
           <div style={{ display: 'flex', justifyContent: 'center', fontWeight: 800, alignItems: 'center' }}>
             {[16, 17, 18, 19].map((size) => {
-              // Проверяем остаток для каждого конкретного размера при отрисовке цифр
               const isSizeAvailable = product.stock ? (product.stock[size.toString()] > 0) : true;
               
               return (
@@ -213,7 +237,7 @@ export default function ProductPage() {
                     display: 'flex', 
                     alignItems: 'center', 
                     margin: '0 8px',
-                    opacity: isSizeAvailable ? 1 : 0.3 // Делаем полупрозрачным, если нет в наличии
+                    opacity: isSizeAvailable ? 1 : 0.3
                   }}
                 >
                   {selectedSize === size ? (
@@ -237,7 +261,7 @@ export default function ProductPage() {
             })}
           </div>
 
-          {/* НИЖНИЙ БЛОК И УМНАЯ КНОПКА */}
+          
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '40px' }}>
             <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px', whiteSpace: 'pre-line' }}>
               {bottomText}
@@ -253,8 +277,8 @@ export default function ProductPage() {
                 fontFamily: 'inherit',
                 padding: 0,
                 fontSize: '14px',
-                color: isAvailable ? '#000' : '#d32f2f', // Если нет в наличии, делаем красным
-                textDecoration: isAvailable ? 'none' : 'line-through' // И перечеркиваем
+                color: isAvailable ? '#000' : '#d32f2f',
+                textDecoration: isAvailable ? 'none' : 'line-through'
               }}
             >
               {isAvailable ? "[ +добавить в 🛒'y ]" : "[ нет в наличии ]"}
