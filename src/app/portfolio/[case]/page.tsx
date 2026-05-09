@@ -124,20 +124,22 @@ export default function CasePage() {
             fontSize: '14px', 
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '120px' 
+            paddingRight: '100px' // Отступ, чтобы текст не наезжал на QR
           }}>
             
             {/* 
-              ВЫРАВНИВАНИЕ СТРОГО ПО ЛЕВОМУ КРАЮ 
-              Если край не сошелся идеально с домиком, просто меняй цифру 85px 
+              QR-КОД: ВЫРОВНЕН ПО ЛЕВОМУ КРАЮ
+              Ширина 72px подобрана под ширину твоих кнопок [ 🏠 ] [ × ].
+              Если QR вдруг на миллиметр правее или левее домика, просто сделай ширину 70px или 74px.
             */}
             <div style={{ 
               position: 'absolute', 
               top: 0, 
-              left: 'calc(100% - 85px)', // Ищем левую координату
+              right: 0, 
+              width: '72px', 
               display: 'flex', 
               flexDirection: 'column', 
-              alignItems: 'flex-start' // Внутри всё тоже ровняем строго по левой стороне
+              alignItems: 'flex-start' // Жесткое выравнивание по левому краю контейнера
             }}>
               <a 
                 href="https://t.me/whatislove_r" 
@@ -146,18 +148,19 @@ export default function CasePage() {
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'flex-start',
+                  alignItems: 'flex-start', // QR прижат влево
                   textDecoration: 'none',
                   color: 'inherit',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  width: '100%'
                 }}
               >
-                <img src="/qr-code.svg" alt="QR code" style={{ width: '85px', height: '85px' }} />
+                <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
                 <span style={{
                   fontWeight: 800,
                   fontSize: '10px',
                   marginTop: '8px',
-                  textAlign: 'left',
+                  textAlign: 'left', // Текст прижат влево
                   whiteSpace: 'nowrap',
                   lineHeight: '1.2'
                 }}>
