@@ -1,56 +1,60 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
-
-const projectsData: any = {
-  'asiya-site': {
-    title: 'сайт для Асии',
-    client: 'Асия',
-    task: 'дизайн сайта, фронтенд, бэкенд',
-    year: '2026',
-    tags: '[ веб-дизайн, разработка ]',
-    desc: 'полная разработка экосистемы для артиста: треки, концерты, магазин мерча и минималистичный интерфейс с акцентом на контент',
-    credits: [
-      { role: '[дизайн, дирекшен]', display: 't.me/Влад Марков (я)', url: 'https://t.me/babydonthurtmovich' },
-      { role: '[фронтенд]', display: 't.me/Никита Оленёв', url: 'https://t.me/nekitocka' },
-      { role: '[бэкенд]', display: 't.me/Илья Дахновский', url: 'https://t.me/to_id_hide' }
-    ]
-  },
-  'creed-rings': {
-    title: 'кольца для Крида',
-    client: 'Егор Крид',
-    task: 'дизайн, 3d, производство',
-    year: '2025',
-    tags: '[ предметный дизайн ]',
-    desc: 'разработка и производство уникальных ювелирных изделий для артиста',
-    credits: [
-      { role: '[дизайн / 3d]', display: 't.me/Влад Марков', url: 'https://t.me/babydonthurtmovich' }
-    ]
-  }
-};
+import { supabase } from '@/lib/supabase';
 
 export default function CasePage() {
   const params = useParams();
-  const caseId = params.case as string;
-  const project = projectsData[caseId] || projectsData['asiya-site'];
+  const caseId = params.case as string; // Берем caseId из URL
+  
+  const [project, setProject] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCase() {
+      const { data, error } = await supabase
+        .from('cases')
+        .select('*')
+        .eq('slug', caseId)
+        .single();
+
+      if (!error && data) {
+        setProject(data);
+      }
+      setLoading(false);
+    }
+
+    if (caseId) {
+      fetchCase();
+    }
+  }, [caseId]);
 
   // Выравнивание строго по базовой линии (baseline), точки в нижнем регистре
-  const InfoRow = ({ label, value, isValueBold = false }: any) => (
-    <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', marginBottom: '8px' }}>
-      <span style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{label}</span>
-      <div style={{ 
-        flex: 1,
-        overflow: 'hidden', 
-        whiteSpace: 'nowrap', 
-        opacity: 0.8, 
-        margin: '0 8px',
-        letterSpacing: '2px' 
-      }}>
-        ..........................................................................................................................................................................................
+  // Добавлен строгий return для избежания Syntax Error в Vercel
+  const InfoRow = ({ label, value, isValueBold = false }: any) => {
+    return (
+      <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', marginBottom: '8px' }}>
+        <span style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{label}</span>
+        <div style={{ 
+          flex: 1,
+          overflow: 'hidden', 
+          whiteSpace: 'nowrap', 
+          opacity: 0.8, 
+          margin: '0 8px',
+          letterSpacing: '2px' 
+        }}>
+          ..........................................................................................................................................................................................
+        </div>
+        <span style={{ fontWeight: isValueBold ? 800 : 500, whiteSpace: 'nowrap' }}>{value}</span>
       </div>
-      <span style={{ fontWeight: isValueBold ? 800 : 500, whiteSpace: 'nowrap' }}>{value}</span>
-    </div>
-  );
+    );
+  };
+
+  if (loading) return <div style={{ padding: '20px', fontWeight: 800, fontFamily: 'inherit' }}>ЗАГРУЗКА...</div>;
+  if (!project) return <div style={{ padding: '20px', fontWeight: 800, fontFamily: 'inherit' }}>КЕЙС НЕ НАЙДЕН [404]</div>;
+
+  const creditsList = project.credits || [];
 
   return (
     <div style={{ 
@@ -95,7 +99,12 @@ export default function CasePage() {
             <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
             <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
             
-            <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5' }}></div>
+            <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
+              {/* Подтягиваем картинку из базы */}
+              {project.image_url && (
+                <img src={project.image_url} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              )}
+            </div>
           </div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', fontWeight: 800, fontSize: '13px' }}>
@@ -122,7 +131,7 @@ export default function CasePage() {
 
           {/* АВТОРЫ */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
-            {project.credits.map((credit: any, index: number) => (
+            {creditsList.map((credit: any, index: number) => (
               <div key={index} style={{ display: 'grid', gridTemplateColumns: '90px max-content minmax(0, 1fr)', alignItems: 'baseline', width: '100%' }}>
                 <div style={{ fontWeight: 500 }}>{index === 0 ? 'авторы:' : ''}</div>
                 <div style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{credit.role}</div>
