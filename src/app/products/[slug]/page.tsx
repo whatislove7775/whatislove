@@ -1,10 +1,11 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 import { supabase } from '@/lib/supabase';
 import { useParams, useRouter } from 'next/navigation';
+// ИМПОРТ ПАРСЕРА
+import { parseTextForLinks } from '@/lib/parseLinks';
 
 export default function ProductPage() {
   const params = useParams();
@@ -73,7 +74,6 @@ export default function ProductPage() {
   if (loading) return <div style={{ padding: '20px', fontWeight: 800 }}>ЗАГРУЗКА...</div>;
   if (!product) return <div style={{ padding: '20px', fontWeight: 800 }}>ТОВАР НЕ НАЙДЕН [404]</div>;
 
-  // Исправлено для компилятора Vercel: добавлен строгий return
   const InfoRow = ({ label, value, isBold = false, isRed = false }: any) => {
     return (
       <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
@@ -127,14 +127,14 @@ export default function ProductPage() {
               
               <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
                 {activeImage && (
-                  <img src={activeImage} alt={product?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={activeImage} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
               </div>
             </div>
             <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
           </div>
 
-          {/* Миниатюры */}
+          {/* Миниатюры: Выровнены строго по высоте фото, 55px квадраты */}
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
@@ -143,7 +143,7 @@ export default function ProductPage() {
             marginTop: '15px' 
           }}>
             {[0, 1, 2, 3].map(i => {
-              const imgUrl = product?.images ? product.images[i] : null;
+              const imgUrl = product.images ? product.images[i] : null;
               const isActive = activeImage === imgUrl;
               
               return (
@@ -151,16 +151,16 @@ export default function ProductPage() {
                   key={i} 
                   onClick={() => imgUrl && setActiveImage(imgUrl)}
                   style={{ 
-                    width: '55px', // Жестко задаем ширину
-                    height: '55px', // Жестко задаем высоту (теперь это 100% квадрат)
-                    flexShrink: 0, // Запрещаем флексбоксу их растягивать или сжимать
+                    width: '55px', 
+                    height: '55px', 
+                    flexShrink: 0,
                     backgroundColor: '#e5e5e5',
+                    overflow: 'hidden',
                     cursor: imgUrl ? 'pointer' : 'default',
                     transition: 'all 0.2s ease-in-out',
                     transform: (isActive && imgUrl) ? 'scale(1.15)' : 'scale(1)',
                     zIndex: isActive ? 10 : 1,
-                    position: 'relative',
-                    overflow: 'hidden' // Обрезаем всё, что выходит за рамки квадрата
+                    position: 'relative' 
                   }}
                 >
                   {imgUrl && <img src={imgUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
@@ -268,8 +268,9 @@ export default function ProductPage() {
 
           {/* НИЖНИЙ БЛОК И УМНАЯ КНОПКА */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '40px' }}>
+            {/* ОБОРАЧИВАЕМ ТЕКСТ В ПАРСЕР */}
             <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px', whiteSpace: 'pre-line' }}>
-              {bottomText}
+              {parseTextForLinks(bottomText)}
             </div>
             <button 
               onClick={handleAddToCart}
