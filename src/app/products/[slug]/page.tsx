@@ -8,37 +8,54 @@ import { useParams, useRouter } from 'next/navigation';
 export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
+  
   const [product, setProduct] = useState<any>(null);
+  const [bottomText, setBottomText] = useState('произведём, упакуем,\nи доставим'); // Текст по умолчанию
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(17);
+  
   const addItem = useCartStore((state: any) => state.addItem);
 
   useEffect(() => {
-    async function fetchProduct() {
-      // Ищем товар в базе по его slug
-      const { data, error } = await supabase
+    async function fetchData() {
+      // 1. Ищем товар в базе
+      const { data: productData, error: productError } = await supabase
         .from('products')
         .select('*')
         .eq('slug', params.slug)
-        .single(); // Нам нужен только один результат
+        .single();
 
-      if (error || !data) {
+      if (productError || !productData) {
         console.error('Товар не найден');
-        // Если товара нет в базе, можно раскомментировать редирект
-        // router.push('/products'); 
       } else {
-        setProduct(data);
+        setProduct(productData);
       }
+
+      // 2. Ищем текст для нижнего блока в site_settings
+      const { data: textData } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'product_bottom_text')
+        .single();
+        
+      if (textData) {
+        setBottomText(textData.value);
+      }
+
       setLoading(false);
     }
 
     if (params.slug) {
-      fetchProduct();
+      fetchData();
     }
   }, [params.slug]);
 
+  // Проверяем наличие выбранного размера (если stock пустой, считаем что товара 0)
+  const currentStock = product?.stock ? product.stock[selectedSize.toString()] || 0 : 0;
+  const isAvailable = currentStock > 0;
+
   const handleAddToCart = () => {
-    if (product) {
+    if (product && isAvailable) {
       addItem({
         id: product.id,
         name: product.name,
@@ -62,7 +79,6 @@ export default function ProductPage() {
     </div>
   );
 
-  // Безопасно разбиваем строку доставки (например "доставка по РФ+СНГ")
   const deliveryText = product.delivery || '';
   const deliveryParts = deliveryText.split('+');
   const deliveryMain = deliveryParts[0] || '';
@@ -93,17 +109,13 @@ export default function ProductPage() {
         
         {/* ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ */}
         <div style={{ display: 'flex', gap: '20px', flexShrink: 0, width: '450px' }}> 
-          
-          {/* Главное фото */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', width: '100%', padding: '15px', boxSizing: 'border-box' }}>
-              {/* Крестики по углам контейнера */}
               <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
               <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
               <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
               <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
               
-              {/* Прямоугольник фото */}
               <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
                 {product.image_url && (
                   <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -113,7 +125,6 @@ export default function ProductPage() {
             <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
           </div>
 
-          {/* Миниатюры: Выровнены строго по высоте фото */}
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
@@ -121,7 +132,7 @@ export default function ProductPage() {
             width: '70px',
             alignSelf: 'stretch',
             marginTop: '15px', 
-            marginBottom: '58px' 
+            marginBottom: '35px' 
           }}>
             {[1, 2, 3, 4].map(i => (
               <div key={i} style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5' }}></div>
@@ -188,51 +199,65 @@ export default function ProductPage() {
 
           {/* ВЫБОР РАЗМЕРА */}
           <div style={{ display: 'flex', justifyContent: 'center', fontWeight: 800, alignItems: 'center' }}>
-            {[16, 17, 18, 19].map((size) => (
-              <span 
-                key={size} 
-                onClick={() => setSelectedSize(size)}
-                style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', margin: '0 8px' }}
-              >
-                {selectedSize === size ? (
-                  <span style={{ 
-                    display: 'inline-flex', 
+            {[16, 17, 18, 19].map((size) => {
+              // Проверяем остаток для каждого конкретного размера при отрисовке цифр
+              const isSizeAvailable = product.stock ? (product.stock[size.toString()] > 0) : true;
+              
+              return (
+                <span 
+                  key={size} 
+                  onClick={() => isSizeAvailable && setSelectedSize(size)}
+                  style={{ 
+                    cursor: isSizeAvailable ? 'pointer' : 'not-allowed', 
+                    userSelect: 'none', 
+                    display: 'flex', 
                     alignItems: 'center', 
-                    justifyContent: 'center', 
-                    color: '#d32f2f', 
-                    border: '1.5px solid #d32f2f', 
-                    borderRadius: '50%', 
-                    width: '26px', 
-                    height: '26px' 
-                  }}>
-                    {size}
-                  </span>
-                ) : (
-                  `[ ${size} ]`
-                )}
-              </span>
-            ))}
+                    margin: '0 8px',
+                    opacity: isSizeAvailable ? 1 : 0.3 // Делаем полупрозрачным, если нет в наличии
+                  }}
+                >
+                  {selectedSize === size ? (
+                    <span style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      color: '#d32f2f', 
+                      border: '1.5px solid #d32f2f', 
+                      borderRadius: '50%', 
+                      width: '26px', 
+                      height: '26px' 
+                    }}>
+                      {size}
+                    </span>
+                  ) : (
+                    `[ ${size} ]`
+                  )}
+                </span>
+              );
+            })}
           </div>
 
-          {/* НИЖНИЙ БЛОК */}
+          {/* НИЖНИЙ БЛОК И УМНАЯ КНОПКА */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '40px' }}>
-            <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px' }}>
-              произведём, упакуем,<br/>
-              и доставим
+            <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px', whiteSpace: 'pre-line' }}>
+              {bottomText}
             </div>
             <button 
               onClick={handleAddToCart}
+              disabled={!isAvailable}
               style={{ 
                 background: 'transparent', 
                 border: 'none', 
                 fontWeight: 800, 
-                cursor: 'pointer',
+                cursor: isAvailable ? 'pointer' : 'not-allowed',
                 fontFamily: 'inherit',
                 padding: 0,
-                fontSize: '14px'
+                fontSize: '14px',
+                color: isAvailable ? '#000' : '#d32f2f', // Если нет в наличии, делаем красным
+                textDecoration: isAvailable ? 'none' : 'line-through' // И перечеркиваем
               }}
             >
-              [ +добавить в 🛒'y ]
+              {isAvailable ? "[ +добавить в 🛒'y ]" : "[ нет в наличии ]"}
             </button>
           </div>
 
