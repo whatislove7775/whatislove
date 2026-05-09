@@ -48,7 +48,6 @@ export default function PortfolioPage() {
         boxSizing: 'border-box'
       }}>
         {projects.map((project) => (
-          // Убрали главный <Link>, теперь это просто <div>, чтобы ссылки не конфликтовали
           <div 
             key={project.id} 
             style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}
@@ -73,27 +72,24 @@ export default function PortfolioPage() {
             {/* Правая часть: Описание */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px', paddingTop: '10px' }}>
               
-              {/* Название и синяя ссылка */}
-              <div style={{ fontWeight: 800, fontSize: '16px', display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'baseline' }}>
-                <Link href={`/portfolio/${project.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  {project.title}
-                </Link>
-                
-                {/* Внешняя ссылка (появится только если в базе заполнено project_link) */}
-                {project.project_link && (
+              {/* Название: Если есть project_link - делаем синим и внешней ссылкой */}
+              <div style={{ fontWeight: 800, fontSize: '16px' }}>
+                {project.project_link ? (
                   <a 
                     href={project.project_link} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     style={{ 
-                      color: '#3b00ff', // Тот самый синий цвет
-                      textDecoration: 'none',
-                      fontWeight: 800
+                      color: '#3b00ff', // Подсвечиваем синим
+                      textDecoration: 'none'
                     }}
                   >
-                    {/* Регулярка убирает https:// чтобы ссылка выглядела аккуратнее, например t.me/asiya */}
-                    {project.project_link.replace(/^https?:\/\//, '').replace(/\/$/, '')} ↗
+                    {project.title}
                   </a>
+                ) : (
+                  <Link href={`/portfolio/${project.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    {project.title}
+                  </Link>
                 )}
               </div>
               
