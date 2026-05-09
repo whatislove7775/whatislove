@@ -193,8 +193,8 @@ export default function CasePage() {
                 cursor: 'pointer'
               }}
             >
-              {/* Проверь правильный ли путь у картинки с qr кодом, если нет — поменяй на свой */}
-              <img src="/qr.svg" alt="QR code" style={{ width: '100px', height: '100px' }} />
+              {/* Исправленное имя файла qr-code.svg */}
+              <img src="/qr-code.svg" alt="QR code" style={{ width: '100px', height: '100px' }} />
               <span style={{
                 fontWeight: 800,
                 fontSize: '12px',
