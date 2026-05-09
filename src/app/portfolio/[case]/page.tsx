@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { supabase } from '@/lib/supabase';
+// ИМПОРТ ПАРСЕРА
 import { parseTextForLinks } from '@/lib/parseLinks';
 
 export default function CasePage() {
@@ -56,7 +57,7 @@ export default function CasePage() {
   const creditsList = project.credits || [];
 
   return (
-    // ГЛАВНЫЙ КОНТЕЙНЕР: Используем padding для выравнивания всего содержимого по краям
+    // ГЛАВНЫЙ КОНТЕЙНЕР
     <div style={{ 
       width: '100%', 
       flex: 1,
@@ -64,7 +65,7 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '0 40px' // Одинаковый отступ для навигации и контента
+      padding: '0 40px' // Отступы, чтобы всё выровнялось по краям
     }}>
       
       {/* НАВИГАЦИЯ */}
@@ -76,27 +77,33 @@ export default function CasePage() {
         ]} />
       </div>
 
-      {/* КОНТЕНТ КЕЙСА */}
+      {/* КОНТЕЙНЕР КОНТЕНТА */}
       <div style={{
         width: '100%', 
         display: 'flex', 
         flexDirection: 'column',
         boxSizing: 'border-box',
-        padding: '20px 0 40px 0'
+        paddingBottom: '40px'
       }}>
         
-        {/* СЕТКА: 3 колонки. Правая колонка 130px совпадает с шириной группы кнопок [дом][х] */}
+        {/* 
+          СЕТКА:
+          1. Фото (до 450px)
+          2. Текст (minmax(0, 1fr) — ЖЕСТКИЙ ОГРАНИЧИТЕЛЬ, спасает от разъезжания точек)
+          3. QR-код (100px — выравнивает левый край QR по левому краю [Домика])
+        */}
         <div style={{ 
           display: 'grid',
-          gridTemplateColumns: 'minmax(350px, 450px) 1fr 130px', 
+          gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr) 100px', 
           gap: '60px', 
           alignItems: 'flex-start',
           width: '100%',
           boxSizing: 'border-box'
         }}>
           
-          {/* ЛЕВАЯ КОЛОНКА (Фото) */}
+          {/* ЛЕВАЯ КОЛОНКА (Фото + Теги) */}
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            
             <div style={{ position: 'relative', width: '100%' }}>
               <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
               <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
@@ -118,6 +125,7 @@ export default function CasePage() {
 
           {/* ЦЕНТРАЛЬНАЯ КОЛОНКА (Текст) */}
           <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', width: '100%' }}>
+            
             <InfoRow label="название проекта" value={parseTextForLinks(project.title)} isValueBold={true} />
             <InfoRow label="клиент" value={project.client} />
             
@@ -135,8 +143,21 @@ export default function CasePage() {
                 <div key={index} style={{ display: 'grid', gridTemplateColumns: '90px max-content minmax(0, 1fr)', alignItems: 'baseline', width: '100%' }}>
                   <div style={{ fontWeight: 500 }}>{index === 0 ? 'авторы:' : ''}</div>
                   <div style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{credit.role}</div>
+                  
                   <div style={{ display: 'flex', justifyContent: 'flex-end', overflow: 'hidden' }}>
-                    <a href={credit.url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b00ff', textDecoration: 'none', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                    <a 
+                      href={credit.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{ 
+                        color: '#3b00ff', 
+                        textDecoration: 'none', 
+                        fontWeight: 800,
+                        whiteSpace: 'nowrap',
+                        position: 'relative',
+                        zIndex: 100
+                      }}
+                    >
                       {credit.display}
                     </a>
                   </div>
@@ -144,9 +165,22 @@ export default function CasePage() {
               ))}
             </div>
 
-            <div style={{ fontWeight: 500, lineHeight: 1.5, textAlign: 'justify', width: '100%', maxHeight: '4.5em', overflow: 'hidden' }}>
+            <div style={{ 
+              fontWeight: 500, 
+              lineHeight: 1.5, 
+              textAlign: 'justify', 
+              width: '100%',
+              maxHeight: '4.5em', 
+              overflow: 'hidden'
+            }}>
               <span>{parseTextForLinks(project.desc)}</span>
-              <span style={{ opacity: 0.8, letterSpacing: '2px', marginLeft: '5px' }}>................................................................................................................................................................</span>
+              <span style={{ 
+                opacity: 0.8, 
+                letterSpacing: '2px', 
+                marginLeft: '5px' 
+              }}>
+                ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+              </span>
             </div>
           </div>
 
@@ -159,13 +193,22 @@ export default function CasePage() {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center',
+                alignItems: 'center', // Центрируем подпись относительно самого QR
                 textDecoration: 'none',
-                color: 'inherit'
+                color: 'inherit',
+                cursor: 'pointer',
+                width: '100px' // Жесткая ширина, равная колонке
               }}
             >
-              <img src="/qr-code.svg" alt="QR" style={{ width: '100px', height: '100px' }} />
-              <span style={{ fontWeight: 800, fontSize: '11px', marginTop: '8px', textAlign: 'center', lineHeight: '1.2' }}>
+              <img src="/qr-code.svg" alt="QR code" style={{ width: '100px', height: '100px' }} />
+              <span style={{
+                fontWeight: 800,
+                fontSize: '12px',
+                marginTop: '10px',
+                textAlign: 'center',
+                whiteSpace: 'nowrap',
+                lineHeight: '1.2'
+              }}>
                 ЗАКАЗАТЬ<br />ДИЗАЙН
               </span>
             </a>
