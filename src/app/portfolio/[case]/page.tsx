@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { supabase } from '@/lib/supabase';
+// ИМПОРТ ПАРСЕРА
+import { parseTextForLinks } from '@/lib/parseLinks';
 
 export default function CasePage() {
   const params = useParams();
-  const caseId = params.case as string; // Берем caseId из URL
+  const caseId = (params.slug || params.case) as string; 
   
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -30,8 +32,6 @@ export default function CasePage() {
     }
   }, [caseId]);
 
-  // Выравнивание строго по базовой линии (baseline), точки в нижнем регистре
-  // Добавлен строгий return для избежания Syntax Error в Vercel
   const InfoRow = ({ label, value, isValueBold = false }: any) => {
     return (
       <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', marginBottom: '8px' }}>
@@ -65,13 +65,11 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      // Верхний отступ уменьшен до 15px, чтобы поднять навигацию выше
       padding: '15px 20px 40px 20px',
       position: 'relative'
     }}>
       
       {/* НАВИГАЦИЯ */}
-      {/* Обертка с zIndex: 100 гарантирует, что невидимые шапки не перекроют клики */}
       <div style={{ width: '100%', position: 'relative', zIndex: 100 }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
@@ -100,7 +98,6 @@ export default function CasePage() {
             <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
             
             <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
-              {/* Подтягиваем картинку из базы */}
               {project.image_url && (
                 <img src={project.image_url} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               )}
@@ -147,7 +144,7 @@ export default function CasePage() {
                       fontWeight: 800,
                       whiteSpace: 'nowrap',
                       position: 'relative',
-                      zIndex: 100 // Делаем ссылки авторов тоже защищенными от перекрытия
+                      zIndex: 100
                     }}
                   >
                     {credit.display}
@@ -157,16 +154,16 @@ export default function CasePage() {
             ))}
           </div>
 
-          {/* ОПИСАНИЕ С АВТОМАТИЧЕСКИМИ ТОЧКАМИ */}
+          {/* ОПИСАНИЕ: ТЕПЕРЬ ОБОРАЧИВАЕТСЯ В ПАРСЕР */}
           <div style={{ 
             fontWeight: 500, 
             lineHeight: 1.5, 
-            textAlign: 'justify', // Растягивает текст от края до края ссылок
+            textAlign: 'justify', 
             width: '100%',
             maxHeight: '4.5em', 
             overflow: 'hidden'
           }}>
-            <span>{project.desc}</span>
+            <span>{parseTextForLinks(project.desc)}</span>
             <span style={{ 
               opacity: 0.8, 
               letterSpacing: '2px', 
