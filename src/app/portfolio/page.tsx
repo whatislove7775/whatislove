@@ -10,8 +10,7 @@ export default function PortfolioPage() {
 
   useEffect(() => {
     async function fetchCases() {
-      // Запрашиваем кейсы из базы. Сортировка order('year', { ascending: false })
-      // автоматически поднимет наверх самые новые проекты.
+      // Подтягиваем данные. Сортируем по году от новых к старым
       const { data, error } = await supabase
         .from('cases')
         .select('*')
@@ -51,20 +50,17 @@ export default function PortfolioPage() {
         {projects.map((project) => (
           <Link 
             key={project.id} 
-            href={`/portfolio/${project.slug}`} // Берем slug из базы для правильной ссылки
+            href={`/portfolio/${project.slug}`} 
             style={{ textDecoration: 'none', color: 'inherit', display: 'flex', gap: '20px', alignItems: 'flex-start' }}
           >
             {/* Левая часть: Фото с крестиками */}
             <div style={{ position: 'relative', width: '160px', padding: '10px', flexShrink: 0, boxSizing: 'border-box' }}>
-              {/* Крестики по углам контейнера */}
               <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
               <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
               <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
               <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
               
-              {/* Серый/черный квадрат фото */}
               <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#000', overflow: 'hidden' }}>
-                 {/* Выводим картинку, если ссылка есть в базе */}
                  {project.image_url && (
                    <img src={project.image_url} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                  )}
@@ -74,9 +70,20 @@ export default function PortfolioPage() {
             {/* Правая часть: Описание */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px', paddingTop: '10px' }}>
               <div style={{ fontWeight: 800, fontSize: '16px' }}>{project.title}</div>
-              <div style={{ fontWeight: 500, lineHeight: '1.3', maxWidth: '200px' }}>
+              
+              {/* Описание с жесткой обрезкой в 3 строки */}
+              <div style={{ 
+                fontWeight: 500, 
+                lineHeight: '1.3', 
+                maxWidth: '200px',
+                display: '-webkit-box',
+                WebkitLineClamp: 3, // Ровно 3 строки
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}>
                 {project.desc}
               </div>
+
               <div style={{ fontWeight: 800, marginTop: '10px' }}>
                 [ {project.year} ]
               </div>
