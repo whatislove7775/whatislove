@@ -10,7 +10,6 @@ export default function PortfolioPage() {
 
   useEffect(() => {
     async function fetchCases() {
-      // Подтягиваем данные. Сортируем по году от новых к старым
       const { data, error } = await supabase
         .from('cases')
         .select('*')
@@ -24,6 +23,49 @@ export default function PortfolioPage() {
     
     fetchCases();
   }, []);
+
+  // Умная функция, которая находит ссылку внутри текста названия
+  const renderTitle = (title: string, externalLink: string, slug: string) => {
+    // Если внешней ссылки в базе нет, просто делаем всё название ссылкой на внутреннюю страницу
+    if (!externalLink) {
+      return (
+        <Link href={`/portfolio/${slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          {title}
+        </Link>
+      );
+    }
+
+    // Регулярное выражение: ищет всё, что похоже на сайт (домены типа .com, .ru, .рф + возможный путь через /)
+    const urlRegex = /([a-zA-Zа-яА-ЯёЁ0-9_-]+\.[a-zA-Zа-яА-ЯёЁ]{2,}(?:\/[^\s)]*)?)/gi;
+    const parts = title.split(urlRegex);
+
+    return (
+      <>
+        {parts.map((part, index) => {
+          // Если кусок текста совпал с форматом сайта — делаем его синей внешней ссылкой
+          if (part.match(urlRegex)) {
+            return (
+              <a 
+                key={index} 
+                href={externalLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ color: '#3b00ff', textDecoration: 'none' }}
+              >
+                {part}
+              </a>
+            );
+          }
+          // Иначе это обычный текст названия — делаем его ссылкой на внутренний кейс
+          return (
+            <Link key={index} href={`/portfolio/${slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              {part}
+            </Link>
+          );
+        })}
+      </>
+    );
+  };
 
   if (loading) return <div style={{ padding: '20px', fontWeight: 800, fontFamily: 'inherit' }}>ЗАГРУЗКА ПОРТФОЛИО...</div>;
 
@@ -72,25 +114,9 @@ export default function PortfolioPage() {
             {/* Правая часть: Описание */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px', paddingTop: '10px' }}>
               
-              {/* Название: Если есть project_link - делаем синим и внешней ссылкой */}
-              <div style={{ fontWeight: 800, fontSize: '16px' }}>
-                {project.project_link ? (
-                  <a 
-                    href={project.project_link} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    style={{ 
-                      color: '#3b00ff', // Подсвечиваем синим
-                      textDecoration: 'none'
-                    }}
-                  >
-                    {project.title}
-                  </a>
-                ) : (
-                  <Link href={`/portfolio/${project.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    {project.title}
-                  </Link>
-                )}
+              {/* Название с умным парсером */}
+              <div style={{ fontWeight: 800, fontSize: '16px', whiteSpace: 'pre-wrap' }}>
+                {renderTitle(project.title, project.project_link, project.slug)}
               </div>
               
               {/* Описание с жесткой обрезкой в 3 строки (ведет внутрь кейса) */}
