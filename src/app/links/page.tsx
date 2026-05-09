@@ -3,10 +3,14 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 
 export default function LinksPage() {
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
       
-      {/* Оборачиваем Breadcrumbs в div с боковыми отступами для выравнивания с футером */}
-      <div style={{ padding: '20px 100px 0 100px', width: '100%', boxSizing: 'border-box' }}>
+      {/* 
+        Обертка навигации. 
+        Замени '40px' на точное значение отступа твоего футера (например, 20px, 40px или 5%), 
+        чтобы они совпали пиксель в пиксель.
+      */}
+      <div style={{ width: '100%', padding: '20px 40px 0 40px', boxSizing: 'border-box' }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
           { name: 'LINK^S', icon: '🔗' }
