@@ -127,7 +127,7 @@ export default function ProductPage() {
               
               <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
                 {activeImage && (
-                  <img src={activeImage} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={activeImage} alt={product?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
               </div>
             </div>
@@ -138,8 +138,8 @@ export default function ProductPage() {
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
-            gap: '15px', // Фиксированное небольшое расстояние между фото
-            width: '55px', // Сделали сами миниатюры меньше (было 70px)
+            gap: '15px',
+            width: '55px',
             marginTop: '15px' 
           }}>
             {[0, 1, 2, 3].map(i => {
@@ -151,14 +151,16 @@ export default function ProductPage() {
                   key={i} 
                   onClick={() => imgUrl && setActiveImage(imgUrl)}
                   style={{ 
-                    width: '100%', 
-                    aspectRatio: '1/1', 
+                    width: '55px', // Жестко задаем ширину
+                    height: '55px', // Жестко задаем высоту (теперь это 100% квадрат)
+                    flexShrink: 0, // Запрещаем флексбоксу их растягивать или сжимать
                     backgroundColor: '#e5e5e5',
                     cursor: imgUrl ? 'pointer' : 'default',
-                    transition: 'all 0.2s ease-in-out', // Плавная анимация
-                    transform: (isActive && imgUrl) ? 'scale(1.15)' : 'scale(1)', // Увеличение на 15% для выбранного
-                    zIndex: isActive ? 10 : 1, // Чтобы увеличенная фотка была поверх остальных
-                    position: 'relative' 
+                    transition: 'all 0.2s ease-in-out',
+                    transform: (isActive && imgUrl) ? 'scale(1.15)' : 'scale(1)',
+                    zIndex: isActive ? 10 : 1,
+                    position: 'relative',
+                    overflow: 'hidden' // Обрезаем всё, что выходит за рамки квадрата
                   }}
                 >
                   {imgUrl && <img src={imgUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
