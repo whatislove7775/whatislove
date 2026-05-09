@@ -48,13 +48,16 @@ export default function PortfolioPage() {
         boxSizing: 'border-box'
       }}>
         {projects.map((project) => (
-          <Link 
+          // Убрали главный <Link>, теперь это просто <div>, чтобы ссылки не конфликтовали
+          <div 
             key={project.id} 
-            href={`/portfolio/${project.slug}`} 
-            style={{ textDecoration: 'none', color: 'inherit', display: 'flex', gap: '20px', alignItems: 'flex-start' }}
+            style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}
           >
-            {/* Левая часть: Фото с крестиками */}
-            <div style={{ position: 'relative', width: '160px', padding: '10px', flexShrink: 0, boxSizing: 'border-box' }}>
+            {/* Левая часть: Фото с крестиками (ведет внутрь кейса) */}
+            <Link 
+              href={`/portfolio/${project.slug}`} 
+              style={{ position: 'relative', width: '160px', padding: '10px', flexShrink: 0, boxSizing: 'border-box', display: 'block', color: 'inherit', textDecoration: 'none' }}
+            >
               <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
               <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
               <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
@@ -65,30 +68,57 @@ export default function PortfolioPage() {
                    <img src={project.image_url} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                  )}
               </div>
-            </div>
+            </Link>
 
             {/* Правая часть: Описание */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px', paddingTop: '10px' }}>
-              <div style={{ fontWeight: 800, fontSize: '16px' }}>{project.title}</div>
               
-              {/* Описание с жесткой обрезкой в 3 строки */}
-              <div style={{ 
-                fontWeight: 500, 
-                lineHeight: '1.3', 
-                maxWidth: '200px',
-                display: '-webkit-box',
-                WebkitLineClamp: 3, // Ровно 3 строки
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden'
-              }}>
-                {project.desc}
+              {/* Название и синяя ссылка */}
+              <div style={{ fontWeight: 800, fontSize: '16px', display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'baseline' }}>
+                <Link href={`/portfolio/${project.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  {project.title}
+                </Link>
+                
+                {/* Внешняя ссылка (появится только если в базе заполнено project_link) */}
+                {project.project_link && (
+                  <a 
+                    href={project.project_link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      color: '#3b00ff', // Тот самый синий цвет
+                      textDecoration: 'none',
+                      fontWeight: 800
+                    }}
+                  >
+                    {/* Регулярка убирает https:// чтобы ссылка выглядела аккуратнее, например t.me/asiya */}
+                    {project.project_link.replace(/^https?:\/\//, '').replace(/\/$/, '')} ↗
+                  </a>
+                )}
               </div>
+              
+              {/* Описание с жесткой обрезкой в 3 строки (ведет внутрь кейса) */}
+              <Link href={`/portfolio/${project.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ 
+                  fontWeight: 500, 
+                  lineHeight: '1.3', 
+                  maxWidth: '200px',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3, 
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden'
+                }}>
+                  {project.desc}
+                </div>
+              </Link>
 
-              <div style={{ fontWeight: 800, marginTop: '10px' }}>
+              {/* Год (ведет внутрь кейса) */}
+              <Link href={`/portfolio/${project.slug}`} style={{ fontWeight: 800, marginTop: '10px', textDecoration: 'none', color: 'inherit', display: 'inline-block' }}>
                 [ {project.year} ]
-              </div>
+              </Link>
+
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>
