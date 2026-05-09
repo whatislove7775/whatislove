@@ -117,6 +117,7 @@ export default function ProductPage() {
         {/* ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ */}
         <div style={{ display: 'flex', gap: '20px', flexShrink: 0, width: '450px' }}> 
           
+          {/* Главное фото */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', width: '100%', padding: '15px', boxSizing: 'border-box' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
@@ -133,17 +134,16 @@ export default function ProductPage() {
             <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
           </div>
 
+          {/* Миниатюры */}
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
-            justifyContent: 'space-between', 
-            width: '70px',
-            alignSelf: 'stretch',
-            marginTop: '15px', 
-            marginBottom: '35px' 
+            gap: '15px', // Фиксированное небольшое расстояние между фото
+            width: '55px', // Сделали сами миниатюры меньше (было 70px)
+            marginTop: '15px' 
           }}>
             {[0, 1, 2, 3].map(i => {
-              const imgUrl = product.images ? product.images[i] : null;
+              const imgUrl = product?.images ? product.images[i] : null;
               const isActive = activeImage === imgUrl;
               
               return (
@@ -154,9 +154,11 @@ export default function ProductPage() {
                     width: '100%', 
                     aspectRatio: '1/1', 
                     backgroundColor: '#e5e5e5',
-                    overflow: 'hidden',
                     cursor: imgUrl ? 'pointer' : 'default',
-                    opacity: (isActive && imgUrl) ? 0.6 : 1
+                    transition: 'all 0.2s ease-in-out', // Плавная анимация
+                    transform: (isActive && imgUrl) ? 'scale(1.15)' : 'scale(1)', // Увеличение на 15% для выбранного
+                    zIndex: isActive ? 10 : 1, // Чтобы увеличенная фотка была поверх остальных
+                    position: 'relative' 
                   }}
                 >
                   {imgUrl && <img src={imgUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
