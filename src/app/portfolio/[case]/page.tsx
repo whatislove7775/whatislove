@@ -57,7 +57,7 @@ export default function CasePage() {
   const creditsList = project.credits || [];
 
   return (
-    // 1. КОРНЕВОЙ КОНТЕЙНЕР (Без maxWidth, чтобы навигация тянулась на 100%)
+    // 1. КОРНЕВОЙ КОНТЕЙНЕР
     <div style={{ 
       width: '100%', 
       flex: 1,
@@ -67,7 +67,7 @@ export default function CasePage() {
       boxSizing: 'border-box'
     }}>
       
-      {/* НАВИГАЦИЯ (Теперь она автоматически выровняется по краям футера) */}
+      {/* НАВИГАЦИЯ */}
       <div style={{ width: '100%', alignSelf: 'flex-start', padding: '15px 0', position: 'relative', zIndex: 100 }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
@@ -76,21 +76,19 @@ export default function CasePage() {
         ]} />
       </div>
 
-      {/* 2. КОНТЕЙНЕР КОНТЕНТА КЕЙСА (Центрируем и ограничиваем до 1000px) */}
+      {/* 2. КОНТЕЙНЕР КОНТЕНТА КЕЙСА (Тянется на 100% ширины для выравнивания по навигации) */}
       <div style={{
         width: '100%', 
-        maxWidth: '1000px', 
-        margin: '0 auto', 
         display: 'flex', 
         flexDirection: 'column',
         boxSizing: 'border-box',
-        padding: '20px 20px 40px 20px'
+        paddingBottom: '40px'
       }}>
         
-        {/* ОСНОВНАЯ СЕТКА */}
+        {/* ОСНОВНАЯ СЕТКА (Теперь 3 колонки: Фото, Текст, QR-код) */}
         <div style={{ 
           display: 'grid',
-          gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr)', 
+          gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr) max-content', 
           gap: '60px', 
           alignItems: 'flex-start',
           width: '100%',
@@ -119,15 +117,12 @@ export default function CasePage() {
             </div>
           </div>
 
-          {/* ПРАВАЯ КОЛОНКА (Текст) */}
-          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', width: '100%' }}>
+          {/* ЦЕНТРАЛЬНАЯ КОЛОНКА (Текст) */}
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', width: '100%', maxWidth: '600px' }}>
             
-            {/* ВОТ ЗДЕСЬ ИЗМЕНЕНИЕ: */}
             <InfoRow label="название проекта" value={parseTextForLinks(project.title)} isValueBold={true} />
-            
             <InfoRow label="клиент" value={project.client} />
             
-            {/* Сделано с любовью */}
             <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', margin: '4px 0 10px 0' }}>
               <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
               <span style={{ margin: '0 15px', fontWeight: 500, whiteSpace: 'nowrap' }}>сделано с любовью</span>
@@ -137,7 +132,6 @@ export default function CasePage() {
             <InfoRow label="задача" value={project.task} />
             <InfoRow label="год" value={project.year} />
 
-            {/* АВТОРЫ */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
               {creditsList.map((credit: any, index: number) => (
                 <div key={index} style={{ display: 'grid', gridTemplateColumns: '90px max-content minmax(0, 1fr)', alignItems: 'baseline', width: '100%' }}>
@@ -165,7 +159,6 @@ export default function CasePage() {
               ))}
             </div>
 
-            {/* ОПИСАНИЕ: ТЕПЕРЬ ОБОРАЧИВАЕТСЯ В ПАРСЕР */}
             <div style={{ 
               fontWeight: 500, 
               lineHeight: 1.5, 
@@ -183,8 +176,38 @@ export default function CasePage() {
                 ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
               </span>
             </div>
-
           </div>
+
+          {/* ПРАВАЯ КОЛОНКА (QR-код с переходом в ТГ) */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <a 
+              href="https://t.me/whatislove_r" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textDecoration: 'none',
+                color: 'inherit',
+                cursor: 'pointer'
+              }}
+            >
+              {/* Проверь правильный ли путь у картинки с qr кодом, если нет — поменяй на свой */}
+              <img src="/qr.svg" alt="QR code" style={{ width: '100px', height: '100px' }} />
+              <span style={{
+                fontWeight: 800,
+                fontSize: '12px',
+                marginTop: '10px',
+                textAlign: 'center',
+                whiteSpace: 'nowrap',
+                lineHeight: '1.2'
+              }}>
+                ЗАКАЗАТЬ<br />ДИЗАЙН
+              </span>
+            </a>
+          </div>
+
         </div>
       </div>
     </div>
