@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { supabase } from '@/lib/supabase';
+// ИМПОРТ ПАРСЕРА
 import { parseTextForLinks } from '@/lib/parseLinks';
 
 export default function CasePage() {
@@ -83,22 +84,17 @@ export default function CasePage() {
         paddingBottom: '40px'
       }}>
         
-        {/* 
-          СЕТКА
-          Обрати внимание на 85px в конце. Это точная ширина колонки под QR-код. 
-          Если QR-код всё ещё на 1-2 пикселя левее или правее домика, просто 
-          измени эти 85px на 80px или 90px, пока не встанет идеально.
-        */}
+        {/* ОРИГИНАЛЬНАЯ СЕТКА: ТОЛЬКО 2 КОЛОНКИ (Фото и Текст) */}
         <div style={{ 
           display: 'grid',
-          gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr) 85px', 
+          gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr)', 
           gap: '60px', 
           alignItems: 'flex-start',
           width: '100%',
           boxSizing: 'border-box'
         }}>
           
-          {/* ЛЕВАЯ КОЛОНКА */}
+          {/* ЛЕВАЯ КОЛОНКА (Фото) */}
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
             
             <div style={{ position: 'relative', width: '100%' }}>
@@ -120,9 +116,60 @@ export default function CasePage() {
             </div>
           </div>
 
-          {/* ЦЕНТРАЛЬНАЯ КОЛОНКА */}
-          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px', width: '100%' }}>
+          {/* ПРАВАЯ КОЛОНКА (Текст + Абсолютный QR-код) */}
+          <div style={{ 
+            position: 'relative', // Важно для абсолютного позиционирования QR
+            display: 'flex', 
+            flexDirection: 'column', 
+            fontSize: '14px', 
+            width: '100%',
+            boxSizing: 'border-box',
+            paddingRight: '120px' // Пустая зона справа, чтобы текст не залез на QR
+          }}>
             
+            {/* 
+              ВЕСЯЩИЙ QR-КОД
+              Если левый край всё еще не идеально совпадает с домиком, просто
+              поменяй width: '85px' на 80px или 90px.
+            */}
+            <div style={{ 
+              position: 'absolute', 
+              top: 0, 
+              right: 0, 
+              width: '85px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center' 
+            }}>
+              <a 
+                href="https://t.me/whatislove_r" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+              >
+                <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
+                <span style={{
+                  fontWeight: 800,
+                  fontSize: '10px',
+                  marginTop: '10px',
+                  textAlign: 'center',
+                  whiteSpace: 'nowrap',
+                  lineHeight: '1.2'
+                }}>
+                  ЗАКАЗАТЬ<br />ДИЗАЙН
+                </span>
+              </a>
+            </div>
+
+            {/* КОНТЕНТ ТЕКСТА */}
             <InfoRow label="название проекта" value={parseTextForLinks(project.title)} isValueBold={true} />
             <InfoRow label="клиент" value={project.client} />
             
@@ -162,12 +209,12 @@ export default function CasePage() {
               ))}
             </div>
 
+            {/* Убрал maxHeight вообще, чтобы описание точно не обрезалось */}
             <div style={{ 
               fontWeight: 500, 
               lineHeight: 1.5, 
               textAlign: 'justify', 
               width: '100%',
-              maxHeight: '7.5em', // Увеличенная высота, чтобы влезала 4-я строка с точками
               overflow: 'hidden'
             }}>
               <span>{parseTextForLinks(project.desc)}</span>
@@ -179,38 +226,8 @@ export default function CasePage() {
                 ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
               </span>
             </div>
+            
           </div>
-
-          {/* ПРАВАЯ КОЛОНКА (QR-код) */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
-            <a 
-              href="https://t.me/whatislove_r" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                textDecoration: 'none',
-                color: 'inherit',
-                cursor: 'pointer',
-                width: '100%' // Теперь QR тянется строго по ширине колонки (85px)
-              }}
-            >
-              <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
-              <span style={{
-                fontWeight: 800,
-                fontSize: '11px',
-                marginTop: '10px',
-                textAlign: 'center',
-                whiteSpace: 'nowrap',
-                lineHeight: '1.2'
-              }}>
-                ЗАКАЗАТЬ<br />ДИЗАЙН
-              </span>
-            </a>
-          </div>
-
         </div>
       </div>
     </div>
