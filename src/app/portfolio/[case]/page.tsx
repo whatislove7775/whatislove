@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { supabase } from '@/lib/supabase';
-// ИМПОРТ ПАРСЕРА
 import { parseTextForLinks } from '@/lib/parseLinks';
 
 export default function CasePage() {
@@ -64,182 +63,165 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '0 40px' 
+      padding: '0 40px' // Базовый отступ, который ровняет контент с футером
     }}>
       
-      {/* --- КОНТЕЙНЕР С ОБЩИМ ВЫРАВНИВАНИЕМ ---
-        Мы добавляем 'paddingLeft: 120px', который задает общую вертикальную линию (gutter)
-        для навигации и карточки товара. Это и есть выравнивание "по левому краю где начало кнопки оферта".
-      */}
-      <div style={{ 
-        position: 'relative', // Для позиционирования QR-кода относительно этого контейнера
-        paddingLeft: '120px', // Создаем визуальный отступ, куда встанет QR-код
-        flex: 1, 
+      {/* НАВИГАЦИЯ */}
+      <div style={{ width: '100%', padding: '15px 0', position: 'relative', zIndex: 100 }}>
+        <Breadcrumbs path={[
+          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+          { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
+          { name: project.title.toUpperCase(), icon: '📄' }
+        ]} />
+      </div>
+
+      <div style={{
+        width: '100%', 
         display: 'flex', 
-        flexDirection: 'column' 
+        flexDirection: 'column',
+        boxSizing: 'border-box',
+        paddingBottom: '40px'
       }}>
-
-        {/* НАВИГАЦИЯ: Начинается от общей линии выравнивания */}
-        <div style={{ width: '100%', padding: '15px 0', position: 'relative', zIndex: 100 }}>
-          <Breadcrumbs path={[
-            { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-            { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
-            { name: project.title.toUpperCase(), icon: '📄' }
-          ]} />
-        </div>
-
-        {/* QR-КОД С НАДПИСЬЮ: АБСОЛЮТНО ПОЗИЦИОНИРОВАН В ГУТТЕРЕ.
-          top: 0 - выравнивает его по верхней границе навигации (как в каталоге).
-          left: 0 - выравнивает его левый край с левым краем кнопки «🏠».
-        */}
+        
+        {/* СЕТКА: 2 КОЛОНКИ */}
         <div style={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          width: '110px', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'flex-start' 
-        }}>
-          <a 
-            href="https://t.me/whatislove_r" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              textDecoration: 'none',
-              color: 'inherit',
-              cursor: 'pointer',
-              width: '100%'
-            }}
-          >
-            <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
-            <span style={{
-              fontWeight: 800,
-              fontSize: '13px',
-              marginTop: '12px',
-              textAlign: 'left',
-              whiteSpace: 'nowrap',
-              lineHeight: '1.2',
-              textTransform: 'lowercase' // Назначение надписи строчными буквами
-            }}>
-              заказать<br />дизайн
-            </span>
-          </a>
-        </div>
-
-        {/* КАРТОЧКА ТОВАРА: Начинается от общей линии выравнивания */}
-        <div style={{
-          width: '100%', 
-          display: 'flex', 
-          flexDirection: 'column',
-          boxSizing: 'border-box',
-          paddingBottom: '40px'
+          display: 'grid',
+          gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr)', 
+          gap: '60px', 
+          alignItems: 'flex-start',
+          width: '100%',
+          boxSizing: 'border-box'
         }}>
           
-          {/* СЕТКА: 2 КОЛОНКИ */}
+          {/* ЛЕВАЯ КОЛОНКА (Фото) */}
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            
+            <div style={{ position: 'relative', width: '100%' }}>
+              <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+              
+              <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
+                {project.image_url && (
+                  <img src={project.image_url} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', fontWeight: 800, fontSize: '13px' }}>
+              <span>{project.tags}</span>
+              <span>[ {project.year} ]</span>
+            </div>
+          </div>
+
+          {/* ПРАВАЯ КОЛОНКА (Текст + Абсолютный QR-код) */}
           <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr)', 
-            gap: '60px', 
-            alignItems: 'flex-start',
+            position: 'relative', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            fontSize: '14px', 
             width: '100%',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            paddingRight: '130px' // Отступ для QR-кода
           }}>
             
-            {/* ЛЕВАЯ КОЛОНКА (Фото) */}
-            <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-              
-              <div style={{ position: 'relative', width: '100%' }}>
-                <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-                <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-                <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-                <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-                
-                <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
-                  {project.image_url && (
-                    <img src={project.image_url} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  )}
-                </div>
-              </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', fontWeight: 800, fontSize: '13px' }}>
-                <span>{project.tags}</span>
-                <span>[ {project.year} ]</span>
-              </div>
-            </div>
-
-            {/* ПРАВАЯ КОЛОНКА (Текст) */}
+            {/* QR-КОД: ВОЗВРАЩЕН НА ПРАВЫЙ КРАЙ (ПОД ДОМИК) */}
             <div style={{ 
-              position: 'relative', 
+              position: 'absolute', 
+              top: 0, 
+              right: 0, 
+              width: '110px', 
               display: 'flex', 
               flexDirection: 'column', 
-              fontSize: '14px', 
-              width: '100%',
-              boxSizing: 'border-box'
-              // paddingRight: '150px' // Отступ больше не нужен, так как QR уехал влево
+              alignItems: 'flex-start' 
             }}>
-              
-              {/* КОНТЕНТ ТЕКСТА */}
-              <InfoRow label="название проекта" value={parseTextForLinks(project.title)} isValueBold={true} />
-              <InfoRow label="клиент" value={project.client} />
-              
-              <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', margin: '4px 0 10px 0' }}>
-                <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
-                <span style={{ margin: '0 15px', fontWeight: 500, whiteSpace: 'nowrap' }}>сделано с любовью</span>
-                <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
-              </div>
-
-              <InfoRow label="задача" value={project.task} />
-              <InfoRow label="год" value={project.year} />
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
-                {creditsList.map((credit: any, index: number) => (
-                  <div key={index} style={{ display: 'grid', gridTemplateColumns: '90px max-content minmax(0, 1fr)', alignItems: 'baseline', width: '100%' }}>
-                    <div style={{ fontWeight: 500 }}>{index === 0 ? 'авторы:' : ''}</div>
-                    <div style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{credit.role}</div>
-                    
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', overflow: 'hidden' }}>
-                      <a 
-                        href={credit.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        style={{ 
-                          color: '#3b00ff', 
-                          textDecoration: 'none', 
-                          fontWeight: 800,
-                          whiteSpace: 'nowrap',
-                          position: 'relative',
-                          zIndex: 100
-                        }}
-                      >
-                        {credit.display}
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ 
-                fontWeight: 500, 
-                lineHeight: 1.5, 
-                textAlign: 'justify', 
-                width: '100%',
-                overflow: 'hidden'
-              }}>
-                <span>{parseTextForLinks(project.desc)}</span>
-                <span style={{ 
-                  opacity: 0.8, 
-                  letterSpacing: '2px', 
-                  marginLeft: '5px' 
+              <a 
+                href="https://t.me/whatislove_r" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+              >
+                <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
+                <span style={{
+                  fontWeight: 800,
+                  fontSize: '13px',
+                  marginTop: '12px',
+                  textAlign: 'left',
+                  whiteSpace: 'nowrap',
+                  lineHeight: '1.2',
+                  textTransform: 'lowercase' // Строчные буквы
                 }}>
-                  ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+                  заказать<br />дизайн
                 </span>
-              </div>
-              
+              </a>
             </div>
+
+            {/* КОНТЕНТ ТЕКСТА */}
+            <InfoRow label="название проекта" value={parseTextForLinks(project.title)} isValueBold={true} />
+            <InfoRow label="клиент" value={project.client} />
+            
+            <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', margin: '4px 0 10px 0' }}>
+              <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
+              <span style={{ margin: '0 15px', fontWeight: 500, whiteSpace: 'nowrap' }}>сделано с любовью</span>
+              <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
+            </div>
+
+            <InfoRow label="задача" value={project.task} />
+            <InfoRow label="год" value={project.year} />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
+              {creditsList.map((credit: any, index: number) => (
+                <div key={index} style={{ display: 'grid', gridTemplateColumns: '90px max-content minmax(0, 1fr)', alignItems: 'baseline', width: '100%' }}>
+                  <div style={{ fontWeight: 500 }}>{index === 0 ? 'авторы:' : ''}</div>
+                  <div style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{credit.role}</div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', overflow: 'hidden' }}>
+                    <a 
+                      href={credit.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{ 
+                        color: '#3b00ff', 
+                        textDecoration: 'none', 
+                        fontWeight: 800,
+                        whiteSpace: 'nowrap',
+                        position: 'relative',
+                        zIndex: 100
+                      }}
+                    >
+                      {credit.display}
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ 
+              fontWeight: 500, 
+              lineHeight: 1.5, 
+              textAlign: 'justify', 
+              width: '100%',
+              overflow: 'hidden'
+            }}>
+              <span>{parseTextForLinks(project.desc)}</span>
+              <span style={{ 
+                opacity: 0.8, 
+                letterSpacing: '2px', 
+                marginLeft: '5px' 
+              }}>
+                ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+              </span>
+            </div>
+            
           </div>
         </div>
       </div>
