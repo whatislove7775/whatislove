@@ -63,7 +63,7 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '0 40px' // Главный отступ, который держит левую и правую красную линию
+      padding: '0' // ИСПРАВЛЕНО: Убрал 40px. Теперь левый край выровняется по "ОФЕРТА"
     }}>
       
       {/* НАВИГАЦИЯ */}
@@ -75,7 +75,6 @@ export default function CasePage() {
         ]} />
       </div>
 
-      {/* КОНТЕЙНЕР КОНТЕНТА: Относительно него позиционируется QR-код */}
       <div style={{
         position: 'relative',
         width: '100%', 
@@ -85,12 +84,12 @@ export default function CasePage() {
         paddingBottom: '40px'
       }}>
         
-        {/* QR-КОД: Прибит к правому верхнему углу сетки, ровно под [ x ] */}
+        {/* QR-КОД: Вернул 72px. Теперь его левый край ровно под левым краем [ 🏠 ] [ x ] */}
         <div style={{ 
           position: 'absolute', 
           top: 0, 
           right: 0, 
-          width: '90px', // Оптимальная ширина под макет
+          width: '72px', 
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'flex-start',
@@ -113,12 +112,12 @@ export default function CasePage() {
             <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
             <span style={{
               fontWeight: 800,
-              fontSize: '11px',
+              fontSize: '10px',
               marginTop: '8px',
               textAlign: 'left',
               whiteSpace: 'nowrap',
               lineHeight: '1.2',
-              textTransform: 'lowercase' // СТРОЧНЫЕ БУКВЫ
+              textTransform: 'lowercase' // Строчные буквы
             }}>
               заказать<br />дизайн
             </span>
@@ -165,7 +164,7 @@ export default function CasePage() {
             fontSize: '14px', 
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '130px' // Отступ, чтобы текст не врезался в QR-код справа
+            paddingRight: '100px' // Отступ для 72px QR-кода
           }}>
             
             {/* КОНТЕНТ ТЕКСТА */}
