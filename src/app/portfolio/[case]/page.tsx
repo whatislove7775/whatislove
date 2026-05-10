@@ -63,7 +63,7 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '0 40px' // Базовый отступ, который ровняет контент с футером
+      padding: '0 40px' // Главный отступ, который держит левую и правую красную линию
     }}>
       
       {/* НАВИГАЦИЯ */}
@@ -75,7 +75,9 @@ export default function CasePage() {
         ]} />
       </div>
 
+      {/* КОНТЕЙНЕР КОНТЕНТА: Относительно него позиционируется QR-код */}
       <div style={{
+        position: 'relative',
         width: '100%', 
         display: 'flex', 
         flexDirection: 'column',
@@ -83,6 +85,46 @@ export default function CasePage() {
         paddingBottom: '40px'
       }}>
         
+        {/* QR-КОД: Прибит к правому верхнему углу сетки, ровно под [ x ] */}
+        <div style={{ 
+          position: 'absolute', 
+          top: 0, 
+          right: 0, 
+          width: '90px', // Оптимальная ширина под макет
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'flex-start',
+          zIndex: 10
+        }}>
+          <a 
+            href="https://t.me/whatislove_r" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              textDecoration: 'none',
+              color: 'inherit',
+              cursor: 'pointer',
+              width: '100%'
+            }}
+          >
+            <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
+            <span style={{
+              fontWeight: 800,
+              fontSize: '11px',
+              marginTop: '8px',
+              textAlign: 'left',
+              whiteSpace: 'nowrap',
+              lineHeight: '1.2',
+              textTransform: 'lowercase' // СТРОЧНЫЕ БУКВЫ
+            }}>
+              заказать<br />дизайн
+            </span>
+          </a>
+        </div>
+
         {/* СЕТКА: 2 КОЛОНКИ */}
         <div style={{ 
           display: 'grid',
@@ -115,7 +157,7 @@ export default function CasePage() {
             </div>
           </div>
 
-          {/* ПРАВАЯ КОЛОНКА (Текст + Абсолютный QR-код) */}
+          {/* ПРАВАЯ КОЛОНКА (Текст) */}
           <div style={{ 
             position: 'relative', 
             display: 'flex', 
@@ -123,48 +165,9 @@ export default function CasePage() {
             fontSize: '14px', 
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '130px' // Отступ для QR-кода
+            paddingRight: '130px' // Отступ, чтобы текст не врезался в QR-код справа
           }}>
             
-            {/* QR-КОД: ВОЗВРАЩЕН НА ПРАВЫЙ КРАЙ (ПОД ДОМИК) */}
-            <div style={{ 
-              position: 'absolute', 
-              top: 0, 
-              right: 0, 
-              width: '110px', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'flex-start' 
-            }}>
-              <a 
-                href="https://t.me/whatislove_r" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  cursor: 'pointer',
-                  width: '100%'
-                }}
-              >
-                <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
-                <span style={{
-                  fontWeight: 800,
-                  fontSize: '13px',
-                  marginTop: '12px',
-                  textAlign: 'left',
-                  whiteSpace: 'nowrap',
-                  lineHeight: '1.2',
-                  textTransform: 'lowercase' // Строчные буквы
-                }}>
-                  заказать<br />дизайн
-                </span>
-              </a>
-            </div>
-
             {/* КОНТЕНТ ТЕКСТА */}
             <InfoRow label="название проекта" value={parseTextForLinks(project.title)} isValueBold={true} />
             <InfoRow label="клиент" value={project.client} />
