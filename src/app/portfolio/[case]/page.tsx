@@ -124,22 +124,19 @@ export default function CasePage() {
             fontSize: '14px', 
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '100px' // Отступ, чтобы текст не наезжал на QR
+            paddingRight: '150px' // Увеличили отступ со 100px до 150px под крупный QR
           }}>
             
-            {/* 
-              QR-КОД: ВЫРОВНЕН ПО ЛЕВОМУ КРАЮ
-              Ширина 72px подобрана под ширину твоих кнопок [ 🏠 ] [ × ].
-              Если QR вдруг на миллиметр правее или левее домика, просто сделай ширину 70px или 74px.
+            {/* QR-КОД: РАЗМЕР И ПОЗИЦИЯ КАК В КАТАЛОГЕ
             */}
             <div style={{ 
               position: 'absolute', 
               top: 0, 
               right: 0, 
-              width: '72px', 
+              width: '110px', // Увеличили размер с 72px до 110px
               display: 'flex', 
               flexDirection: 'column', 
-              alignItems: 'flex-start' // Жесткое выравнивание по левому краю контейнера
+              alignItems: 'flex-start' 
             }}>
               <a 
                 href="https://t.me/whatislove_r" 
@@ -148,7 +145,7 @@ export default function CasePage() {
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'flex-start', // QR прижат влево
+                  alignItems: 'flex-start',
                   textDecoration: 'none',
                   color: 'inherit',
                   cursor: 'pointer',
@@ -158,9 +155,9 @@ export default function CasePage() {
                 <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
                 <span style={{
                   fontWeight: 800,
-                  fontSize: '10px',
-                  marginTop: '8px',
-                  textAlign: 'left', // Текст прижат влево
+                  fontSize: '13px', // Подняли размер текста до уровня "корзина [2]"
+                  marginTop: '12px', // Добавили чуть больше воздуха
+                  textAlign: 'left',
                   whiteSpace: 'nowrap',
                   lineHeight: '1.2'
                 }}>
@@ -225,6 +222,8 @@ export default function CasePage() {
                 ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
               </span>
             </div>
+            
+          </div>
             
           </div>
         </div>
