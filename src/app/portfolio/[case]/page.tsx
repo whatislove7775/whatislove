@@ -63,7 +63,7 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '0' // ИСПРАВЛЕНО: Убрал 40px. Теперь левый край выровняется по "ОФЕРТА"
+      padding: '0 40px' // ВЕРНУЛ: Главный отступ, равняет левый край с подвалом (ОФЕРТА)
     }}>
       
       {/* НАВИГАЦИЯ */}
@@ -75,6 +75,7 @@ export default function CasePage() {
         ]} />
       </div>
 
+      {/* Обертка контента, относительно которой позиционируется QR */}
       <div style={{
         position: 'relative',
         width: '100%', 
@@ -84,12 +85,12 @@ export default function CasePage() {
         paddingBottom: '40px'
       }}>
         
-        {/* QR-КОД: Вернул 72px. Теперь его левый край ровно под левым краем [ 🏠 ] [ x ] */}
+        {/* QR-КОД: Большой, справа, под домиком */}
         <div style={{ 
           position: 'absolute', 
           top: 0, 
           right: 0, 
-          width: '72px', 
+          width: '110px', // ВЕРНУЛ: Ширина как в каталоге. Левый край встанет под домик.
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'flex-start',
@@ -112,8 +113,8 @@ export default function CasePage() {
             <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
             <span style={{
               fontWeight: 800,
-              fontSize: '10px',
-              marginTop: '8px',
+              fontSize: '13px', // ВЕРНУЛ: Крупный шрифт
+              marginTop: '12px',
               textAlign: 'left',
               whiteSpace: 'nowrap',
               lineHeight: '1.2',
@@ -164,7 +165,7 @@ export default function CasePage() {
             fontSize: '14px', 
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '100px' // Отступ для 72px QR-кода
+            paddingRight: '140px' // ВЕРНУЛ: Сжимаем текст, чтобы он не залезал под QR-код
           }}>
             
             {/* КОНТЕНТ ТЕКСТА */}
