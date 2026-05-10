@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { supabase } from '@/lib/supabase';
-// ИМПОРТ ПАРСЕРА
 import { parseTextForLinks } from '@/lib/parseLinks';
 
 export default function CasePage() {
@@ -124,16 +123,15 @@ export default function CasePage() {
             fontSize: '14px', 
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '150px' // Увеличили отступ со 100px до 150px под крупный QR
+            paddingRight: '150px' 
           }}>
             
-            {/* QR-КОД: РАЗМЕР И ПОЗИЦИЯ КАК В КАТАЛОГЕ
-            */}
+            {/* QR-КОД */}
             <div style={{ 
               position: 'absolute', 
               top: 0, 
               right: 0, 
-              width: '110px', // Увеличили размер с 72px до 110px
+              width: '110px', 
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'flex-start' 
@@ -155,8 +153,8 @@ export default function CasePage() {
                 <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
                 <span style={{
                   fontWeight: 800,
-                  fontSize: '13px', // Подняли размер текста до уровня "корзина [2]"
-                  marginTop: '12px', // Добавили чуть больше воздуха
+                  fontSize: '13px',
+                  marginTop: '12px',
                   textAlign: 'left',
                   whiteSpace: 'nowrap',
                   lineHeight: '1.2'
@@ -222,8 +220,6 @@ export default function CasePage() {
                 ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
               </span>
             </div>
-            
-          </div>
             
           </div>
         </div>
