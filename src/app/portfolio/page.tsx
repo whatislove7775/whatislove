@@ -94,10 +94,10 @@ export default function PortfolioPage() {
             key={project.id} 
             style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}
           >
-            {/* Левая часть: Фото с крестиками (ведет внутрь кейса) */}
+            {/* Левая часть: Фото с крестиками (увеличена ширина с 160px до 240px) */}
             <Link 
               href={`/portfolio/${project.slug}`} 
-              style={{ position: 'relative', width: '160px', padding: '10px', flexShrink: 0, boxSizing: 'border-box', display: 'block', color: 'inherit', textDecoration: 'none' }}
+              style={{ position: 'relative', width: '240px', padding: '10px', flexShrink: 0, boxSizing: 'border-box', display: 'block', color: 'inherit', textDecoration: 'none' }}
             >
               <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
               <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
@@ -119,12 +119,12 @@ export default function PortfolioPage() {
                 {renderTitle(project.title, project.project_link, project.slug)}
               </div>
               
-              {/* Описание с жесткой обрезкой в 3 строки (ведет внутрь кейса) */}
+              {/* Описание с жесткой обрезкой в 3 строки (увеличена ширина текста пропорционально) */}
               <Link href={`/portfolio/${project.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ 
                   fontWeight: 500, 
                   lineHeight: '1.3', 
-                  maxWidth: '200px',
+                  maxWidth: '260px', // Увеличил с 200px до 260px
                   display: '-webkit-box',
                   WebkitLineClamp: 3, 
                   WebkitBoxOrient: 'vertical',
