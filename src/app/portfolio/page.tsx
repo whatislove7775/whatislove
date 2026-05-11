@@ -104,7 +104,7 @@ export default function PortfolioPage() {
               <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
               <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px' }}>+</div>
               
-              <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#000', overflow: 'hidden' }}>
+              <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#000', overflow: 'hidden' }}>
                  {project.image_url && (
                    <img src={project.image_url} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                  )}
