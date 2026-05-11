@@ -50,6 +50,14 @@ export default function CasePage() {
     );
   };
 
+  // Функция для привязки висячих предлогов (заменяет пробел после 1-2 букв на неразрывный)
+  const formatTypography = (text: string) => {
+    if (!text) return '';
+    // Прогоняем дважды, чтобы корректно склеить подряд идущие короткие слова (например "а в лесу")
+    let res = text.replace(/(^|\s)([а-яА-ЯёЁa-zA-Z]{1,2})\s+/g, '$1$2\u00A0');
+    return res.replace(/(^|\s)([а-яА-ЯёЁa-zA-Z]{1,2})\s+/g, '$1$2\u00A0');
+  };
+
   if (loading) return <div style={{ padding: '20px', fontWeight: 800, fontFamily: 'inherit' }}>ЗАГРУЗКА...</div>;
   if (!project) return <div style={{ padding: '20px', fontWeight: 800, fontFamily: 'inherit' }}>КЕЙС НЕ НАЙДЕН [404]</div>;
 
@@ -208,7 +216,7 @@ export default function CasePage() {
               ))}
             </div>
 
-            {/* БЛОК ОПИСАНИЯ: Высота по тексту, точки заполняют остаток последней строки */}
+            {/* БЛОК ОПИСАНИЯ */}
             <div style={{ 
               fontWeight: 500, 
               lineHeight: 1.5, 
@@ -216,11 +224,12 @@ export default function CasePage() {
               width: '100%',
               overflow: 'hidden'
             }}>
-              <span style={{ display: 'inline' }}>{parseTextForLinks(project.desc)}</span>
+              {/* Пропускаем текст через функцию formatTypography, а затем парсим ссылки */}
+              <span style={{ display: 'inline' }}>{parseTextForLinks(formatTypography(project.desc))}</span>
               <span style={{ 
-                display: 'inline-block', // Позволяет контролировать ширину
-                width: 0, // Не дает точкам переноситься на новую строку и увеличивать высоту блока
-                whiteSpace: 'nowrap', // Запрещает перенос точек
+                display: 'inline-block', 
+                width: 0, 
+                whiteSpace: 'nowrap', 
                 opacity: 0.8, 
                 letterSpacing: '2px', 
                 marginLeft: '5px' 
