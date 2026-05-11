@@ -63,7 +63,7 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '0 40px' // ВЕРНУЛ: Главный отступ, равняет левый край с подвалом (ОФЕРТА)
+      padding: '0 40px' // Выравнивает левый край с началом футера
     }}>
       
       {/* НАВИГАЦИЯ */}
@@ -75,7 +75,6 @@ export default function CasePage() {
         ]} />
       </div>
 
-      {/* Обертка контента, относительно которой позиционируется QR */}
       <div style={{
         position: 'relative',
         width: '100%', 
@@ -85,12 +84,12 @@ export default function CasePage() {
         paddingBottom: '40px'
       }}>
         
-        {/* QR-КОД: Большой, справа, под домиком */}
+        {/* QR-КОД: Математически выровнен по левому краю кнопок навигации */}
         <div style={{ 
           position: 'absolute', 
           top: 0, 
-          right: 0, 
-          width: '110px', // ВЕРНУЛ: Ширина как в каталоге. Левый край встанет под домик.
+          left: 'calc(100% - 72px)', // МАГИЯ ЗДЕСЬ: отступает на ширину кнопок и ставит левый край QR-кода
+          width: '110px', // Большой размер, как ты просил
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'flex-start',
@@ -113,7 +112,7 @@ export default function CasePage() {
             <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
             <span style={{
               fontWeight: 800,
-              fontSize: '13px', // ВЕРНУЛ: Крупный шрифт
+              fontSize: '13px', // Крупный шрифт
               marginTop: '12px',
               textAlign: 'left',
               whiteSpace: 'nowrap',
@@ -165,7 +164,7 @@ export default function CasePage() {
             fontSize: '14px', 
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '140px' // ВЕРНУЛ: Сжимаем текст, чтобы он не залезал под QR-код
+            paddingRight: '100px' // Вернул оригинальный отступ, чтобы блок описания не растягивался в высоту
           }}>
             
             {/* КОНТЕНТ ТЕКСТА */}
