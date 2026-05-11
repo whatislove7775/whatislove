@@ -63,7 +63,7 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: 0 // ИСПРАВЛЕНО: Убран двойной отступ. Теперь левый край выровняется по кнопке оферты
+      padding: 0 // Выравнивает левый край с началом футера
     }}>
       
       {/* НАВИГАЦИЯ */}
@@ -208,6 +208,7 @@ export default function CasePage() {
               ))}
             </div>
 
+            {/* БЛОК ОПИСАНИЯ: Высота по тексту, точки заполняют остаток последней строки */}
             <div style={{ 
               fontWeight: 500, 
               lineHeight: 1.5, 
@@ -215,8 +216,11 @@ export default function CasePage() {
               width: '100%',
               overflow: 'hidden'
             }}>
-              <span>{parseTextForLinks(project.desc)}</span>
+              <span style={{ display: 'inline' }}>{parseTextForLinks(project.desc)}</span>
               <span style={{ 
+                display: 'inline-block', // Позволяет контролировать ширину
+                width: 0, // Не дает точкам переноситься на новую строку и увеличивать высоту блока
+                whiteSpace: 'nowrap', // Запрещает перенос точек
                 opacity: 0.8, 
                 letterSpacing: '2px', 
                 marginLeft: '5px' 
