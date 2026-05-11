@@ -63,7 +63,7 @@ export default function CasePage() {
       flexDirection: 'column', 
       fontFamily: 'inherit',
       boxSizing: 'border-box',
-      padding: '0 40px' // Выравнивает левый край с началом футера
+      padding: 0 // ИСПРАВЛЕНО: Убран двойной отступ. Теперь левый край выровняется по кнопке оферты
     }}>
       
       {/* НАВИГАЦИЯ */}
@@ -84,12 +84,12 @@ export default function CasePage() {
         paddingBottom: '40px'
       }}>
         
-        {/* QR-КОД: Математически выровнен по левому краю кнопок навигации */}
+        {/* QR-КОД */}
         <div style={{ 
           position: 'absolute', 
           top: 0, 
-          left: 'calc(100% - 72px)', // МАГИЯ ЗДЕСЬ: отступает на ширину кнопок и ставит левый край QR-кода
-          width: '110px', // Большой размер, как ты просил
+          left: 'calc(100% - 72px)', 
+          width: '110px', 
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'flex-start',
@@ -112,12 +112,12 @@ export default function CasePage() {
             <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
             <span style={{
               fontWeight: 800,
-              fontSize: '13px', // Крупный шрифт
+              fontSize: '13px', 
               marginTop: '12px',
               textAlign: 'left',
               whiteSpace: 'nowrap',
               lineHeight: '1.2',
-              textTransform: 'lowercase' // Строчные буквы
+              textTransform: 'lowercase' 
             }}>
               заказать<br />дизайн
             </span>
@@ -127,7 +127,7 @@ export default function CasePage() {
         {/* СЕТКА: 2 КОЛОНКИ */}
         <div style={{ 
           display: 'grid',
-          gridTemplateColumns: 'minmax(350px, 450px) minmax(0, 1fr)', 
+          gridTemplateColumns: 'minmax(450px, 580px) minmax(0, 1fr)', 
           gap: '60px', 
           alignItems: 'flex-start',
           width: '100%',
@@ -164,7 +164,8 @@ export default function CasePage() {
             fontSize: '14px', 
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '100px' // Вернул оригинальный отступ, чтобы блок описания не растягивался в высоту
+            paddingRight: '100px', 
+            marginTop: '-4px' 
           }}>
             
             {/* КОНТЕНТ ТЕКСТА */}
