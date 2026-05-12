@@ -73,20 +73,18 @@ export default function ProductPage() {
 
   if (loading) {
     return (
-      <div style={{ 
-        width: '100%', 
-        flex: 1,
-        minHeight: '50vh', // Чтобы белый фон растягивался
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+      <div style={{
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
         backgroundColor: '#fff',
-        fontFamily: 'inherit',
-        fontWeight: 800, 
-        fontSize: '14px',
-        letterSpacing: '1px'
+        zIndex: 99999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
-        ЗАГРУЗКА
+        <div style={{ fontWeight: 800, fontSize: '20px', textTransform: 'lowercase', letterSpacing: '2px', fontFamily: 'inherit' }}>
+          загрузка...
+        </div>
       </div>
     );
   }
