@@ -80,7 +80,25 @@ export default function ProductsPage() {
 
   // Пока данные грузятся, можно показать пустую сетку или текст
 
-  if (loading) return <div style={{ padding: '20px', fontWeight: 800 }}>ЗАГРУЗКА...</div>;
+ if (loading) {
+    return (
+      <div style={{ 
+        width: '100%', 
+        flex: 1,
+        minHeight: '50vh', // Чтобы белый фон растягивался
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        backgroundColor: '#fff',
+        fontFamily: 'inherit',
+        fontWeight: 800, 
+        fontSize: '14px',
+        letterSpacing: '1px'
+      }}>
+        ЗАГРУЗКА
+      </div>
+    );
+  }
 
 
 
