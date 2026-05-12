@@ -6,7 +6,6 @@ export default function Cart() {
   const { items, removeItem, totalPrice } = useCartStore();
   const totalItemsCount = items.reduce((acc: number, item: any) => acc + item.quantity, 0);
 
-  // Общий стиль для всего текста в корзине
   const textStyle: React.CSSProperties = {
     fontSize: '14px',
     textTransform: 'lowercase',
@@ -17,7 +16,7 @@ export default function Cart() {
     <div style={{
       width: '120px', 
       zIndex: 1000,
-      fontWeight: 800, // Жирный для структуры
+      fontWeight: 800,
       ...textStyle
     }}>
       <div style={{ width: '100%', marginBottom: '15px' }}>
@@ -32,7 +31,7 @@ export default function Cart() {
         <div style={{ fontWeight: 500 }}>пусто...</div>
       ) : (
         <>
-          {items.map((item, i) => (
+          {items.map((item: any, i: number) => (
             <div key={`${item.id}-${item.size}-${i}`} style={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
