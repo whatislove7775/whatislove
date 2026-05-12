@@ -2,14 +2,13 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useCartStore } from '../store/cartStore'; // Подключаем стор
+import { useCartStore } from '../store/cartStore'; 
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
   const [showCookiePopup, setShowCookiePopup] = useState(false);
   
-  // Достаем функцию синхронизации из корзины
   const syncCart = useCartStore((state: any) => state.syncWithStorage);
 
   useEffect(() => {
@@ -18,9 +17,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     return () => clearTimeout(timer);
   }, [pathname]);
 
+  // Эффект проверки согласия
   useEffect(() => {
     const consent = localStorage.getItem('cookieConsent');
-    if (!consent) {
+    
+    // Показываем плашку ТОЛЬКО если нет статуса 'accepted'
+    // Если юзер в прошлый раз просто закрыл окно (declined), 
+    // localStorage будет пуст, и это условие снова сработает.
+    if (consent !== 'accepted') {
       const popupTimer = setTimeout(() => {
         setShowCookiePopup(true);
       }, 3000);
@@ -29,14 +33,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   }, []);
 
   const handleAcceptCookies = () => {
+    // Сохраняем навсегда
     localStorage.setItem('cookieConsent', 'accepted');
-    // Как только приняли — сохраняем всё, что успели накидать в корзину
     if (syncCart) syncCart(); 
     setShowCookiePopup(false);
   };
 
   const handleDeclineCookies = () => {
-    localStorage.setItem('cookieConsent', 'declined');
+    // ВАЖНО: Мы НЕ записываем ничего в localStorage.
+    // Мы просто закрываем плашку сейчас. 
+    // При следующем заходе localStorage.getItem('cookieConsent') снова вернет null,
+    // и плашка появится опять.
     setShowCookiePopup(false);
   };
 
@@ -57,7 +64,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
       </div>
 
-      {/* ПЛАШКА В СТИЛЕ СИСТЕМНОГО ОКНА */}
+      {/* ПЛАШКА COOKIES */}
       {showCookiePopup && (
         <div style={{
           position: 'fixed',
@@ -124,6 +131,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
       )}
 
+      {/* КОНТЕНТ (Header, Main, Footer) */}
       <div style={{ 
         fontFamily: 'Inter, sans-serif', 
         fontSize: '14px', 
