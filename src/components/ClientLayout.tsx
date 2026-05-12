@@ -2,14 +2,15 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useCartStore } from '../store/cartStore'; // Подключаем стор
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const noScrollPages = ['/', '/links', '/info', '/oferta', '/privacy'];
-  const isNoScrollPage = noScrollPages.includes(pathname);
-
   const [isLoading, setIsLoading] = useState(true);
   const [showCookiePopup, setShowCookiePopup] = useState(false);
+  
+  // Достаем функцию синхронизации из корзины
+  const syncCart = useCartStore((state: any) => state.syncWithStorage);
 
   useEffect(() => {
     setIsLoading(true);
@@ -17,12 +18,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     return () => clearTimeout(timer);
   }, [pathname]);
 
-  // Эффект проверки согласия на Cookies
   useEffect(() => {
-    // Проверяем, есть ли уже выбор пользователя в localStorage
     const consent = localStorage.getItem('cookieConsent');
-    
-    // Если выбора нет, показываем плашку через 3 секунды
     if (!consent) {
       const popupTimer = setTimeout(() => {
         setShowCookiePopup(true);
@@ -31,25 +28,21 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
   }, []);
 
-  // Пользователь согласился
   const handleAcceptCookies = () => {
     localStorage.setItem('cookieConsent', 'accepted');
+    // Как только приняли — сохраняем всё, что успели накидать в корзину
+    if (syncCart) syncCart(); 
     setShowCookiePopup(false);
   };
 
-  // Пользователь отказался
   const handleDeclineCookies = () => {
     localStorage.setItem('cookieConsent', 'declined');
-    
-    // Если нужно жестко очистить корзину или другие данные при отказе:
-    // localStorage.removeItem('cart');
-    // localStorage.removeItem('userData');
-    
     setShowCookiePopup(false);
   };
 
   return (
     <>
+      {/* ЗАГРУЗКА */}
       <div style={{
         position: 'fixed',
         top: 0, left: 0, right: 0, bottom: 0,
@@ -64,7 +57,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
       </div>
 
-      {/* ПЛАШКА COOKIES */}
+      {/* ПЛАШКА В СТИЛЕ СИСТЕМНОГО ОКНА */}
       {showCookiePopup && (
         <div style={{
           position: 'fixed',
@@ -73,14 +66,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           transform: 'translate(-50%, -50%)',
           backgroundColor: '#fff',
           border: '1px solid #d9d9d9',
-          width: '100%',
+          width: '90%',
           maxWidth: '400px',
-          zIndex: 9999, 
+          zIndex: 9999,
           display: 'flex',
           flexDirection: 'column',
           fontFamily: 'inherit',
           color: '#000',
-          boxShadow: '0px 10px 40px rgba(0,0,0,0.08)' 
+          boxShadow: '0px 10px 40px rgba(0,0,0,0.08)'
         }}>
           <div style={{
             display: 'flex',
@@ -131,7 +124,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
       )}
 
-      {/* ОСНОВНОЙ КОНТЕНТ САЙТА */}
       <div style={{ 
         fontFamily: 'Inter, sans-serif', 
         fontSize: '14px', 
@@ -147,103 +139,30 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>whatislove ©</Link>
         </header>
 
-        <main style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          width: '100%',
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '20px', 
-          boxSizing: 'border-box'
-        }}>
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '20px', boxSizing: 'border-box' }}>
           {children}
         </main>
 
-        {pathname === '/' ? (
-          <footer style={{ textAlign: 'center', padding: '20px', lineHeight: '1.5', flexShrink: 0, boxSizing: 'border-box', width: '100%' }}>
-            <a 
-              href="https://t.me/whatislove_r" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              style={{ 
-                color: '#0088cc', 
-                fontWeight: 700, 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                gap: '5px', 
-                marginBottom: '15px', 
-                textDecoration: 'none',
-                textTransform: 'lowercase'
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
-              t.me/whatislove_r
-            </a>
-            <div style={{ 
-              fontWeight: 500, 
-              fontSize: '14px', 
-              textTransform: 'uppercase', 
-              lineHeight: 1.4, 
-              maxWidth: '800px', 
-              margin: '0 auto',
-              textAlign: 'center' 
-            }}>
-              ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333*
+        <footer style={{ flexShrink: 0, width: '100%', boxSizing: 'border-box' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', columnGap: '40px', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '20px', boxSizing: 'border-box' }}>
+            <div style={{ fontWeight: 800, textTransform: 'uppercase', paddingBottom: '15px' }}>
+              <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'none' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
+                t.me/whatislove_r
+              </a>
             </div>
-          </footer>
-        ) : (
-          <footer style={{ 
-            flexShrink: 0,
-            width: '100%',
-            boxSizing: 'border-box'
-          }}>
-            <div style={{
-              display: 'grid', 
-              gridTemplateColumns: '260px 1fr',
-              columnGap: '40px',
-              width: '100%',
-              maxWidth: '1200px',
-              margin: '0 auto',
-              padding: '20px',
-              boxSizing: 'border-box'
-            }}>
-              <div style={{ fontWeight: 800, textTransform: 'uppercase', paddingBottom: '15px' }}>
-                <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'none' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
-                  t.me/whatislove_r
-                </a>
-              </div>
-
-              <div></div>
-
-              <div style={{ 
-                gridColumn: '1 / 3', 
-                borderTop: '2px dotted rgba(0, 0, 0, 0.2)', 
-                width: '100%', 
-                marginBottom: '15px' 
-              }}></div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 800, textTransform: 'uppercase' }}>
-                <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>ОФЕРТА / ПОЛИТИКА</Link>
-                <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>КОНФИДЕНЦИАЛЬНОСТИ</Link>
-                <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>/ ИНФО</Link>
-              </div>
-
-              <div style={{ 
-                fontWeight: 500,
-                fontSize: '14px', 
-                textTransform: 'uppercase', 
-                lineHeight: 1.4, 
-                maxWidth: '850px',
-                textAlign: 'justify' 
-              }}>
-                ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333* ИНН&nbsp;231222682431
-              </div>
+            <div></div>
+            <div style={{ gridColumn: '1 / 3', borderTop: '2px dotted rgba(0, 0, 0, 0.2)', width: '100%', marginBottom: '15px' }}></div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 800, textTransform: 'uppercase' }}>
+              <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>ОФЕРТА / ПОЛИТИКА</Link>
+              <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>КОНФИДЕНЦИАЛЬНОСТИ</Link>
+              <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>/ ИНФО</Link>
             </div>
-          </footer>
-        )}
+            <div style={{ fontWeight: 500, fontSize: '14px', textTransform: 'uppercase', lineHeight: 1.4, maxWidth: '850px', textAlign: 'justify' }}>
+              ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333* ИНН&nbsp;231222682431
+            </div>
+          </div>
+        </footer>
       </div>
     </>
   );
