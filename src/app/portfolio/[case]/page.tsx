@@ -58,7 +58,25 @@ export default function CasePage() {
     return res.replace(/(^|\s)([а-яА-ЯёЁa-zA-Z]{1,2})\s+/g, '$1$2\u00A0');
   };
 
-  if (loading) return <div style={{ padding: '20px', fontWeight: 800, fontFamily: 'inherit' }}>ЗАГРУЗКА...</div>;
+ if (loading) {
+    return (
+      <div style={{ 
+        width: '100%', 
+        flex: 1,
+        minHeight: '50vh', // Чтобы белый фон растягивался
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        backgroundColor: '#fff',
+        fontFamily: 'inherit',
+        fontWeight: 800, 
+        fontSize: '14px',
+        letterSpacing: '1px'
+      }}>
+        ЗАГРУЗКА
+      </div>
+    );
+  }
   if (!project) return <div style={{ padding: '20px', fontWeight: 800, fontFamily: 'inherit' }}>КЕЙС НЕ НАЙДЕН [404]</div>;
 
   const creditsList = project.credits || [];
