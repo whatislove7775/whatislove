@@ -71,7 +71,25 @@ export default function ProductPage() {
     }
   };
 
-  if (loading) return <div style={{ padding: '20px', fontWeight: 800 }}>ЗАГРУЗКА...</div>;
+  if (loading) {
+    return (
+      <div style={{ 
+        width: '100%', 
+        flex: 1,
+        minHeight: '50vh', // Чтобы белый фон растягивался
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        backgroundColor: '#fff',
+        fontFamily: 'inherit',
+        fontWeight: 800, 
+        fontSize: '14px',
+        letterSpacing: '1px'
+      }}>
+        ЗАГРУЗКА
+      </div>
+    );
+  }
   if (!product) return <div style={{ padding: '20px', fontWeight: 800 }}>ТОВАР НЕ НАЙДЕН [404]</div>;
 
   const InfoRow = ({ label, value, isBold = false, isRed = false }: any) => {
