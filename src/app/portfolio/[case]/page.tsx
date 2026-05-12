@@ -58,7 +58,7 @@ export default function CasePage() {
     return res.replace(/(^|\s)([а-яА-ЯёЁa-zA-Z]{1,2})\s+/g, '$1$2\u00A0');
   };
 
- if (loading) {
+  if (loading) {
     return (
       <div style={{ 
         width: '100%', 
@@ -77,6 +77,7 @@ export default function CasePage() {
       </div>
     );
   }
+  
   if (!project) return <div style={{ padding: '20px', fontWeight: 800, fontFamily: 'inherit' }}>КЕЙС НЕ НАЙДЕН [404]</div>;
 
   const creditsList = project.credits || [];
@@ -204,7 +205,32 @@ export default function CasePage() {
               <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, letterSpacing: '2px' }}>....................................................................................................</div>
             </div>
 
-            <InfoRow label="задача" value={project.task} />
+            {/* ИЗМЕНЕННЫЙ БЛОК "ЗАДАЧА" */}
+            <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', marginBottom: '8px' }}>
+              <span style={{ fontWeight: 800, whiteSpace: 'nowrap', marginRight: '15px' }}>задача</span>
+              <div style={{
+                flex: 1,
+                fontWeight: 500,
+                lineHeight: 1.5,
+                textAlign: 'justify',
+                overflow: 'hidden'
+              }}>
+                <span style={{ display: 'inline' }}>
+                  {project.task ? parseTextForLinks(formatTypography(project.task)) : ''}
+                </span>
+                <span style={{ 
+                  display: 'inline-block', 
+                  width: 0, 
+                  whiteSpace: 'nowrap', 
+                  opacity: 0.8, 
+                  letterSpacing: '2px', 
+                  marginLeft: '5px' 
+                }}>
+                  ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+                </span>
+              </div>
+            </div>
+
             <InfoRow label="год" value={project.year} />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '30px 0' }}>
