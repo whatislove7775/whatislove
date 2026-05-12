@@ -8,23 +8,22 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const noScrollPages = ['/', '/links', '/info', '/oferta', '/privacy'];
   const isNoScrollPage = noScrollPages.includes(pathname);
 
-  // Состояния для загрузки и куки-плашки
   const [isLoading, setIsLoading] = useState(true);
   const [showCookiePopup, setShowCookiePopup] = useState(false);
 
-  // Эффект загрузки страницы
   useEffect(() => {
     setIsLoading(true);
     const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
   }, [pathname]);
 
-  // Эффект появления плашки Cookies через 3 секунды
+  // Эффект проверки согласия на Cookies
   useEffect(() => {
-    // Проверяем, соглашался ли уже пользователь
-    const cookiesAccepted = localStorage.getItem('cookiesAccepted');
+    // Проверяем, есть ли уже выбор пользователя в localStorage
+    const consent = localStorage.getItem('cookieConsent');
     
-    if (!cookiesAccepted) {
+    // Если выбора нет, показываем плашку через 3 секунды
+    if (!consent) {
       const popupTimer = setTimeout(() => {
         setShowCookiePopup(true);
       }, 3000);
@@ -32,20 +31,25 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
   }, []);
 
-  // Функция принятия куки
+  // Пользователь согласился
   const handleAcceptCookies = () => {
-    localStorage.setItem('cookiesAccepted', 'true');
+    localStorage.setItem('cookieConsent', 'accepted');
     setShowCookiePopup(false);
   };
 
-  // Функция простого закрытия (без сохранения согласия)
-  const handleClosePopup = () => {
+  // Пользователь отказался
+  const handleDeclineCookies = () => {
+    localStorage.setItem('cookieConsent', 'declined');
+    
+    // Если нужно жестко очистить корзину или другие данные при отказе:
+    // localStorage.removeItem('cart');
+    // localStorage.removeItem('userData');
+    
     setShowCookiePopup(false);
   };
 
   return (
     <>
-      {/* ЭКРАН ЗАГРУЗКИ */}
       <div style={{
         position: 'fixed',
         top: 0, left: 0, right: 0, bottom: 0,
@@ -68,17 +72,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           left: '50%',
           transform: 'translate(-50%, -50%)',
           backgroundColor: '#fff',
-          border: '1px solid #d9d9d9', // Тонкая серая рамка
+          border: '1px solid #d9d9d9',
           width: '100%',
           maxWidth: '400px',
-          zIndex: 9999, // Поверх всего, но под загрузкой
+          zIndex: 9999, 
           display: 'flex',
           flexDirection: 'column',
           fontFamily: 'inherit',
           color: '#000',
-          boxShadow: '0px 10px 40px rgba(0,0,0,0.08)' // Легкая тень, чтобы окно выделялось на белом фоне
+          boxShadow: '0px 10px 40px rgba(0,0,0,0.08)' 
         }}>
-          {/* Шапка окна */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -90,12 +93,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           }}>
             <div>▲ ВНИМАНИЕ!</div>
             <div style={{ display: 'flex', gap: '8px', cursor: 'pointer' }}>
-              <span onClick={handleClosePopup}>[ _ ]</span>
-              <span onClick={handleClosePopup}>[ &times; ]</span>
+              <span onClick={handleDeclineCookies}>[ _ ]</span>
+              <span onClick={handleDeclineCookies}>[ &times; ]</span>
             </div>
           </div>
 
-          {/* Тело окна */}
           <div style={{
             padding: '40px 20px',
             display: 'flex',
