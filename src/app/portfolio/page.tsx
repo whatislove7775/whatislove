@@ -13,7 +13,8 @@ export default function PortfolioPage() {
       const { data, error } = await supabase
         .from('cases')
         .select('*')
-        .order('year', { ascending: false });
+        .order('year', { ascending: false }) // Сначала сортируем по убыванию года
+        .order('id', { ascending: false });  // Если год совпадает, более новые (по добавлению) ставим выше
 
       if (!error && data) {
         setProjects(data);
