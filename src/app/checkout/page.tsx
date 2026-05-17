@@ -40,11 +40,10 @@ export default function CheckoutPage() {
         new (window as any).CDEKWidget({
           from: 'Москва',
           root: 'cdek-map',
-          apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3', 
+          apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3',
           servicePath: '/api/cdek',
-          defaultLocation: 'Москва',
           hideDeliveryOptions: {
-            door: true 
+            door: true
           },
           onChoose: (type: any, tariff: any, addressInfo: any) => {
             const finalAddress = addressInfo.address ? `${addressInfo.cityName || ''}, ${addressInfo.address}`.trim() : (addressInfo.name || 'Выбран ПВЗ');
