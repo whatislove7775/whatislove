@@ -4,7 +4,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  font-weight: 500; /* Medium */
+  font-weight: 500;
   background-color: #ffffff;
   color: #000000;
   margin: 0;
@@ -12,17 +12,90 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Убираем подчеркивание и красим ссылки в черный */
 a {
   text-decoration: none !important;
   color: inherit;
 }
 
-/* Для жирных элементов (заголовки, кнопки) */
 b, strong, .bold {
-  font-weight: 700; /* Bold */
+  font-weight: 700;
 }
 
 pre {
-  font-family: inherit; /* Чтобы ASCII тоже пытался быть в стиле, если не SVG */
+  font-family: inherit;
+}
+
+/* Products grid */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 60px;
+  margin-top: 30px;
+}
+
+/* Portfolio grid */
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px 40px;
+  margin-top: 40px;
+  width: 100%;
+}
+
+/* Product detail layout */
+.product-page-layout {
+  display: flex;
+  width: 100%;
+  gap: 40px;
+  margin-top: 30px;
+  align-items: flex-start;
+  padding-right: 140px;
+  box-sizing: border-box;
+}
+
+.product-gallery {
+  display: flex;
+  gap: 20px;
+  flex-shrink: 0;
+  width: 450px;
+}
+
+.product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 350px;
+  font-size: 14px;
+  margin-top: 15px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .product-page-layout {
+    flex-direction: column;
+    padding-right: 0;
+  }
+
+  .product-gallery {
+    width: 100%;
+  }
+
+  .product-info {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .portfolio-card-image {
+    width: 160px !important;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 50px;
+  }
 }
