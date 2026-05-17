@@ -36,16 +36,16 @@ export default function CheckoutPage() {
         new (window as any).CDEKWidget({
           from: 'Москва',
           root: 'cdek-map',
-          apiKey: '3489c7b6-8cd9-4f69-89e2-a1b19a5cc111',
+          apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3',
           servicePath: '/api/cdek',
           defaultLocation: 'Москва',
           hideDeliveryOptions: { door: true },
           onChoose: (type: any, tariff: any, addressInfo: any) => {
-            const city = addressInfo?.cityName || addressInfo?.city_name || '';
-            const addr = addressInfo?.address || addressInfo?.name || 'Выбран ПВЗ';
-            const full = city ? `${city}, ${addr}` : addr;
-            setAddress(full.startsWith(',') ? full.substring(1).trim() : full);
-            setDeliveryCost(tariff?.delivery_sum || tariff?.price || 350);
+            const finalAddress = addressInfo.address
+              ? `${addressInfo.cityName || ''}, ${addressInfo.address}`.trim()
+              : (addressInfo.name || 'Выбран ПВЗ');
+            setAddress(finalAddress.startsWith(',') ? finalAddress.substring(1).trim() : finalAddress);
+            setDeliveryCost(tariff?.delivery_sum || 350);
           },
         });
       }
@@ -54,17 +54,11 @@ export default function CheckoutPage() {
     if ((window as any).CDEKWidget) {
       init();
     } else {
-      const existingScript = document.querySelector('script[src*="cdek-it/widget@2"]');
+      const existingScript = document.querySelector('script[src="https://cdn.jsdelivr.net/npm/@cdek-it/widget@3"]');
       if (!existingScript) {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@cdek-it/widget@2';
-        script.onload = () => {
-          console.log('[CDEK] script loaded');
-          console.log('[CDEK] CDEKWidget:', typeof (window as any).CDEKWidget);
-          console.log('[CDEK] CdekWidget:', typeof (window as any).CdekWidget);
-          console.log('[CDEK] cdekWidget:', typeof (window as any).cdekWidget);
-          init();
-        };
+        script.src = 'https://cdn.jsdelivr.net/npm/@cdek-it/widget@3';
+        script.onload = init;
         document.body.appendChild(script);
       } else {
         existingScript.addEventListener('load', init);
@@ -102,15 +96,12 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderData }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         alert(`Ошибка отправки: ${data.error}`);
         setIsLoading(false);
         return;
       }
-
       setIsSuccess(true);
       clearCart();
     } catch {
@@ -133,7 +124,6 @@ export default function CheckoutPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center' }}>
-
       <div style={{ width: '100%' }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
@@ -143,7 +133,6 @@ export default function CheckoutPage() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '450px', marginTop: '20px' }}>
-
         {items.length === 0 ? (
           <div style={{ textAlign: 'center', fontWeight: 700, marginTop: '50px' }}>корзина пуста...</div>
         ) : (
@@ -160,7 +149,6 @@ export default function CheckoutPage() {
                     <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
                     <span style={{ fontWeight: 800, fontSize: '20px' }}>3&lt;</span>
                   </div>
-
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', fontSize: '14px', textTransform: 'lowercase' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
                       <span style={{ fontSize: '16px' }}>{item.name}</span>
@@ -170,12 +158,10 @@ export default function CheckoutPage() {
                         <span onClick={() => updateQuantity(item.id, item.size, -1)} style={{ cursor: 'pointer', color: '#000' }}>[-]</span>
                       </span>
                     </div>
-
                     <div style={{ fontWeight: 800, marginTop: '5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '13px' }}>{oldPrice * item.quantity}₽</span>
                       <span>{item.price * item.quantity}₽ со скидкой</span>
                     </div>
-
                     <div style={{ marginTop: '15px', lineHeight: '1.4' }}>
                       хирургическая сталь<br />
                       размер:<br />
