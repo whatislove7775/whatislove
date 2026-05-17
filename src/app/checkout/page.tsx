@@ -15,7 +15,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (items.length === 0) return;
-    const ids = [...new Set(items.map((i) => i.id))];
+    const ids = Array.from(new Set(items.map((i) => i.id)));
     supabase.from('products').select('id, image_url').in('id', ids)
       .then(({ data }) => {
         if (data) {
