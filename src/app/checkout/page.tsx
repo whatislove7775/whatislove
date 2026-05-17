@@ -58,7 +58,13 @@ export default function CheckoutPage() {
       if (!existingScript) {
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/@cdek-it/widget@2';
-        script.onload = init;
+        script.onload = () => {
+          console.log('[CDEK] script loaded');
+          console.log('[CDEK] CDEKWidget:', typeof (window as any).CDEKWidget);
+          console.log('[CDEK] CdekWidget:', typeof (window as any).CdekWidget);
+          console.log('[CDEK] cdekWidget:', typeof (window as any).cdekWidget);
+          init();
+        };
         document.body.appendChild(script);
       } else {
         existingScript.addEventListener('load', init);
