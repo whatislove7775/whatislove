@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ИСПРАВЛЕНА ОПЕЧАТКА В ЛОГИНЕ (маленькая t)
-const CDEK_ACCOUNT = 'wqGwiQx0gg8mLtiEKsUinjVSICCjtTEP'; 
-const CDEK_SECURE_PASSWORD = 'RmAmgvSgSl1yirlz9QupbzOJVqhCxcP5';
-const CDEK_BASE_URL = 'https://api.edu.cdek.ru'; // Тестовая среда
+const CDEK_ACCOUNT = process.env.CDEK_ACCOUNT!;
+const CDEK_SECURE_PASSWORD = process.env.CDEK_SECURE_PASSWORD!;
+const CDEK_BASE_URL = process.env.CDEK_BASE_URL ?? 'https://api.edu.cdek.ru';
 
 let cachedToken = '';
 let tokenExpiry = 0;
