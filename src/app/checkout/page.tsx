@@ -26,7 +26,6 @@ export default function CheckoutPage() {
       });
   }, [items.length]);
 
-  const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -107,36 +106,24 @@ export default function CheckoutPage() {
     };
 
     try {
-      const res = await fetch('/api/telegram', {
+      const res = await fetch('/api/yookassa/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderData }),
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(`Ошибка отправки: ${data.error}`);
+        alert(`Ошибка оплаты: ${data.error}`);
         setIsLoading(false);
         return;
       }
-      setIsSuccess(true);
       clearCart();
+      window.location.href = data.confirmation_url;
     } catch {
-      alert('Произошла критическая ошибка при отправке запроса.');
+      alert('Произошла ошибка при создании платежа.');
       setIsLoading(false);
     }
   };
-
-  if (isSuccess) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '70vh', width: '100%', textAlign: 'center' }}>
-        <h1 style={{ fontWeight: 800, textTransform: 'uppercase' }}>ЗАКАЗ УСПЕШНО ОФОРМЛЕН! &lt;3</h1>
-        <p style={{ fontWeight: 500, marginTop: '20px' }}>Мы свяжемся с тобой в Telegram для подтверждения.</p>
-        <Link href="/" style={{ marginTop: '40px', fontWeight: 700, textDecoration: 'none', color: '#000' }}>
-          [ вернуться в магазин ]
-        </Link>
-      </div>
-    );
-  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center' }}>

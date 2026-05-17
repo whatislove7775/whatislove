@@ -1,0 +1,70 @@
+import { NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
+
+export async function POST(req: Request) {
+  try {
+    const { orderData } = await req.json();
+
+    const shopId = process.env.YOOKASSA_SHOP_ID;
+    const secretKey = process.env.YOOKASSA_SECRET_KEY;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+    if (!shopId || !secretKey) {
+      return NextResponse.json({ error: 'YOOKASSA_SHOP_ID или YOOKASSA_SECRET_KEY не заданы в Vercel' }, { status: 500 });
+    }
+
+    const totalAmount = (orderData.total + orderData.deliveryCost).toFixed(2);
+
+    const description = orderData.items
+      .map((i: any) => `${i.name} р.${i.size} x${i.quantity}`)
+      .join(', ')
+      .substring(0, 128);
+
+    // Все данные заказа кладём в metadata — вебхук их достанет
+    const metadata: Record<string, string> = {
+      order_name:          String(orderData.name ?? '').substring(0, 200),
+      order_email:         String(orderData.email ?? '').substring(0, 200),
+      order_phone:         String(orderData.phone ?? '').substring(0, 100),
+      order_tg:            String(orderData.tg ?? '').substring(0, 100),
+      order_city:          String(orderData.city ?? '').substring(0, 100),
+      order_delivery:      String(orderData.delivery ?? '').substring(0, 100),
+      order_address:       String(orderData.address ?? '').substring(0, 500),
+      order_delivery_cost: String(orderData.deliveryCost ?? 0),
+      order_items:         JSON.stringify(orderData.items ?? []).substring(0, 1024),
+    };
+
+    const res = await fetch('https://api.yookassa.ru/v3/payments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotence-Key': randomUUID(),
+        'Authorization': `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`,
+      },
+      body: JSON.stringify({
+        amount: { value: totalAmount, currency: 'RUB' },
+        confirmation: {
+          type: 'redirect',
+          return_url: `${siteUrl}/order/success`,
+        },
+        description,
+        capture: true,
+        metadata,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error('YooKassa create-payment error:', data);
+      return NextResponse.json({ error: data.description ?? 'Ошибка создания платежа' }, { status: 400 });
+    }
+
+    return NextResponse.json({
+      confirmation_url: data.confirmation.confirmation_url,
+      payment_id: data.id,
+    });
+  } catch (err: any) {
+    console.error('create-payment crash:', err);
+    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 });
+  }
+}
