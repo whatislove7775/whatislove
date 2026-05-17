@@ -7,7 +7,11 @@ import { parseTextForLinks } from '@/lib/parseLinks';
 import Link from 'next/link';
 
 export default function ProductDetail({ product, bottomText }: { product: any; bottomText: string }) {
-  const [selectedSize, setSelectedSize] = useState(17);
+  const stock: Record<string, number> = product.stock || {};
+  const sizes = Object.keys(stock).sort((a, b) => Number(a) - Number(b));
+  const firstAvailableSize = sizes.find((s) => (stock[s] || 0) > 0) ?? sizes[0] ?? '17';
+
+  const [selectedSize, setSelectedSize] = useState<string>(firstAvailableSize);
   const [activeImage, setActiveImage] = useState<string | null>(
     product.images?.length > 0 ? product.images[0] : product.image_url || null
   );
@@ -15,12 +19,12 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
   const cartItems = useCartStore((state: any) => state.items);
   const isInCart = cartItems.some((i: any) => i.id === product.id);
 
-  const currentStock = product.stock ? product.stock[selectedSize.toString()] || 0 : 0;
+  const currentStock = stock[selectedSize] ?? 0;
   const isAvailable = currentStock > 0;
 
   const handleAddToCart = () => {
     if (isAvailable) {
-      addItem({ id: product.id, name: product.name, price: product.price, size: selectedSize, quantity: 1, imageUrl: product.image_url || undefined });
+      addItem({ id: product.id, name: product.name, price: product.price, size: Number(selectedSize), quantity: 1, imageUrl: product.image_url || undefined });
     }
   };
 
@@ -157,9 +161,10 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
             ..........................................................................................................................................................................................
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'center', fontWeight: 800, alignItems: 'center' }}>
-            {[16, 17, 18, 19].map((size) => {
-              const isSizeAvailable = product.stock ? product.stock[size.toString()] > 0 : true;
+          <div style={{ display: 'flex', justifyContent: 'center', fontWeight: 800, alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+            {sizes.map((size) => {
+              const isSizeAvailable = (stock[size] || 0) > 0;
+              const isSelected = selectedSize === size;
               return (
                 <span
                   key={size}
@@ -173,8 +178,8 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
                     opacity: isSizeAvailable ? 1 : 0.3,
                   }}
                 >
-                  {selectedSize === size ? (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#d32f2f', border: '1.5px solid #d32f2f', borderRadius: '50%', width: '26px', height: '26px' }}>
+                  {isSelected ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#d32f2f', border: '1.5px solid #d32f2f', borderRadius: '50%', minWidth: '26px', height: '26px', padding: '0 4px' }}>
                       {size}
                     </span>
                   ) : (

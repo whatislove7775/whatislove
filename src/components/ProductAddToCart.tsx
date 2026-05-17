@@ -6,8 +6,9 @@ export default function ProductAddToCart({ product }: { product: any }) {
   const addItem = useCartStore((state: any) => state.addItem);
   const items = useCartStore((state: any) => state.items);
 
-  const stock = product.stock || {};
-  const isAvailable = [16, 17, 18, 19].some((s) => (stock[s.toString()] || 0) > 0);
+  const stock: Record<string, number> = product.stock || {};
+  const sizes = Object.keys(stock).sort((a, b) => Number(a) - Number(b));
+  const isAvailable = sizes.some((s) => (stock[s] || 0) > 0);
   const isInCart = items.some((i: any) => i.id === product.id);
 
   const btnStyle: React.CSSProperties = {
@@ -23,15 +24,17 @@ export default function ProductAddToCart({ product }: { product: any }) {
 
   const handleAdd = () => {
     if (!isAvailable) return;
-    const firstAvailable = [16, 17, 18, 19].find((s) => (stock[s.toString()] || 0) > 0) ?? 17;
-    addItem({ id: product.id, name: product.name, price: product.price, size: firstAvailable, quantity: 1, imageUrl: product.image_url || undefined });
+    const firstAvailable = sizes.find((s) => (stock[s] || 0) > 0);
+    if (!firstAvailable) return;
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      size: Number(firstAvailable),
+      quantity: 1,
+      imageUrl: product.image_url || undefined,
+    });
   };
-
-  const unavailableBtn = (
-    <button style={{ ...btnStyle, cursor: 'not-allowed', opacity: 0.4 }} disabled>
-      [ нет в наличии ]
-    </button>
-  );
 
   return (
     <>
@@ -42,7 +45,7 @@ export default function ProductAddToCart({ product }: { product: any }) {
 
       {/* Mobile: после добавления — ссылка на заказ */}
       {!isAvailable ? (
-        <span className="mobile-only">{unavailableBtn}</span>
+        <span className="mobile-only" style={{ ...btnStyle, cursor: 'not-allowed' }}>[ нет в наличии ]</span>
       ) : isInCart ? (
         <Link href="/checkout" className="mobile-only" style={{ fontWeight: 800, fontSize: '14px', color: '#000' }}>
           [перейти к 🛒&apos;е]
