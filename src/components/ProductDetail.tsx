@@ -17,7 +17,7 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
 
   const handleAddToCart = () => {
     if (isAvailable) {
-      addItem({ id: product.id, name: product.name, price: product.price, size: selectedSize, quantity: 1 });
+      addItem({ id: product.id, name: product.name, price: product.price, size: selectedSize, quantity: 1, imageUrl: activeImage || product.image_url || undefined });
     }
   };
 

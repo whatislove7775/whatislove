@@ -10,7 +10,7 @@ export default function ProductAddToCart({ product }: { product: any }) {
   const handleAdd = () => {
     if (!isAvailable) return;
     const firstAvailable = [16, 17, 18, 19].find((s) => (stock[s.toString()] || 0) > 0) ?? 17;
-    addItem({ id: product.id, name: product.name, price: product.price, size: firstAvailable, quantity: 1 });
+    addItem({ id: product.id, name: product.name, price: product.price, size: firstAvailable, quantity: 1, imageUrl: product.image_url || undefined });
   };
 
   return (

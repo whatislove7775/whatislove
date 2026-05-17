@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function CheckoutPage() {
   const { items, updateQuantity, updateItemSize, totalPrice, clearCart } = useCartStore();
@@ -142,12 +143,16 @@ export default function CheckoutPage() {
               const oldPrice = Math.round(item.price * 1.4);
               return (
                 <div key={`${item.id}-${item.size}-${idx}`} style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
-                  <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', border: '1px solid #000', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
-                    <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
-                    <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
-                    <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
-                    <span style={{ fontWeight: 800, fontSize: '20px' }}>3&lt;</span>
+                  <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', position: 'relative', flexShrink: 0, overflow: 'visible' }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1, zIndex: 1 }}>+</div>
+                    <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1, zIndex: 1 }}>+</div>
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1, zIndex: 1 }}>+</div>
+                    <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1, zIndex: 1 }}>+</div>
+                    {item.imageUrl ? (
+                      <Image src={item.imageUrl} alt={item.name} fill sizes="120px" style={{ objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '20px' }}>&lt;3</div>
+                    )}
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', fontSize: '14px', textTransform: 'lowercase' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>

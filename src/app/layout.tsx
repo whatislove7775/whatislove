@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import ClientLayout from '@/components/ClientLayout';
 import Script from 'next/script';
 
-const inter = Inter({ subsets: ['latin', 'cyrillic'], weight: ['500', '700'] });
+const inter = Inter({ subsets: ['latin', 'cyrillic', 'cyrillic-ext'], weight: ['500', '700', '800'] });
 
 export const metadata = {
   title: 'WH4T!SLOV3',
