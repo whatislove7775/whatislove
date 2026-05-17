@@ -12,9 +12,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const syncCart = useCartStore((state: any) => state.syncWithStorage);
 
   useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(timer);
+    setIsLoading(false);
   }, [pathname]);
 
   // Эффект проверки согласия

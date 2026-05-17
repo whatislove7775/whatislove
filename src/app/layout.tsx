@@ -1,8 +1,10 @@
 import './globals.css';
+import { Inter } from 'next/font/google';
 import ClientLayout from '@/components/ClientLayout';
 import Script from 'next/script';
 
-// Метадата с твоим фавиконом
+const inter = Inter({ subsets: ['latin', 'cyrillic'], weight: ['500', '700'] });
+
 export const metadata = {
   title: 'WH4T!SLOV3',
   description: 'Дизай-студия/производство от whatislove^a',
@@ -14,7 +16,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', margin: 0 }}>
+      <body className={inter.className} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', margin: 0 }}>
         {/* Оборачиваем всё в наш клиентский компонент */}
         <ClientLayout>
           {children}
