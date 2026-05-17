@@ -9,13 +9,19 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [deliveryService, setDeliveryService] = useState('СДЭК');
   const [deliveryCost, setDeliveryCost] = useState(0);
-  
+
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const deliveryOptions = ['СДЭК', 'Яндекс Доставка', 'Ozon', 'Wildberries', '5post'];
+
+  // CDEK office search
+  const [cdekCity, setCdekCity] = useState('');
+  const [cdekOffices, setCdekOffices] = useState<any[]>([]);
+  const [cdekSearching, setCdekSearching] = useState(false);
+  const [cdekError, setCdekError] = useState('');
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -27,60 +33,52 @@ export default function CheckoutPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // ОБНОВЛЕННАЯ И УМНАЯ ЗАГРУЗКА ВИДЖЕТА
-  useEffect(() => {
-    const container = document.getElementById('cdek-map');
-    if (!container || items.length === 0) return;
-
-    const init = () => {
-      // Убрали проверку window._cdekWidgetLoaded.
-      // Теперь мы просто проверяем, пустой ли текущий контейнер. 
-      // Если пустой — значит мы только что перешли на страницу и надо рисовать карту.
-      if (container.innerHTML === '') {
-        new (window as any).CDEKWidget({
-          from: 'Москва',
-          root: 'cdek-map',
-          apiKey: '3489c7b6-8cd9-4f69-89e2-a1b19a5cc111',
-          servicePath: '/api/cdek',
-          defaultLocation: [37.6176, 55.7558],
-          hideDeliveryOptions: {
-            door: true
-          },
-          onChoose: (type: any, tariff: any, addressInfo: any) => {
-            const finalAddress = addressInfo.address ? `${addressInfo.cityName || ''}, ${addressInfo.address}`.trim() : (addressInfo.name || 'Выбран ПВЗ');
-            setAddress(finalAddress.startsWith(',') ? finalAddress.substring(1).trim() : finalAddress);
-            
-            if (tariff && tariff.delivery_sum) {
-              setDeliveryCost(tariff.delivery_sum);
-            } else {
-              setDeliveryCost(350); 
-            }
-          }
-        });
-      }
-    };
-
-    // Проверяем, загружен ли сам скрипт от СДЭКа
-    if ((window as any).CDEKWidget) {
-      init();
-    } else {
-      // Ищем скрипт в DOM, чтобы не дублировать теги при переключениях страниц
-      const existingScript = document.querySelector('script[src="https://cdn.jsdelivr.net/npm/@cdek-it/widget@3"]');
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@cdek-it/widget@3';
-        script.onload = init;
-        document.body.appendChild(script);
-      } else {
-        existingScript.addEventListener('load', init);
-      }
-    }
-  }, [items.length]);
-
   useEffect(() => {
     setAddress('');
     setDeliveryCost(0);
+    setCdekOffices([]);
+    setCdekCity('');
+    setCdekError('');
   }, [deliveryService]);
+
+  const searchCdekOffices = async () => {
+    if (!cdekCity.trim()) return;
+    setCdekSearching(true);
+    setCdekOffices([]);
+    setCdekError('');
+
+    try {
+      const cityRes = await fetch(`/api/cdek?action=cities&q=${encodeURIComponent(cdekCity)}`);
+      const cities = await cityRes.json();
+
+      if (!Array.isArray(cities) || cities.length === 0) {
+        setCdekError('Город не найден. Проверьте написание.');
+        setCdekSearching(false);
+        return;
+      }
+
+      const cityCode = cities[0].code;
+      const officesRes = await fetch(`/api/cdek?action=offices&city_code=${cityCode}`);
+      const offices = await officesRes.json();
+
+      if (!Array.isArray(offices) || offices.length === 0) {
+        setCdekError('В этом городе нет пунктов выдачи СДЭК.');
+      } else {
+        setCdekOffices(offices.slice(0, 40));
+      }
+    } catch {
+      setCdekError('Ошибка загрузки. Попробуйте ещё раз.');
+    }
+
+    setCdekSearching(false);
+  };
+
+  const selectOffice = (office: any) => {
+    const city = office.location?.city || cdekCity;
+    const addr = office.location?.address || office.name;
+    setAddress(`${city}, ${addr}`);
+    setDeliveryCost(350);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -98,18 +96,18 @@ export default function CheckoutPage() {
       address: address,
       deliveryCost: deliveryCost,
       items: items,
-      total: totalPrice()
+      total: totalPrice(),
     };
 
     try {
       const res = await fetch('/api/telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderData })
+        body: JSON.stringify({ orderData }),
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         alert(`Ошибка отправки: ${data.error}`);
         setIsLoading(false);
@@ -118,7 +116,7 @@ export default function CheckoutPage() {
 
       setIsSuccess(true);
       clearCart();
-    } catch (error) {
+    } catch {
       alert('Произошла критическая ошибка при отправке запроса.');
       setIsLoading(false);
     }
@@ -138,24 +136,24 @@ export default function CheckoutPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center' }}>
-      
+
       <div style={{ width: '100%' }}>
         <Breadcrumbs path={[
-          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },{ name: 'PRODUCT$', href: '/products', icon: '📦' },
-          { name: 'ЗАКАЗ', icon: '💳' }
+          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+          { name: 'PRODUCT$', href: '/products', icon: '📦' },
+          { name: 'ЗАКАЗ', icon: '💳' },
         ]} />
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '450px', marginTop: '20px' }}>
-        
+
         {items.length === 0 ? (
           <div style={{ textAlign: 'center', fontWeight: 700, marginTop: '50px' }}>корзина пуста...</div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
-            
-            {items.map((item, idx) => {
-              const oldPrice = Math.round(item.price * 1.4); 
 
+            {items.map((item, idx) => {
+              const oldPrice = Math.round(item.price * 1.4);
               return (
                 <div key={`${item.id}-${item.size}-${idx}`} style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
                   <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', border: '1px solid #000', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
@@ -165,33 +163,31 @@ export default function CheckoutPage() {
                     <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: '0.5' }}>+</div>
                     <span style={{ fontWeight: 800, fontSize: '20px' }}>3&lt;</span>
                   </div>
-                  
+
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', fontSize: '14px', textTransform: 'lowercase' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
                       <span style={{ fontSize: '16px' }}>{item.name}</span>
                       <span style={{ userSelect: 'none' }}>
-                        {item.quantity} 
+                        {item.quantity}
                         <span onClick={() => updateQuantity(item.id, item.size, 1)} style={{ cursor: 'pointer', margin: '0 4px', color: '#000' }}>[+]</span>
                         <span onClick={() => updateQuantity(item.id, item.size, -1)} style={{ cursor: 'pointer', color: '#000' }}>[-]</span>
                       </span>
                     </div>
 
                     <div style={{ fontWeight: 800, marginTop: '5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '13px' }}>
-                        {oldPrice * item.quantity}₽
-                      </span>
+                      <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '13px' }}>{oldPrice * item.quantity}₽</span>
                       <span>{item.price * item.quantity}₽ со скидкой</span>
                     </div>
 
                     <div style={{ marginTop: '15px', lineHeight: '1.4' }}>
-                      хирургическая сталь<br/>
-                      размер:<br/>
+                      хирургическая сталь<br />
+                      размер:<br />
                       <span style={{ fontWeight: 800, fontSize: '15px', letterSpacing: '0.5px' }}>
                         {[16, 17, 18, 19].map((s) => {
                           const isSelected = item.size === s;
                           return (
-                            <span 
-                              key={s} 
+                            <span
+                              key={s}
                               onClick={() => updateItemSize(item.id, item.size, s)}
                               style={{ color: isSelected ? 'red' : '#000', cursor: 'pointer', transition: 'color 0.2s ease' }}
                             >
@@ -208,7 +204,7 @@ export default function CheckoutPage() {
 
             <div style={{ fontWeight: 700, marginBottom: '20px', textTransform: 'lowercase' }}>данные для доставки:</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>ФИО получателя (полностью)</label>
                 <input name="name" required type="text" placeholder="Петров Петр Петрович" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
@@ -239,62 +235,22 @@ export default function CheckoutPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>служба доставки</label>
-                
                 <input type="hidden" name="delivery" value={deliveryService} />
-                
                 <div ref={dropdownRef} style={{ position: 'relative', width: '100%', userSelect: 'none' }}>
-                  <div 
+                  <div
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    style={{ 
-                      padding: '12px', 
-                      border: '1px solid #ccc', 
-                      fontFamily: 'inherit', 
-                      fontSize: '14px', 
-                      width: '100%', 
-                      boxSizing: 'border-box', 
-                      backgroundColor: 'white',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}
+                    style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: 'white', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                   >
                     <span>{deliveryService}</span>
-                    <span style={{ 
-                      fontSize: '12px', 
-                      transform: isDropdownOpen ? 'rotate(180deg)' : 'none', 
-                      transition: 'transform 0.2s ease',
-                      lineHeight: 1
-                    }}>
-                      ▼
-                    </span>
+                    <span style={{ fontSize: '12px', transform: isDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', lineHeight: 1 }}>▼</span>
                   </div>
-
                   {isDropdownOpen && (
-                    <div style={{ 
-                      position: 'absolute', 
-                      top: '100%', 
-                      left: 0, 
-                      right: 0, 
-                      backgroundColor: 'white', 
-                      border: '1px solid #000', 
-                      zIndex: 10,
-                      marginTop: '-1px' 
-                    }}>
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #000', zIndex: 10, marginTop: '-1px' }}>
                       {deliveryOptions.map((option) => (
                         <div
                           key={option}
-                          onClick={() => {
-                            setDeliveryService(option);
-                            setIsDropdownOpen(false);
-                          }}
-                          style={{ 
-                            padding: '12px', 
-                            fontSize: '14px',
-                            cursor: 'pointer', 
-                            borderBottom: option !== '5post' ? '1px solid #eee' : 'none',
-                            transition: 'background-color 0.1s'
-                          }}
+                          onClick={() => { setDeliveryService(option); setIsDropdownOpen(false); }}
+                          style={{ padding: '12px', fontSize: '14px', cursor: 'pointer', borderBottom: option !== '5post' ? '1px solid #eee' : 'none', transition: 'background-color 0.1s' }}
                           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
                           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                         >
@@ -309,45 +265,74 @@ export default function CheckoutPage() {
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>пункт выдачи</label>
                 <div style={{ position: 'relative' }}>
-                  <input 
-                    type="text" 
-                    value={address} 
-                    onChange={(e) => setAddress(e.target.value)} 
-                    readOnly={deliveryService === 'СДЭК'} 
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    readOnly={deliveryService === 'СДЭК'}
                     required
-                    placeholder={deliveryService === 'СДЭК' ? "выберите на карте ниже" : "введите адрес пункта выдачи текстом"} 
-                    style={{ 
-                      padding: '12px', 
-                      border: '1px solid #ccc', 
-                      fontFamily: 'inherit', 
-                      fontSize: '14px', 
-                      width: '100%', 
-                      boxSizing: 'border-box', 
-                      backgroundColor: deliveryService === 'СДЭК' ? '#f5f5f5' : '#fff' 
-                    }} 
+                    placeholder={deliveryService === 'СДЭК' ? 'найдите ПВЗ ниже' : 'введите адрес пункта выдачи текстом'}
+                    style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: deliveryService === 'СДЭК' ? '#f5f5f5' : '#fff' }}
                   />
-                  {deliveryService === 'СДЭК' && <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>}
                 </div>
                 {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>+ {deliveryCost}₽ за доставку {deliveryService}</span>}
               </div>
 
-              <div 
-                id="cdek-map" 
-                style={{ 
-                  width: '100%', 
-                  height: '400px', 
-                  backgroundColor: '#f9f9f9', 
-                  display: deliveryService === 'СДЭК' ? 'block' : 'none' 
-                }}
-              ></div>
+              {/* CDEK office search */}
+              {deliveryService === 'СДЭК' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      value={cdekCity}
+                      onChange={(e) => setCdekCity(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), searchCdekOffices())}
+                      placeholder="введите город для поиска ПВЗ"
+                      style={{ flex: 1, padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={searchCdekOffices}
+                      disabled={cdekSearching}
+                      style={{ padding: '12px 14px', border: '1px solid #000', background: 'transparent', fontFamily: 'inherit', fontSize: '14px', cursor: cdekSearching ? 'not-allowed' : 'pointer', fontWeight: 800, whiteSpace: 'nowrap', opacity: cdekSearching ? 0.5 : 1 }}
+                    >
+                      {cdekSearching ? '...' : '[найти]'}
+                    </button>
+                  </div>
+
+                  {cdekError && (
+                    <div style={{ fontSize: '13px', color: 'red', fontWeight: 500 }}>{cdekError}</div>
+                  )}
+
+                  {cdekOffices.length > 0 && (
+                    <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #ccc' }}>
+                      {cdekOffices.map((office, i) => {
+                        const officeAddr = `${office.location?.city || cdekCity}, ${office.location?.address || office.name}`;
+                        const isSelected = address === officeAddr;
+                        return (
+                          <div
+                            key={office.code || i}
+                            onClick={() => selectOffice(office)}
+                            style={{ padding: '10px 12px', cursor: 'pointer', borderBottom: i < cdekOffices.length - 1 ? '1px solid #eee' : 'none', fontSize: '13px', lineHeight: 1.4, backgroundColor: isSelected ? '#f0f0f0' : 'transparent' }}
+                            onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = '#f5f5f5'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isSelected ? '#f0f0f0' : 'transparent'; }}
+                          >
+                            <div style={{ fontWeight: 800 }}>{office.location?.address}</div>
+                            {office.work_time && <div style={{ fontWeight: 500, color: '#666', marginTop: '2px' }}>{office.work_time}</div>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', borderTop: '1px solid #000', paddingTop: '20px' }}>
                 <div style={{ fontWeight: 800, fontSize: '18px', textTransform: 'lowercase' }}>
                   итог: {totalPrice() + deliveryCost}₽
                 </div>
-                
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isLoading || !address}
                   style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isLoading || !address) ? 0.5 : 1 }}
                 >

@@ -7,10 +7,9 @@ const CDEK_BASE_URL = process.env.CDEK_BASE_URL ?? 'https://api.edu.cdek.ru';
 let cachedToken = '';
 let tokenExpiry = 0;
 
-// Функция авторизации в СДЭК
 async function getCdekToken() {
   if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
-  
+
   const params = new URLSearchParams();
   params.append('grant_type', 'client_credentials');
   params.append('client_id', CDEK_ACCOUNT);
@@ -21,37 +20,45 @@ async function getCdekToken() {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params.toString(),
   });
-  
+
   if (!response.ok) {
     const errText = await response.text();
-    console.error('Ошибка авторизации СДЭК:', errText);
     throw new Error(`Ошибка авторизации СДЭК: ${errText}`);
   }
-  
+
   const data = await response.json();
   cachedToken = data.access_token;
   tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
   return cachedToken;
 }
 
-// Проксирование запросов
 async function proxyRequest(req: NextRequest) {
   try {
     const token = await getCdekToken();
     const url = new URL(req.url);
-    
     const action = url.searchParams.get('action');
-    url.searchParams.delete('action');
-    
-    // Переводим язык виджета на язык API СДЭК v2
-    let targetPath = '/v2/deliverypoints'; 
-    if (action === 'offices') {
+
+    let targetPath = '/v2/deliverypoints';
+    const targetParams = new URLSearchParams();
+
+    if (action === 'cities') {
+      targetPath = '/v2/location/cities';
+      targetParams.set('city', url.searchParams.get('q') || '');
+      targetParams.set('country_codes[0]', 'RU');
+      targetParams.set('size', '5');
+    } else if (action === 'offices') {
       targetPath = '/v2/deliverypoints';
+      const cityCode = url.searchParams.get('city_code');
+      if (cityCode) targetParams.set('city_code', cityCode);
+      targetParams.set('type', 'PVZ');
     } else if (action === 'calculate') {
       targetPath = '/v2/calculator/tariff';
+    } else {
+      url.searchParams.delete('action');
+      url.searchParams.forEach((v, k) => targetParams.set(k, v));
     }
 
-    const queryString = url.searchParams.toString();
+    const queryString = targetParams.toString();
     const targetUrl = `${CDEK_BASE_URL}${targetPath}${queryString ? `?${queryString}` : ''}`;
 
     const fetchOptions: RequestInit = {
@@ -59,7 +66,7 @@ async function proxyRequest(req: NextRequest) {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': req.headers.get('content-type') || 'application/json',
-      }
+      },
     };
 
     if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -68,16 +75,15 @@ async function proxyRequest(req: NextRequest) {
 
     const response = await fetch(targetUrl, fetchOptions);
     const responseText = await response.text();
-    
+
     let data;
     try {
       data = JSON.parse(responseText);
-    } catch (e) {
+    } catch {
       data = responseText;
     }
-    
-    return NextResponse.json(data, { status: response.status });
 
+    return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
     console.error('CDEK Proxy Error:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
