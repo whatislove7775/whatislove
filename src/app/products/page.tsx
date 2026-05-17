@@ -6,8 +6,22 @@ import Image from 'next/image';
 
 export const revalidate = 60;
 
+function buildStock(variants: any[]): Record<string, number> {
+  return (variants || []).reduce((acc: Record<string, number>, v: any) => {
+    acc[String(v.attribute_value)] = v.stock ?? 0;
+    return acc;
+  }, {});
+}
+
 export default async function ProductsPage() {
-  const { data: products } = await supabase.from('products').select('*');
+  const { data: products } = await supabase
+    .from('products')
+    .select('*, product_variants(attribute_value, stock)');
+
+  const normalized = (products || []).map((p) => ({
+    ...p,
+    stock: buildStock(p.product_variants || []),
+  }));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'inherit' }}>
@@ -17,7 +31,7 @@ export default async function ProductsPage() {
       ]} />
 
       <div className="products-grid">
-        {(products || []).map((product) => (
+        {normalized.map((product) => (
           <div key={product.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
             <Link href={`/products/${product.slug}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
               <div style={{ position: 'relative', width: '100%', marginBottom: '30px' }}>
@@ -25,7 +39,6 @@ export default async function ProductsPage() {
                 <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
                 <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
                 <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-
                 <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
                   {product.image_url && (
                     <Image

@@ -23,47 +23,49 @@ async function decrementStock(items: any[]): Promise<string> {
     auth: { persistSession: false },
   });
 
-  // Группируем: { productId → { size → qty } }
-  const productDeltas: Record<string, Record<string, number>> = {};
-  for (const item of items) {
-    const pid = String(item.id);
-    if (!productDeltas[pid]) productDeltas[pid] = {};
-    const key = String(item.size);
-    productDeltas[pid][key] = (productDeltas[pid][key] || 0) + item.quantity;
-  }
-
   const errors: string[] = [];
 
-  for (const [productId, deltas] of Object.entries(productDeltas)) {
-    const { data: product, error: selectError } = await supabase
-      .from('products')
-      .select('id, stock')
-      .eq('id', productId)
+  for (const item of items) {
+    const size = String(item.size);
+    const productId = Number(item.id);
+    const qty: number = item.quantity;
+
+    const { data: variant, error: selectError } = await supabase
+      .from('product_variants')
+      .select('id, stock, to_produce')
+      .eq('product_id', productId)
+      .eq('attribute_value', size)
       .single();
 
-    if (selectError || !product) {
-      errors.push(`select(${productId}): ${selectError?.message ?? 'не найден'}`);
+    if (selectError || !variant) {
+      errors.push(`variant not found: product=${productId} size=${size}`);
       continue;
     }
 
-    if (!product.stock) {
-      errors.push(`stock(${productId}): поле stock пустое или null`);
-      continue;
-    }
+    const currentStock: number = variant.stock ?? 0;
+    const currentToProduce: number = variant.to_produce ?? 0;
 
-    const newStock = { ...product.stock };
-    for (const [size, qty] of Object.entries(deltas)) {
-      const current = typeof newStock[size] === 'number' ? newStock[size] : parseInt(String(newStock[size])) || 0;
-      newStock[size] = Math.max(0, current - qty);
+    let newStock: number;
+    let newToProduce: number;
+
+    if (currentStock >= qty) {
+      // Достаточно на складе
+      newStock = currentStock - qty;
+      newToProduce = currentToProduce;
+    } else {
+      // Частично или полностью дефицит
+      const deficit = qty - currentStock;
+      newStock = 0;
+      newToProduce = currentToProduce + deficit;
     }
 
     const { error: updateError } = await supabase
-      .from('products')
-      .update({ stock: newStock })
-      .eq('id', productId);
+      .from('product_variants')
+      .update({ stock: newStock, to_produce: newToProduce })
+      .eq('id', variant.id);
 
     if (updateError) {
-      errors.push(`update(${productId}): ${updateError.message}`);
+      errors.push(`update failed variant ${variant.id}: ${updateError.message}`);
     }
   }
 
