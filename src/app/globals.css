@@ -25,6 +25,14 @@ pre {
   font-family: inherit;
 }
 
+/* Mobile / Desktop visibility helpers */
+@media (min-width: 769px) {
+  .mobile-only { display: none !important; }
+}
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+}
+
 /* Products grid */
 .products-grid {
   display: grid;

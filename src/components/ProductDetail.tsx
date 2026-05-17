@@ -4,6 +4,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 import Image from 'next/image';
 import { parseTextForLinks } from '@/lib/parseLinks';
+import Link from 'next/link';
 
 export default function ProductDetail({ product, bottomText }: { product: any; bottomText: string }) {
   const [selectedSize, setSelectedSize] = useState(17);
@@ -11,13 +12,15 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
     product.images?.length > 0 ? product.images[0] : product.image_url || null
   );
   const addItem = useCartStore((state: any) => state.addItem);
+  const cartItems = useCartStore((state: any) => state.items);
+  const isInCart = cartItems.some((i: any) => i.id === product.id);
 
   const currentStock = product.stock ? product.stock[selectedSize.toString()] || 0 : 0;
   const isAvailable = currentStock > 0;
 
   const handleAddToCart = () => {
     if (isAvailable) {
-      addItem({ id: product.id, name: product.name, price: product.price, size: selectedSize, quantity: 1, imageUrl: activeImage || product.image_url || undefined });
+      addItem({ id: product.id, name: product.name, price: product.price, size: selectedSize, quantity: 1, imageUrl: product.image_url || undefined });
     }
   };
 
@@ -186,23 +189,54 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
             <div style={{ fontWeight: 500, lineHeight: 1.4, fontSize: '14px', whiteSpace: 'pre-line' }}>
               {parseTextForLinks(bottomText)}
             </div>
-            <button
-              onClick={handleAddToCart}
-              disabled={!isAvailable}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                fontWeight: 800,
-                cursor: isAvailable ? 'pointer' : 'not-allowed',
-                fontFamily: 'inherit',
-                padding: 0,
-                fontSize: '14px',
-                color: isAvailable ? '#000' : '#d32f2f',
-                textDecoration: isAvailable ? 'none' : 'line-through',
-              }}
-            >
-              {isAvailable ? "[ +добавить в 🛒'y ]" : '[ нет в наличии ]'}
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+              {/* Desktop: кнопка добавить */}
+              <button
+                className="desktop-only"
+                onClick={handleAddToCart}
+                disabled={!isAvailable}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  fontWeight: 800,
+                  cursor: isAvailable ? 'pointer' : 'not-allowed',
+                  fontFamily: 'inherit',
+                  padding: 0,
+                  fontSize: '14px',
+                  color: isAvailable ? '#000' : '#d32f2f',
+                  textDecoration: isAvailable ? 'none' : 'line-through',
+                }}
+              >
+                {isAvailable ? "[ +добавить в 🛒'y ]" : '[ нет в наличии ]'}
+              </button>
+
+              {/* Mobile: меняется после добавления */}
+              {!isAvailable ? (
+                <span className="mobile-only" style={{ fontWeight: 800, fontSize: '14px', color: '#d32f2f', textDecoration: 'line-through' }}>
+                  [ нет в наличии ]
+                </span>
+              ) : isInCart ? (
+                <Link href="/checkout" className="mobile-only" style={{ fontWeight: 800, fontSize: '14px', color: '#000' }}>
+                  [перейти к 🛒&apos;е]
+                </Link>
+              ) : (
+                <button
+                  className="mobile-only"
+                  onClick={handleAddToCart}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    padding: 0,
+                    fontSize: '14px',
+                  }}
+                >
+                  [ +добавить в 🛒&apos;y ]
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

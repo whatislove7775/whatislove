@@ -1,16 +1,17 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Cart from '@/components/Cart'; // Теперь путь всегда верный
+import Cart from '@/components/Cart';
+import { useCartStore } from '@/store/cartStore';
 
 export default function Breadcrumbs({ path }: any) {
   const pathname = usePathname();
   const backLink = path.length > 1 && path[path.length - 2].href ? path[path.length - 2].href : '/';
-
-  // Жесткий фильтр страниц для показа корзины
   const shouldShowCart = pathname.startsWith('/products') || pathname.startsWith('/checkout');
+  const cartCount = useCartStore((state: any) =>
+    state.items.reduce((acc: number, i: any) => acc + i.quantity, 0)
+  );
 
-  // Единый стиль для всех элементов 14px
   const navItemStyle: React.CSSProperties = {
     fontSize: '14px',
     fontWeight: 800,
@@ -18,25 +19,22 @@ export default function Breadcrumbs({ path }: any) {
     color: 'inherit',
     display: 'flex',
     alignItems: 'center',
-    lineHeight: 1
+    lineHeight: 1,
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'space-between', 
-      alignItems: 'center', 
-      width: '100%', 
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '100%',
       marginBottom: '40px',
-      position: 'relative', 
-      zIndex: 100           
+      position: 'relative',
+      zIndex: 100,
     }}>
-      
       {/* ЛЕВАЯ ЧАСТЬ */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Link href={backLink} style={navItemStyle}>
-          [{"<"}]
-        </Link>
+        <Link href={backLink} style={navItemStyle}>[{"<"}]</Link>
         <span style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
           {path.map((item: any, index: number) => (
             <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
@@ -55,32 +53,32 @@ export default function Breadcrumbs({ path }: any) {
 
       {/* ПРАВАЯ ЧАСТЬ */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          {/* ДОМИК (строго 14px) */}
-          <Link href="/" style={navItemStyle}>
-            [ 🏠 ]
-          </Link>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Домик */}
+          <Link href="/" style={navItemStyle}>[ 🏠 ]</Link>
 
-          {/* КОРЗИНА (свисает вниз) */}
+          {/* Корзина-сайдбар — только на десктопе */}
           {shouldShowCart && (
-            <div style={{ 
-              position: 'absolute', 
-              top: 'calc(100% + 20px)', 
-              left: 0,                 
-              zIndex: 1000
+            <div className="desktop-only" style={{
+              position: 'absolute',
+              top: 'calc(100% + 20px)',
+              left: 0,
+              zIndex: 1000,
             }}>
               <Cart />
             </div>
           )}
+
+          {/* Иконка корзины — только на мобиле */}
+          {shouldShowCart && (
+            <Link href="/checkout" className="mobile-only" style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
+              [🛒{cartCount > 0 ? ` ${cartCount}` : ''}]
+            </Link>
+          )}
         </div>
 
-        {/* КРЕСТИК (строго 14px) */}
-        <Link href={backLink} style={navItemStyle}>
-          [ × ]
-        </Link>
+        <Link href={backLink} style={navItemStyle}>[ × ]</Link>
       </div>
-      
     </div>
   );
 }
