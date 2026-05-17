@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { revalidatePath } from 'next/cache';
 
 const escapeHtml = (text: string) => {
   if (!text) return '';
@@ -117,6 +118,10 @@ ${itemsList}
     if (stockResult !== 'ok') {
       console.error('Stock decrement issue:', stockResult);
     }
+
+    // Сбрасываем кэш страниц товаров чтобы новый остаток показался сразу
+    revalidatePath('/products');
+    revalidatePath('/products/[slug]', 'page');
 
     return NextResponse.json({ success: true, stockUpdate: stockResult });
   } catch (error: any) {
