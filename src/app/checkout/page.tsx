@@ -17,12 +17,6 @@ export default function CheckoutPage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const deliveryOptions = ['СДЭК', 'Яндекс Доставка', 'Ozon', 'Wildberries', '5post'];
 
-  // CDEK office search
-  const [cdekCity, setCdekCity] = useState('');
-  const [cdekOffices, setCdekOffices] = useState<any[]>([]);
-  const [cdekSearching, setCdekSearching] = useState(false);
-  const [cdekError, setCdekError] = useState('');
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -34,51 +28,48 @@ export default function CheckoutPage() {
   }, []);
 
   useEffect(() => {
+    const container = document.getElementById('cdek-map');
+    if (!container || items.length === 0) return;
+
+    const init = () => {
+      if (container.innerHTML === '') {
+        new (window as any).CDEKWidget({
+          from: 'Москва',
+          root: 'cdek-map',
+          apiKey: '3489c7b6-8cd9-4f69-89e2-a1b19a5cc111',
+          servicePath: '/api/cdek',
+          defaultLocation: 'Москва',
+          hideDeliveryOptions: { door: true },
+          onChoose: (type: any, tariff: any, addressInfo: any) => {
+            const city = addressInfo?.cityName || addressInfo?.city_name || '';
+            const addr = addressInfo?.address || addressInfo?.name || 'Выбран ПВЗ';
+            const full = city ? `${city}, ${addr}` : addr;
+            setAddress(full.startsWith(',') ? full.substring(1).trim() : full);
+            setDeliveryCost(tariff?.delivery_sum || tariff?.price || 350);
+          },
+        });
+      }
+    };
+
+    if ((window as any).CDEKWidget) {
+      init();
+    } else {
+      const existingScript = document.querySelector('script[src*="cdek-it/widget@2"]');
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@cdek-it/widget@2';
+        script.onload = init;
+        document.body.appendChild(script);
+      } else {
+        existingScript.addEventListener('load', init);
+      }
+    }
+  }, [items.length]);
+
+  useEffect(() => {
     setAddress('');
     setDeliveryCost(0);
-    setCdekOffices([]);
-    setCdekCity('');
-    setCdekError('');
   }, [deliveryService]);
-
-  const searchCdekOffices = async () => {
-    if (!cdekCity.trim()) return;
-    setCdekSearching(true);
-    setCdekOffices([]);
-    setCdekError('');
-
-    try {
-      const cityRes = await fetch(`/api/cdek?action=cities&q=${encodeURIComponent(cdekCity)}`);
-      const cities = await cityRes.json();
-
-      if (!Array.isArray(cities) || cities.length === 0) {
-        setCdekError('Город не найден. Проверьте написание.');
-        setCdekSearching(false);
-        return;
-      }
-
-      const cityCode = cities[0].code;
-      const officesRes = await fetch(`/api/cdek?action=offices&city_code=${cityCode}`);
-      const offices = await officesRes.json();
-
-      if (!Array.isArray(offices) || offices.length === 0) {
-        setCdekError('В этом городе нет пунктов выдачи СДЭК.');
-      } else {
-        setCdekOffices(offices.slice(0, 40));
-      }
-    } catch {
-      setCdekError('Ошибка загрузки. Попробуйте ещё раз.');
-    }
-
-    setCdekSearching(false);
-  };
-
-  const selectOffice = (office: any) => {
-    const city = office.location?.city || cdekCity;
-    const addr = office.location?.address || office.name;
-    setAddress(`${city}, ${addr}`);
-    setDeliveryCost(350);
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -186,11 +177,7 @@ export default function CheckoutPage() {
                         {[16, 17, 18, 19].map((s) => {
                           const isSelected = item.size === s;
                           return (
-                            <span
-                              key={s}
-                              onClick={() => updateItemSize(item.id, item.size, s)}
-                              style={{ color: isSelected ? 'red' : '#000', cursor: 'pointer', transition: 'color 0.2s ease' }}
-                            >
+                            <span key={s} onClick={() => updateItemSize(item.id, item.size, s)} style={{ color: isSelected ? 'red' : '#000', cursor: 'pointer', transition: 'color 0.2s ease' }}>
                               {isSelected ? `[(${s})]` : `[${s}]`}
                             </span>
                           );
@@ -237,23 +224,14 @@ export default function CheckoutPage() {
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>служба доставки</label>
                 <input type="hidden" name="delivery" value={deliveryService} />
                 <div ref={dropdownRef} style={{ position: 'relative', width: '100%', userSelect: 'none' }}>
-                  <div
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: 'white', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  <div onClick={() => setIsDropdownOpen(!isDropdownOpen)} style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: 'white', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>{deliveryService}</span>
                     <span style={{ fontSize: '12px', transform: isDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', lineHeight: 1 }}>▼</span>
                   </div>
                   {isDropdownOpen && (
                     <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #000', zIndex: 10, marginTop: '-1px' }}>
                       {deliveryOptions.map((option) => (
-                        <div
-                          key={option}
-                          onClick={() => { setDeliveryService(option); setIsDropdownOpen(false); }}
-                          style={{ padding: '12px', fontSize: '14px', cursor: 'pointer', borderBottom: option !== '5post' ? '1px solid #eee' : 'none', transition: 'background-color 0.1s' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                        >
+                        <div key={option} onClick={() => { setDeliveryService(option); setIsDropdownOpen(false); }} style={{ padding: '12px', fontSize: '14px', cursor: 'pointer', borderBottom: option !== '5post' ? '1px solid #eee' : 'none' }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}>
                           {option}
                         </div>
                       ))}
@@ -265,77 +243,19 @@ export default function CheckoutPage() {
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>пункт выдачи</label>
                 <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    readOnly={deliveryService === 'СДЭК'}
-                    required
-                    placeholder={deliveryService === 'СДЭК' ? 'найдите ПВЗ ниже' : 'введите адрес пункта выдачи текстом'}
-                    style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: deliveryService === 'СДЭК' ? '#f5f5f5' : '#fff' }}
-                  />
+                  <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} readOnly={deliveryService === 'СДЭК'} required placeholder={deliveryService === 'СДЭК' ? 'выберите на карте ниже' : 'введите адрес пункта выдачи текстом'} style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: deliveryService === 'СДЭК' ? '#f5f5f5' : '#fff' }} />
+                  {deliveryService === 'СДЭК' && <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>}
                 </div>
                 {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>+ {deliveryCost}₽ за доставку {deliveryService}</span>}
               </div>
 
-              {/* CDEK office search */}
-              {deliveryService === 'СДЭК' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                      type="text"
-                      value={cdekCity}
-                      onChange={(e) => setCdekCity(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), searchCdekOffices())}
-                      placeholder="введите город для поиска ПВЗ"
-                      style={{ flex: 1, padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', boxSizing: 'border-box' }}
-                    />
-                    <button
-                      type="button"
-                      onClick={searchCdekOffices}
-                      disabled={cdekSearching}
-                      style={{ padding: '12px 14px', border: '1px solid #000', background: 'transparent', fontFamily: 'inherit', fontSize: '14px', cursor: cdekSearching ? 'not-allowed' : 'pointer', fontWeight: 800, whiteSpace: 'nowrap', opacity: cdekSearching ? 0.5 : 1 }}
-                    >
-                      {cdekSearching ? '...' : '[найти]'}
-                    </button>
-                  </div>
-
-                  {cdekError && (
-                    <div style={{ fontSize: '13px', color: 'red', fontWeight: 500 }}>{cdekError}</div>
-                  )}
-
-                  {cdekOffices.length > 0 && (
-                    <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #ccc' }}>
-                      {cdekOffices.map((office, i) => {
-                        const officeAddr = `${office.location?.city || cdekCity}, ${office.location?.address || office.name}`;
-                        const isSelected = address === officeAddr;
-                        return (
-                          <div
-                            key={office.code || i}
-                            onClick={() => selectOffice(office)}
-                            style={{ padding: '10px 12px', cursor: 'pointer', borderBottom: i < cdekOffices.length - 1 ? '1px solid #eee' : 'none', fontSize: '13px', lineHeight: 1.4, backgroundColor: isSelected ? '#f0f0f0' : 'transparent' }}
-                            onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = '#f5f5f5'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isSelected ? '#f0f0f0' : 'transparent'; }}
-                          >
-                            <div style={{ fontWeight: 800 }}>{office.location?.address}</div>
-                            {office.work_time && <div style={{ fontWeight: 500, color: '#666', marginTop: '2px' }}>{office.work_time}</div>}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div id="cdek-map" style={{ width: '100%', height: '400px', backgroundColor: '#f9f9f9', display: deliveryService === 'СДЭК' ? 'block' : 'none' }}></div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', borderTop: '1px solid #000', paddingTop: '20px' }}>
                 <div style={{ fontWeight: 800, fontSize: '18px', textTransform: 'lowercase' }}>
                   итог: {totalPrice() + deliveryCost}₽
                 </div>
-                <button
-                  type="submit"
-                  disabled={isLoading || !address}
-                  style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isLoading || !address) ? 0.5 : 1 }}
-                >
+                <button type="submit" disabled={isLoading || !address} style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isLoading || !address) ? 0.5 : 1 }}>
                   {isLoading ? '[отправка...]' : '[заказать] 📦'}
                 </button>
               </div>
