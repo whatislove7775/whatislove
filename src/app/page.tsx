@@ -31,9 +31,9 @@ export default function Home() {
         position: 'relative',
         zIndex: 50
       }}>
-        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 П₽ОДУКТЫ</Link>
+        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 ПРОДУКТЫ ₽</Link>
         <span className="nav-sep">/</span>
-        <Link href="/portfolio" style={{ textDecoration: 'none', color: '#000' }}>📁 ПО₽ТФОЛИО</Link>
+        <Link href="/portfolio" style={{ textDecoration: 'none', color: '#000' }}>📁 ПОРТФОЛИО ₽</Link>
         <span className="nav-sep">/</span>
         <Link href="/links" style={{ textDecoration: 'none', color: '#000' }}>🔗 ССЫЛКИ</Link>
       </nav>

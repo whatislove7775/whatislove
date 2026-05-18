@@ -58,6 +58,25 @@ pre {
   margin-bottom: 15px;
 }
 
+/* Footer links + disclaimer */
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding-bottom: 15px;
+}
+
+.footer-disclaimer {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 850px;
+  text-align: justify;
+  text-transform: uppercase;
+}
+
 /* Products grid */
 .products-grid {
   display: grid;
@@ -164,6 +183,21 @@ pre {
     align-items: center !important;
     gap: 4px !important;
     text-align: center;
+  }
+
+  /* Footer links: horizontal + lowercase on mobile */
+  .footer-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    text-transform: lowercase;
+    padding-bottom: 10px;
+  }
+
+  /* Footer disclaimer: lowercase on mobile */
+  .footer-disclaimer {
+    text-transform: lowercase;
+    text-align: justify;
   }
 
   /* Legal pages: justified text */

@@ -47,7 +47,7 @@ export default async function PortfolioPage() {
       <div style={{ width: '100%', alignSelf: 'flex-start' }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'ПО₽ТФОЛИО', icon: '📂' },
+          { name: 'ПОРТФОЛИО', icon: '📂' },
         ]} />
       </div>
 

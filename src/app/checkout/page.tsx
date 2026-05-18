@@ -11,17 +11,20 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [deliveryService, setDeliveryService] = useState('СДЭК');
   const [deliveryCost, setDeliveryCost] = useState(0);
-  const [productImages, setProductImages] = useState<Record<string, string>>({});
+  const [productData, setProductData] = useState<Record<string, { imageUrl?: string; oldPrice?: number; sizes: number[] }>>({});
 
   useEffect(() => {
     if (items.length === 0) return;
     const ids = Array.from(new Set(items.map((i) => i.id)));
-    supabase.from('products').select('id, image_url').in('id', ids)
+    supabase.from('products').select('id, image_url, old_price, product_variants(attribute_value)').in('id', ids)
       .then(({ data }) => {
         if (data) {
-          const map: Record<string, string> = {};
-          data.forEach((p: any) => { if (p.image_url) map[p.id] = p.image_url; });
-          setProductImages(map);
+          const map: Record<string, { imageUrl?: string; oldPrice?: number; sizes: number[] }> = {};
+          data.forEach((p: any) => {
+            const sizes = (p.product_variants || []).map((v: any) => Number(v.attribute_value)).sort((a: number, b: number) => a - b);
+            map[p.id] = { imageUrl: p.image_url || undefined, oldPrice: p.old_price || undefined, sizes };
+          });
+          setProductData(map);
         }
       });
   }, [items.length]);
@@ -130,7 +133,7 @@ export default function CheckoutPage() {
       <div style={{ width: '100%' }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'PRODUCT$', href: '/products', icon: '📦' },
+          { name: 'ПРОДУКТЫ', href: '/products', icon: '📦' },
           { name: 'ЗАКАЗ', icon: '💳' },
         ]} />
       </div>
@@ -142,11 +145,13 @@ export default function CheckoutPage() {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
 
             {items.map((item, idx) => {
-              const oldPrice = Math.round(item.price * 1.4);
+              const pData = productData[item.id];
+              const oldPrice = pData?.oldPrice || Math.round(item.price * 1.4);
+              const availableSizes = pData?.sizes?.length ? pData.sizes : [16, 17, 18, 19];
               return (
                 <div key={`${item.id}-${item.size}-${idx}`} style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
                   {(() => {
-                    const imgUrl = item.imageUrl || productImages[item.id] || null;
+                    const imgUrl = item.imageUrl || pData?.imageUrl || null;
                     return (
                       <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', position: 'relative', flexShrink: 0, overflow: 'visible' }}>
                         <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1, zIndex: 1 }}>+</div>
@@ -177,12 +182,14 @@ export default function CheckoutPage() {
                     <div style={{ marginTop: '15px', lineHeight: '1.4' }}>
                       хирургическая сталь<br />
                       размер:<br />
-                      <span style={{ fontWeight: 800, fontSize: '15px', letterSpacing: '0.5px' }}>
-                        {[16, 17, 18, 19].map((s) => {
+                      <span style={{ fontWeight: 800, fontSize: '15px', display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                        {availableSizes.map((s) => {
                           const isSelected = item.size === s;
                           return (
-                            <span key={s} onClick={() => updateItemSize(item.id, item.size, s)} style={{ color: isSelected ? 'red' : '#000', cursor: 'pointer', transition: 'color 0.2s ease' }}>
-                              {isSelected ? `[(${s})]` : `[${s}]`}
+                            <span key={s} onClick={() => updateItemSize(item.id, item.size, s)} style={{ cursor: 'pointer', userSelect: 'none', display: 'inline-flex', alignItems: 'center' }}>
+                              {isSelected ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#d32f2f', border: '1.5px solid #d32f2f', borderRadius: '50%', minWidth: '26px', height: '26px', padding: '0 4px' }}>{s}</span>
+                              ) : `[ ${s} ]`}
                             </span>
                           );
                         })}

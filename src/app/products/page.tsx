@@ -27,7 +27,7 @@ export default async function ProductsPage() {
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'inherit' }}>
       <Breadcrumbs path={[
         { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-        { name: 'П₽ОДУКТЫ', href: '/products', icon: '📦' },
+        { name: 'ПРОДУКТЫ', href: '/products', icon: '📦' },
       ]} />
 
       <div className="products-grid">
