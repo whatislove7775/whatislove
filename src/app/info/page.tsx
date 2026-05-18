@@ -52,7 +52,7 @@ export default function InfoPage() {
               [КОНТАКТЫ]
             </div>
             <div style={{ fontWeight: 500, lineHeight: '1.4', maxWidth: '450px' }}>
-              telegram t.me/babydonthurtmovich
+              telegram <a href="https://t.me/babydonthurtmovich" target="_blank" rel="noopener noreferrer" style={{ color: '#000', textDecoration: 'underline' }}>t.me/babydonthurtmovich</a>
             </div>
           </div>
 

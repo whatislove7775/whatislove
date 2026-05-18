@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin', 'cyrillic', 'cyrillic-ext'], weight: ['
 
 export const metadata = {
   title: 'WH4T!SLOV3',
-  description: 'Дизай-студия/производство от whatislove^a',
+  description: 'Дизайн-студия/производство от whatislove^а',
   icons: {
     icon: '/favicon.svg',
   },

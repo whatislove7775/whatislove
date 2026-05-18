@@ -58,6 +58,30 @@ pre {
   margin-bottom: 15px;
 }
 
+/* Force underline on links that need it (overrides global a rule) */
+.link-underline {
+  text-decoration: underline !important;
+}
+
+/* Home footer */
+.home-footer {
+  text-align: center;
+  padding: 20px;
+  line-height: 1.5;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.home-disclaimer {
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.4;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
 /* Footer links + disclaimer */
 .footer-links {
   display: flex;
@@ -183,6 +207,16 @@ pre {
     align-items: center !important;
     gap: 4px !important;
     text-align: center;
+  }
+
+  /* Home footer: compact on mobile to avoid scroll */
+  .home-footer {
+    padding: 10px 15px;
+  }
+
+  .home-disclaimer {
+    font-size: 10px;
+    line-height: 1.3;
   }
 
   /* Footer links: horizontal + lowercase on mobile */

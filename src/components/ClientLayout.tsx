@@ -98,7 +98,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           }}>
             <div style={{ fontWeight: 800, fontSize: '14px', lineHeight: 1.4, textTransform: 'uppercase' }}>
               НА САЙТЕ ИСПОЛЬЗУЮТСЯ COOKIES<br />
-              И АНАЛИТИКА. <Link href="/privacy" style={{ color: '#000', textDecoration: 'underline' }}>ПОДРОБНЕЕ</Link>
+              И АНАЛИТИКА. <Link href="/privacy" className="link-underline" style={{ color: '#000' }}>ПОДРОБНЕЕ</Link>
             </div>
             
             <button
@@ -143,7 +143,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
         {/* УСЛОВИЕ ДЛЯ ФУТЕРА: Если главная страница - центрированный, иначе - сетка */}
         {pathname === '/' ? (
-          <footer style={{ textAlign: 'center', padding: '20px', lineHeight: '1.5', flexShrink: 0, boxSizing: 'border-box', width: '100%' }}>
+          <footer className="home-footer">
             <a
               href="https://t.me/whatislove_r"
               target="_blank"
@@ -154,7 +154,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                marginBottom: '15px',
+                marginBottom: '10px',
                 textDecoration: 'none',
                 textTransform: 'lowercase'
               }}
@@ -162,15 +162,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
               t.me/whatislove_r
             </a>
-            <div style={{
-              fontWeight: 500,
-              fontSize: '14px',
-              lineHeight: 1.4,
-              maxWidth: '800px',
-              margin: '0 auto',
-              textAlign: 'center'
-            }}>
-              данный сайт ничего не&nbsp;навязывает и&nbsp;не&nbsp;пропагандирует. весь контент является выдумкой автора и&nbsp;не&nbsp;имеет смысла. любые совпадения случайны. все файлы cookies используются для&nbsp;улучшения сервиса &lt;333*
+            <div className="home-disclaimer">
+              ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333*
             </div>
           </footer>
         ) : (
@@ -185,9 +178,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <div></div>
               <div className="footer-grid-divider"></div>
               <div className="footer-links">
-                <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>оферта / политика</Link>
-                <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>конфиденциальности</Link>
-                <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>/ инфо</Link>
+                <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>оферта</Link>
+                <span>/</span>
+                <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>политика конфиденциальности</Link>
+                <span>/</span>
+                <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>инфо</Link>
               </div>
               <div className="footer-disclaimer">
                 данный сайт ничего не&nbsp;навязывает и&nbsp;не&nbsp;пропагандирует. весь контент является выдумкой автора и&nbsp;не&nbsp;имеет смысла. любые совпадения случайны. все файлы cookies используются для&nbsp;улучшения сервиса &lt;333* инн&nbsp;231222682431

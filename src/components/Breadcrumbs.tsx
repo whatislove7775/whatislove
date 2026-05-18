@@ -35,7 +35,9 @@ export default function Breadcrumbs({ path }: any) {
       {/* ЛЕВАЯ ЧАСТЬ */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Link href={backLink} style={navItemStyle}>[{"<"}]</Link>
-        <span className="breadcrumb-path" style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
+
+        {/* Полный путь: только десктоп */}
+        <span className="breadcrumb-path desktop-only" style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
           {path.map((item: any, index: number) => (
             <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
               {item.href ? (
@@ -48,6 +50,12 @@ export default function Breadcrumbs({ path }: any) {
               {index < path.length - 1 && <span style={{ margin: '0 5px' }}>/</span>}
             </span>
           ))}
+        </span>
+
+        {/* Только текущая страница: мобильный */}
+        <span className="mobile-only" style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
+          {path[path.length - 1].icon && `${path[path.length - 1].icon} `}
+          {path[path.length - 1].name}
         </span>
       </div>
 
