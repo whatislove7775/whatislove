@@ -21,20 +21,20 @@ export default function Home() {
       />
 
       {/* Навигация (3 кнопки) */}
-      <nav style={{ 
-        display: 'flex', 
-        gap: '20px', 
-        fontWeight: 700, 
-        fontSize: '14px', 
-        alignItems: 'center', 
+      <nav className="home-nav" style={{
+        display: 'flex',
+        gap: '20px',
+        fontWeight: 700,
+        fontSize: '14px',
+        alignItems: 'center',
         textTransform: 'uppercase',
-        position: 'relative', // Вытаскиваем на передний план
-        zIndex: 50          // Защита от перекрытия
+        position: 'relative',
+        zIndex: 50
       }}>
-        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 PRODUCT$</Link>
-        <span>/</span>
-        <Link href="/portfolio" style={{ textDecoration: 'none', color: '#000' }}>📁 PORTFOL1O</Link>
-        <span>/</span>
+        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 PR0DUCT$</Link>
+        <span className="nav-sep">/</span>
+        <Link href="/portfolio" style={{ textDecoration: 'none', color: '#000' }}>📁 ₽ORTFOL1O</Link>
+        <span className="nav-sep">/</span>
         <Link href="/links" style={{ textDecoration: 'none', color: '#000' }}>🔗 LINK^S</Link>
       </nav>
 

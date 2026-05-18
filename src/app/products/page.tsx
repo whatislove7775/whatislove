@@ -56,9 +56,9 @@ export default async function ProductsPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontWeight: 800 }}>
               <div style={{ fontSize: '18px' }}>{product.name.toLowerCase()}</div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <span style={{ color: '#d32f2f' }}>{product.price}₽</span>
+                <span style={{ color: '#d32f2f' }}>{product.price} руб</span>
                 {product.oldPrice && (
-                  <span style={{ fontSize: '14px', textDecoration: 'line-through', color: '#999' }}>{product.oldPrice}₽</span>
+                  <span style={{ fontSize: '14px', textDecoration: 'line-through', color: '#999' }}>{product.oldPrice} руб</span>
                 )}
               </div>
             </div>
@@ -68,7 +68,7 @@ export default async function ProductsPage() {
               {product.delivery}
             </div>
 
-            <div style={{ display: 'flex', gap: '20px', marginTop: '15px' }}>
+            <div style={{ display: 'flex', gap: '20px', marginTop: 'auto', paddingTop: '15px' }}>
               <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', fontWeight: 800 }}>
                 [ подробнее ]
               </Link>

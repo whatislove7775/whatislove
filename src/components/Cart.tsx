@@ -56,7 +56,7 @@ export default function Cart() {
             </div>
           ))}
           <div style={{ marginTop: '20px' }}>
-            итого:<br/>{totalPrice()}₽
+            итого:<br/>{totalPrice()} руб
           </div>
           <Link href="/checkout" style={{ display: 'block', marginTop: '10px', textDecoration: 'none', color: '#000', fontWeight: 800 }}>
             [заказать] 📦

@@ -8,7 +8,7 @@ export default function ProductAddToCart({ product }: { product: any }) {
 
   const stock: Record<string, number> = product.stock || {};
   const sizes = Object.keys(stock).sort((a, b) => Number(a) - Number(b));
-  const isAvailable = sizes.some((s) => (stock[s] || 0) > 0);
+  const isAvailable = true;
   const isInCart = items.some((i: any) => i.id === product.id);
 
   const btnStyle: React.CSSProperties = {
@@ -23,8 +23,7 @@ export default function ProductAddToCart({ product }: { product: any }) {
   };
 
   const handleAdd = () => {
-    if (!isAvailable) return;
-    const firstAvailable = sizes.find((s) => (stock[s] || 0) > 0);
+    const firstAvailable = sizes[0];
     if (!firstAvailable) return;
     addItem({
       id: product.id,

@@ -19,18 +19,18 @@ export default function LinksPage() {
         
         <img src="/me.svg" alt="@me" style={{ width: '100%', maxWidth: '350px', marginBottom: '60px' }} />
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 700, fontSize: '14px', textTransform: 'uppercase' }}>
-          <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="links-nav" style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 700, fontSize: '14px', textTransform: 'uppercase' }}>
+          <div className="links-nav-item" style={{ display: 'flex', gap: '10px' }}>
             <span>[КАНАЛ В ТГ]</span>
-            <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer">T.ME/WHATISLOVE_R</a>
+            <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer">t.me/whatislove_r</a>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="links-nav-item" style={{ display: 'flex', gap: '10px' }}>
             <span>[АВТОР В ТГ]</span>
-            <a href="https://t.me/babydonthurtmovich" target="_blank" rel="noopener noreferrer">T.ME/BABYDONTHURTMOVICH</a>
+            <a href="https://t.me/babydonthurtmovich" target="_blank" rel="noopener noreferrer">t.me/babydonthurtmovich</a>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="links-nav-item" style={{ display: 'flex', gap: '10px' }}>
             <span>[ПОЧТА]</span>
-            <a href="mailto:babydonthurtmovich@mail.ru" target="_blank" rel="noopener noreferrer">BABYDONTHURTMOVICH@MAIL.RU</a>
+            <a href="mailto:babydonthurtmovich@mail.ru" target="_blank" rel="noopener noreferrer">babydonthurtmovich@mail.ru</a>
           </div>
         </div>
       </div>

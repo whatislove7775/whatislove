@@ -20,7 +20,7 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
   const isInCart = cartItems.some((i: any) => i.id === product.id);
 
   const currentStock = stock[selectedSize] ?? 0;
-  const isAvailable = currentStock > 0;
+  const isAvailable = true;
 
   const handleAddToCart = () => {
     if (isAvailable) {
@@ -168,7 +168,7 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
               return (
                 <span
                   key={size}
-                  onClick={() => isSizeAvailable && setSelectedSize(size)}
+                  onClick={() => setSelectedSize(size)}
                   style={{
                     cursor: isSizeAvailable ? 'pointer' : 'not-allowed',
                     userSelect: 'none',

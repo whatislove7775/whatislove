@@ -171,8 +171,8 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                     <div style={{ fontWeight: 800, marginTop: '5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '13px' }}>{oldPrice * item.quantity}₽</span>
-                      <span>{item.price * item.quantity}₽ со скидкой</span>
+                      <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '13px' }}>{oldPrice * item.quantity} руб</span>
+                      <span>{item.price * item.quantity} руб со скидкой</span>
                     </div>
                     <div style={{ marginTop: '15px', lineHeight: '1.4' }}>
                       хирургическая сталь<br />
@@ -250,14 +250,14 @@ export default function CheckoutPage() {
                   <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} readOnly={deliveryService === 'СДЭК'} required placeholder={deliveryService === 'СДЭК' ? 'выберите на карте ниже' : 'введите адрес пункта выдачи текстом'} style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: deliveryService === 'СДЭК' ? '#f5f5f5' : '#fff' }} />
                   {deliveryService === 'СДЭК' && <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>}
                 </div>
-                {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>+ {deliveryCost}₽ за доставку {deliveryService}</span>}
+                {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>+ {deliveryCost} руб за доставку {deliveryService}</span>}
               </div>
 
               <div id="cdek-map" style={{ width: '100%', height: '400px', backgroundColor: '#f9f9f9', display: deliveryService === 'СДЭК' ? 'block' : 'none' }}></div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', borderTop: '1px solid #000', paddingTop: '20px' }}>
                 <div style={{ fontWeight: 800, fontSize: '18px', textTransform: 'lowercase' }}>
-                  итог: {totalPrice() + deliveryCost}₽
+                  итог: {totalPrice() + deliveryCost} руб
                 </div>
                 <button type="submit" disabled={isLoading || !address} style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isLoading || !address) ? 0.5 : 1 }}>
                   {isLoading ? '[отправка...]' : '[заказать] 📦'}
