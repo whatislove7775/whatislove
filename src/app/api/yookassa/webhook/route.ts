@@ -9,7 +9,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // Нас интересует только успешная оплата
     if (body.event !== 'payment.succeeded') {
       return NextResponse.json({ ok: true });
     }
@@ -17,7 +16,7 @@ export async function POST(req: Request) {
     const payment = body.object;
     const meta: Record<string, string> = payment.metadata ?? {};
 
-    // Верифицируем платёж напрямую через API ЮKassa (защита от фейковых вебхуков)
+    // Верификация платежа через API ЮKassa
     const shopId = process.env.YOOKASSA_SHOP_ID;
     const secretKey = process.env.YOOKASSA_SECRET_KEY;
 
@@ -29,19 +28,23 @@ export async function POST(req: Request) {
       });
       const verified = await verifyRes.json();
       if (verified.status !== 'succeeded') {
+        console.log(`[webhook] payment ${payment.id} status=${verified.status}, skipping`);
         return NextResponse.json({ ok: true });
       }
+    } else {
+      console.warn('[webhook] YOOKASSA_SHOP_ID or YOOKASSA_SECRET_KEY not set — skipping verification');
     }
 
-    // Восстанавливаем данные заказа из metadata
     const items = JSON.parse(meta.order_items ?? '[]');
     const deliveryCost = Number(meta.order_delivery_cost ?? 0);
 
-    // Отправляем уведомление в Telegram
+    // Telegram уведомление
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
-    if (token && chatId) {
+    if (!token || !chatId) {
+      console.error('[webhook] TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set in Vercel env');
+    } else {
       const itemsList = items
         .map((i: any) => `- ${escapeHtml(String(i.name))} (р.${i.size}) x${i.quantity} = ${i.price * i.quantity}₽`)
         .join('\n');
@@ -63,44 +66,60 @@ ${itemsList}
 🚚 <b>Доставка:</b> ${deliveryCost > 0 ? deliveryCost + '₽' : 'не рассчитана'}
 💰 <b>ИТОГО ОПЛАЧЕНО:</b> ${payment.amount?.value}₽`;
 
-      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' }),
       });
+
+      const tgData = await tgRes.json();
+      if (!tgData.ok) {
+        console.error('[webhook] Telegram sendMessage failed:', JSON.stringify(tgData));
+      } else {
+        console.log('[webhook] Telegram notification sent OK');
+      }
     }
 
-    // Декремент склада в product_variants
+    // Обновление склада
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    if (supabaseUrl && (serviceKey || anonKey)) {
-      const supabase = createClient(supabaseUrl, serviceKey || anonKey!, {
+    if (!supabaseUrl || !serviceKey) {
+      console.error('[webhook] NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — stock NOT updated');
+    } else {
+      const supabase = createClient(supabaseUrl, serviceKey, {
         auth: { persistSession: false },
       });
 
       for (const item of items) {
-        const { data: variant } = await supabase
+        const { data: variant, error: selectError } = await supabase
           .from('product_variants')
           .select('id, stock, to_produce')
-          .eq('product_id', Number(item.id))
+          .eq('product_id', item.id)
           .eq('attribute_value', String(item.size))
           .single();
 
-        if (!variant) continue;
+        if (selectError || !variant) {
+          console.error(`[webhook] variant not found: product_id=${item.id} size=${item.size}`, selectError?.message);
+          continue;
+        }
 
-        const available = variant.stock ?? 0;
-        const qty = item.quantity;
-        const deficit = qty - available;
+        const currentStock: number = variant.stock ?? 0;
+        const qty: number = item.quantity;
+        const newStock = Math.max(0, currentStock - qty);
+        const deficit = qty - currentStock;
+        const newToProduce = deficit > 0 ? (variant.to_produce ?? 0) + deficit : (variant.to_produce ?? 0);
 
-        await supabase
+        const { error: updateError } = await supabase
           .from('product_variants')
-          .update({
-            stock: Math.max(0, available - qty),
-            to_produce: deficit > 0 ? (variant.to_produce ?? 0) + deficit : (variant.to_produce ?? 0),
-          })
+          .update({ stock: newStock, to_produce: newToProduce })
           .eq('id', variant.id);
+
+        if (updateError) {
+          console.error(`[webhook] stock update failed for variant ${variant.id}:`, updateError.message);
+        } else {
+          console.log(`[webhook] stock updated: variant=${variant.id} stock ${currentStock}→${newStock} to_produce→${newToProduce}`);
+        }
       }
     }
 
@@ -109,8 +128,7 @@ ${itemsList}
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('Webhook error:', err);
-    // Всегда 200 — иначе ЮKassa будет повторять запрос
+    console.error('[webhook] Unhandled error:', err);
     return NextResponse.json({ ok: true });
   }
 }
