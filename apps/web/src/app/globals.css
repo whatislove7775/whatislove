@@ -1,0 +1,237 @@
+/* ═══════════════════════════════════════════════════════════════
+   ANON PSY — Global Styles
+   Концепция: технологичный минимализм, хром, безликость, доверие
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap");
+
+/* ─── Кастомные переменные ──────────────────────────────────── */
+:root {
+  /* Хромированная палитра */
+  --chrome-100: #f0f2f5;
+  --chrome-200: #d0d8e4;
+  --chrome-300: #a8b8cc;
+  --chrome-400: #7888a0;
+  --chrome-500: #4a5870;
+  --chrome-600: #2a3448;
+  --chrome-700: #141c2c;
+  --chrome-800: #0a0f1a;
+  --chrome-900: #050810;
+
+  /* Акценты */
+  --accent-chrome: #b8c8dc;
+  --accent-chrome-glow: rgba(184, 200, 220, 0.4);
+  --accent-cold: #7090b8;
+
+  /* Типографика */
+  --font-heading: "Cinzel", "Times New Roman", serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
+
+  /* Переходы */
+  --transition-fast: 0.12s ease;
+  --transition-base: 0.22s ease;
+
+  /* Отступы */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 4rem;
+}
+
+/* ─── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 1rem;
+  line-height: 1.6;
+  background-color: var(--chrome-900);
+  color: var(--chrome-300);
+  min-height: 100vh;
+}
+
+/* ─── Заголовки — готические засечки (Cinzel) ───────────────── */
+h1, h2, h3, h4, h5, h6,
+.heading {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.15;
+  color: var(--chrome-200);
+}
+
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
+h2 { font-size: clamp(1.5rem, 3.5vw, 2.25rem); }
+h3 { font-size: clamp(1.1rem, 2.5vw, 1.5rem); }
+
+/* Хромированные засечки на логотипе */
+.logo-text {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: linear-gradient(
+    135deg,
+    var(--chrome-300) 0%,
+    var(--chrome-100) 40%,
+    var(--chrome-400) 60%,
+    var(--chrome-200) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px var(--accent-chrome-glow));
+}
+
+/* ─── Ссылки ─────────────────────────────────────────────────── */
+a {
+  color: var(--accent-chrome);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--chrome-100);
+}
+
+/* ─── Кнопки ─────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 0.75rem 1.75rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-radius: 1px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  user-select: none;
+}
+
+.btn-primary {
+  background: transparent;
+  border: 1px solid var(--chrome-300);
+  color: var(--chrome-200);
+}
+
+.btn-primary:hover {
+  background: rgba(168, 184, 204, 0.08);
+  border-color: var(--chrome-200);
+  box-shadow: 0 0 20px var(--accent-chrome-glow);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--chrome-600);
+  color: var(--chrome-400);
+}
+
+.btn-ghost:hover {
+  border-color: var(--chrome-400);
+  color: var(--chrome-300);
+}
+
+/* ─── Инпуты ─────────────────────────────────────────────────── */
+input, textarea, select {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  background: rgba(10, 15, 26, 0.8);
+  border: 1px solid var(--chrome-600);
+  border-radius: 1px;
+  color: var(--chrome-200);
+  padding: 0.75rem 1rem;
+  width: 100%;
+  transition: border-color var(--transition-fast);
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--chrome-400);
+  box-shadow: 0 0 0 1px rgba(168, 184, 204, 0.15);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--chrome-600);
+  letter-spacing: 0.05em;
+}
+
+/* ─── Карточки ───────────────────────────────────────────────── */
+.card {
+  background: rgba(10, 15, 26, 0.7);
+  border: 1px solid rgba(168, 184, 204, 0.12);
+  border-radius: 2px;
+  padding: var(--space-lg);
+  backdrop-filter: blur(8px);
+  transition: border-color var(--transition-base);
+}
+
+.card:hover {
+  border-color: rgba(168, 184, 204, 0.25);
+}
+
+/* ─── Хромированный разделитель ──────────────────────────────── */
+.divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--chrome-600) 30%,
+    var(--chrome-400) 50%,
+    var(--chrome-600) 70%,
+    transparent 100%
+  );
+  margin: var(--space-lg) 0;
+}
+
+/* ─── Утилиты ─────────────────────────────────────────────────── */
+.text-muted { color: var(--chrome-500); }
+.text-chrome { color: var(--accent-chrome); }
+.text-upper {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ─── Скроллбар ───────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+  background: var(--chrome-900);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--chrome-600);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--chrome-500);
+}
