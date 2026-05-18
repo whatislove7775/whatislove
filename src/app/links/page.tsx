@@ -10,7 +10,7 @@ export default function LinksPage() {
       <div style={{ width: '100%', alignSelf: 'flex-start' }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'LINK^S', icon: '🔗' }
+          { name: 'ССЫЛКИ', icon: '🔗' }
         ]} />
       </div>
       

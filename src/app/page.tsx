@@ -31,11 +31,11 @@ export default function Home() {
         position: 'relative',
         zIndex: 50
       }}>
-        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 PR0DUCT$</Link>
+        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 П₽ОДУКТЫ</Link>
         <span className="nav-sep">/</span>
-        <Link href="/portfolio" style={{ textDecoration: 'none', color: '#000' }}>📁 ₽ORTFOL1O</Link>
+        <Link href="/portfolio" style={{ textDecoration: 'none', color: '#000' }}>📁 ПО₽ТФОЛИО</Link>
         <span className="nav-sep">/</span>
-        <Link href="/links" style={{ textDecoration: 'none', color: '#000' }}>🔗 LINK^S</Link>
+        <Link href="/links" style={{ textDecoration: 'none', color: '#000' }}>🔗 ССЫЛКИ</Link>
       </nav>
 
     </div>

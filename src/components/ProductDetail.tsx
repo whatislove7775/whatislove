@@ -48,7 +48,7 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
       <div style={{ width: '100%', alignSelf: 'flex-start' }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'PRODUCT$', href: '/products', icon: '📦' },
+          { name: 'П₽ОДУКТЫ', href: '/products', icon: '📦' },
           { name: product.name.toLowerCase(), icon: '💍' },
         ]} />
       </div>
@@ -163,19 +163,17 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
 
           <div style={{ display: 'flex', justifyContent: 'center', fontWeight: 800, alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
             {sizes.map((size) => {
-              const isSizeAvailable = (stock[size] || 0) > 0;
               const isSelected = selectedSize === size;
               return (
                 <span
                   key={size}
                   onClick={() => setSelectedSize(size)}
                   style={{
-                    cursor: isSizeAvailable ? 'pointer' : 'not-allowed',
+                    cursor: 'pointer',
                     userSelect: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     margin: '0 8px',
-                    opacity: isSizeAvailable ? 1 : 0.3,
                   }}
                 >
                   {isSelected ? (

@@ -51,7 +51,7 @@ export default function Cart() {
                 onClick={() => removeItem(item.id, item.size)} 
                 style={{ cursor: 'pointer', fontWeight: 800 }}
               >
-                [x]
+                [×]
               </span>
             </div>
           ))}

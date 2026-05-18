@@ -27,12 +27,12 @@ export default async function ProductsPage() {
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'inherit' }}>
       <Breadcrumbs path={[
         { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-        { name: 'PRODUCT$', href: '/products', icon: '📦' },
+        { name: 'П₽ОДУКТЫ', href: '/products', icon: '📦' },
       ]} />
 
       <div className="products-grid">
         {normalized.map((product) => (
-          <div key={product.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+          <div key={product.id} style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
             <Link href={`/products/${product.slug}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
               <div style={{ position: 'relative', width: '100%', marginBottom: '30px' }}>
                 <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
