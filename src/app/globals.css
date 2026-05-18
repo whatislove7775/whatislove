@@ -82,6 +82,14 @@ pre {
   text-align: center;
 }
 
+/* Info page grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  column-gap: 40px;
+  align-items: start;
+}
+
 /* Footer links + disclaimer */
 .footer-links {
   display: flex;
@@ -207,6 +215,15 @@ pre {
     align-items: center !important;
     gap: 4px !important;
     text-align: center;
+  }
+
+  /* Info page grid: stack on mobile */
+  .info-grid {
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+  }
+  .info-grid > div:first-child {
+    text-align: left;
   }
 
   /* Home footer: compact on mobile to avoid scroll */

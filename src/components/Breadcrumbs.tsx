@@ -62,8 +62,8 @@ export default function Breadcrumbs({ path }: any) {
       {/* ПРАВАЯ ЧАСТЬ */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Домик */}
-          <Link href="/" style={navItemStyle}>[ 🏠 ]</Link>
+          {/* Домик — только на десктопе */}
+          <Link href="/" className="desktop-only" style={navItemStyle}>[ 🏠 ]</Link>
 
           {/* Корзина-сайдбар — только на десктопе */}
           {shouldShowCart && (

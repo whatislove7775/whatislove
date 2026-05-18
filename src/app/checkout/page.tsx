@@ -16,13 +16,13 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (items.length === 0) return;
     const ids = Array.from(new Set(items.map((i) => i.id)));
-    supabase.from('products').select('id, image_url, old_price, product_variants(attribute_value)').in('id', ids)
+    supabase.from('products').select('id, image_url, oldPrice, product_variants(attribute_value)').in('id', ids)
       .then(({ data }) => {
         if (data) {
           const map: Record<string, { imageUrl?: string; oldPrice?: number; sizes: number[] }> = {};
           data.forEach((p: any) => {
             const sizes = (p.product_variants || []).map((v: any) => Number(v.attribute_value)).sort((a: number, b: number) => a - b);
-            map[p.id] = { imageUrl: p.image_url || undefined, oldPrice: p.old_price || undefined, sizes };
+            map[p.id] = { imageUrl: p.image_url || undefined, oldPrice: p.oldPrice || undefined, sizes };
           });
           setProductData(map);
         }
@@ -153,11 +153,7 @@ export default function CheckoutPage() {
                   {(() => {
                     const imgUrl = item.imageUrl || pData?.imageUrl || null;
                     return (
-                      <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', position: 'relative', flexShrink: 0, overflow: 'visible' }}>
-                        <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1, zIndex: 1 }}>+</div>
-                        <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1, zIndex: 1 }}>+</div>
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1, zIndex: 1 }}>+</div>
-                        <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1, zIndex: 1 }}>+</div>
+                      <div style={{ width: '120px', height: '120px', backgroundColor: '#e5e5e5', position: 'relative', flexShrink: 0, overflow: 'hidden' }}>
                         {imgUrl ? (
                           <Image src={imgUrl} alt={item.name} fill sizes="120px" style={{ objectFit: 'cover' }} />
                         ) : (

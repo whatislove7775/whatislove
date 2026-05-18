@@ -22,9 +22,9 @@ export default function InfoPage() {
       }}>
         {/* Обертка на всю ширину контейнера */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', width: '100%', marginTop: '40px' }}>
-          
-          {/* Строка 1: Доставка (Такая же сетка как в подвале: 260px + 40px gap) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', columnGap: '40px', alignItems: 'start' }}>
+
+          {/* Строка 1: Доставка */}
+          <div className="info-grid">
             <div style={{ fontWeight: 800, textAlign: 'right' }}>
               [СРОК ДОСТАВКИ]
             </div>
@@ -35,7 +35,7 @@ export default function InfoPage() {
           </div>
 
           {/* Строка 2: Возврат */}
-          <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', columnGap: '40px', alignItems: 'start' }}>
+          <div className="info-grid">
             <div style={{ fontWeight: 800, textAlign: 'right' }}>
               [УСЛОВИЯ ВОЗВРАТА]
             </div>
@@ -47,7 +47,7 @@ export default function InfoPage() {
           </div>
 
           {/* Строка 3: Контакты */}
-          <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', columnGap: '40px', alignItems: 'start' }}>
+          <div className="info-grid">
             <div style={{ fontWeight: 800, textAlign: 'right' }}>
               [КОНТАКТЫ]
             </div>

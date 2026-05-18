@@ -178,10 +178,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <div></div>
               <div className="footer-grid-divider"></div>
               <div className="footer-links">
-                <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>оферта</Link>
-                <span>/</span>
-                <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>политика конфиденциальности</Link>
-                <span>/</span>
+                <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>оферта /</Link>
+                <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>политика конфиденциальности /</Link>
                 <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>инфо</Link>
               </div>
               <div className="footer-disclaimer">
