@@ -35,7 +35,7 @@ export default function Breadcrumbs({ path }: any) {
       {/* ЛЕВАЯ ЧАСТЬ */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Link href={backLink} style={navItemStyle}>[{"<"}]</Link>
-        <span style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
+        <span className="breadcrumb-path" style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
           {path.map((item: any, index: number) => (
             <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
               {item.href ? (
