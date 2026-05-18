@@ -63,6 +63,13 @@ pre {
   text-decoration: underline !important;
 }
 
+/* Mobile logo on home page */
+.home-logo-mobile {
+  max-height: 40vh;
+  width: auto;
+  object-fit: contain;
+}
+
 /* Home footer */
 .home-footer {
   text-align: center;
@@ -217,13 +224,18 @@ pre {
     text-align: center;
   }
 
-  /* Info page grid: stack on mobile */
+  /* Info page grid: stack on mobile, centered */
   .info-grid {
     grid-template-columns: 1fr;
-    row-gap: 8px;
+    row-gap: 4px;
+    text-align: center;
   }
   .info-grid > div:first-child {
-    text-align: left;
+    text-align: center;
+  }
+  .info-grid > div:last-child {
+    text-align: center;
+    margin: 0 auto;
   }
 
   /* Home footer: compact on mobile to avoid scroll */
@@ -232,7 +244,8 @@ pre {
   }
 
   .home-disclaimer {
-    font-size: 10px;
+    font-size: 14px;
+    font-weight: 700;
     line-height: 1.3;
   }
 

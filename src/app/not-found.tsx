@@ -10,9 +10,9 @@ export default function NotFound() {
       width: '100%',
       textTransform: 'uppercase'
     }}>
-      {/* SVG nice try вместо текста */}
       <div style={{ marginBottom: '30px' }}>
-        <img src="/404.svg" alt="nice try" style={{ width: '100%', maxWidth: '400px', height: 'auto' }} />
+        <img src="/404.svg" alt="nice try" className="desktop-only" style={{ width: '100%', maxWidth: '400px', height: 'auto' }} />
+        <img src="/nicetry.svg" alt="nice try" className="mobile-only" style={{ width: '100%', maxWidth: '320px', height: 'auto' }} />
       </div>
 
       <div style={{ fontWeight: 700, fontSize: '16px' }}>

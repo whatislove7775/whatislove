@@ -13,11 +13,19 @@ export default function Home() {
       marginTop: '-60px' 
     }}>
       
-      {/* SVG Логотип */}
-      <img 
-        src="/logo-main.svg" 
-        alt="whatislove" 
-        style={{ width: '100%', maxWidth: '650px', marginBottom: '40px', position: 'relative', zIndex: 10 }} 
+      {/* SVG Логотип — десктоп */}
+      <img
+        src="/logo-main.svg"
+        alt="whatislove"
+        className="desktop-only"
+        style={{ width: '100%', maxWidth: '650px', marginBottom: '40px', position: 'relative', zIndex: 10 }}
+      />
+      {/* SVG Логотип — мобильный */}
+      <img
+        src="/logo-mobile.svg"
+        alt="whatislove"
+        className="mobile-only home-logo-mobile"
+        style={{ width: '100%', marginBottom: '24px', position: 'relative', zIndex: 10 }}
       />
 
       {/* Навигация (3 кнопки) */}
