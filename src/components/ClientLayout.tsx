@@ -139,6 +139,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100dvh',
+        height: pathname === '/' ? '100dvh' : undefined,
+        overflow: pathname === '/' ? 'hidden' : undefined,
         width: '100%',
         margin: 0,
         padding: 0,
