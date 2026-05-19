@@ -120,7 +120,6 @@ export default function CheckoutPage() {
         setIsLoading(false);
         return;
       }
-      clearCart();
       window.location.href = data.confirmation_url;
     } catch {
       alert('Произошла ошибка при создании платежа.');

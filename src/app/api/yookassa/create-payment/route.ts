@@ -7,11 +7,15 @@ export async function POST(req: Request) {
 
     const shopId = process.env.YOOKASSA_SHOP_ID;
     const secretKey = process.env.YOOKASSA_SECRET_KEY;
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
     if (!shopId || !secretKey) {
       return NextResponse.json({ error: 'YOOKASSA_SHOP_ID или YOOKASSA_SECRET_KEY не заданы в Vercel' }, { status: 500 });
     }
+
+    // Derive origin from the incoming request so return_url is always correct
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${proto}://${host}`;
 
     const totalAmount = (orderData.total + orderData.deliveryCost).toFixed(2);
 

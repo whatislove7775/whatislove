@@ -1,6 +1,15 @@
+'use client';
+import { useEffect } from 'react';
 import Link from 'next/link';
+import { useCartStore } from '@/store/cartStore';
 
 export default function OrderSuccessPage() {
+  const clearCart = useCartStore((s: any) => s.clearCart);
+
+  useEffect(() => {
+    clearCart();
+  }, []);
+
   return (
     <div style={{
       display: 'flex',
