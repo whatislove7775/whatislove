@@ -32,10 +32,10 @@ export default async function ProductsPage() {
 
       <div className="products-grid">
         {normalized.map((product) => (
-          <div key={product.id} className="product-card" style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
+          <div key={product.id} className="product-card" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
 
-            {/* Image column */}
-            <div className="product-card-image-col" style={{ width: '100%' }}>
+            {/* Image */}
+            <div className="product-card-image-col">
               <Link href={`/products/${product.slug}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ position: 'relative', width: '100%', marginBottom: '30px' }}>
                   <div className="product-card-corner" style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
@@ -48,7 +48,7 @@ export default async function ProductsPage() {
                         src={product.image_url}
                         alt={product.name}
                         fill
-                        sizes="(max-width: 600px) 120px, (max-width: 1000px) 50vw, 400px"
+                        sizes="(max-width: 768px) 120px, (max-width: 1000px) 50vw, 400px"
                         style={{ objectFit: 'cover' }}
                       />
                     )}
@@ -57,11 +57,11 @@ export default async function ProductsPage() {
               </Link>
             </div>
 
-            {/* Info column */}
-            <div className="product-card-info-col" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            {/* Info */}
+            <div className="product-card-info-col">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontWeight: 800 }}>
                 <div style={{ fontSize: '18px' }}>{product.name.toLowerCase()}</div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, marginLeft: '8px' }}>
                   <span style={{ color: '#d32f2f' }}>{product.price} руб</span>
                   {product.oldPrice && (
                     <span style={{ fontSize: '14px', textDecoration: 'line-through', color: '#999' }}>{product.oldPrice} руб</span>
