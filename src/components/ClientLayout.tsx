@@ -132,16 +132,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       )}
 
       {/* КОНТЕНТ (Header, Main, Footer) */}
-      <div style={{ 
-        fontFamily: 'Inter, sans-serif', 
-        fontSize: '14px', 
-        color: '#000', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        minHeight: '100vh', 
+      <div style={{
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '14px',
+        color: '#000',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100dvh',
         width: '100%',
         margin: 0,
-        padding: 0
+        padding: 0,
+        paddingTop: 'env(safe-area-inset-top, 0px)',
       }}>
         <header style={{ textAlign: 'center', padding: '20px 0', fontWeight: 500, flexShrink: 0 }}>
           <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>whatislove ©</Link>

@@ -48,6 +48,7 @@ pre {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 }
 
@@ -74,6 +75,7 @@ pre {
 .home-footer {
   text-align: center;
   padding: 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
   line-height: 1.5;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -238,9 +240,10 @@ pre {
     margin: 0 auto;
   }
 
-  /* Home footer: compact on mobile to avoid scroll */
+  /* Home footer: compact on mobile, leaves room for browser chrome */
   .home-footer {
     padding: 10px 15px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
   }
 
   .home-disclaimer {
@@ -269,6 +272,11 @@ pre {
   .legal-content p,
   .legal-content div:not([style*="fontWeight: 800"]) {
     text-align: justify !important;
+  }
+
+  /* Products grid: indent 15px so image corners align with [<] breadcrumb */
+  .products-grid {
+    padding-left: 15px;
   }
 
   /* Products catalog: horizontal card on mobile */
