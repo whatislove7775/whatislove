@@ -110,12 +110,12 @@ export default function CasePage() {
       }}>
         
         {/* QR-КОД */}
-        <div style={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 'calc(100% - 72px)', 
-          width: '110px', 
-          display: 'flex', 
+        <div className="desktop-only" style={{
+          position: 'absolute',
+          top: 0,
+          left: 'calc(100% - 72px)',
+          width: '110px',
+          display: 'flex',
           flexDirection: 'column', 
           alignItems: 'flex-start',
           zIndex: 10
@@ -150,10 +150,10 @@ export default function CasePage() {
         </div>
 
         {/* СЕТКА: 2 КОЛОНКИ */}
-        <div style={{ 
+        <div className="case-grid" style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(450px, 580px) minmax(0, 1fr)', 
-          gap: '60px', 
+          gridTemplateColumns: 'minmax(450px, 580px) minmax(0, 1fr)',
+          gap: '60px',
           alignItems: 'flex-start',
           width: '100%',
           boxSizing: 'border-box'
@@ -182,15 +182,15 @@ export default function CasePage() {
           </div>
 
           {/* ПРАВАЯ КОЛОНКА (Текст) */}
-          <div style={{ 
-            position: 'relative', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            fontSize: '14px', 
+          <div className="case-right-col" style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            fontSize: '14px',
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '100px', 
-            marginTop: '-4px' 
+            paddingRight: '100px',
+            marginTop: '-4px'
           }}>
             
             {/* КОНТЕНТ ТЕКСТА */}

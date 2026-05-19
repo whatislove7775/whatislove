@@ -68,7 +68,7 @@ export default async function ProductsPage() {
               {product.delivery}
             </div>
 
-            <div style={{ display: 'flex', gap: '20px', marginTop: 'auto', paddingTop: '15px' }}>
+            <div style={{ display: 'flex', gap: '20px', marginTop: 'auto', paddingTop: '15px', alignItems: 'center' }}>
               <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', fontWeight: 800 }}>
                 [ подробнее ]
               </Link>
