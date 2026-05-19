@@ -296,19 +296,19 @@ a, button, [role="button"],
 input[type="submit"], input[type="button"], input[type="reset"],
 label[for], select,
 [style*="cursor: pointer"], [style*="cursor:pointer"] {
-  cursor: url('/cursors/pointer.svg') 12 0, pointer;
+  cursor: url('/cursors/pointer.svg') 6 0, pointer;
 }
 
 /* ─ text / I-beam ─ */
 input[type="text"], input[type="email"], input[type="tel"],
 input[type="password"], input[type="search"], input[type="url"],
 input[type="number"], textarea, [contenteditable="true"] {
-  cursor: url('/cursors/text.svg') 16 16, text;
+  cursor: url('/cursors/text.svg') 8 18, text;
 }
 
 /* ─ wait / hourglass ─ */
 body.page-loading, body.page-loading * {
-  cursor: url('/cursors/wait.svg') 16 16, wait !important;
+  cursor: url('/cursors/wait.svg') 12 16, wait !important;
 }
 
 /* ─ progress — arrow + hourglass ─ */
@@ -318,29 +318,29 @@ body.page-loading, body.page-loading * {
 
 /* ─ not-allowed / forbidden ─ */
 [disabled], [aria-disabled="true"], button:disabled {
-  cursor: url('/cursors/not-allowed.svg') 16 16, not-allowed;
+  cursor: url('/cursors/not-allowed.svg') 14 14, not-allowed;
 }
 
 /* ─ crosshair ─ */
 [style*="cursor: crosshair"], [style*="cursor:crosshair"] {
-  cursor: url('/cursors/crosshair.svg') 16 16, crosshair;
+  cursor: url('/cursors/crosshair.svg') 14 14, crosshair;
 }
 
 /* ─ move ─ */
 [style*="cursor: move"], [style*="cursor:move"] {
-  cursor: url('/cursors/move.svg') 16 16, move;
+  cursor: url('/cursors/move.svg') 14 14, move;
 }
 
 /* ─ n/s resize ─ */
 [style*="cursor: ns-resize"], [style*="cursor: n-resize"], [style*="cursor: s-resize"],
 [style*="cursor: row-resize"] {
-  cursor: url('/cursors/ns-resize.svg') 8 16, ns-resize;
+  cursor: url('/cursors/ns-resize.svg') 8 14, ns-resize;
 }
 
 /* ─ e/w resize ─ */
 [style*="cursor: ew-resize"], [style*="cursor: e-resize"], [style*="cursor: w-resize"],
 [style*="cursor: col-resize"] {
-  cursor: url('/cursors/ew-resize.svg') 16 8, ew-resize;
+  cursor: url('/cursors/ew-resize.svg') 14 8, ew-resize;
 }
 
 /* ─ nwse resize ─ */
@@ -350,16 +350,16 @@ body.page-loading, body.page-loading * {
 
 /* ─ nesw resize ─ */
 [style*="cursor: nesw-resize"], [style*="cursor: ne-resize"], [style*="cursor: sw-resize"] {
-  cursor: url('/cursors/nesw-resize.svg') 16 16, nesw-resize;
+  cursor: url('/cursors/nesw-resize.svg') 12 12, nesw-resize;
 }
 
 /* ─ grab ─ */
 [style*="cursor: grab"] {
-  cursor: url('/cursors/grab.svg') 16 8, grab;
+  cursor: url('/cursors/grab.svg') 14 6, grab;
 }
 
 /* ─ grabbing ─ */
 [style*="cursor: grabbing"] {
-  cursor: url('/cursors/grabbing.svg') 16 12, grabbing;
+  cursor: url('/cursors/grabbing.svg') 12 10, grabbing;
 }
 
