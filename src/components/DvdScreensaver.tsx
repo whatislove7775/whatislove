@@ -8,7 +8,7 @@ export default function DvdScreensaver() {
   const pathname = usePathname();
   const elRef = useRef<HTMLDivElement>(null);
   const pos = useRef({ x: 120, y: 80 });
-  const vel = useRef({ x: 1.3, y: 1.0 });
+  const vel = useRef({ x: 1.5, y: 1.1 });
   const raf = useRef<number>(0);
 
   const disabled = DISABLED_PATHS.some((p) => pathname === p);
@@ -32,7 +32,7 @@ export default function DvdScreensaver() {
       if (pos.current.y <= 0) { vel.current.y = Math.abs(vel.current.y); pos.current.y = 0; }
       if (pos.current.y + h >= vh) { vel.current.y = -Math.abs(vel.current.y); pos.current.y = vh - h; }
 
-      el.style.transform = `translate(${pos.current.x}px, ${pos.current.y}px)`;
+      el.style.transform = `translate3d(${pos.current.x}px,${pos.current.y}px,0)`;
       raf.current = requestAnimationFrame(tick);
     };
 
@@ -60,6 +60,7 @@ export default function DvdScreensaver() {
         userSelect: 'none',
         whiteSpace: 'nowrap',
         letterSpacing: '1px',
+        willChange: 'transform',
       }}
     >
       &lt;3

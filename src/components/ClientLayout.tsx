@@ -16,6 +16,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     setIsLoading(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (isLoading) {
+      document.body.classList.add('page-loading');
+    } else {
+      document.body.classList.remove('page-loading');
+    }
+  }, [isLoading]);
+
   // Эффект проверки согласия
   useEffect(() => {
     const consent = localStorage.getItem('cookieConsent');
