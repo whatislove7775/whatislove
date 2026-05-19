@@ -278,14 +278,11 @@ pre {
     align-items: flex-start;
   }
   .product-card-image-col {
-    width: 120px !important;
+    width: 44% !important;
     flex-shrink: 0;
   }
   .product-card-image-col a > div {
-    margin-bottom: 0 !important;
-  }
-  .product-card-corner {
-    display: none !important;
+    margin-bottom: 15px !important;
   }
   .product-card-info-col {
     flex: 1 !important;
