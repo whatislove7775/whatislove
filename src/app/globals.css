@@ -26,3 +26,340 @@ b, strong, .bold {
 pre {
   font-family: inherit; /* Чтобы ASCII тоже пытался быть в стиле, если не SVG */
 }
+
+/* Mobile / Desktop visibility helpers */
+@media (min-width: 769px) {
+  .mobile-only { display: none !important; }
+}
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+}
+
+/* Footer grid (non-home pages) */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  column-gap: 40px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.footer-grid-divider {
+  grid-column: 1 / -1;
+  border-top: 2px dotted rgba(0, 0, 0, 0.2);
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+/* Force underline on links that need it (overrides global a rule) */
+.link-underline {
+  text-decoration: underline !important;
+}
+
+/* Mobile logo on home page */
+.home-logo-mobile {
+  max-height: 40vh;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Home footer */
+.home-footer {
+  text-align: center;
+  padding: 20px;
+  line-height: 1.5;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.home-disclaimer {
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.4;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Info page grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  column-gap: 40px;
+  align-items: start;
+}
+
+/* Footer links + disclaimer */
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding-bottom: 15px;
+}
+
+.footer-disclaimer {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 850px;
+  text-align: justify;
+  text-transform: uppercase;
+}
+
+/* Products grid */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 60px;
+  margin-top: 30px;
+}
+
+/* Portfolio grid */
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px 40px;
+  margin-top: 40px;
+  width: 100%;
+}
+
+/* Product detail layout */
+.product-page-layout {
+  display: flex;
+  width: 100%;
+  gap: 40px;
+  margin-top: 30px;
+  align-items: flex-start;
+  padding-right: 140px;
+  box-sizing: border-box;
+}
+
+.product-gallery {
+  display: flex;
+  gap: 20px;
+  flex-shrink: 0;
+  width: 450px;
+}
+
+.product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 350px;
+  font-size: 14px;
+  margin-top: 15px;
+}
+
+/* ── Mobile ─────────────────────────────── */
+@media (max-width: 768px) {
+  .product-page-layout {
+    flex-direction: column;
+    padding-right: 0;
+  }
+
+  .product-gallery {
+    width: 100%;
+  }
+
+  .product-info {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .portfolio-card-image {
+    width: 160px !important;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 50px;
+  }
+
+  /* Footer: 1 колонка на мобиле */
+  .footer-grid {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  /* Breadcrumbs: path не вылезает за экран */
+  .breadcrumb-path {
+    max-width: calc(100vw - 170px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Home nav: vertical on mobile */
+  .home-nav {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: center;
+  }
+  .home-nav .nav-sep { display: none; }
+
+  /* Links page: vertical on mobile */
+  .links-nav {
+    flex-direction: column !important;
+    gap: 20px !important;
+    align-items: center;
+  }
+  .links-nav-item {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
+    text-align: center;
+  }
+
+  /* Info page grid: stack on mobile, centered */
+  .info-grid {
+    grid-template-columns: 1fr;
+    row-gap: 4px;
+    text-align: center;
+  }
+  .info-grid > div:first-child {
+    text-align: center;
+  }
+  .info-grid > div:last-child {
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  /* Home footer: compact on mobile to avoid scroll */
+  .home-footer {
+    padding: 10px 15px;
+  }
+
+  .home-disclaimer {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  /* Footer links: horizontal + lowercase on mobile */
+  .footer-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    text-transform: lowercase;
+    padding-bottom: 10px;
+  }
+
+  /* Footer disclaimer: lowercase on mobile */
+  .footer-disclaimer {
+    text-transform: lowercase;
+    text-align: justify;
+  }
+
+  /* Legal pages: justified text */
+  .legal-content p,
+  .legal-content div:not([style*="fontWeight: 800"]) {
+    text-align: justify !important;
+  }
+
+  /* Portfolio case: single column on mobile */
+  .case-grid {
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+    overflow: hidden;
+  }
+
+  .case-grid > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .case-right-col {
+    padding-right: 0 !important;
+    margin-top: 0 !important;
+  }
+}
+
+/* ── Windows XP cursors (pixelated pixel-art, white + black outline) ─ */
+
+/* ─ default arrow ─ */
+* {
+  cursor: url('/cursors/default.svg') 0 0, default;
+}
+
+/* ─ pointer — links & buttons ─ */
+a, button, [role="button"],
+input[type="submit"], input[type="button"], input[type="reset"],
+label[for], select,
+[style*="cursor: pointer"], [style*="cursor:pointer"] {
+  cursor: url('/cursors/pointer.svg') 12 0, pointer;
+}
+
+/* ─ text / I-beam ─ */
+input[type="text"], input[type="email"], input[type="tel"],
+input[type="password"], input[type="search"], input[type="url"],
+input[type="number"], textarea, [contenteditable="true"] {
+  cursor: url('/cursors/text.svg') 16 16, text;
+}
+
+/* ─ wait / hourglass ─ */
+body.page-loading, body.page-loading * {
+  cursor: url('/cursors/wait.svg') 16 16, wait !important;
+}
+
+/* ─ progress — arrow + hourglass ─ */
+[aria-busy="true"] {
+  cursor: url('/cursors/progress.svg') 0 0, progress;
+}
+
+/* ─ not-allowed / forbidden ─ */
+[disabled], [aria-disabled="true"], button:disabled {
+  cursor: url('/cursors/not-allowed.svg') 16 16, not-allowed;
+}
+
+/* ─ crosshair ─ */
+[style*="cursor: crosshair"], [style*="cursor:crosshair"] {
+  cursor: url('/cursors/crosshair.svg') 16 16, crosshair;
+}
+
+/* ─ move ─ */
+[style*="cursor: move"], [style*="cursor:move"] {
+  cursor: url('/cursors/move.svg') 16 16, move;
+}
+
+/* ─ n/s resize ─ */
+[style*="cursor: ns-resize"], [style*="cursor: n-resize"], [style*="cursor: s-resize"],
+[style*="cursor: row-resize"] {
+  cursor: url('/cursors/ns-resize.svg') 8 16, ns-resize;
+}
+
+/* ─ e/w resize ─ */
+[style*="cursor: ew-resize"], [style*="cursor: e-resize"], [style*="cursor: w-resize"],
+[style*="cursor: col-resize"] {
+  cursor: url('/cursors/ew-resize.svg') 16 8, ew-resize;
+}
+
+/* ─ nwse resize ─ */
+[style*="cursor: nwse-resize"], [style*="cursor: nw-resize"], [style*="cursor: se-resize"] {
+  cursor: url('/cursors/nwse-resize.svg') 12 12, nwse-resize;
+}
+
+/* ─ nesw resize ─ */
+[style*="cursor: nesw-resize"], [style*="cursor: ne-resize"], [style*="cursor: sw-resize"] {
+  cursor: url('/cursors/nesw-resize.svg') 16 16, nesw-resize;
+}
+
+/* ─ grab ─ */
+[style*="cursor: grab"] {
+  cursor: url('/cursors/grab.svg') 16 8, grab;
+}
+
+/* ─ grabbing ─ */
+[style*="cursor: grabbing"] {
+  cursor: url('/cursors/grabbing.svg') 16 12, grabbing;
+}
+

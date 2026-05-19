@@ -1,0 +1,58 @@
+{
+  "default": [
+    0,
+    0
+  ],
+  "pointer": [
+    6,
+    0
+  ],
+  "text": [
+    8,
+    8
+  ],
+  "wait": [
+    8,
+    8
+  ],
+  "progress": [
+    0,
+    0
+  ],
+  "not-allowed": [
+    8,
+    8
+  ],
+  "crosshair": [
+    8,
+    8
+  ],
+  "move": [
+    8,
+    8
+  ],
+  "ns-resize": [
+    4,
+    8
+  ],
+  "ew-resize": [
+    8,
+    4
+  ],
+  "nwse-resize": [
+    6,
+    6
+  ],
+  "nesw-resize": [
+    8,
+    8
+  ],
+  "grab": [
+    8,
+    4
+  ],
+  "grabbing": [
+    8,
+    6
+  ]
+}
