@@ -1,13 +1,34 @@
+import hashlib
+
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.forms import AuthenticationForm
 from .models import User, PsychologistProfile, PsychologistSchedule
+
+
+def _hash_email(email: str) -> str:
+    salt = "ANON_PSY_EMAIL_SALT_v1"
+    return hashlib.sha256(f"{salt}:{email.lower().strip()}".encode()).hexdigest()
+
+
+class EmailAuthForm(AuthenticationForm):
+    """Принимает обычный email, хеширует перед аутентификацией."""
+    username = forms.EmailField(label="Email", widget=forms.EmailInput(attrs={"autofocus": True}))
+
+    def clean_username(self):
+        return _hash_email(self.cleaned_data["username"])
+
+
+admin.site.login_form = EmailAuthForm
+admin.site.login_template = None
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     list_display = ("alias", "role", "is_staff", "is_active", "date_joined")
     list_filter = ("role", "is_staff", "is_active")
-    search_fields = ("alias", "email_hash")
+    search_fields = ("alias",)
     ordering = ("-date_joined",)
     fieldsets = (
         (None, {"fields": ("email_hash", "password")}),
@@ -18,7 +39,7 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {"fields": ("email_hash", "alias", "role", "password1", "password2")}),
     )
-    readonly_fields = ("date_joined", "last_login")
+    readonly_fields = ("date_joined", "last_login", "email_hash")
 
 
 @admin.register(PsychologistProfile)
