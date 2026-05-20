@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import Cart from '@/components/Cart';
 import { useCartStore } from '@/store/cartStore';
 
-export default function Breadcrumbs({ path }: any) {
+export default function Breadcrumbs({ path, rightAddon }: any) {
   const pathname = usePathname();
   const backLink = path.length > 1 && path[path.length - 2].href ? path[path.length - 2].href : '/';
   const shouldShowCart = pathname.startsWith('/products') || pathname.startsWith('/checkout');
@@ -84,6 +84,17 @@ export default function Breadcrumbs({ path }: any) {
             zIndex: 1000,
           }}>
             <Cart />
+          </div>
+        )}
+        {/* rightAddon: top = breadcrumbs marginBottom(40) + nav padding-bottom(15) = 55px → QR на уровне начала контента */}
+        {rightAddon && (
+          <div className="desktop-only" style={{
+            position: 'absolute',
+            top: 'calc(100% + 55px)',
+            left: 0,
+            zIndex: 10,
+          }}>
+            {rightAddon}
           </div>
         )}
       </div>
