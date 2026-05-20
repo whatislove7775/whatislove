@@ -58,7 +58,7 @@ export class SignalingClient {
     });
   }
 
-  send(msg: Omit<SignalMessage, "peer-joined" | "peer-left">): void {
+  send(msg: Exclude<SignalMessage, { type: "peer-joined" | "peer-left" }>): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(msg));
     }
