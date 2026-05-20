@@ -6,6 +6,15 @@ import SmartImage from '@/components/SmartImage';
 
 export const revalidate = 60;
 
+export const metadata = {
+  title: 'Продукты',
+  description: 'Дизайнерские изделия от студии whatislove — авторские товары с доставкой.',
+  openGraph: {
+    title: 'Продукты | WH4T!SLOV3',
+    description: 'Дизайнерские изделия от студии whatislove — авторские товары с доставкой.',
+  },
+};
+
 function buildStock(variants: any[]): Record<string, number> {
   return (variants || []).reduce((acc: Record<string, number>, v: any) => {
     acc[String(v.attribute_value)] = v.stock ?? 0;

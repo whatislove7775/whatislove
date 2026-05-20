@@ -5,6 +5,15 @@ import SmartImage from '@/components/SmartImage';
 
 export const revalidate = 60;
 
+export const metadata = {
+  title: 'Портфолио',
+  description: 'Проекты дизайн-студии whatislove — веб-сайты, лендинги, брендинг.',
+  openGraph: {
+    title: 'Портфолио | WH4T!SLOV3',
+    description: 'Проекты дизайн-студии whatislove — веб-сайты, лендинги, брендинг.',
+  },
+};
+
 function renderTitle(title: string, externalLink: string, slug: string) {
   if (!externalLink) {
     return (

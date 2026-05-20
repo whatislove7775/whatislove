@@ -5,9 +5,34 @@ import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic', 'cyrillic-ext'], weight: ['500', '700', '800'] });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wh4tislove.ru';
+
 export const metadata = {
-  title: 'WH4T!SLOV3',
-  description: 'Дизайн-студия/производство whatislove^а',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'WH4T!SLOV3',
+    template: '%s | WH4T!SLOV3',
+  },
+  description: 'Дизайн-студия whatislove — веб-дизайн, брендинг, лендинги. Заказать дизайн в Telegram.',
+  openGraph: {
+    siteName: 'WH4T!SLOV3',
+    locale: 'ru_RU',
+    type: 'website',
+    url: siteUrl,
+    title: 'WH4T!SLOV3',
+    description: 'Дизайн-студия whatislove — веб-дизайн, брендинг, лендинги.',
+    images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'WH4T!SLOV3' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'WH4T!SLOV3',
+    description: 'Дизайн-студия whatislove — веб-дизайн, брендинг, лендинги.',
+    images: ['/og-default.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
