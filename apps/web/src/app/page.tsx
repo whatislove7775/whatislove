@@ -79,7 +79,7 @@ export default function HomePage() {
         </p>
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
-          <a href="/api/v1/auth/register/" className="btn-primary">
+          <a href="/register" className="btn-primary">
             Начать
           </a>
           <a href="/api/" className="btn-secondary">
