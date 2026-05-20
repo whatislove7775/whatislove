@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import Link from 'next/link';
-import Image from 'next/image';
+import SmartImage from '@/components/SmartImage';
 
 export const revalidate = 60;
 
@@ -66,7 +66,7 @@ export default async function PortfolioPage() {
 
               <div style={{ position: 'relative', width: '100%', aspectRatio: '16/10', backgroundColor: '#000', overflow: 'hidden' }}>
                 {project.image_url && (
-                  <Image
+                  <SmartImage
                     src={project.image_url}
                     alt={project.title}
                     fill

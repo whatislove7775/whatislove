@@ -163,6 +163,35 @@ pre {
   margin-top: 15px;
 }
 
+/* ── Medium screens (769px – 1200px) ────── */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .product-page-layout {
+    padding-right: 0;
+    gap: 24px;
+  }
+  .product-gallery {
+    width: 340px;
+    flex-shrink: 1;
+  }
+  .product-info {
+    min-width: 240px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1000px) {
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .case-grid {
+    grid-template-columns: minmax(280px, 420px) minmax(0, 1fr) !important;
+    gap: 30px !important;
+  }
+  .case-right-col {
+    padding-right: 0 !important;
+  }
+}
+
 /* ── Mobile ─────────────────────────────── */
 @media (max-width: 768px) {
   .product-page-layout {

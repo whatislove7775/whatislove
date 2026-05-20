@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import ProductAddToCart from '@/components/ProductAddToCart';
 import Link from 'next/link';
-import Image from 'next/image';
+import SmartImage from '@/components/SmartImage';
 
 export const revalidate = 60;
 
@@ -44,7 +44,7 @@ export default async function ProductsPage() {
                   <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
                   <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
                     {product.image_url && (
-                      <Image
+                      <SmartImage
                         src={product.image_url}
                         alt={product.name}
                         fill

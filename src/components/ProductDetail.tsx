@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 import Image from 'next/image';
+import SmartImage from '@/components/SmartImage';
 import { parseTextForLinks } from '@/lib/parseLinks';
 import Link from 'next/link';
 
@@ -64,7 +65,7 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
               <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
               <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
                 {activeImage && (
-                  <Image
+                  <SmartImage
                     src={activeImage}
                     alt={product.name}
                     fill
@@ -100,7 +101,7 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
                   }}
                 >
                   {imgUrl && (
-                    <Image src={imgUrl} alt="" fill sizes="55px" style={{ objectFit: 'cover' }} />
+                    <SmartImage src={imgUrl} alt="" fill sizes="55px" style={{ objectFit: 'cover' }} />
                   )}
                 </div>
               );

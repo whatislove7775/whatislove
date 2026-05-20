@@ -70,7 +70,7 @@ export default function Breadcrumbs({ path }: any) {
             <div className="desktop-only" style={{
               position: 'absolute',
               top: 'calc(100% + 20px)',
-              left: 0,
+              right: 0,
               zIndex: 1000,
             }}>
               <Cart />
