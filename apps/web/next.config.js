@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: "standalone",
   // Разрешаем WebAssembly (требует MediaPipe)
   webpack: (config) => {
     config.experiments = { ...config.experiments, asyncWebAssembly: true };
