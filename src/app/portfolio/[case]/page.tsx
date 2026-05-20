@@ -113,7 +113,7 @@ export default function CasePage() {
         <div className="desktop-only" style={{
           position: 'absolute',
           top: 0,
-          left: 'calc(100% - 72px)',
+          right: 0,
           width: '110px',
           display: 'flex',
           flexDirection: 'column', 
