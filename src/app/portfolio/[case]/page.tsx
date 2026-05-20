@@ -93,11 +93,42 @@ export default function CasePage() {
       
       {/* НАВИГАЦИЯ */}
       <div style={{ width: '100%', padding: '15px 0', position: 'relative', zIndex: 100 }}>
-        <Breadcrumbs path={[
-          { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
-          { name: project.title.toUpperCase(), icon: '📄' }
-        ]} />
+        <Breadcrumbs
+          path={[
+            { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
+            { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
+            { name: project.title.toUpperCase(), icon: '📄' }
+          ]}
+          rightAddon={
+            <a
+              href="https://t.me/whatislove_r"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                textDecoration: 'none',
+                color: 'inherit',
+                cursor: 'pointer',
+                width: '110px',
+              }}
+            >
+              <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
+              <span style={{
+                fontWeight: 800,
+                fontSize: '13px',
+                marginTop: '12px',
+                textAlign: 'left',
+                whiteSpace: 'nowrap',
+                lineHeight: '1.2',
+                textTransform: 'lowercase',
+              }}>
+                заказать<br />дизайн
+              </span>
+            </a>
+          }
+        />
       </div>
 
       <div style={{
@@ -109,46 +140,6 @@ export default function CasePage() {
         paddingBottom: '40px'
       }}>
         
-        {/* QR-КОД */}
-        <div className="desktop-only" style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: '110px',
-          display: 'flex',
-          flexDirection: 'column', 
-          alignItems: 'flex-start',
-          zIndex: 10
-        }}>
-          <a 
-            href="https://t.me/whatislove_r" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              textDecoration: 'none',
-              color: 'inherit',
-              cursor: 'pointer',
-              width: '100%'
-            }}
-          >
-            <img src="/qr-code.svg" alt="QR code" style={{ width: '100%', height: 'auto' }} />
-            <span style={{
-              fontWeight: 800,
-              fontSize: '13px', 
-              marginTop: '12px',
-              textAlign: 'left',
-              whiteSpace: 'nowrap',
-              lineHeight: '1.2',
-              textTransform: 'lowercase' 
-            }}>
-              заказать<br />дизайн
-            </span>
-          </a>
-        </div>
-
         {/* СЕТКА: 2 КОЛОНКИ */}
         <div className="case-grid" style={{
           display: 'grid',
@@ -189,7 +180,6 @@ export default function CasePage() {
             fontSize: '14px',
             width: '100%',
             boxSizing: 'border-box',
-            paddingRight: '100px',
             marginTop: '-4px'
           }}>
             
