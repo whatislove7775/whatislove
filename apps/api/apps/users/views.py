@@ -24,13 +24,25 @@ class RegisterClientSerializer(serializers.Serializer):
         )
 
 
-class PsychologistListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PsychologistProfile
-        fields = [
-            "id", "display_name", "bio", "specializations",
-            "languages", "session_rate_rub",
-        ]
+class RegisterPsychologistSerializer(serializers.Serializer):
+    email = serializers.EmailField(write_only=True)
+    password = serializers.CharField(write_only=True, min_length=8)
+    display_name = serializers.CharField(max_length=80)
+    bio = serializers.CharField(max_length=1200, required=False, allow_blank=True)
+    session_rate_rub = serializers.DecimalField(max_digits=8, decimal_places=2)
+
+    def create(self, validated_data):
+        user = User.objects.create_psychologist(
+            email=validated_data["email"],
+            password=validated_data["password"],
+        )
+        PsychologistProfile.objects.create(
+            user=user,
+            display_name=validated_data["display_name"],
+            bio=validated_data.get("bio", ""),
+            session_rate_rub=validated_data["session_rate_rub"],
+        )
+        return user
 
 
 class RegisterClientView(generics.CreateAPIView):
@@ -43,6 +55,20 @@ class RegisterClientView(generics.CreateAPIView):
         serializer.save()
         return Response(
             {"detail": "Аккаунт создан. Email не сохранён в открытом виде."},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class RegisterPsychologistView(generics.CreateAPIView):
+    serializer_class = RegisterPsychologistSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"detail": "Заявка отправлена. Аккаунт будет активирован после верификации."},
             status=status.HTTP_201_CREATED,
         )
 
@@ -67,6 +93,15 @@ class EmailLoginView(generics.GenericAPIView):
             "role": user.role,
             "alias": user.alias,
         })
+
+
+class PsychologistListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PsychologistProfile
+        fields = [
+            "id", "display_name", "bio", "specializations",
+            "languages", "session_rate_rub",
+        ]
 
 
 class PsychologistListView(generics.ListAPIView):
