@@ -60,7 +60,7 @@ export default function Breadcrumbs({ path }: any) {
       </div>
 
       {/* ПРАВАЯ ЧАСТЬ */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {/* Домик — только на десктопе */}
           <Link href="/" className="desktop-only" style={navItemStyle}>[ 🏠 ]</Link>
@@ -74,19 +74,19 @@ export default function Breadcrumbs({ path }: any) {
         </div>
 
         <Link href={backLink} style={navItemStyle}>[ × ]</Link>
-      </div>
 
-      {/* Корзина-сайдбар — позиционируется относительно внешнего breadcrumb-div (position:relative) */}
-      {shouldShowCart && (
-        <div className="desktop-only" style={{
-          position: 'absolute',
-          top: 'calc(100% + 20px)',
-          right: 0,
-          zIndex: 1000,
-        }}>
-          <Cart />
-        </div>
-      )}
+        {/* Корзина-сайдбар: left:0 выравнивает левый край с левым краем [🏠] */}
+        {shouldShowCart && (
+          <div className="desktop-only" style={{
+            position: 'absolute',
+            top: 'calc(100% + 20px)',
+            left: 0,
+            zIndex: 1000,
+          }}>
+            <Cart />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
