@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-anonpsy}
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-localdev}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -25,11 +25,17 @@ services:
       context: ./apps/api
       dockerfile: Dockerfile
     restart: unless-stopped
-    env_file: .env
     environment:
+      SECRET_KEY: ${SECRET_KEY:-local-dev-secret-key-change-in-production-please}
+      DEBUG: ${DEBUG:-True}
       USE_POSTGRES: "True"
+      DB_NAME: ${DB_NAME:-anonpsy}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-localdev}
       DB_HOST: db
       REDIS_URL: redis://redis:6379/0
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
     command: >
       sh -c "python manage.py migrate --noinput &&
              daphne -b 0.0.0.0 -p 8000 config.asgi:application"
