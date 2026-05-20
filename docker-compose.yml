@@ -39,6 +39,8 @@ services:
     command: >
       sh -c "/app/.venv/bin/python manage.py makemigrations --noinput &&
              /app/.venv/bin/python manage.py migrate --noinput &&
+             /app/.venv/bin/python manage.py collectstatic --noinput &&
+             /app/.venv/bin/python manage.py create_admin &&
              /app/.venv/bin/daphne -b 0.0.0.0 -p 8000 config.asgi:application"
     depends_on:
       db:
