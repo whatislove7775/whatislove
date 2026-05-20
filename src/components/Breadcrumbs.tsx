@@ -61,21 +61,9 @@ export default function Breadcrumbs({ path }: any) {
 
       {/* ПРАВАЯ ЧАСТЬ */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {/* Домик — только на десктопе */}
           <Link href="/" className="desktop-only" style={navItemStyle}>[ 🏠 ]</Link>
-
-          {/* Корзина-сайдбар — только на десктопе */}
-          {shouldShowCart && (
-            <div className="desktop-only" style={{
-              position: 'absolute',
-              top: 'calc(100% + 20px)',
-              right: 0,
-              zIndex: 1000,
-            }}>
-              <Cart />
-            </div>
-          )}
 
           {/* Иконка корзины — только на мобиле */}
           {shouldShowCart && (
@@ -87,6 +75,18 @@ export default function Breadcrumbs({ path }: any) {
 
         <Link href={backLink} style={navItemStyle}>[ × ]</Link>
       </div>
+
+      {/* Корзина-сайдбар — позиционируется относительно внешнего breadcrumb-div (position:relative) */}
+      {shouldShowCart && (
+        <div className="desktop-only" style={{
+          position: 'absolute',
+          top: 'calc(100% + 20px)',
+          right: 0,
+          zIndex: 1000,
+        }}>
+          <Cart />
+        </div>
+      )}
     </div>
   );
 }
