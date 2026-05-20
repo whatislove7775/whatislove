@@ -26,6 +26,8 @@ export default function LoginPage() {
       } else {
         localStorage.setItem("access", data.access);
         localStorage.setItem("refresh", data.refresh);
+        localStorage.setItem("role", data.role ?? "");
+        localStorage.setItem("alias", data.alias ?? "");
         window.location.href = "/dashboard";
       }
     } catch {
