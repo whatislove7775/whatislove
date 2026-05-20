@@ -180,6 +180,7 @@ export default function CasePage() {
             fontSize: '14px',
             width: '100%',
             boxSizing: 'border-box',
+            paddingRight: '100px',
             marginTop: '-4px'
           }}>
             
