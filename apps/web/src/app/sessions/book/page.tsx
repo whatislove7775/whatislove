@@ -27,7 +27,7 @@ export default function BookSessionPage() {
       .then(r => r.ok ? r.json() : [])
       .then((list: Psychologist[]) => {
         setPsychologists(list);
-        setPsychologistId(fromUrl || list[0]?.id ?? "");
+        setPsychologistId(fromUrl || (list[0]?.id ?? ""));
       }).catch(() => {});
   }, []);
 
