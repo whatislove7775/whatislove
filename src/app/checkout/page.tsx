@@ -30,6 +30,7 @@ export default function CheckoutPage() {
   }, [items.length]);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [consent, setConsent] = useState(false);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -257,11 +258,27 @@ export default function CheckoutPage() {
 
               <div id="cdek-map" style={{ width: '100%', height: '400px', backgroundColor: '#f9f9f9', display: deliveryService === 'СДЭК' ? 'block' : 'none' }}></div>
 
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginTop: '10px' }}>
+                <input
+                  type="checkbox"
+                  id="consent"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '2px', cursor: 'pointer', accentColor: '#000' }}
+                />
+                <label htmlFor="consent" style={{ fontSize: '13px', cursor: 'pointer', lineHeight: 1.4, fontWeight: 500 }}>
+                  я согласен на{' '}
+                  <Link href="/privacy" style={{ textDecoration: 'underline', color: 'inherit' }}>
+                    обработку персональных данных
+                  </Link>
+                </label>
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', borderTop: '1px solid #000', paddingTop: '20px' }}>
                 <div style={{ fontWeight: 800, fontSize: '18px', textTransform: 'lowercase' }}>
                   итог: {totalPrice() + deliveryCost} руб
                 </div>
-                <button type="submit" disabled={isLoading || !address} style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isLoading || !address) ? 0.5 : 1 }}>
+                <button type="submit" disabled={isLoading || !address || !consent} style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address || !consent) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isLoading || !address || !consent) ? 0.5 : 1 }}>
                   {isLoading ? '[отправка...]' : '[заказать] 📦'}
                 </button>
               </div>

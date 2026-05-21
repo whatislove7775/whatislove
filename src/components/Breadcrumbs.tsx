@@ -65,9 +65,9 @@ export default function Breadcrumbs({ path, rightAddon }: any) {
           {/* Домик — только на десктопе */}
           <Link href="/" className="desktop-only" style={navItemStyle}>[ 🏠 ]</Link>
 
-          {/* Иконка корзины — только на мобиле */}
+          {/* Иконка корзины — на мобиле и планшете (≤1024px) */}
           {shouldShowCart && (
-            <Link href="/checkout" className="mobile-only" style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
+            <Link href="/checkout" className="cart-mobile-only" style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
               [🛒{cartCount > 0 ? ` ${cartCount}` : ''}]
             </Link>
           )}
@@ -77,7 +77,7 @@ export default function Breadcrumbs({ path, rightAddon }: any) {
 
         {/* Корзина-сайдбар: left:0 выравнивает левый край с левым краем [🏠] */}
         {shouldShowCart && (
-          <div className="desktop-only" style={{
+          <div className="cart-sidebar-only" style={{
             position: 'absolute',
             top: 'calc(100% + 20px)',
             left: 0,

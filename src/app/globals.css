@@ -45,6 +45,16 @@ pre {
   .qr-desktop-only { display: none !important; }
 }
 
+/* Cart sidebar: only on true desktop (≥1025px) */
+@media (max-width: 1024px) {
+  .cart-sidebar-only { display: none !important; }
+}
+
+/* Cart icon button: show on mobile/tablet (≤1024px) */
+@media (min-width: 1025px) {
+  .cart-mobile-only { display: none !important; }
+}
+
 /* Footer grid (non-home pages) */
 .footer-grid {
   display: grid;
