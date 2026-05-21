@@ -188,20 +188,15 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                   t.me/whatislove_r
                 </a>
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-                <pre style={{ fontFamily: 'monospace', fontSize: '13px', lineHeight: '1.5', margin: 0, opacity: 0.45, textAlign: 'center' }}>{`    ^    oOo\n ≡ ·  ○  · ≡\n..O.......O..`}</pre>
-              </div>
+              <div></div>
               <div className="footer-grid-divider"></div>
               <div className="footer-links">
                 <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>оферта /</Link>
                 <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>политика конфиденциальности /</Link>
                 <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>инфо</Link>
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '20px' }}>
-                <div className="footer-disclaimer">
-                  данный сайт ничего не&nbsp;навязывает и&nbsp;не&nbsp;пропагандирует. весь контент является выдумкой автора и&nbsp;не&nbsp;имеет смысла. любые совпадения случайны. все файлы cookies используются для&nbsp;улучшения сервиса &lt;333* инн&nbsp;231222682431
-                </div>
-                <pre className="desktop-only" style={{ fontFamily: 'monospace', fontSize: '13px', lineHeight: '1.5', margin: 0, flexShrink: 0, opacity: 0.45 }}>{` ∧    ∧\n(· ω ·)\n  つ  C`}</pre>
+              <div className="footer-disclaimer">
+                данный сайт ничего не&nbsp;навязывает и&nbsp;не&nbsp;пропагандирует. весь контент является выдумкой автора и&nbsp;не&nbsp;имеет смысла. любые совпадения случайны. все файлы cookies используются для&nbsp;улучшения сервиса &lt;333* инн&nbsp;231222682431
               </div>
             </div>
           </footer>

@@ -88,7 +88,7 @@ export default function Breadcrumbs({ path, rightAddon }: any) {
         )}
         {/* rightAddon: top = breadcrumbs marginBottom(40) + nav padding-bottom(15) = 55px → QR на уровне начала контента */}
         {rightAddon && (
-          <div className="desktop-only" style={{
+          <div className="qr-desktop-only" style={{
             position: 'absolute',
             top: 'calc(100% + 55px)',
             left: 0,

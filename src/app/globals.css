@@ -40,6 +40,11 @@ pre {
   .desktop-only { display: none !important; }
 }
 
+/* QR code: hide on mobile including landscape */
+@media (max-width: 1024px) {
+  .qr-desktop-only { display: none !important; }
+}
+
 /* Footer grid (non-home pages) */
 .footer-grid {
   display: grid;

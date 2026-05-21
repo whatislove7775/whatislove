@@ -19,7 +19,7 @@ export default function Cart() {
       fontWeight: 800,
       ...textStyle
     }}>
-      <div style={{ width: '100%', marginBottom: '15px' }}>
+      <div className="qr-desktop-only" style={{ width: '100%', marginBottom: '15px' }}>
         <img src="/qr-code.svg" alt="QR" style={{ width: '100%', height: 'auto', display: 'block' }} />
       </div>
 
