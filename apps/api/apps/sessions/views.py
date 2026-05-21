@@ -8,7 +8,7 @@ from .models import ConsultationSession
 
 
 class BookSessionSerializer(serializers.Serializer):
-    psychologist_profile_id = serializers.UUIDField()
+    psychologist_profile_id = serializers.IntegerField()
     scheduled_at = serializers.DateTimeField()
     duration_minutes = serializers.IntegerField(default=50, min_value=30, max_value=120)
 
