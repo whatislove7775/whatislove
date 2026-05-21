@@ -67,6 +67,19 @@ class BookSessionView(generics.CreateAPIView):
         return Response(response_data, status=status.HTTP_201_CREATED)
 
 
+class SessionListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SessionResponseSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == "client":
+            return ConsultationSession.objects.filter(client=user).order_by("-scheduled_at")
+        return ConsultationSession.objects.filter(
+            psychologist_profile__user=user
+        ).order_by("-scheduled_at")
+
+
 class SessionDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = SessionResponseSerializer
