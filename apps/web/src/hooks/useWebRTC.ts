@@ -1,11 +1,3 @@
-/**
- * useWebRTC — управляет полным жизненным циклом WebRTC peer connection:
- * 1. Захват камеры/микрофона
- * 2. Установка P2P соединения через сигнальный сервер
- * 3. Получение удалённого потока
- *
- * Видео никогда не проходит через сервер — только ICE/SDP сигналы.
- */
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -14,6 +6,10 @@ import { SignalingClient } from "@/lib/webrtc/signalingClient";
 const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
+  { urls: "stun:stun2.l.google.com:19302" },
+  // Public TURN for NAT traversal
+  { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
 ];
 
 interface UseWebRTCOptions {
@@ -34,114 +30,103 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions): UseWebRTCR
 
   const peerRef = useRef<RTCPeerConnection | null>(null);
   const signalingRef = useRef<SignalingClient | null>(null);
-  const isCallerRef = useRef(false);
+  const remoteStreamRef = useRef<MediaStream>(new MediaStream());
+  const localStreamRef = useRef<MediaStream | null>(null);
 
-  const createPeer = useCallback(
-    (isCaller: boolean): RTCPeerConnection => {
-      const peer = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+  // Keep localStreamRef in sync so we can replace tracks without recreating peer
+  useEffect(() => {
+    localStreamRef.current = localStream;
 
-      // Добавляем локальные треки (с маской MediaPipe)
-      localStream?.getTracks().forEach((track) => {
-        peer.addTrack(track, localStream);
-      });
+    if (!peerRef.current || !localStream) return;
+    const senders = peerRef.current.getSenders();
+    localStream.getTracks().forEach((track) => {
+      const sender = senders.find((s) => s.track?.kind === track.kind);
+      if (sender) sender.replaceTrack(track);
+    });
+  }, [localStream]);
 
-      // Получаем удалённый поток
-      const remote = new MediaStream();
-      setRemoteStream(remote);
-      peer.ontrack = (event) => {
-        event.streams[0].getTracks().forEach((track) => remote.addTrack(track));
-      };
+  const createPeer = useCallback((isCaller: boolean): RTCPeerConnection => {
+    const peer = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
-      // ICE кандидаты → через сигнальный сервер
-      peer.onicecandidate = (event) => {
-        if (event.candidate) {
-          signalingRef.current?.send({
-            type: "ice-candidate",
-            candidate: event.candidate.toJSON(),
-          });
-        }
-      };
+    localStreamRef.current?.getTracks().forEach((track) => {
+      peer.addTrack(track, localStreamRef.current!);
+    });
 
-      peer.onconnectionstatechange = () => {
-        setConnectionState(peer.connectionState);
-      };
+    remoteStreamRef.current = new MediaStream();
+    setRemoteStream(remoteStreamRef.current);
 
-      if (isCaller) {
-        // Caller создаёт offer
-        peer
-          .createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
-          .then((offer) => peer.setLocalDescription(offer))
-          .then(() => {
-            signalingRef.current?.send({
-              type: "offer",
-              sdp: peer.localDescription!,
-            });
-          });
+    peer.ontrack = (event) => {
+      event.streams[0].getTracks().forEach((t) => remoteStreamRef.current.addTrack(t));
+      setRemoteStream(new MediaStream(remoteStreamRef.current.getTracks()));
+    };
+
+    peer.onicecandidate = (event) => {
+      if (event.candidate) {
+        signalingRef.current?.send({ type: "ice-candidate", candidate: event.candidate.toJSON() });
       }
+    };
 
-      return peer;
-    },
-    [localStream]
-  );
+    peer.onconnectionstatechange = () => setConnectionState(peer.connectionState);
+    peer.oniceconnectionstatechange = () => {
+      if (peer.iceConnectionState === "connected" || peer.iceConnectionState === "completed") {
+        setConnectionState("connected");
+      }
+    };
+
+    if (isCaller) {
+      peer.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
+        .then((offer) => peer.setLocalDescription(offer))
+        .then(() => signalingRef.current?.send({ type: "offer", sdp: peer.localDescription! }));
+    }
+
+    return peer;
+  }, []);
 
   useEffect(() => {
-    if (!roomId || !localStream) return;
+    if (!roomId) return;
 
     const signaling = new SignalingClient(roomId);
     signalingRef.current = signaling;
 
-    const unsubscribe = signaling.onMessage(async (msg) => {
-      switch (msg.type) {
-        case "peer-joined": {
-          // Мы первые в комнате — становимся caller
-          isCallerRef.current = true;
-          peerRef.current = createPeer(true);
-          break;
-        }
-
-        case "offer": {
-          // Мы вторые — отвечаем на offer
-          if (!peerRef.current) {
-            peerRef.current = createPeer(false);
-          }
-          await peerRef.current.setRemoteDescription(msg.sdp);
-          const answer = await peerRef.current.createAnswer();
-          await peerRef.current.setLocalDescription(answer);
-          signaling.send({ type: "answer", sdp: peerRef.current.localDescription! });
-          break;
-        }
-
-        case "answer": {
-          await peerRef.current?.setRemoteDescription(msg.sdp);
-          break;
-        }
-
-        case "ice-candidate": {
-          await peerRef.current?.addIceCandidate(msg.candidate);
-          break;
-        }
-
-        case "peer-left": {
-          peerRef.current?.close();
-          peerRef.current = null;
-          setRemoteStream(null);
-          setConnectionState("idle");
-          break;
-        }
+    const unsub = signaling.onMessage(async (msg) => {
+      if (msg.type === "peer-joined") {
+        peerRef.current?.close();
+        peerRef.current = createPeer(true);
+        return;
+      }
+      if (msg.type === "offer") {
+        if (!peerRef.current) peerRef.current = createPeer(false);
+        await peerRef.current.setRemoteDescription(msg.sdp);
+        const answer = await peerRef.current.createAnswer();
+        await peerRef.current.setLocalDescription(answer);
+        signaling.send({ type: "answer", sdp: peerRef.current.localDescription! });
+        return;
+      }
+      if (msg.type === "answer") {
+        await peerRef.current?.setRemoteDescription(msg.sdp);
+        return;
+      }
+      if (msg.type === "ice-candidate") {
+        try { await peerRef.current?.addIceCandidate(msg.candidate); } catch {}
+        return;
+      }
+      if (msg.type === "peer-left") {
+        peerRef.current?.close();
+        peerRef.current = null;
+        setRemoteStream(null);
+        setConnectionState("idle");
       }
     });
 
-    signaling.connect().then(() => {
-      signaling.send({ type: "ready" });
-    });
+    signaling.connect().then(() => signaling.send({ type: "ready" }));
 
     return () => {
-      unsubscribe();
+      unsub();
       signaling.disconnect();
       peerRef.current?.close();
       peerRef.current = null;
     };
-  }, [roomId, localStream, createPeer]);
+  }, [roomId, createPeer]);
 
   const hangUp = useCallback(() => {
     signalingRef.current?.disconnect();
@@ -151,10 +136,5 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions): UseWebRTCR
     setConnectionState("idle");
   }, []);
 
-  return {
-    remoteStream,
-    connectionState,
-    isConnected: connectionState === "connected",
-    hangUp,
-  };
+  return { remoteStream, connectionState, isConnected: connectionState === "connected", hangUp };
 }
