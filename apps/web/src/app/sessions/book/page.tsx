@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 
+interface Psychologist {
+  id: string;
+  display_name: string;
+  session_rate_rub: string;
+}
+
 export default function BookSessionPage() {
+  const [psychologists, setPsychologists] = useState<Psychologist[]>([]);
   const [psychologistId, setPsychologistId] = useState("");
   const [scheduledAt, setScheduledAt] = useState(() => {
     const d = new Date();
@@ -17,16 +24,28 @@ export default function BookSessionPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!localStorage.getItem("access")) { window.location.href = "/login"; return; }
+    const access = localStorage.getItem("access");
+    if (!access) { window.location.href = "/login"; return; }
+
     const params = new URLSearchParams(window.location.search);
-    setPsychologistId(params.get("psychologist") ?? "");
+    const fromUrl = params.get("psychologist") ?? "";
+
+    fetch(`${API}/auth/psychologists/`, {
+      headers: { Authorization: `Bearer ${access}` },
+    })
+      .then(r => r.ok ? r.json() : [])
+      .then((list: Psychologist[]) => {
+        setPsychologists(list);
+        setPsychologistId(fromUrl || (list[0]?.id ?? ""));
+      })
+      .catch(() => {});
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!scheduledAt) { setError("Укажите дату и время"); return; }
-    if (!psychologistId) { setError("Специалист не выбран — вернитесь и выберите из списка"); return; }
+    if (!psychologistId) { setError("Выберите специалиста"); return; }
     setLoading(true);
     try {
       const access = localStorage.getItem("access");
@@ -78,6 +97,18 @@ export default function BookSessionPage() {
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <div>
+              <label>Специалист</label>
+              <select className="field" value={psychologistId} onChange={e => setPsychologistId(e.target.value)}>
+                {psychologists.length === 0 && <option value="">Нет доступных специалистов</option>}
+                {psychologists.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.display_name} — {p.session_rate_rub} ₽
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
               <label>Дата и время</label>
               <input className="field" type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} />
             </div>
@@ -93,7 +124,7 @@ export default function BookSessionPage() {
 
             {error && <p style={{ color: "#e07070", fontFamily: "var(--font-mono)", fontSize: "0.8rem" }}>{error}</p>}
 
-            <button className="submit" type="submit" disabled={loading}>
+            <button className="submit" type="submit" disabled={loading || !psychologistId}>
               {loading ? "..." : "Подтвердить запись"}
             </button>
           </form>
