@@ -25,6 +25,8 @@ export default function BookSessionPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    if (!scheduledAt) { setError("Укажите дату и время"); return; }
+    if (!psychologistId) { setError("Специалист не выбран — вернитесь и выберите из списка"); return; }
     setLoading(true);
     try {
       const access = localStorage.getItem("access");
@@ -77,7 +79,7 @@ export default function BookSessionPage() {
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <div>
               <label>Дата и время</label>
-              <input className="field" type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} required />
+              <input className="field" type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} />
             </div>
 
             <div>
