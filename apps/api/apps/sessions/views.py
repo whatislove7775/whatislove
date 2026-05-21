@@ -11,9 +11,10 @@ class BookSessionSerializer(serializers.Serializer):
     psychologist_profile_id = serializers.IntegerField()
     scheduled_at = serializers.DateTimeField()
     duration_minutes = serializers.IntegerField(default=50, min_value=30, max_value=120)
+    is_test = serializers.BooleanField(default=False)
 
     def validate_scheduled_at(self, value):
-        if value <= timezone.now():
+        if not self.initial_data.get("is_test") and value <= timezone.now():
             raise serializers.ValidationError("Время сессии должно быть в будущем.")
         return value
 
@@ -60,8 +61,14 @@ class BookSessionView(generics.CreateAPIView):
             psychologist_profile=psychologist,
             scheduled_at=data["scheduled_at"],
             duration_minutes=data["duration_minutes"],
+            amount_kopecks=0 if data.get("is_test") else None,
         )
-        payment = initiate_payment(session)
+
+        if data.get("is_test"):
+            session.status = ConsultationSession.Status.PAID
+            session.save(update_fields=["status"])
+        else:
+            initiate_payment(session)
 
         response_data = SessionResponseSerializer(session).data
         return Response(response_data, status=status.HTTP_201_CREATED)

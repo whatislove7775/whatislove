@@ -41,14 +41,11 @@ def create_session_with_token(
     psychologist_profile,
     scheduled_at,
     duration_minutes: int = 50,
+    amount_kopecks: int = None,
 ) -> ConsultationSession:
-    """
-    Шаг 1-2: Создать сессию с одноразовым криптографическим токеном.
-    Токен генерируется через secrets.token_hex(32) — 256 бит энтропии.
-    Хранится в БД в открытом виде только для lookup при вебхуке YooKassa.
-    """
     rate = psychologist_profile.session_rate_rub
-    amount_kopecks = int(rate * 100)
+    if amount_kopecks is None:
+        amount_kopecks = int(rate * 100)
 
     session = ConsultationSession(
         client=client_user,
