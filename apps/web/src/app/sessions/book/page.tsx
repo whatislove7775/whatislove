@@ -6,7 +6,12 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 
 export default function BookSessionPage() {
   const [psychologistId, setPsychologistId] = useState("");
-  const [scheduledAt, setScheduledAt] = useState("");
+  const [scheduledAt, setScheduledAt] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(10, 0, 0, 0);
+    return d.toISOString().slice(0, 16);
+  });
   const [duration, setDuration] = useState("50");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
