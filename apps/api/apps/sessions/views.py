@@ -8,7 +8,7 @@ from .models import ConsultationSession
 
 
 class BookSessionSerializer(serializers.Serializer):
-    psychologist_id = serializers.UUIDField()
+    psychologist_profile_id = serializers.UUIDField()
     scheduled_at = serializers.DateTimeField()
     duration_minutes = serializers.IntegerField(default=50, min_value=30, max_value=120)
 
@@ -46,7 +46,7 @@ class BookSessionView(generics.CreateAPIView):
 
         try:
             psychologist = PsychologistProfile.objects.get(
-                user__id=data["psychologist_id"],
+                id=data["psychologist_profile_id"],
                 verification_status=PsychologistProfile.VerificationStatus.APPROVED,
             )
         except PsychologistProfile.DoesNotExist:
