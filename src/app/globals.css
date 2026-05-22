@@ -391,6 +391,10 @@ label[for], select,
   cursor: url('/cursors/default_link.cur'), pointer;
 }
 
+a *, button *, [role="button"] * {
+  cursor: inherit;
+}
+
 input[type="text"], input[type="email"], input[type="tel"],
 input[type="password"], input[type="search"], input[type="url"],
 input[type="number"], textarea, [contenteditable="true"] {
