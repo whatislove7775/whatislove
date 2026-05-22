@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { parseTextForLinks } from '@/lib/parseLinks';
 
@@ -29,6 +30,14 @@ function formatTypography(text: string): string {
 
 export default function CasePageClient({ project }: { project: any }) {
   const creditsList = project.credits || [];
+  const images: string[] = project.images?.length
+    ? project.images
+    : project.image_url ? [project.image_url] : [];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const prev = () => setCurrentIndex((i) => (i - 1 + images.length) % images.length);
+  const next = () => setCurrentIndex((i) => (i + 1) % images.length);
 
   return (
     <div style={{
@@ -103,13 +112,44 @@ export default function CasePageClient({ project }: { project: any }) {
           {/* ЛЕВАЯ КОЛОНКА (Фото) */}
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
             <div style={{ position: 'relative', width: '100%' }}>
-              <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-              <div style={{ width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
-                {project.image_url && (
-                  <img src={project.image_url} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1, zIndex: 1 }}>+</div>
+              <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1, zIndex: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1, zIndex: 1 }}>+</div>
+              <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1, zIndex: 1 }}>+</div>
+
+              {/* Слайдер */}
+              <div
+                style={{ position: 'relative', width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5', overflow: 'hidden' }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
+                {images.length > 0 && (
+                  <img
+                    src={images[currentIndex]}
+                    alt={project.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                )}
+
+                {/* Стрелки и счётчик — только при hover и если картинок больше одной */}
+                {images.length > 1 && isHovered && (
+                  <>
+                    <button
+                      onClick={prev}
+                      style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.85)', border: '1.5px solid #000', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '4px 8px', cursor: 'pointer', lineHeight: 1, zIndex: 10 }}
+                    >
+                      [{'<'}]
+                    </button>
+                    <button
+                      onClick={next}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.85)', border: '1.5px solid #000', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '4px 8px', cursor: 'pointer', lineHeight: 1, zIndex: 10 }}
+                    >
+                      [{'>'}]
+                    </button>
+                    <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.85)', border: '1.5px solid #000', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '3px 10px', lineHeight: 1, zIndex: 10, whiteSpace: 'nowrap' }}>
+                      [ {currentIndex + 1}/{images.length} ]
+                    </div>
+                  </>
                 )}
               </div>
             </div>
