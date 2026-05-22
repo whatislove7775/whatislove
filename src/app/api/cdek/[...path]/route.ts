@@ -32,34 +32,18 @@ async function getCdekToken() {
   return cachedToken;
 }
 
-async function proxyRequest(req: NextRequest) {
+async function proxyRequest(
+  req: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> }
+) {
   try {
     const token = await getCdekToken();
-    const url = new URL(req.url);
-    const action = url.searchParams.get('action');
+    const { path } = await params;
 
-    let targetPath = '/v2/deliverypoints';
-    const targetParams = new URLSearchParams();
-
-    if (action === 'cities') {
-      targetPath = '/v2/location/cities';
-      targetParams.set('city', url.searchParams.get('q') || '');
-      targetParams.set('country_codes[0]', 'RU');
-      targetParams.set('size', '5');
-    } else if (action === 'offices') {
-      targetPath = '/v2/deliverypoints';
-      const cityCode = url.searchParams.get('city_code');
-      if (cityCode) targetParams.set('city_code', cityCode);
-      targetParams.set('type', 'PVZ');
-    } else if (action === 'calculate') {
-      targetPath = '/v2/calculator/tariff';
-    } else {
-      url.searchParams.delete('action');
-      url.searchParams.forEach((v, k) => targetParams.set(k, v));
-    }
-
-    const queryString = targetParams.toString();
-    const targetUrl = `${CDEK_BASE_URL}${targetPath}${queryString ? `?${queryString}` : ''}`;
+    // Rebuild CDEK API path from catch-all segments, preserving query string
+    const cdekPath = '/' + path.join('/');
+    const reqUrl = new URL(req.url);
+    const targetUrl = `${CDEK_BASE_URL}${cdekPath}${reqUrl.search}`;
 
     const fetchOptions: RequestInit = {
       method: req.method,
@@ -74,14 +58,9 @@ async function proxyRequest(req: NextRequest) {
     }
 
     const response = await fetch(targetUrl, fetchOptions);
-    const responseText = await response.text();
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch {
-      data = responseText;
-    }
+    const text = await response.text();
+    let data: any;
+    try { data = JSON.parse(text); } catch { data = text; }
 
     return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
@@ -90,5 +69,7 @@ async function proxyRequest(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) { return proxyRequest(req); }
-export async function POST(req: NextRequest) { return proxyRequest(req); }
+export async function GET(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) { return proxyRequest(req, ctx); }
+export async function POST(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) { return proxyRequest(req, ctx); }
+export async function PUT(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) { return proxyRequest(req, ctx); }
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) { return proxyRequest(req, ctx); }
