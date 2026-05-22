@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { parseTextForLinks } from '@/lib/parseLinks';
 
@@ -36,6 +36,11 @@ export default function CasePageClient({ project }: { project: any }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
+  // Preload all images so switching is instant
+  useEffect(() => {
+    images.forEach((src) => { const img = new Image(); img.src = src; });
+  }, []);
+
   const prev = () => setCurrentIndex((i) => (i - 1 + images.length) % images.length);
   const next = () => setCurrentIndex((i) => (i + 1) % images.length);
 
@@ -55,7 +60,7 @@ export default function CasePageClient({ project }: { project: any }) {
         <Breadcrumbs
           path={[
             { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-            { name: 'PORTFOL1O', href: '/portfolio', icon: '📂' },
+            { name: 'ПОРТФОЛИО', href: '/portfolio', icon: '📂' },
             { name: project.title.toUpperCase(), icon: '📄' }
           ]}
           rightAddon={
@@ -136,17 +141,17 @@ export default function CasePageClient({ project }: { project: any }) {
                   <>
                     <button
                       onClick={prev}
-                      style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.85)', border: '1.5px solid #000', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '4px 8px', cursor: 'pointer', lineHeight: 1, zIndex: 10 }}
+                      style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: '1.5px solid #fff', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '4px 8px', cursor: 'pointer', lineHeight: 1, zIndex: 10 }}
                     >
                       [{'<'}]
                     </button>
                     <button
                       onClick={next}
-                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.85)', border: '1.5px solid #000', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '4px 8px', cursor: 'pointer', lineHeight: 1, zIndex: 10 }}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: '1.5px solid #fff', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '4px 8px', cursor: 'pointer', lineHeight: 1, zIndex: 10 }}
                     >
                       [{'>'}]
                     </button>
-                    <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.85)', border: '1.5px solid #000', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '3px 10px', lineHeight: 1, zIndex: 10, whiteSpace: 'nowrap' }}>
+                    <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', background: 'transparent', border: '1.5px solid #fff', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '3px 10px', lineHeight: 1, zIndex: 10, whiteSpace: 'nowrap' }}>
                       [ {currentIndex + 1}/{images.length} ]
                     </div>
                   </>
