@@ -73,7 +73,12 @@ async function proxyRequest(req: NextRequest) {
     return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
     console.error('CDEK Root Proxy Error:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({
+      error: error.message,
+      account_set: !!CDEK_ACCOUNT,
+      password_set: !!CDEK_SECURE_PASSWORD,
+      base_url: CDEK_BASE_URL,
+    }, { status: 500 });
   }
 }
 
