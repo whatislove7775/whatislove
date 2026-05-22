@@ -1,29 +1,32 @@
 .PHONY: up down build logs shell-api migrate dev help
 
+# Определяем docker compose команду (новый плагин или старый через дефис)
+DOCKER_COMPOSE := $(shell docker compose version > /dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
+
 # ── Production ────────────────────────────────────────────────────
 up:         ## Запустить всё (собрать если нужно)
-	docker compose up -d --build
+	$(DOCKER_COMPOSE) up -d --build
 
 down:       ## Остановить всё
-	docker compose down
+	$(DOCKER_COMPOSE) down
 
 build:      ## Пересобрать образы без кэша
-	docker compose build --no-cache
+	$(DOCKER_COMPOSE) build --no-cache
 
 logs:       ## Смотреть логи всех сервисов
-	docker compose logs -f
+	$(DOCKER_COMPOSE) logs -f
 
 logs-api:   ## Логи только Django
-	docker compose logs -f api
+	$(DOCKER_COMPOSE) logs -f api
 
 logs-web:   ## Логи только Next.js
-	docker compose logs -f web
+	$(DOCKER_COMPOSE) logs -f web
 
 migrate:    ## Применить миграции Django
-	docker compose exec api python manage.py migrate
+	$(DOCKER_COMPOSE) exec api /app/.venv/bin/python manage.py migrate
 
 shell-api:  ## Bash внутри Django контейнера
-	docker compose exec api bash
+	$(DOCKER_COMPOSE) exec api bash
 
 # ── Local dev (без Docker) ────────────────────────────────────────
 dev-api:    ## Django локально через uv
