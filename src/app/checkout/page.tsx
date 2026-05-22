@@ -6,6 +6,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 
+function YandexDeliveryBlock({ city, address, setAddress, deliveryCost, setDeliveryCost, getYandexPrice }: any) {
+  const price = getYandexPrice(city);
+  useEffect(() => { setDeliveryCost(price); }, [city]);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <label style={{ fontSize: '14px', textTransform: 'lowercase' }}>адрес доставки (улица, дом, квартира)</label>
+      <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="ул. Ленина, д. 1, кв. 5" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+      <span style={{ fontSize: '12px', fontWeight: 700 }}>~ {price} руб — приблизительная стоимость, уточняется после оформления</span>
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
   const { items, updateQuantity, updateItemSize, totalPrice, clearCart } = useCartStore();
   const [address, setAddress] = useState('');
@@ -31,10 +43,20 @@ export default function CheckoutPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [city, setCity] = useState('');
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const deliveryOptions = ['СДЭК', 'Яндекс Доставка', 'Ozon', 'Wildberries', '5post'];
+  const deliveryOptions = ['СДЭК', 'Яндекс Доставка'];
+
+  const getYandexPrice = (city: string): number => {
+    const c = city.toLowerCase().trim();
+    if (/москв|моск\b/.test(c)) return 350;
+    if (/петербург|питер|ленинград/.test(c)) return 400;
+    const millions = ['новосибирск', 'екатеринбург', 'казань', 'нижний новгород', 'челябинск', 'самара', 'уфа', 'ростов', 'краснодар', 'омск', 'воронеж', 'пермь', 'волгоград', 'красноярск', 'саратов', 'тюмень', 'тольятти', 'ижевск', 'барнаул', 'ульяновск', 'иркутск', 'хабаровск', 'ярославль', 'владивосток', 'махачкала', 'томск'];
+    if (millions.some(m => c.includes(m))) return 500;
+    return 650;
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -222,7 +244,7 @@ export default function CheckoutPage() {
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>город</label>
                 <div style={{ position: 'relative' }}>
-                  <input name="city" required type="text" placeholder="Москва" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+                  <input name="city" required type="text" placeholder="Москва" value={city} onChange={(e) => setCity(e.target.value)} style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
                   <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>
                 </div>
               </div>
@@ -237,8 +259,8 @@ export default function CheckoutPage() {
                   </div>
                   {isDropdownOpen && (
                     <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #000', zIndex: 10, marginTop: '-1px' }}>
-                      {deliveryOptions.map((option) => (
-                        <div key={option} onClick={() => { setDeliveryService(option); setIsDropdownOpen(false); }} style={{ padding: '12px', fontSize: '14px', cursor: 'pointer', borderBottom: option !== '5post' ? '1px solid #eee' : 'none' }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}>
+                      {deliveryOptions.map((option, idx) => (
+                        <div key={option} onClick={() => { setDeliveryService(option); setIsDropdownOpen(false); }} style={{ padding: '12px', fontSize: '14px', cursor: 'pointer', borderBottom: idx < deliveryOptions.length - 1 ? '1px solid #eee' : 'none' }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}>
                           {option}
                         </div>
                       ))}
@@ -247,14 +269,29 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>пункт выдачи</label>
-                <div style={{ position: 'relative' }}>
-                  <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} readOnly={deliveryService === 'СДЭК'} required placeholder={deliveryService === 'СДЭК' ? 'выберите на карте ниже' : 'введите адрес пункта выдачи текстом'} style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: deliveryService === 'СДЭК' ? '#f5f5f5' : '#fff' }} />
-                  {deliveryService === 'СДЭК' && <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>}
+              {/* Яндекс Доставка: цена по городу + адрес текстом */}
+              {deliveryService === 'Яндекс Доставка' && (
+                <YandexDeliveryBlock
+                  city={city}
+                  address={address}
+                  setAddress={setAddress}
+                  deliveryCost={deliveryCost}
+                  setDeliveryCost={setDeliveryCost}
+                  getYandexPrice={getYandexPrice}
+                />
+              )}
+
+              {/* СДЭК: адрес из виджета */}
+              {deliveryService === 'СДЭК' && (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>пункт выдачи</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type="text" value={address} readOnly required placeholder="выберите на карте ниже" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: '#f5f5f5' }} />
+                    <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>
+                  </div>
+                  {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>~ {deliveryCost} руб за доставку СДЭК</span>}
                 </div>
-                {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>+ {deliveryCost} руб за доставку {deliveryService}</span>}
-              </div>
+              )}
 
               <div id="cdek-map" style={{ width: '100%', height: '400px', backgroundColor: '#f9f9f9', display: deliveryService === 'СДЭК' ? 'block' : 'none' }}></div>
 
