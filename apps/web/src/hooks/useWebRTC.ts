@@ -24,6 +24,7 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
   const signalingRef    = useRef<SignalingClient | null>(null);
   const localStreamRef  = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef(new MediaStream());
+  const isCallerRef     = useRef(false);
 
   // Keep localStreamRef current; replace tracks on existing peer without reconnecting
   useEffect(() => {
@@ -40,6 +41,7 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
 
   const makePeer = useCallback((isCaller: boolean): RTCPeerConnection => {
     peerRef.current?.close();
+    isCallerRef.current = isCaller;
 
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     peerRef.current = pc;
@@ -62,6 +64,19 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
     pc.oniceconnectionstatechange = () => {
       if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
         setConnectionState("connected");
+      }
+    };
+
+    // Only the caller drives renegotiation — callee never sends unsolicited offers
+    pc.onnegotiationneeded = async () => {
+      if (!isCallerRef.current) return;
+      if (pc.signalingState !== "stable") return;
+      try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        signalingRef.current?.send({ type: "offer", sdp: pc.localDescription! });
+      } catch (e) {
+        console.error("onnegotiationneeded error:", e);
       }
     };
 
@@ -91,16 +106,16 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
       }
 
       if (msg.type === "offer") {
-        // Guard against glare: only accept offer if we haven't sent one
         if (pc && pc.signalingState !== "stable") {
           console.warn("Glare detected, ignoring offer in state:", pc.signalingState);
           return;
         }
-        const newPc = makePeer(false);
-        await newPc.setRemoteDescription(msg.sdp);
-        const ans = await newPc.createAnswer();
-        await newPc.setLocalDescription(ans);
-        signaling.send({ type: "answer", sdp: newPc.localDescription! });
+        // Renegotiation: reuse existing peer; Initial: create new peer
+        const activePc = pc ?? makePeer(false);
+        await activePc.setRemoteDescription(msg.sdp);
+        const ans = await activePc.createAnswer();
+        await activePc.setLocalDescription(ans);
+        signaling.send({ type: "answer", sdp: activePc.localDescription! });
         return;
       }
 
