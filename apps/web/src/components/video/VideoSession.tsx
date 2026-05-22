@@ -17,26 +17,33 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [maskEnabled, setMaskEnabled] = useState(role === "client");
 
-  const rawVideoRef = useRef<HTMLVideoElement>(null);
-  const maskCanvasRef = useRef<HTMLCanvasElement>(null);
+  const rawVideoRef    = useRef<HTMLVideoElement>(null);
+  const maskCanvasRef  = useRef<HTMLCanvasElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  // Tracks DOM refs so useFaceMask reruns when elements mount
+  const [videoEl,  setVideoEl]  = useState<HTMLVideoElement | null>(null);
+  const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     let stream: MediaStream;
     navigator.mediaDevices
-      .getUserMedia({ video: { width: 1280, height: 720 }, audio: true })
+      .getUserMedia({ video: { width: 1280, height: 720, frameRate: 30 }, audio: true })
       .then((s) => {
         stream = s;
         setCameraStream(s);
-        if (rawVideoRef.current) rawVideoRef.current.srcObject = s;
+        if (rawVideoRef.current) {
+          rawVideoRef.current.srcObject = s;
+          setVideoEl(rawVideoRef.current);
+          setCanvasEl(maskCanvasRef.current);
+        }
       })
       .catch((err) => setCameraError(`Нет доступа к камере: ${err.message}`));
     return () => { stream?.getTracks().forEach((t) => t.stop()); };
   }, []);
 
   const { maskedStream, isReady: maskReady } = useFaceMask({
-    sourceVideo: rawVideoRef.current,
-    outputCanvas: maskCanvasRef.current,
+    sourceVideo: videoEl,
+    outputCanvas: canvasEl,
     enabled: maskEnabled && !!cameraStream,
   });
 

@@ -1,14 +1,7 @@
-/**
- * useFaceMask — хук, который:
- * 1. Инициализирует MediaPipe FaceMesh
- * 2. Запускает трекинг лица на каждом кадре
- * 3. Рендерит WebGL-маску на canvas поверх видео
- * 4. Возвращает MediaStream с наложенной маской для WebRTC
- */
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
-import type { FaceMeshResult } from "@/lib/mediapipe/faceRenderer";
+import { useEffect, useRef, useState } from "react";
+import { drawChromeMask } from "@/lib/mediapipe/faceRenderer";
 
 interface UseFaceMaskOptions {
   sourceVideo: HTMLVideoElement | null;
@@ -16,86 +9,85 @@ interface UseFaceMaskOptions {
   enabled: boolean;
 }
 
-interface UseFaceMaskReturn {
-  maskedStream: MediaStream | null;
-  isReady: boolean;
-}
+export function useFaceMask({ sourceVideo, outputCanvas, enabled }: UseFaceMaskOptions) {
+  const [maskedStream, setMaskedStream] = useState<MediaStream | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
-export function useFaceMask({
-  sourceVideo,
-  outputCanvas,
-  enabled,
-}: UseFaceMaskOptions): UseFaceMaskReturn {
-  const faceMeshRef = useRef<any>(null);
-  const rendererRef = useRef<any>(null);
-  const animFrameRef = useRef<number>(0);
-  const maskedStreamRef = useRef<MediaStream | null>(null);
-  const isReadyRef = useRef(false);
-
-  const processFrame = useCallback(async () => {
-    if (!sourceVideo || !faceMeshRef.current || !enabled) return;
-    if (sourceVideo.readyState < 2) {
-      animFrameRef.current = requestAnimationFrame(processFrame);
-      return;
-    }
-    await faceMeshRef.current.send({ image: sourceVideo });
-    animFrameRef.current = requestAnimationFrame(processFrame);
-  }, [sourceVideo, enabled]);
+  const faceMeshRef   = useRef<any>(null);
+  const animFrameRef  = useRef<number>(0);
+  const landmarksRef  = useRef<Array<{ x: number; y: number; z: number }> | null>(null);
+  const sendTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!sourceVideo || !outputCanvas || !enabled) return;
+    if (!sourceVideo || !outputCanvas || !enabled) {
+      setMaskedStream(null);
+      setIsReady(false);
+      return;
+    }
 
     let cancelled = false;
+    const ctx = outputCanvas.getContext("2d");
+    if (!ctx) return;
+
+    // Render loop: video frame + chrome mask on top
+    const drawLoop = () => {
+      if (cancelled) return;
+      animFrameRef.current = requestAnimationFrame(drawLoop);
+
+      const vw = sourceVideo.videoWidth;
+      const vh = sourceVideo.videoHeight;
+      if (!vw || !vh || sourceVideo.readyState < 2) return;
+
+      if (outputCanvas.width !== vw)  outputCanvas.width  = vw;
+      if (outputCanvas.height !== vh) outputCanvas.height = vh;
+
+      ctx.drawImage(sourceVideo, 0, 0, vw, vh);
+
+      if (landmarksRef.current) {
+        drawChromeMask(ctx, landmarksRef.current, vw, vh);
+      }
+    };
+
+    // Detection loop: send frames to FaceMesh at ~15fps (detection is CPU-heavy)
+    const detectLoop = async () => {
+      if (cancelled || !faceMeshRef.current) return;
+      if (sourceVideo.readyState >= 2) {
+        await faceMeshRef.current.send({ image: sourceVideo }).catch(() => {});
+      }
+      sendTimerRef.current = setTimeout(detectLoop, 66); // ~15fps
+    };
 
     const init = async () => {
-      // Динамический импорт — MediaPipe загружается только при необходимости
       const { FaceMesh } = await import("@mediapipe/face_mesh");
-      const { FaceMaskRenderer } = await import("@/lib/mediapipe/faceRenderer");
-
       if (cancelled) return;
-
-      rendererRef.current = new FaceMaskRenderer(outputCanvas);
 
       const faceMesh = new FaceMesh({
         locateFile: (file: string) =>
-          `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+          `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`,
       });
 
       faceMesh.setOptions({
         maxNumFaces: 1,
-        refineLandmarks: true,    // 478 точек включая ирис
+        refineLandmarks: false,
         minDetectionConfidence: 0.5,
         minTrackingConfidence: 0.5,
       });
 
-      // Контекст canvas для миксинга: исходный кадр + маска
-      const ctx = outputCanvas.getContext("2d");
-
-      faceMesh.onResults((results: FaceMeshResult) => {
-        if (!ctx || cancelled) return;
-
-        outputCanvas.width = sourceVideo.videoWidth;
-        outputCanvas.height = sourceVideo.videoHeight;
-
-        // 1. Рисуем оригинальный видеокадр (без лица)
-        ctx.drawImage(sourceVideo, 0, 0, outputCanvas.width, outputCanvas.height);
-
-        // 2. Поверх — WebGL маска (если лицо обнаружено)
-        if (results.multiFaceLandmarks.length > 0) {
-          rendererRef.current.render(results.multiFaceLandmarks[0]);
-          // Смешиваем WebGL canvas с 2D canvas
-          ctx.drawImage(outputCanvas, 0, 0);
-        }
+      faceMesh.onResults((results: any) => {
+        landmarksRef.current =
+          results.multiFaceLandmarks?.length > 0
+            ? results.multiFaceLandmarks[0]
+            : null;
       });
 
       faceMeshRef.current = faceMesh;
-      isReadyRef.current = true;
+      if (cancelled) return;
 
-      // Захватываем поток из canvas для WebRTC
-      maskedStreamRef.current = outputCanvas.captureStream(30);
+      setMaskedStream(outputCanvas.captureStream(30));
+      setIsReady(true);
 
-      // Запускаем цикл обработки кадров
-      animFrameRef.current = requestAnimationFrame(processFrame);
+      drawLoop();
+      detectLoop();
     };
 
     init().catch(console.error);
@@ -103,16 +95,14 @@ export function useFaceMask({
     return () => {
       cancelled = true;
       cancelAnimationFrame(animFrameRef.current);
+      if (sendTimerRef.current) clearTimeout(sendTimerRef.current);
       faceMeshRef.current?.close();
-      rendererRef.current?.dispose();
-      faceMeshRef.current = null;
-      rendererRef.current = null;
-      isReadyRef.current = false;
+      faceMeshRef.current  = null;
+      landmarksRef.current = null;
+      setIsReady(false);
+      setMaskedStream(null);
     };
-  }, [sourceVideo, outputCanvas, enabled, processFrame]);
+  }, [sourceVideo, outputCanvas, enabled]);
 
-  return {
-    maskedStream: maskedStreamRef.current,
-    isReady: isReadyRef.current,
-  };
+  return { maskedStream, isReady };
 }

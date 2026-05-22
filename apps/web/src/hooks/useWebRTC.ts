@@ -3,6 +3,21 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { SignalingClient } from "@/lib/webrtc/signalingClient";
 
+// Prefer VP8 (universal) → VP9 → H264; limit video to 800kbps, audio to 64kbps
+function applyBandwidthConstraints(pc: RTCPeerConnection) {
+  pc.getSenders().forEach(sender => {
+    const params = sender.getParameters();
+    if (!params.encodings?.length) params.encodings = [{}];
+    if (sender.track?.kind === "video") {
+      params.encodings[0].maxBitrate = 800_000;
+      params.encodings[0].scaleResolutionDownBy = 1;
+    } else if (sender.track?.kind === "audio") {
+      params.encodings[0].maxBitrate = 64_000;
+    }
+    sender.setParameters(params).catch(() => {});
+  });
+}
+
 const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
@@ -43,7 +58,11 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
     peerRef.current?.close();
     isCallerRef.current = isCaller;
 
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const pc = new RTCPeerConnection({
+      iceServers: ICE_SERVERS,
+      bundlePolicy: "max-bundle",
+      rtcpMuxPolicy: "require",
+    });
     peerRef.current = pc;
 
     // Add tracks from current stream
@@ -64,6 +83,7 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
     pc.oniceconnectionstatechange = () => {
       if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
         setConnectionState("connected");
+        applyBandwidthConstraints(pc);
       }
     };
 
