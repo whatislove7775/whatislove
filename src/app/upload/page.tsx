@@ -1,6 +1,5 @@
 'use client';
 import { useState, useRef, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
 
 const FOLDERS = ['cases/asiya-site', 'cases/asiya-merch', 'cases/snappy-silk-site', 'cases/egor-kreed-ring', 'products'];
 const MAX_BYTES = 1 * 1024 * 1024; // 1 MB
@@ -97,21 +96,22 @@ export default function UploadPage() {
       const ext = compressed ? 'jpg' : file.name.split('.').pop();
       const name = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const path = `${target}/${name}`;
+      const kb = (blob.size / 1024).toFixed(0);
+      const origKb = (originalSize / 1024).toFixed(0);
 
-      const { error } = await supabase.storage.from('images').upload(path, blob, {
-        contentType: compressed ? 'image/jpeg' : file.type,
-        upsert: false,
-      });
+      const formData = new FormData();
+      formData.append('file', new File([blob], name, { type: compressed ? 'image/jpeg' : file.type }));
+      formData.append('path', path);
 
-      if (error) {
-        newResults.push({ name: file.name, url: `Ошибка: ${error.message}`, size: '', compressed });
+      const res = await fetch('/api/upload-image', { method: 'POST', body: formData });
+      const json = await res.json();
+
+      if (!res.ok) {
+        newResults.push({ name: file.name, url: `Ошибка: ${json.error}`, size: '', compressed });
       } else {
-        const { data } = supabase.storage.from('images').getPublicUrl(path);
-        const kb = (blob.size / 1024).toFixed(0);
-        const origKb = (originalSize / 1024).toFixed(0);
         newResults.push({
           name: file.name,
-          url: data.publicUrl,
+          url: json.url,
           size: compressed ? `${origKb} KB → ${kb} KB` : `${kb} KB`,
           compressed,
         });
