@@ -32,14 +32,26 @@ async function getCdekToken() {
   return cachedToken;
 }
 
-// Handles direct calls to /api/cdek?params (widget passes CDEK API query params directly)
+// Handles direct calls to /api/cdek?params (widget passes CDEK API query params + action)
 async function proxyRequest(req: NextRequest) {
   try {
     const token = await getCdekToken();
     const url = new URL(req.url);
+    const action = url.searchParams.get('action');
 
-    // Forward all query params to /v2/deliverypoints by default
-    const targetUrl = `${CDEK_BASE_URL}/v2/deliverypoints${url.search}`;
+    // Strip internal 'action' param — CDEK API doesn't know it
+    url.searchParams.delete('action');
+
+    // Route to correct CDEK endpoint based on action
+    let cdekPath = '/v2/deliverypoints';
+    if (action === 'cities') {
+      cdekPath = '/v2/location/cities';
+    } else if (action === 'calculate') {
+      cdekPath = '/v2/calculator/tariff';
+    }
+    // 'offices' and default → /v2/deliverypoints (pass remaining params as-is)
+
+    const targetUrl = `${CDEK_BASE_URL}${cdekPath}${url.search}`;
 
     const fetchOptions: RequestInit = {
       method: req.method,
