@@ -151,7 +151,7 @@ export default function CasePageClient({ project }: { project: any }) {
                     >
                       [{'>'}]
                     </button>
-                    <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', background: 'transparent', border: 'none', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '3px 10px', lineHeight: 1, zIndex: 10, whiteSpace: 'nowrap' }}>
+                    <div style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', background: 'transparent', border: 'none', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '3px 10px', lineHeight: 1, zIndex: 10, whiteSpace: 'nowrap' }}>
                       [ {currentIndex + 1}/{images.length} ]
                     </div>
                   </>
