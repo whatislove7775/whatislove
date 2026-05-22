@@ -149,7 +149,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <header style={{ textAlign: 'center', padding: '20px 0', fontWeight: 500, flexShrink: 0 }}>
           <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
             <span>whatislove</span>
-            <span style={{ fontSize: '0.72em', lineHeight: 1, marginTop: '0.1em' }}>©</span>
+            <span style={{ position: 'relative', top: '1px' }}>©</span>
           </Link>
         </header>
 
