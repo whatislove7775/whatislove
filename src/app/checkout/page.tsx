@@ -6,14 +6,38 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 
-function YandexDeliveryBlock({ city, address, setAddress, deliveryCost, setDeliveryCost, getYandexPrice }: any) {
-  const price = getYandexPrice(city);
-  useEffect(() => { setDeliveryCost(price); }, [city]);
+function DeliveryAddressBlock({ deliveryService, city, address, setAddress, deliveryCost, setDeliveryCost, getCdekPrice, getYandexPrice }: any) {
+  const isCdek = deliveryService === 'СДЭК';
+  const price = isCdek ? getCdekPrice(city) : getYandexPrice(city);
+  const unavailable = !isCdek && price === null;
+
+  useEffect(() => {
+    if (!unavailable) setDeliveryCost(price);
+    else setDeliveryCost(0);
+  }, [city, deliveryService]);
+
+  if (unavailable) {
+    return (
+      <div style={{ fontSize: '13px', fontWeight: 700, color: '#c00', padding: '10px 0' }}>
+        Яндекс Доставка доступна только в Москве, Санкт-Петербурге и городах-миллионниках. Для других городов выберите СДЭК.
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <label style={{ fontSize: '14px', textTransform: 'lowercase' }}>адрес доставки (улица, дом, квартира)</label>
-      <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="ул. Ленина, д. 1, кв. 5" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
-      <span style={{ fontSize: '12px', fontWeight: 700 }}>~ {price} руб — приблизительная стоимость, уточняется после оформления</span>
+      <label style={{ fontSize: '14px', textTransform: 'lowercase' }}>
+        {isCdek ? 'адрес пункта выдачи СДЭК' : 'адрес доставки (улица, дом, квартира)'}
+      </label>
+      <input
+        type="text"
+        value={address}
+        onChange={(e) => setAddress(e.target.value)}
+        required
+        placeholder={isCdek ? 'напр. Москва, ул. Ленина, д. 1, ПВЗ' : 'ул. Ленина, д. 1, кв. 5'}
+        style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }}
+      />
+      <span style={{ fontSize: '12px', fontWeight: 700 }}>{price} руб — доставка {deliveryService}</span>
     </div>
   );
 }
@@ -49,13 +73,22 @@ export default function CheckoutPage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const deliveryOptions = ['СДЭК', 'Яндекс Доставка'];
 
-  const getYandexPrice = (city: string): number => {
-    const c = city.toLowerCase().trim();
-    if (/москв|моск\b/.test(c)) return 350;
-    if (/петербург|питер|ленинград/.test(c)) return 400;
-    const millions = ['новосибирск', 'екатеринбург', 'казань', 'нижний новгород', 'челябинск', 'самара', 'уфа', 'ростов', 'краснодар', 'омск', 'воронеж', 'пермь', 'волгоград', 'красноярск', 'саратов', 'тюмень', 'тольятти', 'ижевск', 'барнаул', 'ульяновск', 'иркутск', 'хабаровск', 'ярославль', 'владивосток', 'махачкала', 'томск'];
-    if (millions.some(m => c.includes(m))) return 500;
-    return 650;
+  const MILLIONS = ['новосибирск', 'екатеринбург', 'казань', 'нижний новгород', 'челябинск', 'самара', 'уфа', 'ростов', 'краснодар', 'омск', 'воронеж', 'пермь', 'волгоград', 'красноярск', 'саратов', 'тюмень', 'тольятти', 'ижевск', 'барнаул', 'ульяновск', 'иркутск', 'хабаровск', 'ярославль', 'владивосток', 'махачкала', 'томск'];
+
+  const getCdekPrice = (c: string): number => {
+    const v = c.toLowerCase().trim();
+    if (/москв/.test(v)) return 400;
+    if (/петербург|питер|ленинград/.test(v)) return 450;
+    if (MILLIONS.some(m => v.includes(m))) return 550;
+    return 750;
+  };
+
+  const getYandexPrice = (c: string): number => {
+    const v = c.toLowerCase().trim();
+    if (/москв/.test(v)) return 450;
+    if (/петербург|питер|ленинград/.test(v)) return 500;
+    if (MILLIONS.some(m => v.includes(m))) return 600;
+    return null as any; // Яндекс недоступен в малых городах
   };
 
   useEffect(() => {
@@ -67,45 +100,6 @@ export default function CheckoutPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    const container = document.getElementById('cdek-map');
-    if (!container || items.length === 0) return;
-
-    const init = () => {
-      if (container.innerHTML === '') {
-        new (window as any).CDEKWidget({
-          from: 'Москва',
-          root: 'cdek-map',
-          apiKey: 'c18d2701-3a00-462e-9e83-6e1547bab5a3',
-          servicePath: '/api/cdek',
-          defaultLocation: 'Москва',
-          hideDeliveryOptions: { door: true },
-          onChoose: (type: any, tariff: any, addressInfo: any) => {
-            const finalAddress = addressInfo.address
-              ? `${addressInfo.cityName || ''}, ${addressInfo.address}`.trim()
-              : (addressInfo.name || 'Выбран ПВЗ');
-            setAddress(finalAddress.startsWith(',') ? finalAddress.substring(1).trim() : finalAddress);
-            setDeliveryCost(tariff?.delivery_sum || 350);
-          },
-        });
-      }
-    };
-
-    if ((window as any).CDEKWidget) {
-      init();
-    } else {
-      const existingScript = document.querySelector('script[src="https://cdn.jsdelivr.net/npm/@cdek-it/widget@3"]');
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@cdek-it/widget@3';
-        script.onload = init;
-        document.body.appendChild(script);
-      } else {
-        existingScript.addEventListener('load', init);
-      }
-    }
-  }, [items.length]);
 
   useEffect(() => {
     setAddress('');
@@ -270,30 +264,16 @@ export default function CheckoutPage() {
               </div>
 
               {/* Яндекс Доставка: цена по городу + адрес текстом */}
-              {deliveryService === 'Яндекс Доставка' && (
-                <YandexDeliveryBlock
-                  city={city}
-                  address={address}
-                  setAddress={setAddress}
-                  deliveryCost={deliveryCost}
-                  setDeliveryCost={setDeliveryCost}
-                  getYandexPrice={getYandexPrice}
-                />
-              )}
-
-              {/* СДЭК: адрес из виджета */}
-              {deliveryService === 'СДЭК' && (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>пункт выдачи</label>
-                  <div style={{ position: 'relative' }}>
-                    <input type="text" value={address} readOnly required placeholder="выберите на карте ниже" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: '#f5f5f5' }} />
-                    <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px' }}>🔍</span>
-                  </div>
-                  {deliveryCost > 0 && <span style={{ fontSize: '12px', marginTop: '5px', fontWeight: 700 }}>~ {deliveryCost} руб за доставку СДЭК</span>}
-                </div>
-              )}
-
-              <div id="cdek-map" style={{ width: '100%', height: '400px', backgroundColor: '#f9f9f9', display: deliveryService === 'СДЭК' ? 'block' : 'none' }}></div>
+              <DeliveryAddressBlock
+                deliveryService={deliveryService}
+                city={city}
+                address={address}
+                setAddress={setAddress}
+                deliveryCost={deliveryCost}
+                setDeliveryCost={setDeliveryCost}
+                getCdekPrice={getCdekPrice}
+                getYandexPrice={getYandexPrice}
+              />
 
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginTop: '10px' }}>
                 <input
