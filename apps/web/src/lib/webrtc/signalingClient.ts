@@ -24,9 +24,14 @@ export class SignalingClient {
 
   constructor(
     private readonly roomId: string,
-    private readonly wsBaseUrl: string = typeof window !== "undefined"
-      ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`
-      : "ws://localhost"
+    private readonly wsBaseUrl: string = (() => {
+      // NEXT_PUBLIC_WS_URL — baked at build time for split deployments (Vercel + Railway)
+      const envWs = process.env.NEXT_PUBLIC_WS_URL;
+      if (envWs) return envWs.replace(/\/$/, "");
+      if (typeof window === "undefined") return "ws://localhost";
+      const proto = window.location.protocol === "https:" ? "wss" : "ws";
+      return `${proto}://${window.location.host}`;
+    })()
   ) {}
 
   connect(): Promise<void> {
