@@ -5,7 +5,7 @@ env = environ.Env(DEBUG=(bool, False))
 BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(BASE_DIR / ".env")
 
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default="django-insecure-set-SECRET_KEY-env-var-in-production")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 

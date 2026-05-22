@@ -4,7 +4,13 @@ from django.http import JsonResponse
 
 
 def health(request):
-    return JsonResponse({"status": "ok"})
+    from django.db import connection
+    try:
+        connection.ensure_connection()
+        db = "ok"
+    except Exception:
+        db = "unavailable"
+    return JsonResponse({"status": "ok", "db": db})
 
 
 urlpatterns = [
