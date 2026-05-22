@@ -23,7 +23,7 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
   const peerRef         = useRef<RTCPeerConnection | null>(null);
   const signalingRef    = useRef<SignalingClient | null>(null);
   const localStreamRef  = useRef<MediaStream | null>(null);
-  const remoteStreamRef = useRef(new MediaStream());
+  const remoteStreamRef = useRef<MediaStream | null>(null);
   const isCallerRef     = useRef(false);
 
   // Keep localStreamRef current; replace tracks on existing peer without reconnecting
@@ -52,8 +52,8 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
 
     remoteStreamRef.current = new MediaStream();
     pc.ontrack = e => {
-      e.streams[0].getTracks().forEach(t => remoteStreamRef.current.addTrack(t));
-      setRemoteStream(new MediaStream(remoteStreamRef.current.getTracks()));
+      e.streams[0].getTracks().forEach(t => remoteStreamRef.current!.addTrack(t));
+      setRemoteStream(new MediaStream(remoteStreamRef.current!.getTracks()));
     };
 
     pc.onicecandidate = e => {

@@ -1,4 +1,11 @@
-import { VideoSession } from "@/components/video/VideoSession";
+"use client";
+
+import dynamic from "next/dynamic";
+
+const VideoSession = dynamic(
+  () => import("@/components/video/VideoSession").then(m => m.VideoSession),
+  { ssr: false }
+);
 
 interface SessionPageProps {
   params: { id: string };
