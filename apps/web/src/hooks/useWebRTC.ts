@@ -16,41 +16,49 @@ interface UseWebRTCOptions {
 }
 
 export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
-  const [remoteStream, setRemoteStream]     = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream]       = useState<MediaStream | null>(null);
   const [connectionState, setConnectionState] = useState<string>("idle");
   const [signalingStatus, setSignalingStatus] = useState<string>("disconnected");
 
-  const peerRef      = useRef<RTCPeerConnection | null>(null);
-  const signalingRef = useRef<SignalingClient | null>(null);
-  const remoteRef    = useRef(new MediaStream());
+  const peerRef         = useRef<RTCPeerConnection | null>(null);
+  const signalingRef    = useRef<SignalingClient | null>(null);
+  const localStreamRef  = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef(new MediaStream());
 
-  const closePeer = useCallback(() => {
+  // Keep localStreamRef current; replace tracks on existing peer without reconnecting
+  useEffect(() => {
+    localStreamRef.current = localStream;
+    const pc = peerRef.current;
+    if (!pc || !localStream) return;
+    const senders = pc.getSenders();
+    localStream.getTracks().forEach(track => {
+      const sender = senders.find(s => s.track?.kind === track.kind);
+      if (sender) sender.replaceTrack(track);
+      else pc.addTrack(track, localStream);
+    });
+  }, [localStream]);
+
+  const makePeer = useCallback((isCaller: boolean): RTCPeerConnection => {
     peerRef.current?.close();
-    peerRef.current = null;
-  }, []);
 
-  const makePeer = useCallback((stream: MediaStream, isCaller: boolean, signaling: SignalingClient) => {
-    closePeer();
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    peerRef.current = pc;
 
-    // Add local tracks
-    stream.getTracks().forEach(t => pc.addTrack(t, stream));
+    // Add tracks from current stream
+    const stream = localStreamRef.current;
+    if (stream) stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
-    // Receive remote tracks
-    remoteRef.current = new MediaStream();
+    remoteStreamRef.current = new MediaStream();
     pc.ontrack = e => {
-      e.streams[0].getTracks().forEach(t => remoteRef.current.addTrack(t));
-      setRemoteStream(new MediaStream(remoteRef.current.getTracks()));
+      e.streams[0].getTracks().forEach(t => remoteStreamRef.current.addTrack(t));
+      setRemoteStream(new MediaStream(remoteStreamRef.current.getTracks()));
     };
 
     pc.onicecandidate = e => {
-      if (e.candidate) signaling.send({ type: "ice-candidate", candidate: e.candidate.toJSON() });
+      if (e.candidate) signalingRef.current?.send({ type: "ice-candidate", candidate: e.candidate.toJSON() });
     };
 
-    pc.onconnectionstatechange = () => {
-      setConnectionState(pc.connectionState);
-    };
-
+    pc.onconnectionstatechange = () => setConnectionState(pc.connectionState);
     pc.oniceconnectionstatechange = () => {
       if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
         setConnectionState("connected");
@@ -60,45 +68,61 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
     if (isCaller) {
       pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
         .then(o => pc.setLocalDescription(o))
-        .then(() => signaling.send({ type: "offer", sdp: pc.localDescription! }));
+        .then(() => signalingRef.current?.send({ type: "offer", sdp: pc.localDescription! }))
+        .catch(console.error);
     }
 
-    peerRef.current = pc;
     return pc;
-  }, [closePeer]);
+  }, []);
 
+  // WebSocket connects once — NOT dependent on localStream
   useEffect(() => {
-    // Wait for both roomId and camera stream before connecting
-    if (!roomId || !localStream) return;
+    if (!roomId) return;
 
     const signaling = new SignalingClient(roomId);
     signalingRef.current = signaling;
 
     const unsub = signaling.onMessage(async msg => {
-      if (!localStream) return;
+      const pc = peerRef.current;
 
       if (msg.type === "peer-joined") {
-        makePeer(localStream, true, signaling);
+        makePeer(true);
         return;
       }
+
       if (msg.type === "offer") {
-        const pc = makePeer(localStream, false, signaling);
-        await pc.setRemoteDescription(msg.sdp);
-        const ans = await pc.createAnswer();
-        await pc.setLocalDescription(ans);
-        signaling.send({ type: "answer", sdp: pc.localDescription! });
+        // Guard against glare: only accept offer if we haven't sent one
+        if (pc && pc.signalingState !== "stable") {
+          console.warn("Glare detected, ignoring offer in state:", pc.signalingState);
+          return;
+        }
+        const newPc = makePeer(false);
+        await newPc.setRemoteDescription(msg.sdp);
+        const ans = await newPc.createAnswer();
+        await newPc.setLocalDescription(ans);
+        signaling.send({ type: "answer", sdp: newPc.localDescription! });
         return;
       }
+
       if (msg.type === "answer") {
-        await peerRef.current?.setRemoteDescription(msg.sdp);
+        if (!pc || pc.signalingState !== "have-local-offer") {
+          console.warn("Ignoring answer in state:", pc?.signalingState);
+          return;
+        }
+        await pc.setRemoteDescription(msg.sdp).catch(console.error);
         return;
       }
+
       if (msg.type === "ice-candidate") {
-        try { await peerRef.current?.addIceCandidate(msg.candidate); } catch {}
+        if (pc?.remoteDescription) {
+          await pc.addIceCandidate(msg.candidate).catch(console.error);
+        }
         return;
       }
+
       if (msg.type === "peer-left") {
-        closePeer();
+        peerRef.current?.close();
+        peerRef.current = null;
         setRemoteStream(null);
         setConnectionState("idle");
       }
@@ -114,23 +138,20 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
     return () => {
       unsub();
       signaling.disconnect();
-      closePeer();
+      peerRef.current?.close();
+      peerRef.current = null;
+      signalingRef.current = null;
       setSignalingStatus("disconnected");
     };
-  }, [roomId, localStream, makePeer, closePeer]);
+  }, [roomId, makePeer]); // NO localStream dependency
 
   const hangUp = useCallback(() => {
     signalingRef.current?.disconnect();
-    closePeer();
+    peerRef.current?.close();
+    peerRef.current = null;
     setRemoteStream(null);
     setConnectionState("idle");
-  }, [closePeer]);
+  }, []);
 
-  return {
-    remoteStream,
-    connectionState,
-    signalingStatus,
-    isConnected: connectionState === "connected",
-    hangUp,
-  };
+  return { remoteStream, connectionState, signalingStatus, isConnected: connectionState === "connected", hangUp };
 }
