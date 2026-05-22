@@ -43,7 +43,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   // WebRTC стартует на сырой камере сразу; когда маска готова — треки заменяются через replaceTrack
   const localStream = (maskEnabled && maskedStream) ? maskedStream : cameraStream;
 
-  const { remoteStream, connectionState, isConnected, hangUp } = useWebRTC({ roomId, localStream });
+  const { remoteStream, connectionState, signalingStatus, isConnected, hangUp } = useWebRTC({ roomId, localStream });
 
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
@@ -75,8 +75,13 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
     );
   }
 
-  const stateColor = isConnected ? "#4caf82" : connectionState === "idle" ? "#7888a0" : "#e8b84b";
-  const stateLabel = isConnected ? "Соединение установлено" : connectionState === "idle" ? "Ожидание..." : `${connectionState}`;
+  const stateColor = isConnected ? "#4caf82" : signalingStatus === "error" ? "#e07070" : connectionState === "idle" ? "#7888a0" : "#e8b84b";
+  const stateLabel = isConnected
+    ? "Соединение установлено"
+    : signalingStatus === "error" ? "Ошибка WebSocket — проверь консоль"
+    : signalingStatus === "disconnected" ? "Ожидание камеры..."
+    : connectionState === "idle" ? "Ожидание второго участника..."
+    : connectionState;
 
   return (
     <div style={{ position: "relative", width: "100vw", height: "100vh", background: "#050810", overflow: "hidden" }}>
