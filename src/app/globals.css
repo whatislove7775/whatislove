@@ -115,6 +115,22 @@ pre {
   align-items: start;
 }
 
+/* Info page: center headers on non-desktop (≤1024px) */
+@media (max-width: 1024px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+    row-gap: 4px;
+    text-align: center;
+  }
+  .info-grid > div:first-child {
+    text-align: center !important;
+  }
+  .info-grid > div:last-child {
+    text-align: center;
+    margin: 0 auto;
+  }
+}
+
 /* Footer links + disclaimer */
 .footer-links {
   display: flex;
@@ -278,7 +294,7 @@ pre {
     text-align: center;
   }
   .info-grid > div:first-child {
-    text-align: center;
+    text-align: center !important;
   }
   .info-grid > div:last-child {
     text-align: center;
