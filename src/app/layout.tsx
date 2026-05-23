@@ -1,10 +1,9 @@
 import './globals.css';
-import { Inter, Press_Start_2P } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import ClientLayout from '@/components/ClientLayout';
 import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic', 'cyrillic-ext'], weight: ['500', '700', '800'] });
-const pressStart = Press_Start_2P({ weight: '400', subsets: ['latin'], variable: '--font-press-start' });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wh4tislove.ru';
 
@@ -54,7 +53,7 @@ export const viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      <body className={`${inter.className} ${pressStart.variable}`} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', margin: 0 }}>
+      <body className={inter.className} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', margin: 0 }}>
         {/* Оборачиваем всё в наш клиентский компонент */}
         <ClientLayout>
           {children}
