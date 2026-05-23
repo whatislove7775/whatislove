@@ -8,8 +8,13 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 
-# Standalone output — минимальный образ без node_modules в production
-ENV NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_* vars must be baked in at build time
+ARG NEXT_PUBLIC_API_URL=http://localhost/api/v1
+ARG NEXT_PUBLIC_WS_URL=ws://localhost
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL \
+    NEXT_TELEMETRY_DISABLED=1
+
 RUN npm run build
 
 # ── Stage 2: production runner ───────────────────────────────────
