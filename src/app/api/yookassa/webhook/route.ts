@@ -160,14 +160,14 @@ ${itemsList}
       const customerToken = process.env.CUSTOMER_BOT_TOKEN;
       if (customerChatId && customerToken) {
         const items_ = (orderData.items ?? [])
-          .map((i: any) => `• ${i.name} (р.${i.size}) x${i.quantity} — ${i.price * i.quantity}₽`)
+          .map((i: any) => `• ${escapeHtml(String(i.name))} (р.${escapeHtml(String(i.size))}) x${i.quantity} — ${i.price * i.quantity}₽`)
           .join('\n');
         const text =
           `✅ <b>Заказ подтверждён!</b>\n\n` +
           `🛒 <b>Состав:</b>\n${items_}\n\n` +
-          `🏙 <b>Город:</b> ${orderData.city}\n` +
-          `📍 <b>Адрес:</b> ${orderData.address}\n` +
-          `🚚 <b>Доставка:</b> ${orderData.delivery} — ${orderData.deliveryCost}₽\n` +
+          `🏙 <b>Город:</b> ${escapeHtml(orderData.city)}\n` +
+          `📍 <b>Адрес:</b> ${escapeHtml(orderData.address)}\n` +
+          `🚚 <b>Доставка:</b> ${escapeHtml(orderData.delivery)} — ${orderData.deliveryCost}₽\n` +
           `💰 <b>Итого оплачено:</b> ${orderData.totalPaid}₽\n\n` +
           `Скоро свяжемся с тобой! 🤍`;
         await fetch(`https://api.telegram.org/bot${customerToken}/sendMessage`, {

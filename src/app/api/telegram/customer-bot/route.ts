@@ -29,16 +29,20 @@ function normalizeTg(raw: string): string {
   return (raw ?? '').replace(/^@/, '').replace(/^https?:\/\/t\.me\//i, '').toLowerCase().trim();
 }
 
+function esc(t: any): string {
+  return String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function buildOrderText(o: any): string {
   const items = (o.items ?? [])
-    .map((i: any) => `• ${i.name} (р.${i.size}) x${i.quantity} — ${i.price * i.quantity}₽`)
+    .map((i: any) => `• ${esc(i.name)} (р.${esc(i.size)}) x${i.quantity} — ${i.price * i.quantity}₽`)
     .join('\n');
   return (
     `✅ <b>Заказ подтверждён!</b>\n\n` +
     `🛒 <b>Состав:</b>\n${items}\n\n` +
-    `🏙 <b>Город:</b> ${o.city}\n` +
-    `📍 <b>Адрес:</b> ${o.address}\n` +
-    `🚚 <b>Доставка:</b> ${o.delivery} — ${o.deliveryCost}₽\n` +
+    `🏙 <b>Город:</b> ${esc(o.city)}\n` +
+    `📍 <b>Адрес:</b> ${esc(o.address)}\n` +
+    `🚚 <b>Доставка:</b> ${esc(o.delivery)} — ${o.deliveryCost}₽\n` +
     `💰 <b>Итого оплачено:</b> ${o.totalPaid}₽\n\n` +
     `Скоро свяжемся с тобой! 🤍`
   );
