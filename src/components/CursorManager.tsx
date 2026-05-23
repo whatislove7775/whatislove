@@ -2,34 +2,37 @@
 import { useEffect, useRef } from 'react';
 
 const CURSORS = {
-  default: { src: '/cursors/default_arrow.cur', ox: 0,  oy: 0  },
-  pointer: { src: '/cursors/default_link.cur',  ox: 6,  oy: 0  },
-  text:    { src: '/cursors/default_beam.cur',  ox: 4,  oy: 8  },
-  wait:    { src: '/cursors/default_busy.cur',  ox: 8,  oy: 8  },
-  no:      { src: '/cursors/default_no.cur',    ox: 8,  oy: 8  },
-  move:    { src: '/cursors/default_move.cur',  ox: 8,  oy: 8  },
-  cross:   { src: '/cursors/default_cross.cur', ox: 8,  oy: 8  },
+  default: { src: '/cursors/default_arrow.cur', ox: 0, oy: 0  },
+  pointer: { src: '/cursors/default_link.cur',  ox: 6, oy: 0  },
+  text:    { src: '/cursors/default_beam.cur',  ox: 4, oy: 8  },
+  wait:    { src: '/cursors/default_busy.cur',  ox: 8, oy: 8  },
+  no:      { src: '/cursors/default_no.cur',    ox: 8, oy: 8  },
+  move:    { src: '/cursors/default_move.cur',  ox: 8, oy: 8  },
+  cross:   { src: '/cursors/default_cross.cur', ox: 8, oy: 8  },
 } as const;
 
 type CursorType = keyof typeof CURSORS;
 
-// Note: getComputedStyle().cursor returns 'none' everywhere due to cursor:none !important in CSS.
-// Detection must use tag names, roles, and raw inline style only.
+// getComputedStyle().cursor returns 'none' everywhere because of cursor:none !important CSS.
+// Use tag names, roles, and raw inline style only.
 function detect(el: EventTarget | null): CursorType {
   let node = el instanceof Element ? el : null;
   while (node) {
     if (node instanceof HTMLElement) {
-      const disabled = (node as HTMLButtonElement).disabled || node.getAttribute('aria-disabled') === 'true';
       const tag = node.tagName.toLowerCase();
+      const disabled =
+        (node as HTMLButtonElement).disabled ||
+        node.getAttribute('aria-disabled') === 'true';
 
       if (tag === 'input' || tag === 'textarea' || node.isContentEditable) {
         return disabled ? 'no' : 'text';
       }
       if (disabled) return 'no';
       if (tag === 'a' || tag === 'button' || tag === 'select' || tag === 'label') return 'pointer';
-      if (node.getAttribute('role') === 'button' || node.getAttribute('role') === 'link') return 'pointer';
+      const role = node.getAttribute('role');
+      if (role === 'button' || role === 'link') return 'pointer';
 
-      // Inline style is the only reliable source now — computed style returns 'none' always
+      // Inline style is reliable — computed style is always 'none' due to global CSS override
       const s = node.style.cursor;
       if (s === 'pointer')     return 'pointer';
       if (s === 'text')        return 'text';
@@ -45,27 +48,31 @@ function detect(el: EventTarget | null): CursorType {
 
 export default function CursorManager() {
   const divRef = useRef<HTMLDivElement>(null);
-  const cur = useRef<CursorType>('default');
+  const curRef = useRef<CursorType>('default');
 
   useEffect(() => {
     const div = divRef.current;
     if (!div) return;
 
-    // Touch devices don't need a cursor overlay
+    // Touch-primary devices don't need a cursor overlay
     if (window.matchMedia('(pointer: coarse)').matches) return;
 
-    // Preload all cursor images so switching is instant
+    // Preload so cursor-type switches are instant
     Object.values(CURSORS).forEach(({ src }) => { new Image().src = src; });
 
+    let shown = false;
+
     const onMove = (e: MouseEvent) => {
-      // Show on first move (starts hidden to avoid flash at 0,0)
-      if (div.style.display === 'none') div.style.display = 'block';
+      // Reveal on first move — avoids flash at (0,0) on page load
+      if (!shown) { shown = true; div.style.display = 'block'; }
 
       const type = detect(e.target);
       const { ox, oy } = CURSORS[type];
-      div.style.transform = `translate(${e.clientX - ox}px,${e.clientY - oy}px)`;
-      if (type !== cur.current) {
-        cur.current = type;
+      // translate3d forces GPU compositing, minimising perceived lag
+      div.style.transform = `translate3d(${e.clientX - ox}px,${e.clientY - oy}px,0)`;
+
+      if (type !== curRef.current) {
+        curRef.current = type;
         (div.firstElementChild as HTMLImageElement).src = CURSORS[type].src;
       }
     };

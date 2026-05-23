@@ -31,32 +31,44 @@ export default function Home() {
       {/* Навигация (3 кнопки) */}
       <nav className="home-nav" style={{
         display: 'flex',
-        gap: '20px',
+        gap: '10px',
         fontWeight: 700,
         fontSize: '14px',
         alignItems: 'center',
         textTransform: 'uppercase',
         position: 'relative',
-        zIndex: 50
+        zIndex: 50,
+        flexWrap: 'wrap',
+        justifyContent: 'center',
       }}>
-        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 ПРОДУКТЫ</Link>
-        <span className="nav-sep">/</span>
-        <Link href="/portfolio" style={{ textDecoration: 'none', color: '#000' }}>📁 ПОРТФОЛИО</Link>
-        <span className="nav-sep">/</span>
-        <Link href="/links" style={{ textDecoration: 'none', color: '#000' }}>🔗 ССЫЛКИ</Link>
+        <Link href="/products" style={{
+          textDecoration: 'none', color: '#000',
+          border: '1.5px solid #000', padding: '7px 16px', display: 'inline-block',
+        }}>📦 ПРОДУКТЫ</Link>
+        <Link href="/portfolio" style={{
+          textDecoration: 'none', color: '#000',
+          border: '1.5px solid #000', padding: '7px 16px', display: 'inline-block',
+        }}>📁 ПОРТФОЛИО</Link>
+        <Link href="/links" style={{
+          textDecoration: 'none', color: '#000',
+          border: '1.5px solid #000', padding: '7px 16px', display: 'inline-block',
+        }}>🔗 ССЫЛКИ</Link>
       </nav>
 
       <Link
         href="/lucky"
         style={{
-          marginTop: '28px',
-          fontWeight: 700,
+          marginTop: '20px',
+          fontWeight: 500,
           fontSize: '13px',
           color: '#aaa',
           textDecoration: 'none',
           letterSpacing: '0.5px',
           position: 'relative',
           zIndex: 50,
+          padding: '4px 10px',
+          border: '1px solid #ddd',
+          display: 'inline-block',
         }}
       >
         мне не везёт!

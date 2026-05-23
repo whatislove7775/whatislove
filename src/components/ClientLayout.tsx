@@ -48,7 +48,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   };
 
   if (pathname?.startsWith('/admin')) {
-    return <>{children}</>;
+    return (
+      <>
+        <CursorManager />
+        {children}
+      </>
+    );
   }
 
   return (
