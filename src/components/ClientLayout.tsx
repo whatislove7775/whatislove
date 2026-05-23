@@ -46,6 +46,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     setShowCookiePopup(false);
   };
 
+  if (pathname?.startsWith('/admin')) {
+    return <>{children}</>;
+  }
+
   return (
     <>
       <DvdScreensaver />
