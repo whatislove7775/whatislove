@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useCartStore } from '../store/cartStore';
 import DvdScreensaver from './DvdScreensaver';
+import CursorManager from './CursorManager';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -53,6 +54,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <DvdScreensaver />
+      <CursorManager />
       {/* ЗАГРУЗКА */}
       <div style={{
         position: 'fixed',
