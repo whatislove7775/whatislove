@@ -4,7 +4,11 @@ import { isAdmin, db } from '../_auth';
 export async function GET(req: NextRequest) {
   if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: orders } = await db().from('order_notifications').select('order_data, created_at');
+  const { data: orders } = await db()
+    .from('order_notifications')
+    .select('order_data, created_at')
+    .order('created_at', { ascending: false });
+
   const all = orders ?? [];
 
   const now = new Date();
@@ -18,24 +22,27 @@ export async function GET(req: NextRequest) {
   for (const row of all) {
     const o = row.order_data;
     const paid = Number(o?.totalPaid ?? 0);
+    if (!paid) continue; // пропускаем записи без суммы (битые тесты)
     totalRevenue += paid;
-    const createdAt = new Date(row.created_at);
-    if (createdAt >= startOfMonth) {
+    if (new Date(row.created_at) >= startOfMonth) {
       monthRevenue += paid;
       monthOrders++;
     }
     for (const item of o?.items ?? []) {
-      if (!productSales[item.id]) productSales[item.id] = { name: item.name, qty: 0, revenue: 0 };
-      productSales[item.id].qty += item.quantity;
-      productSales[item.id].revenue += item.price * item.quantity;
+      const key = item.id ?? item.name;
+      if (!key) continue;
+      if (!productSales[key]) productSales[key] = { name: item.name, qty: 0, revenue: 0 };
+      productSales[key].qty += Number(item.quantity) || 0;
+      productSales[key].revenue += (Number(item.price) || 0) * (Number(item.quantity) || 0);
     }
   }
 
   const topProducts = Object.values(productSales).sort((a, b) => b.qty - a.qty).slice(0, 5);
+  // all уже отсортирован по created_at DESC
   const recent = all.slice(0, 5).map(r => ({ ...r.order_data, created_at: r.created_at }));
 
   return NextResponse.json({
-    totalOrders: all.length,
+    totalOrders: all.filter(r => Number(r.order_data?.totalPaid) > 0).length,
     totalRevenue,
     monthOrders,
     monthRevenue,
