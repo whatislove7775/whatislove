@@ -114,7 +114,7 @@ export default function CheckoutPage() {
       new (window as any).CDEKWidget({
         from: 'Москва',
         root: 'cdek-map',
-        apiKey: '3489c7b6-8cd9-4f69-89e2-a1b19a5cc111',
+        apiKey: 'cabe6d29-b44e-4d18-9bb6-cd9ccbc0d449',
         servicePath: '/api/cdek',
         defaultLocation: 'Москва',
         hideDeliveryOptions: { door: true },
