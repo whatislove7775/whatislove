@@ -13,32 +13,24 @@ const CURSORS = {
 
 type CursorType = keyof typeof CURSORS;
 
-// getComputedStyle().cursor returns 'none' everywhere because of cursor:none !important CSS.
-// Use tag names, roles, and raw inline style only.
+// Detection uses the --cur CSS custom property defined in globals.css.
+// Custom properties inherit and cascade normally, unlike `cursor` which is
+// overridden everywhere by `cursor: none !important`.
 function detect(el: EventTarget | null): CursorType {
   let node = el instanceof Element ? el : null;
   while (node) {
     if (node instanceof HTMLElement) {
-      const tag = node.tagName.toLowerCase();
-      const disabled =
-        (node as HTMLButtonElement).disabled ||
-        node.getAttribute('aria-disabled') === 'true';
+      // --cur is inherited, so even child elements of a <button> return 'pointer'
+      const v = getComputedStyle(node).getPropertyValue('--cur').trim() as CursorType;
+      if (v in CURSORS) return v;
 
-      if (tag === 'input' || tag === 'textarea' || node.isContentEditable) {
-        return disabled ? 'no' : 'text';
-      }
-      if (disabled) return 'no';
-      if (tag === 'a' || tag === 'button' || tag === 'select' || tag === 'label') return 'pointer';
-      const role = node.getAttribute('role');
-      if (role === 'button' || role === 'link') return 'pointer';
-
-      // Inline style is reliable — computed style is always 'none' due to global CSS override
+      // Fallback: React inline style prop (not affected by global CSS override)
       const s = node.style.cursor;
-      if (s === 'pointer')     return 'pointer';
-      if (s === 'text')        return 'text';
-      if (s === 'not-allowed') return 'no';
-      if (s === 'move')        return 'move';
-      if (s === 'crosshair')   return 'cross';
+      if (s === 'pointer')              return 'pointer';
+      if (s === 'text')                 return 'text';
+      if (s === 'not-allowed')          return 'no';
+      if (s === 'move')                 return 'move';
+      if (s === 'crosshair')            return 'cross';
       if (s === 'wait' || s === 'progress') return 'wait';
     }
     node = node.parentElement;
@@ -57,28 +49,31 @@ export default function CursorManager() {
     // Touch-primary devices don't need a cursor overlay
     if (window.matchMedia('(pointer: coarse)').matches) return;
 
-    // Preload so cursor-type switches are instant
+    // Preload so cursor-type switches are instant (no flash on first use)
     Object.values(CURSORS).forEach(({ src }) => { new Image().src = src; });
 
     let shown = false;
 
-    const onMove = (e: MouseEvent) => {
-      // Reveal on first move — avoids flash at (0,0) on page load
+    const show = (e: MouseEvent) => {
       if (!shown) { shown = true; div.style.display = 'block'; }
-
       const type = detect(e.target);
       const { ox, oy } = CURSORS[type];
-      // translate3d forces GPU compositing, minimising perceived lag
       div.style.transform = `translate3d(${e.clientX - ox}px,${e.clientY - oy}px,0)`;
-
       if (type !== curRef.current) {
         curRef.current = type;
         (div.firstElementChild as HTMLImageElement).src = CURSORS[type].src;
       }
     };
 
-    document.addEventListener('mousemove', onMove, { passive: true });
-    return () => document.removeEventListener('mousemove', onMove);
+    // Hide when mouse leaves the browser window — prevents ghost cursor at edge
+    const hide = () => { shown = false; div.style.display = 'none'; };
+
+    document.addEventListener('mousemove',  show,  { passive: true });
+    document.addEventListener('mouseleave', hide);
+    return () => {
+      document.removeEventListener('mousemove',  show);
+      document.removeEventListener('mouseleave', hide);
+    };
   }, []);
 
   return (
@@ -87,8 +82,7 @@ export default function CursorManager() {
       style={{
         display: 'none',
         position: 'fixed',
-        top: 0,
-        left: 0,
+        top: 0, left: 0,
         pointerEvents: 'none',
         zIndex: 999999,
         willChange: 'transform',

@@ -382,3 +382,22 @@ pre {
 *, *::before, *::after {
   cursor: none !important;
 }
+
+/* --cur custom property signals the JS CursorManager what type to show.
+   Custom properties inherit normally (unaffected by cursor:none !important). */
+a, button, [role="button"],
+input[type="submit"], input[type="button"], input[type="reset"],
+label[for], select {
+  --cur: pointer;
+}
+
+input:not([type="submit"]):not([type="button"]):not([type="reset"])
+      :not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+textarea, [contenteditable="true"] {
+  --cur: text;
+}
+
+[disabled], [aria-disabled="true"],
+button:disabled, input:disabled, select:disabled, textarea:disabled {
+  --cur: no;
+}

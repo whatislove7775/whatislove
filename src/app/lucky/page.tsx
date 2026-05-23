@@ -170,12 +170,14 @@ function drawClouds(ctx: CanvasRenderingContext2D, clouds: { x: number; y: numbe
   }
 }
 
+const FONT_GAME = '"Press Start 2P", monospace';
+
 // ── Score ─────────────────────────────────────────────────────────────────────
 function drawScore(ctx: CanvasRenderingContext2D, score: number, best: number) {
-  ctx.font = 'bold 14px Inter, sans-serif';
+  ctx.font = `12px ${FONT_GAME}`;
   ctx.textAlign = 'right';
   ctx.fillStyle = HI;
-  ctx.fillText(`HI ${String(best).padStart(5, '0')}`, CW - 20, 26);
+  ctx.fillText(`HI ${String(best).padStart(5, '0')}`, CW - 20, 24);
   ctx.fillStyle = INK;
   ctx.fillText(String(score).padStart(5, '0'), CW - 20, 44);
   ctx.textAlign = 'left';
@@ -252,6 +254,11 @@ export default function LuckyPage() {
     canvas.addEventListener('touchstart', onTouch, { passive: false });
     canvas.addEventListener('click', doJump);
 
+    // Wait for Press Start 2P to load before starting loop
+    document.fonts.load(`12px ${FONT_GAME}`).finally(() => {
+      raf.current = requestAnimationFrame(tick);
+    });
+
     function tick() {
       const s = gs.current;
 
@@ -264,13 +271,13 @@ export default function LuckyPage() {
         drawGround(ctx, 0);
         drawDog(ctx, DOG_X, GROUND - DOG_H, 0, false, false);
 
-        ctx.font = 'bold 16px Inter, sans-serif';
+        ctx.font = `12px ${FONT_GAME}`;
         ctx.fillStyle = INK;
         ctx.textAlign = 'center';
-        ctx.fillText('НАЖМИ ПРОБЕЛ / ТАП ЧТОБЫ НАЧАТЬ', CW / 2, CH / 2 + 8);
-        ctx.font = '12px Inter, sans-serif';
+        ctx.fillText('PRESS SPACE / TAP', CW / 2, CH / 2 + 2);
+        ctx.font = '11px Inter, sans-serif';
         ctx.fillStyle = HI;
-        ctx.fillText('прыжок · двойной прыжок · собирай ♥ для жизней', CW / 2, CH / 2 + 30);
+        ctx.fillText('двойной прыжок · собирай ♥ для жизней', CW / 2, CH / 2 + 26);
         ctx.textAlign = 'left';
         raf.current = requestAnimationFrame(tick);
         return;
@@ -373,21 +380,21 @@ export default function LuckyPage() {
       if (s.dead) {
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.fillRect(0, 0, CW, CH);
-        ctx.font = 'bold 24px Inter, sans-serif';
+        ctx.font = `20px ${FONT_GAME}`;
         ctx.fillStyle = INK;
         ctx.textAlign = 'center';
-        ctx.fillText('GAME OVER', CW / 2, CH / 2 - 16);
-        ctx.font = '14px Inter, sans-serif';
+        ctx.fillText('GAME OVER', CW / 2, CH / 2 - 14);
+        ctx.font = `10px ${FONT_GAME}`;
         ctx.fillStyle = HI;
-        ctx.fillText(`счёт: ${s.score}`, CW / 2, CH / 2 + 12);
-        ctx.fillText('пробел / тап — рестарт', CW / 2, CH / 2 + 36);
+        ctx.fillText(`SCORE  ${s.score}`, CW / 2, CH / 2 + 14);
+        ctx.font = '12px Inter, sans-serif';
+        ctx.fillText('пробел / тап — рестарт', CW / 2, CH / 2 + 38);
         ctx.textAlign = 'left';
       }
 
       raf.current = requestAnimationFrame(tick);
     }
 
-    raf.current = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(raf.current);
       document.removeEventListener('keydown', onKey);
