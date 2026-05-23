@@ -1,109 +1,129 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 
 export default function RegisterPage() {
-  const [tab, setTab] = useState<"client" | "psychologist">("client");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [role, setRole]               = useState<"client" | "psychologist">("client");
+  const [email, setEmail]             = useState("");
+  const [password, setPassword]       = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [bio, setBio] = useState("");
-  const [rate, setRate] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState("");
+  const [bio, setBio]                 = useState("");
+  const [rate, setRate]               = useState("");
+  const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState("");
+  const [done, setDone]               = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    setLoading(true); setError("");
     try {
-      const url = tab === "client"
-        ? `${API}/auth/register/`
-        : `${API}/auth/register/psychologist/`;
-
-      const body = tab === "client"
-        ? { email, password }
-        : { email, password, display_name: displayName, bio, session_rate_rub: rate };
-
+      const url = role === "client" ? `${API}/auth/register/` : `${API}/auth/register/psychologist/`;
+      const body: any = { email, password };
+      if (role === "psychologist") {
+        body.display_name     = displayName;
+        body.bio              = bio;
+        body.session_rate_rub = Number(rate);
+      }
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(Object.values(data).flat().join(" ") || "Ошибка регистрации");
-      } else {
-        setDone(data.detail ?? "Готово");
-      }
-    } catch {
-      setError("Сервер недоступен");
+      if (!res.ok) throw new Error(JSON.stringify(data));
+      setDone(true);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  if (done) return (
+    <>
+      <nav className="nav">
+        <Link href="/" className="nav-logo">Apro<span>sop</span></Link>
+      </nav>
+      <div className="page flex-center" style={{ padding: "24px" }}>
+        <div className="form-card" style={{ textAlign: "center" }}>
+          <div style={{ fontSize: "48px", marginBottom: "16px" }}>✓</div>
+          <h3 style={{ marginBottom: "8px" }}>Аккаунт создан</h3>
+          <p style={{ color: "var(--text-secondary)", marginBottom: "24px", fontSize: "14px" }}>
+            {role === "psychologist" ? "Ваш профиль отправлен на верификацию. Обычно это занимает до 24 часов." : "Можете войти и начать сессию."}
+          </p>
+          <Link href="/login" className="btn btn-primary btn-full">Войти</Link>
+        </div>
+      </div>
+    </>
+  );
 
   return (
     <>
-      <style>{`
-        .field { width: 100%; padding: 0.75rem 1rem; background: var(--chrome-800); border: 1px solid var(--chrome-600); color: var(--chrome-100); font-family: var(--font-body); font-size: 0.95rem; outline: none; transition: border-color var(--transition-base); }
-        .field:focus { border-color: var(--accent-chrome); }
-        .tab { flex: 1; padding: 0.6rem; background: transparent; border: 1px solid var(--chrome-600); color: var(--chrome-400); font-family: var(--font-heading); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all var(--transition-base); }
-        .tab.active { background: var(--accent-chrome); border-color: var(--accent-chrome); color: var(--chrome-900); }
-        .submit { width: 100%; padding: 0.85rem; background: transparent; border: 1px solid var(--accent-chrome); color: var(--accent-chrome); font-family: var(--font-heading); font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all var(--transition-base); }
-        .submit:hover:not(:disabled) { background: var(--accent-chrome); color: var(--chrome-900); }
-        .submit:disabled { opacity: 0.5; cursor: not-allowed; }
-        label { font-family: var(--font-mono); font-size: 0.72rem; color: var(--chrome-500); letter-spacing: 0.05em; display: block; margin-bottom: 0.35rem; }
-      `}</style>
+      <nav className="nav">
+        <Link href="/" className="nav-logo">Apro<span>sop</span></Link>
+        <Link href="/login" className="btn btn-secondary btn-sm" style={{ marginLeft: "auto" }}>Войти</Link>
+      </nav>
 
-      <main style={{ minHeight: "100vh", background: "var(--chrome-900)", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
-        <div style={{ width: "100%", maxWidth: "420px" }}>
-          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.8rem", letterSpacing: "0.15em", color: "var(--accent-chrome)", textAlign: "center", marginBottom: "2rem" }}>
-            РЕГИСТРАЦИЯ
-          </h1>
+      <div className="page flex-center" style={{ padding: "24px" }}>
+        <div className="form-card" style={{ maxWidth: "460px" }}>
+          <h2 style={{ marginBottom: "6px" }}>Создать аккаунт</h2>
+          <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "24px" }}>
+            Email хранится как SHA-256 хэш — мы не знаем, кто вы
+          </p>
 
-          <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
-            <button className={`tab${tab === "client" ? " active" : ""}`} onClick={() => setTab("client")}>Клиент</button>
-            <button className={`tab${tab === "psychologist" ? " active" : ""}`} onClick={() => setTab("psychologist")}>Психолог</button>
+          <div className="tabs" style={{ marginBottom: "24px" }}>
+            <button className={`tab ${role === "client" ? "active" : ""}`} onClick={() => setRole("client")}>Клиент</button>
+            <button className={`tab ${role === "psychologist" ? "active" : ""}`} onClick={() => setRole("psychologist")}>Психолог</button>
           </div>
 
-          {done ? (
-            <div style={{ textAlign: "center" }}>
-              <p style={{ color: "var(--accent-chrome)", fontFamily: "var(--font-body)", marginBottom: "1.5rem" }}>{done}</p>
-              <a href="/login" style={{ color: "var(--chrome-400)", fontFamily: "var(--font-heading)", fontSize: "0.8rem", letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none" }}>
-                Войти →
-              </a>
+          {error && <div className="form-error">{error}</div>}
+
+          <form onSubmit={submit}>
+            <div className="form-field">
+              <label>Email</label>
+              <input type="email" placeholder="your@email.com" value={email}
+                onChange={e => setEmail(e.target.value)} required />
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div><label>Email</label><input className="field" type="email" value={email} onChange={e => setEmail(e.target.value)} required /></div>
-              <div><label>Пароль (мин. 8 символов)</label><input className="field" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} /></div>
+            <div className="form-field">
+              <label>Пароль <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(мин. 8 символов)</span></label>
+              <input type="password" placeholder="••••••••" value={password} minLength={8}
+                onChange={e => setPassword(e.target.value)} required />
+            </div>
 
-              {tab === "psychologist" && (
-                <>
-                  <div><label>Имя для отображения</label><input className="field" type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required /></div>
-                  <div><label>О себе</label><textarea className="field" rows={3} value={bio} onChange={e => setBio(e.target.value)} style={{ resize: "vertical" }} /></div>
-                  <div><label>Стоимость сессии (₽)</label><input className="field" type="number" min="500" value={rate} onChange={e => setRate(e.target.value)} required /></div>
-                </>
-              )}
+            {role === "psychologist" && (
+              <>
+                <div className="form-field">
+                  <label>Отображаемое имя</label>
+                  <input placeholder="Имя, которое видят клиенты" value={displayName}
+                    onChange={e => setDisplayName(e.target.value)} required />
+                </div>
+                <div className="form-field">
+                  <label>О себе</label>
+                  <textarea placeholder="Образование, опыт, специализация..." rows={3} value={bio}
+                    onChange={e => setBio(e.target.value)} required />
+                </div>
+                <div className="form-field">
+                  <label>Стоимость сессии (₽)</label>
+                  <input type="number" placeholder="3000" value={rate}
+                    onChange={e => setRate(e.target.value)} required />
+                </div>
+              </>
+            )}
 
-              {error && <p style={{ color: "#e07070", fontFamily: "var(--font-mono)", fontSize: "0.8rem" }}>{error}</p>}
+            <button type="submit" className="btn btn-primary btn-full" style={{ marginTop: "8px" }} disabled={loading}>
+              {loading ? "Регистрация..." : "Создать аккаунт"}
+            </button>
+          </form>
 
-              <button className="submit" type="submit" disabled={loading}>
-                {loading ? "..." : "Создать аккаунт"}
-              </button>
-            </form>
-          )}
-
-          <p style={{ marginTop: "1.5rem", textAlign: "center", fontFamily: "var(--font-body)", fontSize: "0.85rem", color: "var(--chrome-400)" }}>
-            Уже есть аккаунт?{" "}
-            <a href="/login" style={{ color: "var(--accent-chrome)", textDecoration: "none" }}>Войти</a>
+          <div className="divider" />
+          <p style={{ textAlign: "center", fontSize: "14px", color: "var(--text-secondary)" }}>
+            Уже есть аккаунт? <Link href="/login">Войти</Link>
           </p>
         </div>
-      </main>
+      </div>
     </>
   );
 }

@@ -2,15 +2,19 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ANON PSY — Анонимное консультирование",
+  title: "Aprosop — Анонимная психологическая помощь",
   description:
-    "Информационно-консультационные услуги в сфере психологии. " +
-    "Полная анонимность клиента, верифицированные специалисты.",
-  robots: "noindex, nofollow",
+    "Первая платформа Zero Knowledge терапии. AI-маска лица, P2P видео без серверов, полная анонимность. Твои эмоции — не твоё лицо.",
+  keywords: "психология, анонимная терапия, онлайн психолог, конфиденциально",
+  openGraph: {
+    title: "Aprosop — Говори свободно. Мы скрыли всё остальное.",
+    description: "Анонимная психологическая помощь с AI-маской и Zero Knowledge архитектурой.",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050810",
+  themeColor: "#17212B",
   colorScheme: "dark",
 };
 

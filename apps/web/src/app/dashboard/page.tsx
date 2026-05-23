@@ -1,87 +1,114 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 
 export default function DashboardPage() {
+  const [role, setRole]   = useState("");
   const [alias, setAlias] = useState("");
-  const [role, setRole] = useState("");
 
   useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) { window.location.href = "/login"; return; }
+    setRole(localStorage.getItem("role") ?? "client");
     setAlias(localStorage.getItem("alias") ?? "");
-    setRole(localStorage.getItem("role") ?? "");
-    if (!localStorage.getItem("access")) {
-      window.location.href = "/login";
-    }
   }, []);
 
-  function logout() {
+  const logout = () => {
     localStorage.clear();
     window.location.href = "/";
-  }
+  };
+
+  const isPsych = role === "psychologist";
 
   return (
     <>
-      <style>{`
-        .card { background: var(--chrome-800); border: 1px solid var(--chrome-600); padding: 1.5rem 2rem; }
-        .nav-link { font-family: var(--font-heading); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--chrome-400); text-decoration: none; padding: 0.5rem 1rem; border: 1px solid transparent; transition: all var(--transition-base); }
-        .nav-link:hover { border-color: var(--chrome-500); color: var(--chrome-200); }
-        .btn-logout { background: transparent; border: 1px solid var(--chrome-600); color: var(--chrome-500); font-family: var(--font-heading); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.5rem 1rem; cursor: pointer; transition: all var(--transition-base); }
-        .btn-logout:hover { border-color: #e07070; color: #e07070; }
-      `}</style>
+      <nav className="nav">
+        <Link href="/" className="nav-logo">Apro<span>sop</span></Link>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "auto" }}>
+          <span className={`badge ${isPsych ? "badge-blue" : "badge-green"}`}>
+            {isPsych ? "Психолог" : "Клиент"}
+          </span>
+          {alias && <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>#{alias.slice(0, 8)}</span>}
+          <button onClick={logout} className="btn btn-ghost btn-sm">Выйти</button>
+        </div>
+      </nav>
 
-      <main style={{ minHeight: "100vh", background: "var(--chrome-900)", padding: "2rem" }}>
-        <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "3rem", borderBottom: "1px solid var(--chrome-700)", paddingBottom: "1rem" }}>
-          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.2rem", letterSpacing: "0.15em", color: "var(--accent-chrome)" }}>
-            ANON PSY
-          </h1>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.8rem", color: "var(--chrome-500)" }}>
-              {alias || "—"}
-            </span>
-            <button className="btn-logout" onClick={logout}>Выйти</button>
+      <div className="page">
+        <div className="page-inner">
+          <div style={{ marginBottom: "32px" }}>
+            <h2>Добро пожаловать</h2>
+            <p style={{ color: "var(--text-secondary)", marginTop: "6px" }}>
+              {isPsych ? "Управляйте расписанием и принимайте клиентов" : "Забронируйте сессию или войдите в текущую"}
+            </p>
           </div>
-        </header>
 
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-          <p style={{ fontFamily: "var(--font-body)", color: "var(--chrome-400)", fontSize: "0.85rem", marginBottom: "2rem" }}>
-            Роль: <span style={{ color: "var(--accent-chrome)" }}>{role === "psychologist" ? "Психолог" : "Клиент"}</span>
-          </p>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
-            <div className="card">
-              <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "0.95rem", letterSpacing: "0.12em", color: "var(--chrome-200)", marginBottom: "0.75rem" }}>
-                СЕССИИ
-              </h2>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.85rem", color: "var(--chrome-500)", marginBottom: "1rem" }}>
-                Предстоящие и прошедшие консультации
-              </p>
-              <a href="/sessions" className="nav-link" style={{ display: "inline-block" }}>Перейти →</a>
-            </div>
-
-            {role !== "psychologist" && (
-              <div className="card">
-                <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "0.95rem", letterSpacing: "0.12em", color: "var(--chrome-200)", marginBottom: "0.75rem" }}>
-                  СПЕЦИАЛИСТЫ
-                </h2>
-                <p style={{ fontFamily: "var(--font-body)", fontSize: "0.85rem", color: "var(--chrome-500)", marginBottom: "1rem" }}>
-                  Найти верифицированного психолога
+          <div className="grid-3" style={{ marginBottom: "24px" }}>
+            <Link href="/sessions" style={{ textDecoration: "none" }}>
+              <div className="card card-hover" style={{ cursor: "pointer" }}>
+                <div style={{ fontSize: "28px", marginBottom: "12px" }}>📅</div>
+                <h4 style={{ marginBottom: "6px" }}>Сессии</h4>
+                <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                  {isPsych ? "Предстоящие встречи с клиентами" : "Ваши консультации"}
                 </p>
-                <a href="/psychologists" className="nav-link" style={{ display: "inline-block" }}>Перейти →</a>
               </div>
+            </Link>
+
+            {!isPsych && (
+              <Link href="/sessions/book" style={{ textDecoration: "none" }}>
+                <div className="card card-hover" style={{ cursor: "pointer", borderColor: "rgba(36,129,204,0.3)" }}>
+                  <div style={{ fontSize: "28px", marginBottom: "12px" }}>▶</div>
+                  <h4 style={{ marginBottom: "6px" }}>Прямо сейчас</h4>
+                  <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Бесплатная пробная сессия</p>
+                  <span className="badge badge-green" style={{ marginTop: "10px" }}>Бесплатно</span>
+                </div>
+              </Link>
+            )}
+
+            {!isPsych && (
+              <Link href="/psychologists" style={{ textDecoration: "none" }}>
+                <div className="card card-hover" style={{ cursor: "pointer" }}>
+                  <div style={{ fontSize: "28px", marginBottom: "12px" }}>🔍</div>
+                  <h4 style={{ marginBottom: "6px" }}>Специалисты</h4>
+                  <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Верифицированные психологи</p>
+                </div>
+              </Link>
             )}
 
             <div className="card">
-              <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "0.95rem", letterSpacing: "0.12em", color: "var(--chrome-200)", marginBottom: "0.75rem" }}>
-                АНОНИМНОСТЬ
-              </h2>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.85rem", color: "var(--chrome-500)" }}>
-                Ваш email не хранится. Идентификатор — SHA-256 хеш.
-                Видео P2P, сервер не получает медиапоток.
+              <div style={{ fontSize: "28px", marginBottom: "12px" }}>🛡</div>
+              <h4 style={{ marginBottom: "6px" }}>Анонимность</h4>
+              <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                Ваш ID хранится как SHA-256 хэш
               </p>
+              <span className="badge badge-green" style={{ marginTop: "10px" }}>Zero Knowledge</span>
+            </div>
+          </div>
+
+          {/* Privacy panel */}
+          <div className="card" style={{ borderColor: "rgba(36,129,204,0.2)" }}>
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+              {[
+                { icon: "🔒", label: "E2E шифрование", ok: true },
+                { icon: "🎭", label: "AI Face Mask", ok: true },
+                { icon: "📡", label: "P2P видео", ok: true },
+                { icon: "💾", label: "Хранение данных", ok: false, note: "0 байт" },
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>{item.icon}</span>
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>{item.label}</span>
+                  {item.note
+                    ? <span className="badge badge-blue" style={{ fontSize: "11px" }}>{item.note}</span>
+                    : <span style={{ color: "var(--success)", fontSize: "13px" }}>✓</span>
+                  }
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </>
   );
 }
