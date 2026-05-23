@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
-const DISABLED_PATHS = ['/checkout', '/info', '/privacy', '/oferta'];
+const DISABLED_PATHS = ['/checkout', '/info', '/privacy', '/oferta', '/lucky'];
 
 export default function DvdScreensaver() {
   const pathname = usePathname();

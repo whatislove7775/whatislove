@@ -5,8 +5,8 @@ import Link from 'next/link';
 // ── Canvas ────────────────────────────────────────────────────────────────────
 const CW = 800;
 const CH = 300;
-const GROUND = 240;
-const P = 3;
+const GROUND = 245;
+const P = 2;           // pixel unit — smaller = less pixelated
 const DOG_X = 80;
 const GRAVITY   = 0.58;
 const JUMP_V    = -13.5;
@@ -18,7 +18,8 @@ const INK  = '#535353';
 const HI   = '#9e9e9e';
 const BG   = '#ffffff';
 const LITE = '#d0d0d0';
-const FONT = '"Error404", monospace';
+const FONT = '700 13px Inter, sans-serif';
+const FONT_SM = '700 11px Inter, sans-serif';
 
 function p(n: number) { return n * P; }
 function px(ctx: CanvasRenderingContext2D, c: string, x: number, y: number, w: number, h: number) {
@@ -26,29 +27,22 @@ function px(ctx: CanvasRenderingContext2D, c: string, x: number, y: number, w: n
   ctx.fillRect(Math.round(x), Math.round(y), w, h);
 }
 
-// ── Dog — fully monochrome ────────────────────────────────────────────────────
+// ── Dog — 16×14 pixel units ───────────────────────────────────────────────────
 const DOG_W = p(16);
 const DOG_H = p(14);
 
 function drawDog(ctx: CanvasRenderingContext2D, x: number, y: number, leg: number, dead: boolean, flash: boolean) {
   if (flash) return;
-  // tail
   px(ctx, INK, x,        y + p(3), p(2), p(1));
   px(ctx, INK, x + p(1), y + p(2), p(1), p(1));
   px(ctx, INK, x,        y + p(1), p(1), p(2));
-  // body
   px(ctx, INK, x + p(2), y + p(3), p(9), p(6));
-  // belly (white gap)
   px(ctx, BG,  x + p(3), y + p(5), p(6), p(2));
-  // head
   px(ctx, INK, x + p(8), y, p(8), p(7));
-  // ear
   px(ctx, INK, x + p(8), y - p(2), p(3), p(3));
   px(ctx, BG,  x + p(9), y - p(1), p(1), p(2));
-  // snout (same ink — fully B&W)
   px(ctx, INK, x + p(13), y + p(3), p(3), p(3));
-  px(ctx, BG,  x + p(14), y + p(4), p(1), p(1)); // nostril
-  // eye
+  px(ctx, BG,  x + p(14), y + p(4), p(1), p(1));
   if (dead) {
     px(ctx, BG, x + p(11), y + p(1), p(1), p(1));
     px(ctx, BG, x + p(13), y + p(1), p(1), p(1));
@@ -59,7 +53,6 @@ function drawDog(ctx: CanvasRenderingContext2D, x: number, y: number, leg: numbe
     px(ctx, BG,  x + p(11), y + p(1), p(2), p(2));
     px(ctx, INK, x + p(12), y + p(1), p(1), p(1));
   }
-  // legs
   if (leg === 0) {
     px(ctx, INK, x + p(4), y + p(9),  p(2), p(5));
     px(ctx, INK, x + p(4), y + p(13), p(3), p(1));
@@ -75,22 +68,42 @@ function drawDog(ctx: CanvasRenderingContext2D, x: number, y: number, leg: numbe
   }
 }
 
-// ── Hydrant ───────────────────────────────────────────────────────────────────
-const HYD_W = p(11);
-const HYD_H = p(13);
+// ── Poop — conical pile, 12×14 pixel units ───────────────────────────────────
+const POOP_W = p(12);
+const POOP_H = p(14);
 
-function drawHydrant(ctx: CanvasRenderingContext2D, x: number, yBot: number) {
-  const y = yBot - HYD_H;
-  px(ctx, INK, x,         y + p(9), p(11), p(4));
-  px(ctx, INK, x + p(1),  y + p(3), p(9),  p(7));
-  px(ctx, BG,  x + p(3),  y + p(4), p(3),  p(5));
-  px(ctx, INK, x - p(1),  y + p(5), p(2),  p(3));
-  px(ctx, INK, x + p(10), y + p(5), p(2),  p(3));
-  px(ctx, INK, x + p(1),  y + p(2), p(9),  p(2));
-  px(ctx, INK, x + p(2),  y,        p(7),  p(3));
+function drawPoop(ctx: CanvasRenderingContext2D, x: number, yBot: number) {
+  const y = yBot - POOP_H;
+  // swirl tip
+  px(ctx, INK, x + p(5),  y,         p(2), p(2));
+  px(ctx, INK, x + p(4),  y + p(1),  p(1), p(1));
+  px(ctx, INK, x + p(6),  y + p(1),  p(1), p(2));
+  px(ctx, INK, x + p(4),  y + p(2),  p(2), p(1));
+  // middle tier
+  px(ctx, INK, x + p(3),  y + p(3),  p(6), p(3));
+  px(ctx, BG,  x + p(4),  y + p(4),  p(1), p(1)); // highlight
+  // waist
+  px(ctx, INK, x + p(2),  y + p(5),  p(8), p(1));
+  // lower tier
+  px(ctx, INK, x + p(1),  y + p(6),  p(10), p(3));
+  px(ctx, BG,  x + p(2),  y + p(7),  p(2), p(1)); // highlight
+  // waist 2
+  px(ctx, INK, x + p(1),  y + p(8),  p(10), p(1));
+  // base
+  px(ctx, INK, x,         y + p(9),  p(12), p(4));
+  px(ctx, BG,  x + p(1),  y + p(10), p(3),  p(1)); // shine
+  // eyes
+  px(ctx, BG, x + p(3),   y + p(6),  p(2), p(2));
+  px(ctx, BG, x + p(7),   y + p(6),  p(2), p(2));
+  px(ctx, INK, x + p(3),  y + p(6),  p(1), p(1));
+  px(ctx, INK, x + p(7),  y + p(6),  p(1), p(1));
+  // smile
+  px(ctx, INK, x + p(3),  y + p(8),  p(1), p(1));
+  px(ctx, INK, x + p(8),  y + p(8),  p(1), p(1));
+  px(ctx, INK, x + p(4),  y + p(9),  p(4), p(1));
 }
 
-// ── Bird ──────────────────────────────────────────────────────────────────────
+// ── Bird — 15×8 pixel units ───────────────────────────────────────────────────
 const BIRD_W = p(15);
 const BIRD_H = p(8);
 
@@ -105,7 +118,7 @@ function drawBird(ctx: CanvasRenderingContext2D, x: number, y: number, wing: num
   else            px(ctx, INK, x + p(3), y + p(6), p(6), p(3));
 }
 
-// ── Life dots HUD (simple squares, no hearts) ─────────────────────────────────
+// ── Lives HUD ─────────────────────────────────────────────────────────────────
 function drawLife(ctx: CanvasRenderingContext2D, x: number, y: number, filled: boolean) {
   const c = filled ? INK : LITE;
   px(ctx, c, x + p(1), y,        p(1), p(1));
@@ -119,9 +132,9 @@ function drawLife(ctx: CanvasRenderingContext2D, x: number, y: number, filled: b
 function drawGround(ctx: CanvasRenderingContext2D, offset: number) {
   px(ctx, INK, 0, GROUND, CW, 2);
   for (let x = ((-offset) % 60 + 60) % 60; x < CW; x += 60)
-    px(ctx, INK, Math.round(x), GROUND + 5, 24, 1);
+    px(ctx, INK, Math.round(x), GROUND + 4, 20, 1);
   for (let x = ((-offset + 32) % 60 + 60) % 60; x < CW; x += 60)
-    px(ctx, HI,  Math.round(x), GROUND + 9,  8, 1);
+    px(ctx, HI,  Math.round(x), GROUND + 8,  7, 1);
 }
 
 // ── Clouds ────────────────────────────────────────────────────────────────────
@@ -136,19 +149,18 @@ function drawClouds(ctx: CanvasRenderingContext2D, clouds: { x: number; y: numbe
 
 // ── Score ─────────────────────────────────────────────────────────────────────
 function drawScore(ctx: CanvasRenderingContext2D, score: number, best: number) {
-  ctx.font = `12px ${FONT}`;
+  ctx.font = FONT_SM;
   ctx.textAlign = 'right';
   ctx.fillStyle = HI;
-  ctx.fillText(`HI ${String(best).padStart(5, '0')}`, CW - 20, 26);
+  ctx.fillText(`HI ${String(best).padStart(5, '0')}`, CW - 20, 24);
   ctx.fillStyle = INK;
-  ctx.fillText(String(score).padStart(5, '0'), CW - 20, 46);
+  ctx.fillText(String(score).padStart(5, '0'), CW - 20, 40);
   ctx.textAlign = 'left';
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
-interface Obs { x: number; y: number; type: 'hydrant' | 'bird'; w: number; h: number; }
+interface Obs { x: number; y: number; type: 'poop' | 'bird'; w: number; h: number; }
 interface Cloud { x: number; y: number; }
-
 interface S {
   running: boolean; dead: boolean;
   score: number; best: number; speed: number;
@@ -162,8 +174,7 @@ function fresh(best = 0): S {
   return {
     running: false, dead: false, score: 0, best, speed: SPEED0,
     dogY: GROUND - DOG_H, dogVY: 0, onGround: true, jumpsLeft: 2,
-    legFrame: 0, legTimer: 0, invincible: 0,
-    obstacles: [],
+    legFrame: 0, legTimer: 0, invincible: 0, obstacles: [],
     clouds: [{ x: 130, y: 55 }, { x: 390, y: 72 }, { x: 630, y: 42 }],
     nextObs: 90, groundOff: 0, t: 0, lives: 3,
   };
@@ -215,30 +226,26 @@ export default function LuckyPage() {
     canvas.addEventListener('touchstart', onTouch, { passive: false });
     canvas.addEventListener('click', doJump);
 
-    document.fonts.load(`12px ${FONT}`).finally(() => {
-      raf.current = requestAnimationFrame(tick);
-    });
+    raf.current = requestAnimationFrame(tick);
 
     function tick() {
       const s = gs.current;
       ctx.fillStyle = BG;
       ctx.fillRect(0, 0, CW, CH);
 
-      // ── Start screen ──
       if (!s.running) {
         drawClouds(ctx, s.clouds);
         drawGround(ctx, 0);
         drawDog(ctx, DOG_X, GROUND - DOG_H, 0, false, false);
-        ctx.font = `12px ${FONT}`;
+        ctx.font = FONT;
         ctx.fillStyle = INK;
         ctx.textAlign = 'center';
-        ctx.fillText('PRESS SPACE / TAP', CW / 2, CH / 2);
+        ctx.fillText('PRESS SPACE / TAP TO START', CW / 2, CH / 2);
         ctx.textAlign = 'left';
         raf.current = requestAnimationFrame(tick);
         return;
       }
 
-      // ── Update ──
       s.t++;
       s.speed = Math.min(SPEED_MAX, SPEED0 + s.score / 400);
       if (s.t % 6 === 0) s.score++;
@@ -260,12 +267,11 @@ export default function LuckyPage() {
       if (s.invincible > 0) s.invincible--;
       const flash = s.invincible > 0 && Math.floor(s.t / 5) % 2 === 1;
 
-      // spawn obstacles
       if (--s.nextObs <= 0) {
         if (Math.random() < 0.55) {
           const n = Math.random() < 0.28 ? 2 : 1;
           for (let i = 0; i < n; i++)
-            s.obstacles.push({ x: CW + i * (HYD_W + p(3)), y: GROUND - HYD_H, type: 'hydrant', w: HYD_W, h: HYD_H });
+            s.obstacles.push({ x: CW + i * (POOP_W + p(4)), y: GROUND - POOP_H, type: 'poop', w: POOP_W, h: POOP_H });
         } else {
           const yOpts = [
             GROUND - DOG_H - p(1)  - BIRD_H,
@@ -280,7 +286,6 @@ export default function LuckyPage() {
       for (const o of s.obstacles) o.x -= s.speed;
       s.obstacles = s.obstacles.filter(o => o.x > -120);
 
-      // collision
       const dl = DOG_X  + p(3), dr = DOG_X  + DOG_W - p(3);
       const dt = s.dogY + p(2), db = s.dogY + DOG_H - p(1);
 
@@ -296,33 +301,30 @@ export default function LuckyPage() {
         }
       }
 
-      // ── Draw ──
       drawClouds(ctx, s.clouds);
       drawGround(ctx, s.groundOff);
 
       for (const o of s.obstacles) {
-        if (o.type === 'hydrant') drawHydrant(ctx, o.x, o.y + o.h);
+        if (o.type === 'poop') drawPoop(ctx, o.x, o.y + o.h);
         else drawBird(ctx, o.x, o.y, Math.floor(s.t / 12) % 2);
       }
 
       drawDog(ctx, DOG_X, s.dogY, s.onGround ? s.legFrame : 0, s.dead, flash);
       drawScore(ctx, s.score, s.best);
-      for (let i = 0; i < 3; i++) drawLife(ctx, 18 + i * 22, 18, i < s.lives);
+      for (let i = 0; i < 3; i++) drawLife(ctx, 16 + i * 18, 16, i < s.lives);
 
-      // game over
       if (s.dead) {
         ctx.fillStyle = 'rgba(255,255,255,0.82)';
         ctx.fillRect(0, 0, CW, CH);
-        ctx.font = `20px ${FONT}`;
+        ctx.font = FONT;
         ctx.fillStyle = INK;
         ctx.textAlign = 'center';
-        ctx.fillText('GAME OVER', CW / 2, CH / 2 - 18);
-        ctx.font = `10px ${FONT}`;
+        ctx.fillText('GAME OVER', CW / 2, CH / 2 - 16);
+        ctx.font = FONT_SM;
         ctx.fillStyle = HI;
-        ctx.fillText(`SCORE  ${s.score}`, CW / 2, CH / 2 + 10);
-        ctx.font = `10px ${FONT}`;
+        ctx.fillText(`SCORE  ${s.score}`, CW / 2, CH / 2 + 6);
         ctx.fillStyle = INK;
-        ctx.fillText('PRESS SPACE / TAP', CW / 2, CH / 2 + 34);
+        ctx.fillText('PRESS SPACE / TAP', CW / 2, CH / 2 + 26);
         ctx.textAlign = 'left';
       }
 
