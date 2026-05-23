@@ -14,11 +14,11 @@ export async function generateMetadata({ params }: { params: Promise<{ case: str
     .eq('slug', slug)
     .single();
 
-  if (!data) return { title: 'WH4T!SLOV3' };
+  if (!data) return {};
 
   const description = data.desc?.slice(0, 155) || data.title;
   return {
-    title: `${data.title} | WH4T!SLOV3`,
+    title: data.title,
     description,
     openGraph: {
       title: data.title,
