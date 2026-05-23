@@ -48,7 +48,7 @@ export async function POST(req: Request) {
         amount: { value: totalAmount, currency: 'RUB' },
         confirmation: {
           type: 'redirect',
-          return_url: `${siteUrl}/products`,
+          return_url: `${siteUrl}/order/success?tg=${encodeURIComponent(String(orderData.tg ?? ''))}`,
         },
         description,
         capture: true,

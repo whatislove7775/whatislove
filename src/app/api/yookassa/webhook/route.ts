@@ -123,6 +123,28 @@ ${itemsList}
       }
     }
 
+    // Сохраняем уведомление для покупательского бота
+    if (supabaseUrl && serviceKey) {
+      const supabase2 = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+      await supabase2.from('order_notifications').upsert({
+        payment_id: payment.id,
+        tg_username: (meta.order_tg ?? '').replace(/^@/, '').toLowerCase().trim(),
+        order_data: {
+          name: meta.order_name,
+          email: meta.order_email,
+          phone: meta.order_phone,
+          tg: meta.order_tg,
+          city: meta.order_city,
+          delivery: meta.order_delivery,
+          address: meta.order_address,
+          items,
+          deliveryCost,
+          totalPaid: Number(payment.amount?.value ?? 0),
+        },
+        sent: false,
+      }, { onConflict: 'payment_id' });
+    }
+
     revalidatePath('/products');
     revalidatePath('/products/[slug]', 'page');
 
