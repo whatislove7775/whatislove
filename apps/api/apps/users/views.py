@@ -1,6 +1,7 @@
 import hashlib
 
 from django.contrib.auth import authenticate
+from django.db import IntegrityError
 from rest_framework import generics, permissions, serializers
 from rest_framework.response import Response
 from rest_framework import status
@@ -52,7 +53,13 @@ class RegisterClientView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        try:
+            serializer.save()
+        except IntegrityError:
+            return Response(
+                {"detail": "Пользователь с таким email уже существует."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(
             {"detail": "Аккаунт создан. Email не сохранён в открытом виде."},
             status=status.HTTP_201_CREATED,
@@ -66,7 +73,13 @@ class RegisterPsychologistView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        try:
+            serializer.save()
+        except IntegrityError:
+            return Response(
+                {"detail": "Пользователь с таким email уже существует."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(
             {"detail": "Заявка отправлена. Аккаунт будет активирован после верификации."},
             status=status.HTTP_201_CREATED,
