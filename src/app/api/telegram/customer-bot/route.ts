@@ -20,7 +20,22 @@ async function send(chatId: number, text: string) {
 }
 
 function normalizeTg(raw: string): string {
-  return raw.replace(/^@/, '').toLowerCase().trim();
+  return (raw ?? '').replace(/^@/, '').replace(/^https?:\/\/t\.me\//i, '').toLowerCase().trim();
+}
+
+function buildOrderText(o: any): string {
+  const items = (o.items ?? [])
+    .map((i: any) => `• ${i.name} (р.${i.size}) x${i.quantity} — ${i.price * i.quantity}₽`)
+    .join('\n');
+  return (
+    `✅ <b>Заказ подтверждён!</b>\n\n` +
+    `🛒 <b>Состав:</b>\n${items}\n\n` +
+    `🏙 <b>Город:</b> ${o.city}\n` +
+    `📍 <b>Адрес:</b> ${o.address}\n` +
+    `🚚 <b>Доставка:</b> ${o.delivery} — ${o.deliveryCost}₽\n` +
+    `💰 <b>Итого оплачено:</b> ${o.totalPaid}₽\n\n` +
+    `Скоро свяжемся с тобой! 🤍`
+  );
 }
 
 export async function POST(req: NextRequest) {
@@ -35,39 +50,35 @@ export async function POST(req: NextRequest) {
     if (!message.text.startsWith('/start')) return NextResponse.json({ ok: true });
 
     if (!rawUsername) {
-      await send(chatId, 'Привет! 👋\n\nЧтобы получить подтверждение заказа, установи username в настройках Telegram и нажми кнопку ещё раз.');
+      await send(chatId, 'Привет! 👋\n\nЧтобы получить подтверждение заказа, установи username в настройках Telegram и нажми /start ещё раз.');
       return NextResponse.json({ ok: true });
     }
 
     const supabase = db();
     const tgNorm = normalizeTg(rawUsername);
 
-    const { data: notifications } = await supabase
+    // Сохраняем chat_id — чтобы слать уведомления сразу при оплате
+    await supabase
+      .from('order_notifications')
+      .update({ customer_chat_id: chatId })
+      .or(`tg_username.eq.${tgNorm},tg_username.eq.@${tgNorm}`)
+      .eq('sent', false);
+
+    // Ищем заказ: по tg_username ИЛИ по order_data->tg, без фильтра sent
+    const { data: all } = await supabase
       .from('order_notifications')
       .select('*')
-      .eq('sent', false)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100);
 
-    const notification = (notifications ?? []).find(
-      (n: any) => normalizeTg(n.tg_username ?? '') === tgNorm
-    );
+    const notification = (all ?? []).find((n: any) => {
+      const byColumn = normalizeTg(n.tg_username ?? '') === tgNorm;
+      const byData = normalizeTg(n.order_data?.tg ?? '') === tgNorm;
+      return byColumn || byData;
+    });
 
     if (notification) {
-      const o = notification.order_data;
-      const items = (o.items ?? [])
-        .map((i: any) => `• ${i.name} (р.${i.size}) x${i.quantity} — ${i.price * i.quantity}₽`)
-        .join('\n');
-
-      const text =
-        `✅ <b>Заказ подтверждён!</b>\n\n` +
-        `🛒 <b>Состав:</b>\n${items}\n\n` +
-        `🏙 <b>Город:</b> ${o.city}\n` +
-        `📍 <b>Адрес:</b> ${o.address}\n` +
-        `🚚 <b>Доставка:</b> ${o.delivery} — ${o.deliveryCost}₽\n` +
-        `💰 <b>Итого оплачено:</b> ${o.totalPaid}₽\n\n` +
-        `Скоро свяжемся с тобой! 🤍`;
-
-      await send(chatId, text);
+      await send(chatId, buildOrderText(notification.order_data));
       await supabase
         .from('order_notifications')
         .update({ sent: true, customer_chat_id: chatId })
@@ -75,7 +86,7 @@ export async function POST(req: NextRequest) {
     } else {
       await send(
         chatId,
-        'Привет! 👋\n\nЗдесь ты получишь подтверждение заказа с <b>wh4tislove.ru</b> сразу после оплаты.\n\nЕсли ты только что заплатил — напиши снова через минуту.'
+        'Привет! 👋\n\nЗдесь ты получишь подтверждение заказа с <b>wh4tislove.ru</b> сразу после оплаты.\n\nЕсли ты только что заплатил — напиши /start через минуту.'
       );
     }
 

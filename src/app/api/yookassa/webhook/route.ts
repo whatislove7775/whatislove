@@ -126,23 +126,57 @@ ${itemsList}
     // Сохраняем уведомление для покупательского бота
     if (supabaseUrl && serviceKey) {
       const supabase2 = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+      const tgNorm = (meta.order_tg ?? '').replace(/^@/, '').replace(/^https?:\/\/t\.me\//i, '').toLowerCase().trim();
+
+      const orderData = {
+        name: meta.order_name,
+        email: meta.order_email,
+        phone: meta.order_phone,
+        tg: meta.order_tg,
+        city: meta.order_city,
+        delivery: meta.order_delivery,
+        address: meta.order_address,
+        items,
+        deliveryCost,
+        totalPaid: Number(payment.amount?.value ?? 0),
+      };
+
+      // Ищем уже существующую запись (мог сохранить chat_id раньше)
+      const { data: existing } = await supabase2
+        .from('order_notifications')
+        .select('customer_chat_id')
+        .eq('payment_id', payment.id)
+        .single();
+
       await supabase2.from('order_notifications').upsert({
         payment_id: payment.id,
-        tg_username: (meta.order_tg ?? '').replace(/^@/, '').toLowerCase().trim(),
-        order_data: {
-          name: meta.order_name,
-          email: meta.order_email,
-          phone: meta.order_phone,
-          tg: meta.order_tg,
-          city: meta.order_city,
-          delivery: meta.order_delivery,
-          address: meta.order_address,
-          items,
-          deliveryCost,
-          totalPaid: Number(payment.amount?.value ?? 0),
-        },
+        tg_username: tgNorm,
+        order_data: orderData,
         sent: false,
       }, { onConflict: 'payment_id' });
+
+      // Если знаем chat_id покупателя — шлём сразу
+      const customerChatId = existing?.customer_chat_id;
+      const customerToken = process.env.CUSTOMER_BOT_TOKEN;
+      if (customerChatId && customerToken) {
+        const items_ = (orderData.items ?? [])
+          .map((i: any) => `• ${i.name} (р.${i.size}) x${i.quantity} — ${i.price * i.quantity}₽`)
+          .join('\n');
+        const text =
+          `✅ <b>Заказ подтверждён!</b>\n\n` +
+          `🛒 <b>Состав:</b>\n${items_}\n\n` +
+          `🏙 <b>Город:</b> ${orderData.city}\n` +
+          `📍 <b>Адрес:</b> ${orderData.address}\n` +
+          `🚚 <b>Доставка:</b> ${orderData.delivery} — ${orderData.deliveryCost}₽\n` +
+          `💰 <b>Итого оплачено:</b> ${orderData.totalPaid}₽\n\n` +
+          `Скоро свяжемся с тобой! 🤍`;
+        await fetch(`https://api.telegram.org/bot${customerToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: customerChatId, text, parse_mode: 'HTML' }),
+        });
+        await supabase2.from('order_notifications').update({ sent: true }).eq('payment_id', payment.id);
+      }
     }
 
     revalidatePath('/products');
