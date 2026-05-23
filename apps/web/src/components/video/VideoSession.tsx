@@ -106,9 +106,8 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
 
   return (
     <div
-      style={{ position: "relative", width: "100vw", height: "100vh", background: "#0E1621", overflow: "hidden", cursor: "none" }}
+      style={{ position: "relative", width: "100vw", height: "100vh", background: "#0E1621", overflow: "hidden", cursor: showControls ? "default" : "none" }}
       onMouseMove={resetHideTimer}
-      style2={{ cursor: showControls ? "default" : "none" }}
     >
       {/* Remote video */}
       <video ref={remoteVideoRef} autoPlay playsInline
