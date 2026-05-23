@@ -378,85 +378,54 @@ pre {
   }
 }
 
-/* ── Windows XP cursors (pixelated pixel-art, white + black outline) ─ */
+/* ── Windows XP cursors — .cur files ─ */
 
-/* ─ default arrow ─ */
 * {
-  cursor: url('/cursors/default.svg') 0 0, default;
+  cursor: url('/cursors/default_arrow.cur'), default;
 }
 
-/* ─ pointer — links & buttons ─ */
 a, button, [role="button"],
 input[type="submit"], input[type="button"], input[type="reset"],
 label[for], select,
 [style*="cursor: pointer"], [style*="cursor:pointer"] {
-  cursor: url('/cursors/pointer.svg') 6 0, pointer;
-}
-
-/* ─ text / I-beam ─ */
-input[type="text"], input[type="email"], input[type="tel"],
-input[type="password"], input[type="search"], input[type="url"],
-input[type="number"], textarea, [contenteditable="true"] {
-  cursor: url('/cursors/text.svg') 8 18, text;
-}
-
-/* ─ wait / hourglass ─ */
-body.page-loading, body.page-loading * {
-  cursor: url('/cursors/wait.svg') 12 16, wait !important;
-}
-
-/* ─ progress — arrow + hourglass ─ */
-[aria-busy="true"] {
-  cursor: url('/cursors/progress.svg') 0 0, progress;
-}
-
-/* ─ not-allowed / forbidden ─ */
-[disabled], [aria-disabled="true"], button:disabled {
-  cursor: url('/cursors/not-allowed.svg') 14 14, not-allowed;
-}
-
-/* ─ crosshair ─ */
-[style*="cursor: crosshair"], [style*="cursor:crosshair"] {
-  cursor: url('/cursors/crosshair.svg') 14 14, crosshair;
-}
-
-/* ─ move ─ */
-[style*="cursor: move"], [style*="cursor:move"] {
-  cursor: url('/cursors/move.svg') 14 14, move;
-}
-
-/* ─ n/s resize ─ */
-[style*="cursor: ns-resize"], [style*="cursor: n-resize"], [style*="cursor: s-resize"],
-[style*="cursor: row-resize"] {
-  cursor: url('/cursors/ns-resize.svg') 8 14, ns-resize;
-}
-
-/* ─ e/w resize ─ */
-[style*="cursor: ew-resize"], [style*="cursor: e-resize"], [style*="cursor: w-resize"],
-[style*="cursor: col-resize"] {
-  cursor: url('/cursors/ew-resize.svg') 14 8, ew-resize;
-}
-
-/* ─ nwse resize ─ */
-[style*="cursor: nwse-resize"], [style*="cursor: nw-resize"], [style*="cursor: se-resize"] {
-  cursor: url('/cursors/nwse-resize.svg') 12 12, nwse-resize;
-}
-
-/* ─ nesw resize ─ */
-[style*="cursor: nesw-resize"], [style*="cursor: ne-resize"], [style*="cursor: sw-resize"] {
-  cursor: url('/cursors/nesw-resize.svg') 12 12, nesw-resize;
-}
-
-/* ─ grab ─ */
-[style*="cursor: grab"] {
-  cursor: url('/cursors/grab.svg') 14 6, grab;
-}
-
-/* ─ grabbing ─ */
-[style*="cursor: grabbing"] {
-  cursor: url('/cursors/grabbing.svg') 12 10, grabbing;
+  cursor: url('/cursors/default_link.cur'), pointer;
 }
 
 a *, button *, [role="button"] * {
   cursor: inherit;
+}
+
+input[type="text"], input[type="email"], input[type="tel"],
+input[type="password"], input[type="search"], input[type="url"],
+input[type="number"], textarea, [contenteditable="true"] {
+  cursor: url('/cursors/default_beam.cur'), text;
+}
+
+body.page-loading, body.page-loading * {
+  cursor: url('/cursors/default_busy.cur'), wait !important;
+}
+
+[aria-busy="true"] {
+  cursor: url('/cursors/default_wait.cur'), progress;
+}
+
+[disabled], [aria-disabled="true"], button:disabled {
+  cursor: url('/cursors/default_no.cur'), not-allowed;
+}
+
+[style*="cursor: crosshair"], [style*="cursor:crosshair"] {
+  cursor: url('/cursors/default_cross.cur'), crosshair;
+}
+
+[style*="cursor: move"], [style*="cursor:move"] {
+  cursor: url('/cursors/default_move.cur'), move;
+}
+
+[style*="cursor: ns-resize"], [style*="cursor: n-resize"], [style*="cursor: s-resize"],
+[style*="cursor: row-resize"] {
+  cursor: url('/cursors/default_size1.cur'), ns-resize;
+}
+
+[style*="cursor: grab"], [style*="cursor: grabbing"] {
+  cursor: url('/cursors/default_link.cur'), grab;
 }
