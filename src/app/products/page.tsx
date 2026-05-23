@@ -1,257 +1,117 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-
 import { supabase } from '@/lib/supabase';
-
 import Breadcrumbs from '@/components/Breadcrumbs';
-
+import ProductAddToCart from '@/components/ProductAddToCart';
 import Link from 'next/link';
+import SmartImage from '@/components/SmartImage';
 
-import { useCartStore } from '@/store/cartStore';
+export const revalidate = 60;
 
+export const metadata = {
+  title: 'Продукты',
+  description: 'Дизайнерские изделия от студии whatislove — авторские товары с доставкой.',
+  openGraph: {
+    title: 'Продукты | WH4T!SLOV3',
+    description: 'Дизайнерские изделия от студии whatislove — авторские товары с доставкой.',
+  },
+};
 
+function buildStock(variants: any[]): Record<string, number> {
+  return (variants || []).reduce((acc: Record<string, number>, v: any) => {
+    acc[String(v.attribute_value)] = v.stock ?? 0;
+    return acc;
+  }, {});
+}
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const { data: products } = await supabase
+    .from('products')
+    .select('*, product_variants(attribute_value, stock)');
 
-  // 1. Создаем состояние для товаров и загрузки
-
-  const [products, setProducts] = useState<any[]>([]);
-
-  const [loading, setLoading] = useState(true);
-
-  
-
-  const addItem = useCartStore((state: any) => state.addItem);
-
-
-
-  // 2. Загружаем данные из базы при открытии страницы
-
-  useEffect(() => {
-
-    async function fetchProducts() {
-
-      const { data, error } = await supabase
-
-        .from('products')
-
-        .select('*');
-
-
-
-      if (!error && data) {
-
-        setProducts(data);
-
-      }
-
-      setLoading(false);
-
-    }
-
-    fetchProducts();
-
-  }, []);
-
-
-
-  const handleQuickAdd = (e: React.MouseEvent, product: any) => {
-
-    e.preventDefault();
-
-    addItem({
-
-      id: product.id,
-
-      name: product.name,
-
-      price: product.price,
-
-      size: 17, 
-
-      quantity: 1
-
-    });
-
-  };
-
-
-
-  // Пока данные грузятся, можно показать пустую сетку или текст
-
- if (loading) {
-    return (
-      <div style={{
-        position: 'fixed',
-        top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: '#fff',
-        zIndex: 99999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-        <div style={{ fontWeight: 800, fontSize: '20px', textTransform: 'lowercase', letterSpacing: '2px', fontFamily: 'inherit' }}>
-          загрузка...
-        </div>
-      </div>
-    );
-  }
-
-
+  const normalized = (products || []).map((p) => ({
+    ...p,
+    stock: buildStock(p.product_variants || []),
+  }));
 
   return (
-
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'inherit' }}>
-
-      
-
       <Breadcrumbs path={[
-
         { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-
-        { name: 'PRODUCT$', href: '/products', icon: '📦' }
-
+        { name: 'ПРОДУКТЫ', href: '/products', icon: '📦' },
       ]} />
 
+      <div className="products-grid">
+        {normalized.map((product) => (
+          <div key={product.id} className="product-card" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
 
-
-      <div style={{ 
-
-        display: 'grid', 
-
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-
-        gap: '60px', 
-
-        marginTop: '30px' 
-
-      }}>
-
-        {products.map((product) => (
-
-          <div key={product.id} style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '400px' }}>
-
-            
-
-            <Link 
-
-              href={`/products/${product.slug}`} 
-
-              style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
-
-            >
-
-              <div style={{ position: 'relative', width: '100%', marginBottom: '30px' }}> 
-
-                
-
-                <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-
-                <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-
-                <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-
-                <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
-
-                
-
-                <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
-
-                  {/* Если в базе есть ссылка на фото, выводим её, если нет — серый квадрат */}
-
-                  {product.image_url ? (
-
-                    <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-
-                  ) : null}
-
+            {/* Image column */}
+            <div className="product-card-image-col" style={{ width: '100%' }}>
+              <Link href={`/products/${product.slug}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ position: 'relative', width: '100%', marginBottom: '30px' }}>
+                  <div style={{ position: 'absolute', top: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'absolute', bottom: '-15px', left: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', fontWeight: 300, fontSize: '20px', lineHeight: 1 }}>+</div>
+                  <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
+                    {product.image_url && (
+                      <SmartImage
+                        src={product.image_url}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 44vw, (max-width: 1000px) 50vw, 400px"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    )}
+                  </div>
                 </div>
-
-              </div>
-
-            </Link>
-
-
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontWeight: 800 }}>
-
-              <div style={{ fontSize: '18px' }}>{product.name.toLowerCase()}</div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-
-                <span style={{ color: '#d32f2f' }}>{product.price}₽</span>
-
-                {product.oldPrice && (
-
-                  <span style={{ fontSize: '14px', textDecoration: 'line-through', color: '#999' }}>{product.oldPrice}₽</span>
-
-                )}
-
-              </div>
-
-            </div>
-
-            
-
-            <div style={{ fontSize: '14px', marginTop: '5px', fontWeight: 500 }}>
-
-              {product.material}<br />
-
-              {product.delivery}
-
-            </div>
-
-            
-
-            <div style={{ display: 'flex', gap: '20px', marginTop: '15px' }}>
-
-              <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', fontWeight: 800 }}>
-
-                [ подробнее ]
-
               </Link>
-
-              <button 
-
-                onClick={(e) => handleQuickAdd(e, product)}
-
-                style={{ 
-
-                  background: 'transparent', 
-
-                  border: 'none', 
-
-                  fontWeight: 800, 
-
-                  cursor: 'pointer', 
-
-                  fontFamily: 'inherit',
-
-                  padding: 0,
-
-                  fontSize: '14px'
-
-                }}
-
-              >
-
-                [ +в 🛒'у ]
-
-              </button>
-
             </div>
 
+            {/* Info column */}
+            <div className="product-card-info-col" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
 
+              {/* Desktop layout */}
+              <div className="desktop-only" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontWeight: 800 }}>
+                  <div style={{ fontSize: '18px' }}>{product.name.toLowerCase()}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <span style={{ color: '#d32f2f' }}>{product.price} руб</span>
+                    {product.oldPrice && (
+                      <span style={{ fontSize: '14px', textDecoration: 'line-through', color: '#999' }}>{product.oldPrice} руб</span>
+                    )}
+                  </div>
+                </div>
+                <div style={{ fontSize: '14px', marginTop: '5px', fontWeight: 500 }}>
+                  {product.material}<br />{product.delivery}
+                </div>
+                <div style={{ display: 'flex', gap: '20px', marginTop: 'auto', paddingTop: '15px', alignItems: 'center' }}>
+                  <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', fontWeight: 800 }}>
+                    [ подробнее ]
+                  </Link>
+                  <ProductAddToCart product={product} />
+                </div>
+              </div>
 
+              {/* Mobile layout */}
+              <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontWeight: 800, fontSize: '16px', gap: '6px' }}>
+                  <div>{product.name.toLowerCase()}</div>
+                  <ProductAddToCart product={product} />
+                </div>
+                <div style={{ fontWeight: 800, marginTop: '2px' }}>
+                  {product.oldPrice && (
+                    <div style={{ fontSize: '13px', textDecoration: 'line-through', color: '#999' }}>{product.oldPrice} руб</div>
+                  )}
+                  <span style={{ color: '#d32f2f' }}>{product.price} руб</span>
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 500, lineHeight: 1.4, marginTop: '2px' }}>
+                  {product.material}<br />{product.delivery}
+                </div>
+              </div>
+
+            </div>
           </div>
-
         ))}
-
       </div>
-
     </div>
-
   );
-
 }

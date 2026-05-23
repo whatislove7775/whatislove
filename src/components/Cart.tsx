@@ -19,7 +19,7 @@ export default function Cart() {
       fontWeight: 800,
       ...textStyle
     }}>
-      <div style={{ width: '100%', marginBottom: '15px' }}>
+      <div className="qr-desktop-only" style={{ width: '100%', marginBottom: '15px' }}>
         <img src="/qr-code.svg" alt="QR" style={{ width: '100%', height: 'auto', display: 'block' }} />
       </div>
 
@@ -51,12 +51,12 @@ export default function Cart() {
                 onClick={() => removeItem(item.id, item.size)} 
                 style={{ cursor: 'pointer', fontWeight: 800 }}
               >
-                [x]
+                [×]
               </span>
             </div>
           ))}
           <div style={{ marginTop: '20px' }}>
-            итого:<br/>{totalPrice()}₽
+            итого:<br/>{totalPrice()} руб
           </div>
           <Link href="/checkout" style={{ display: 'block', marginTop: '10px', textDecoration: 'none', color: '#000', fontWeight: 800 }}>
             [заказать] 📦

@@ -1,16 +1,17 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Cart from '@/components/Cart'; // Теперь путь всегда верный
+import Cart from '@/components/Cart';
+import { useCartStore } from '@/store/cartStore';
 
-export default function Breadcrumbs({ path }: any) {
+export default function Breadcrumbs({ path, rightAddon }: any) {
   const pathname = usePathname();
   const backLink = path.length > 1 && path[path.length - 2].href ? path[path.length - 2].href : '/';
-
-  // Жесткий фильтр страниц для показа корзины
   const shouldShowCart = pathname.startsWith('/products') || pathname.startsWith('/checkout');
+  const cartCount = useCartStore((state: any) =>
+    state.items.reduce((acc: number, i: any) => acc + i.quantity, 0)
+  );
 
-  // Единый стиль для всех элементов 14px
   const navItemStyle: React.CSSProperties = {
     fontSize: '14px',
     fontWeight: 800,
@@ -18,26 +19,25 @@ export default function Breadcrumbs({ path }: any) {
     color: 'inherit',
     display: 'flex',
     alignItems: 'center',
-    lineHeight: 1
+    lineHeight: 1,
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'space-between', 
-      alignItems: 'center', 
-      width: '100%', 
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '100%',
       marginBottom: '40px',
-      position: 'relative', 
-      zIndex: 100           
+      position: 'relative',
+      zIndex: 100,
     }}>
-      
       {/* ЛЕВАЯ ЧАСТЬ */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Link href={backLink} style={navItemStyle}>
-          [{"<"}]
-        </Link>
-        <span style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
+        <Link href={backLink} style={navItemStyle}>[{"<"}]</Link>
+
+        {/* Полный путь: только десктоп */}
+        <span className="breadcrumb-path desktop-only" style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
           {path.map((item: any, index: number) => (
             <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
               {item.href ? (
@@ -51,36 +51,53 @@ export default function Breadcrumbs({ path }: any) {
             </span>
           ))}
         </span>
+
+        {/* Только текущая страница: мобильный */}
+        <span className="mobile-only" style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
+          {path[path.length - 1].icon && `${path[path.length - 1].icon} `}
+          {path[path.length - 1].name}
+        </span>
       </div>
 
       {/* ПРАВАЯ ЧАСТЬ */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          {/* ДОМИК (строго 14px) */}
-          <Link href="/" style={navItemStyle}>
-            [ 🏠 ]
-          </Link>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Домик — только на десктопе */}
+          <Link href="/" className="desktop-only" style={navItemStyle}>[ 🏠 ]</Link>
 
-          {/* КОРЗИНА (свисает вниз) */}
+          {/* Иконка корзины — на мобиле и планшете (≤1024px) */}
           {shouldShowCart && (
-            <div style={{ 
-              position: 'absolute', 
-              top: 'calc(100% + 20px)', 
-              left: 0,                 
-              zIndex: 1000
-            }}>
-              <Cart />
-            </div>
+            <Link href="/checkout" className="cart-mobile-only" style={{ ...navItemStyle, whiteSpace: 'nowrap' }}>
+              [🛒{cartCount > 0 ? ` ${cartCount}` : ''}]
+            </Link>
           )}
         </div>
 
-        {/* КРЕСТИК (строго 14px) */}
-        <Link href={backLink} style={navItemStyle}>
-          [ × ]
-        </Link>
+        <Link href={backLink} style={navItemStyle}>[ × ]</Link>
+
+        {/* Корзина-сайдбар: left:0 выравнивает левый край с левым краем [🏠] */}
+        {shouldShowCart && (
+          <div className="cart-sidebar-only" style={{
+            position: 'absolute',
+            top: 'calc(100% + 20px)',
+            left: 0,
+            zIndex: 1000,
+          }}>
+            <Cart />
+          </div>
+        )}
+        {/* rightAddon: top = breadcrumbs marginBottom(40) + nav padding-bottom(15) = 55px → QR на уровне начала контента */}
+        {rightAddon && (
+          <div className="qr-desktop-only" style={{
+            position: 'absolute',
+            top: 'calc(100% + 55px)',
+            left: 0,
+            zIndex: 10,
+          }}>
+            {rightAddon}
+          </div>
+        )}
       </div>
-      
     </div>
   );
 }

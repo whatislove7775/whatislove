@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useCartStore } from '../store/cartStore'; 
+import { useCartStore } from '../store/cartStore';
+import DvdScreensaver from './DvdScreensaver';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -14,6 +15,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     setIsLoading(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (isLoading) {
+      document.body.classList.add('page-loading');
+    } else {
+      document.body.classList.remove('page-loading');
+    }
+  }, [isLoading]);
 
   // Эффект проверки согласия
   useEffect(() => {
@@ -39,6 +48,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <>
+      <DvdScreensaver />
       {/* ЗАГРУЗКА */}
       <div style={{
         position: 'fixed',
@@ -98,7 +108,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           }}>
             <div style={{ fontWeight: 800, fontSize: '14px', lineHeight: 1.4, textTransform: 'uppercase' }}>
               НА САЙТЕ ИСПОЛЬЗУЮТСЯ COOKIES<br />
-              И АНАЛИТИКА. <Link href="/privacy" style={{ color: '#000', textDecoration: 'underline' }}>ПОДРОБНЕЕ</Link>
+              И АНАЛИТИКА. <Link href="/privacy" className="link-underline" style={{ color: '#000' }}>ПОДРОБНЕЕ</Link>
             </div>
             
             <button
@@ -122,19 +132,25 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       )}
 
       {/* КОНТЕНТ (Header, Main, Footer) */}
-      <div style={{ 
-        fontFamily: 'Inter, sans-serif', 
-        fontSize: '14px', 
-        color: '#000', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        minHeight: '100vh', 
+      <div style={{
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '14px',
+        color: '#000',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100dvh',
+        height: pathname === '/' ? '100dvh' : undefined,
+        overflow: pathname === '/' ? 'hidden' : undefined,
         width: '100%',
         margin: 0,
-        padding: 0
+        padding: 0,
+        paddingTop: 'env(safe-area-inset-top, 0px)',
       }}>
         <header style={{ textAlign: 'center', padding: '20px 0', fontWeight: 500, flexShrink: 0 }}>
-          <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>whatislove ©</Link>
+          <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+            <span>whatislove</span>
+            <span style={{ position: 'relative', top: '1px' }}>©</span>
+          </Link>
         </header>
 
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '20px', boxSizing: 'border-box' }}>
@@ -143,18 +159,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
         {/* УСЛОВИЕ ДЛЯ ФУТЕРА: Если главная страница - центрированный, иначе - сетка */}
         {pathname === '/' ? (
-          <footer style={{ textAlign: 'center', padding: '20px', lineHeight: '1.5', flexShrink: 0, boxSizing: 'border-box', width: '100%' }}>
-            <a 
-              href="https://t.me/whatislove_r" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              style={{ 
-                color: '#0088cc', 
-                fontWeight: 700, 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                gap: '5px', 
-                marginBottom: '15px', 
+          <footer className="home-footer">
+            <a
+              href="https://t.me/whatislove_r"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: '#000',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                marginBottom: '10px',
                 textDecoration: 'none',
                 textTransform: 'lowercase'
               }}
@@ -162,36 +178,28 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
               t.me/whatislove_r
             </a>
-            <div style={{ 
-              fontWeight: 500, 
-              fontSize: '14px', 
-              textTransform: 'uppercase', 
-              lineHeight: 1.4, 
-              maxWidth: '800px', 
-              margin: '0 auto',
-              textAlign: 'center' 
-            }}>
+            <div className="home-disclaimer">
               ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333*
             </div>
           </footer>
         ) : (
           <footer style={{ flexShrink: 0, width: '100%', boxSizing: 'border-box' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', columnGap: '40px', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '20px', boxSizing: 'border-box' }}>
-              <div style={{ fontWeight: 800, textTransform: 'uppercase', paddingBottom: '15px' }}>
-                <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'none' }}>
+            <div className="footer-grid">
+              <div style={{ fontWeight: 800, paddingBottom: '15px' }}>
+                <a href="https://t.me/whatislove_r" target="_blank" rel="noopener noreferrer" style={{ color: '#000', display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'none', textTransform: 'lowercase' }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="#0088cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.31-.346-.11l-6.4 4.02-2.76-.86c-.6-.188-.612-.6.126-.89l10.814-4.17c.502-.18.96.115.826.885z"/></svg>
                   t.me/whatislove_r
                 </a>
               </div>
               <div></div>
-              <div style={{ gridColumn: '1 / 3', borderTop: '2px dotted rgba(0, 0, 0, 0.2)', width: '100%', marginBottom: '15px' }}></div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 800, textTransform: 'uppercase' }}>
-                <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>ОФЕРТА / ПОЛИТИКА</Link>
-                <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>КОНФИДЕНЦИАЛЬНОСТИ</Link>
-                <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>/ ИНФО</Link>
+              <div className="footer-grid-divider"></div>
+              <div className="footer-links">
+                <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>оферта /</Link>
+                <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>политика конфиденциальности /</Link>
+                <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>инфо</Link>
               </div>
-              <div style={{ fontWeight: 500, fontSize: '14px', textTransform: 'uppercase', lineHeight: 1.4, maxWidth: '850px', textAlign: 'justify' }}>
-                ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333* ИНН&nbsp;231222682431
+              <div className="footer-disclaimer">
+                данный сайт ничего не&nbsp;навязывает и&nbsp;не&nbsp;пропагандирует. весь контент является выдумкой автора и&nbsp;не&nbsp;имеет смысла. любые совпадения случайны. все файлы cookies используются для&nbsp;улучшения сервиса &lt;333* инн&nbsp;231222682431
               </div>
             </div>
           </footer>

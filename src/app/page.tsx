@@ -13,29 +13,37 @@ export default function Home() {
       marginTop: '-60px' 
     }}>
       
-      {/* SVG Логотип */}
-      <img 
-        src="/logo-main.svg" 
-        alt="whatislove" 
-        style={{ width: '100%', maxWidth: '650px', marginBottom: '40px', position: 'relative', zIndex: 10 }} 
+      {/* SVG Логотип — десктоп */}
+      <img
+        src="/logo-main.svg"
+        alt="whatislove"
+        className="desktop-only"
+        style={{ width: '100%', maxWidth: '650px', marginBottom: '40px', position: 'relative', zIndex: 10 }}
+      />
+      {/* SVG Логотип — мобильный */}
+      <img
+        src="/logo-mobile.svg"
+        alt="whatislove"
+        className="mobile-only home-logo-mobile"
+        style={{ width: '100%', marginBottom: '24px', position: 'relative', zIndex: 10 }}
       />
 
       {/* Навигация (3 кнопки) */}
-      <nav style={{ 
-        display: 'flex', 
-        gap: '20px', 
-        fontWeight: 700, 
-        fontSize: '14px', 
-        alignItems: 'center', 
+      <nav className="home-nav" style={{
+        display: 'flex',
+        gap: '20px',
+        fontWeight: 700,
+        fontSize: '14px',
+        alignItems: 'center',
         textTransform: 'uppercase',
-        position: 'relative', // Вытаскиваем на передний план
-        zIndex: 50          // Защита от перекрытия
+        position: 'relative',
+        zIndex: 50
       }}>
-        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 PRODUCT$</Link>
-        <span>/</span>
-        <Link href="/portfolio" style={{ textDecoration: 'none', color: '#000' }}>📁 PORTFOL1O</Link>
-        <span>/</span>
-        <Link href="/links" style={{ textDecoration: 'none', color: '#000' }}>🔗 LINK^S</Link>
+        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 ПРОДУКТЫ</Link>
+        <span className="nav-sep">/</span>
+        <Link href="/portfolio" style={{ textDecoration: 'none', color: '#000' }}>📁 ПОРТФОЛИО</Link>
+        <span className="nav-sep">/</span>
+        <Link href="/links" style={{ textDecoration: 'none', color: '#000' }}>🔗 ССЫЛКИ</Link>
       </nav>
 
     </div>

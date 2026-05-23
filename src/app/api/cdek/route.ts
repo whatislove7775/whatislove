@@ -7,59 +7,58 @@ const CDEK_BASE_URL = process.env.CDEK_BASE_URL ?? 'https://api.edu.cdek.ru';
 let cachedToken = '';
 let tokenExpiry = 0;
 
-// Функция авторизации в СДЭК
 async function getCdekToken() {
   if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
-  
-  const params = new URLSearchParams();
-  params.append('grant_type', 'client_credentials');
-  params.append('client_id', CDEK_ACCOUNT);
-  params.append('client_secret', CDEK_SECURE_PASSWORD);
 
-  const response = await fetch(`${CDEK_BASE_URL}/v2/oauth/token?parameters`, {
+  const credentials = Buffer.from(`${CDEK_ACCOUNT}:${CDEK_SECURE_PASSWORD}`).toString('base64');
+
+  const response = await fetch(`${CDEK_BASE_URL}/v2/oauth/token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params.toString(),
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Basic ${credentials}`,
+    },
+    body: 'grant_type=client_credentials',
   });
-  
+
   if (!response.ok) {
     const errText = await response.text();
-    console.error('Ошибка авторизации СДЭК:', errText);
     throw new Error(`Ошибка авторизации СДЭК: ${errText}`);
   }
-  
+
   const data = await response.json();
   cachedToken = data.access_token;
   tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
   return cachedToken;
 }
 
-// Проксирование запросов
+// Handles direct calls to /api/cdek?params (widget passes CDEK API query params + action)
 async function proxyRequest(req: NextRequest) {
   try {
     const token = await getCdekToken();
     const url = new URL(req.url);
-    
     const action = url.searchParams.get('action');
-    url.searchParams.delete('action');
-    
-    // Переводим язык виджета на язык API СДЭК v2
-    let targetPath = '/v2/deliverypoints'; 
-    if (action === 'offices') {
-      targetPath = '/v2/deliverypoints';
-    } else if (action === 'calculate') {
-      targetPath = '/v2/calculator/tariff';
-    }
 
-    const queryString = url.searchParams.toString();
-    const targetUrl = `${CDEK_BASE_URL}${targetPath}${queryString ? `?${queryString}` : ''}`;
+    // Strip internal 'action' param — CDEK API doesn't know it
+    url.searchParams.delete('action');
+
+    // Route to correct CDEK endpoint based on action
+    let cdekPath = '/v2/deliverypoints';
+    if (action === 'cities') {
+      cdekPath = '/v2/location/cities';
+    } else if (action === 'calculate') {
+      cdekPath = '/v2/calculator/tariff';
+    }
+    // 'offices' and default → /v2/deliverypoints (pass remaining params as-is)
+
+    const targetUrl = `${CDEK_BASE_URL}${cdekPath}${url.search}`;
 
     const fetchOptions: RequestInit = {
       method: req.method,
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': req.headers.get('content-type') || 'application/json',
-      }
+      },
     };
 
     if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -67,20 +66,19 @@ async function proxyRequest(req: NextRequest) {
     }
 
     const response = await fetch(targetUrl, fetchOptions);
-    const responseText = await response.text();
-    
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      data = responseText;
-    }
-    
-    return NextResponse.json(data, { status: response.status });
+    const text = await response.text();
+    let data: any;
+    try { data = JSON.parse(text); } catch { data = text; }
 
+    return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
-    console.error('CDEK Proxy Error:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('CDEK Root Proxy Error:', error.message);
+    return NextResponse.json({
+      error: error.message,
+      account_set: !!CDEK_ACCOUNT,
+      password_set: !!CDEK_SECURE_PASSWORD,
+      base_url: CDEK_BASE_URL,
+    }, { status: 500 });
   }
 }
 

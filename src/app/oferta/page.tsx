@@ -13,7 +13,7 @@ export default function OfertaPage() {
         { name: 'ОФЕРТА', icon: '📄' }
       ]} />
       
-      <div style={{ marginTop: '40px', fontWeight: 500, lineHeight: '1.6', textAlign: 'left', fontSize: '13px' }}>
+      <div className="legal-content" style={{ marginTop: '40px', fontWeight: 500, lineHeight: '1.6', textAlign: 'left', fontSize: '13px' }}>
         <h1 style={{ fontWeight: 800, textTransform: 'uppercase', marginBottom: '40px', fontSize: '20px' }}>Публичная оферта</h1>
         
         <div style={sectionStyle}>
