@@ -46,6 +46,22 @@ export default function Home() {
         <Link href="/links" style={{ textDecoration: 'none', color: '#000' }}>🔗 ССЫЛКИ</Link>
       </nav>
 
+      <Link
+        href="/lucky"
+        style={{
+          marginTop: '28px',
+          fontWeight: 700,
+          fontSize: '13px',
+          color: '#aaa',
+          textDecoration: 'none',
+          letterSpacing: '0.5px',
+          position: 'relative',
+          zIndex: 50,
+        }}
+      >
+        мне не везёт!
+      </Link>
+
     </div>
   );
 }
