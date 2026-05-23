@@ -378,7 +378,53 @@ pre {
   }
 }
 
-/* ── Cursors managed by CursorManager.tsx ─ */
-*, *::before, *::after {
-  cursor: none !important;
+/* ── Windows XP cursors — .cur files ─ */
+* {
+  cursor: url('/cursors/default_arrow.cur'), default;
+}
+
+a, button, [role="button"],
+input[type="submit"], input[type="button"], input[type="reset"],
+label[for], select,
+[style*="cursor: pointer"], [style*="cursor:pointer"] {
+  cursor: url('/cursors/default_link.cur'), pointer;
+}
+
+a *, button *, [role="button"] * {
+  cursor: inherit;
+}
+
+input[type="text"], input[type="email"], input[type="tel"],
+input[type="password"], input[type="search"], input[type="url"],
+input[type="number"], textarea, [contenteditable="true"] {
+  cursor: url('/cursors/default_beam.cur'), text;
+}
+
+body.page-loading, body.page-loading * {
+  cursor: url('/cursors/default_busy.cur'), wait !important;
+}
+
+[aria-busy="true"] {
+  cursor: url('/cursors/default_wait.cur'), progress;
+}
+
+[disabled], [aria-disabled="true"], button:disabled {
+  cursor: url('/cursors/default_no.cur'), not-allowed;
+}
+
+[style*="cursor: crosshair"], [style*="cursor:crosshair"] {
+  cursor: url('/cursors/default_cross.cur'), crosshair;
+}
+
+[style*="cursor: move"], [style*="cursor:move"] {
+  cursor: url('/cursors/default_move.cur'), move;
+}
+
+[style*="cursor: ns-resize"], [style*="cursor: n-resize"], [style*="cursor: s-resize"],
+[style*="cursor: row-resize"] {
+  cursor: url('/cursors/default_size1.cur'), ns-resize;
+}
+
+[style*="cursor: grab"], [style*="cursor: grabbing"] {
+  cursor: url('/cursors/default_link.cur'), grab;
 }
