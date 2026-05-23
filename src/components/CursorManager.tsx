@@ -2,13 +2,13 @@
 import { useEffect, useRef } from 'react';
 
 const CURSORS = {
-  default: { src: '/cursors/default_arrow.cur', ox: 0, oy: 0  },
-  pointer: { src: '/cursors/default_link.cur',  ox: 6, oy: 0  },
-  text:    { src: '/cursors/default_beam.cur',  ox: 4, oy: 8  },
-  wait:    { src: '/cursors/default_busy.cur',  ox: 8, oy: 8  },
-  no:      { src: '/cursors/default_no.cur',    ox: 8, oy: 8  },
-  move:    { src: '/cursors/default_move.cur',  ox: 8, oy: 8  },
-  cross:   { src: '/cursors/default_cross.cur', ox: 8, oy: 8  },
+  default: { src: '/cursors/default_arrow.cur', ox: 10, oy: 10 },
+  pointer: { src: '/cursors/default_link.cur',  ox: 10, oy: 10 },
+  text:    { src: '/cursors/default_beam.cur',  ox: 15, oy: 16 },
+  wait:    { src: '/cursors/default_busy.cur',  ox: 10, oy: 10 },
+  no:      { src: '/cursors/default_no.cur',    ox: 10, oy: 10 },
+  move:    { src: '/cursors/default_move.cur',  ox: 10, oy: 10 },
+  cross:   { src: '/cursors/default_cross.cur', ox: 15, oy: 16 },
 } as const;
 
 type CursorType = keyof typeof CURSORS;
