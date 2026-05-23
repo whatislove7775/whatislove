@@ -10,15 +10,15 @@ let tokenExpiry = 0;
 async function getCdekToken() {
   if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
 
-  const params = new URLSearchParams();
-  params.append('grant_type', 'client_credentials');
-  params.append('client_id', CDEK_ACCOUNT);
-  params.append('client_secret', CDEK_SECURE_PASSWORD);
+  const credentials = Buffer.from(`${CDEK_ACCOUNT}:${CDEK_SECURE_PASSWORD}`).toString('base64');
 
   const response = await fetch(`${CDEK_BASE_URL}/v2/oauth/token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params.toString(),
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Basic ${credentials}`,
+    },
+    body: 'grant_type=client_credentials',
   });
 
   if (!response.ok) {
