@@ -37,7 +37,7 @@ export default function PortfolioPage() {
       client: c.client ?? '',
       task: c.task ?? '',
       desc: c.desc ?? '',
-      tags: Array.isArray(c.tags) ? c.tags.join(', ') : (c.tags ?? ''),
+      tags: (() => { const t = c.tags; if (!t) return ''; if (Array.isArray(t)) return t.join(', '); try { const p = JSON.parse(t); if (Array.isArray(p)) return p.join(', '); } catch {} return t; })(),
       image_url: c.image_url ?? '',
       images: Array.isArray(c.images) ? c.images.join(', ') : (c.images ?? ''),
       project_link: c.project_link ?? '',

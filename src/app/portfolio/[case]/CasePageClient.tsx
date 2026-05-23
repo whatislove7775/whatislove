@@ -3,6 +3,16 @@ import { useState, useEffect } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { parseTextForLinks } from '@/lib/parseLinks';
 
+function parseTags(tags: any): string[] {
+  if (!tags) return [];
+  if (Array.isArray(tags)) return tags.map(String).filter(Boolean);
+  if (typeof tags === 'string') {
+    try { const p = JSON.parse(tags); if (Array.isArray(p)) return p.map(String).filter(Boolean); } catch {}
+    return tags.split(',').map(t => t.trim()).filter(Boolean);
+  }
+  return [];
+}
+
 function InfoRow({ label, value, isValueBold = false }: any) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', width: '100%', marginBottom: '8px' }}>
@@ -159,7 +169,7 @@ export default function CasePageClient({ project }: { project: any }) {
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', fontWeight: 800, fontSize: '13px' }}>
-              <span>{project.tags}</span>
+              <span>[ {parseTags(project.tags).join(', ')} ]</span>
               <span>[ {project.year} ]</span>
             </div>
           </div>
