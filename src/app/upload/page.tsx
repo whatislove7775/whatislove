@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 const FOLDERS = ['cases/asiya-site', 'cases/asiya-merch', 'cases/snappy-silk-site', 'cases/egor-kreed-ring', 'products'];
 const MAX_BYTES = 1 * 1024 * 1024; // 1 MB
@@ -61,6 +61,26 @@ export default function UploadPage() {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [deliveryEnabled, setDeliveryEnabled] = useState<boolean | null>(null);
+  const [toggling, setToggling] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/admin/settings').then(r => r.json()).then(s => {
+      setDeliveryEnabled(s.delivery_enabled !== 'false');
+    });
+  }, []);
+
+  const toggleDelivery = async () => {
+    setToggling(true);
+    const next = !deliveryEnabled;
+    await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'delivery_enabled', value: String(next) }),
+    });
+    setDeliveryEnabled(next);
+    setToggling(false);
+  };
 
   const addFiles = (incoming: FileList | null) => {
     if (!incoming) return;
@@ -128,6 +148,25 @@ export default function UploadPage() {
   return (
     <div style={{ width: '100%', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '10px' }}>
       <div style={{ fontWeight: 800, fontSize: '18px', textTransform: 'lowercase' }}>загрузка изображений</div>
+
+      {/* Delivery toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', border: '2px solid #000', background: deliveryEnabled ? '#000' : '#fff' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{ fontWeight: 800, fontSize: '13px', textTransform: 'lowercase', color: deliveryEnabled ? '#fff' : '#000' }}>
+            стоимость доставки в заказах
+          </span>
+          <span style={{ fontSize: '11px', color: deliveryEnabled ? '#ccc' : '#888' }}>
+            {deliveryEnabled ? 'включена — покупатели платят за доставку' : 'выключена — доставка бесплатно (тест)'}
+          </span>
+        </div>
+        <button
+          onClick={toggleDelivery}
+          disabled={toggling || deliveryEnabled === null}
+          style={{ fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '8px 14px', border: `2px solid ${deliveryEnabled ? '#fff' : '#000'}`, background: 'transparent', color: deliveryEnabled ? '#fff' : '#000', cursor: 'pointer', textTransform: 'lowercase' }}
+        >
+          {toggling ? '...' : deliveryEnabled ? '[выключить]' : '[включить]'}
+        </button>
+      </div>
 
       {/* Folder selector */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

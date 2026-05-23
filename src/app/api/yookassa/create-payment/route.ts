@@ -17,7 +17,13 @@ export async function POST(req: Request) {
     const proto = req.headers.get('x-forwarded-proto') || 'https';
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${proto}://${host}`;
 
-    const totalAmount = (orderData.total + orderData.deliveryCost).toFixed(2);
+    // Check if delivery cost is enabled
+    const settingsRes = await fetch(`${siteUrl}/api/admin/settings`).catch(() => null);
+    const settings = settingsRes?.ok ? await settingsRes.json() : {};
+    const deliveryEnabled = settings.delivery_enabled !== 'false';
+    const effectiveDeliveryCost = deliveryEnabled ? (orderData.deliveryCost ?? 0) : 0;
+
+    const totalAmount = (orderData.total + effectiveDeliveryCost).toFixed(2);
 
     const description = orderData.items
       .map((i: any) => `${i.name} р.${i.size} x${i.quantity}`)
@@ -33,7 +39,7 @@ export async function POST(req: Request) {
       order_city:          String(orderData.city ?? '').substring(0, 100),
       order_delivery:      String(orderData.delivery ?? '').substring(0, 100),
       order_address:       String(orderData.address ?? '').substring(0, 500),
-      order_delivery_cost: String(orderData.deliveryCost ?? 0),
+      order_delivery_cost: String(effectiveDeliveryCost),
       order_items:         JSON.stringify(orderData.items ?? []).substring(0, 1024),
     };
 
