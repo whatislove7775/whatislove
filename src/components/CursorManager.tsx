@@ -13,24 +13,29 @@ const CURSORS = {
 
 type CursorType = keyof typeof CURSORS;
 
-// Detection uses the --cur CSS custom property defined in globals.css.
-// Custom properties inherit and cascade normally, unlike `cursor` which is
-// overridden everywhere by `cursor: none !important`.
+// Cache getComputedStyle --cur results per element — avoids repeated style
+// recalculations when the mouse re-enters the same node.
+const typeCache = new WeakMap<HTMLElement, CursorType | ''>();
+
 function detect(el: EventTarget | null): CursorType {
   let node = el instanceof Element ? el : null;
-  while (node) {
+  while (node && node !== document.body) {
     if (node instanceof HTMLElement) {
-      // --cur is inherited, so even child elements of a <button> return 'pointer'
-      const v = getComputedStyle(node).getPropertyValue('--cur').trim() as CursorType;
-      if (v in CURSORS) return v;
-
-      // Fallback: React inline style prop (not affected by global CSS override)
+      if (typeCache.has(node)) {
+        const cached = typeCache.get(node)!;
+        if (cached) return cached as CursorType;
+      } else {
+        const v = getComputedStyle(node).getPropertyValue('--cur').trim() as CursorType;
+        if (v in CURSORS) { typeCache.set(node, v); return v; }
+        typeCache.set(node, '');
+      }
+      // Fallback: React inline style (not affected by cursor:none !important)
       const s = node.style.cursor;
-      if (s === 'pointer')              return 'pointer';
-      if (s === 'text')                 return 'text';
-      if (s === 'not-allowed')          return 'no';
-      if (s === 'move')                 return 'move';
-      if (s === 'crosshair')            return 'cross';
+      if (s === 'pointer')                  return 'pointer';
+      if (s === 'text')                     return 'text';
+      if (s === 'not-allowed')              return 'no';
+      if (s === 'move')                     return 'move';
+      if (s === 'crosshair')                return 'cross';
       if (s === 'wait' || s === 'progress') return 'wait';
     }
     node = node.parentElement;
@@ -49,23 +54,41 @@ export default function CursorManager() {
     // Touch-primary devices don't need a cursor overlay
     if (window.matchMedia('(pointer: coarse)').matches) return;
 
-    // Preload so cursor-type switches are instant (no flash on first use)
+    // Preload all cursor images so type switches are instant
     Object.values(CURSORS).forEach(({ src }) => { new Image().src = src; });
 
     let shown = false;
+    let rafId = 0;
+    let pendingX = 0, pendingY = 0;
+    let pendingTarget: EventTarget | null = null;
 
     const show = (e: MouseEvent) => {
-      if (!shown) { shown = true; div.style.display = 'block'; }
-      const type = detect(e.target);
-      const { ox, oy } = CURSORS[type];
+      pendingX = e.clientX;
+      pendingY = e.clientY;
+      pendingTarget = e.target;
+
+      // Position: update immediately on every event — zero perceived lag
+      const { ox, oy } = CURSORS[curRef.current];
       div.style.transform = `translate3d(${e.clientX - ox}px,${e.clientY - oy}px,0)`;
-      if (type !== curRef.current) {
-        curRef.current = type;
-        (div.firstElementChild as HTMLImageElement).src = CURSORS[type].src;
+      if (!shown) { shown = true; div.style.display = 'block'; }
+
+      // Type detection: throttled to one rAF per frame — eliminates flicker
+      // caused by getComputedStyle calls on intermediate DOM nodes during movement
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          rafId = 0;
+          const type = detect(pendingTarget);
+          if (type !== curRef.current) {
+            const { ox: nx, oy: ny } = CURSORS[type];
+            div.style.transform = `translate3d(${pendingX - nx}px,${pendingY - ny}px,0)`;
+            curRef.current = type;
+            (div.firstElementChild as HTMLImageElement).src = CURSORS[type].src;
+          }
+        });
       }
     };
 
-    // Hide when mouse leaves the browser window — prevents ghost cursor at edge
+    // Hide when mouse leaves the browser window
     const hide = () => { shown = false; div.style.display = 'none'; };
 
     document.addEventListener('mousemove',  show,  { passive: true });
@@ -73,6 +96,7 @@ export default function CursorManager() {
     return () => {
       document.removeEventListener('mousemove',  show);
       document.removeEventListener('mouseleave', hide);
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);
 
