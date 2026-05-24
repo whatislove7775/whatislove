@@ -3,27 +3,24 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { SignalingClient } from "@/lib/webrtc/signalingClient";
 
-// Prefer VP8 (universal) → VP9 → H264; limit video to 800kbps, audio to 64kbps
 function applyBandwidthConstraints(pc: RTCPeerConnection) {
   pc.getSenders().forEach(sender => {
     const params = sender.getParameters();
     if (!params.encodings?.length) params.encodings = [{}];
-    if (sender.track?.kind === "video") {
-      params.encodings[0].maxBitrate = 800_000;
-      params.encodings[0].scaleResolutionDownBy = 1;
-    } else if (sender.track?.kind === "audio") {
-      params.encodings[0].maxBitrate = 64_000;
-    }
+    if (sender.track?.kind === "video") params.encodings[0].maxBitrate = 800_000;
+    else if (sender.track?.kind === "audio") params.encodings[0].maxBitrate = 64_000;
     sender.setParameters(params).catch(() => {});
   });
 }
 
-const ICE_SERVERS = [
-  { urls: "stun:stun.l.google.com:19302" },
-  { urls: "stun:stun1.l.google.com:19302" },
-  { urls: "stun:155.212.128.231:3478" },
-  { urls: "turn:155.212.128.231:3478", username: "aprosop", credential: "anonpsy2024turn" },
-  { urls: "turn:155.212.128.231:3478?transport=tcp", username: "aprosop", credential: "anonpsy2024turn" },
+// Grouped to count as 2 servers total (browser warns at 5+)
+const ICE_SERVERS: RTCIceServer[] = [
+  { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+  {
+    urls: ["turn:155.212.128.231:3478", "turn:155.212.128.231:3478?transport=tcp"],
+    username: "aprosop",
+    credential: "anonpsy2024turn",
+  },
 ];
 
 interface UseWebRTCOptions {
@@ -32,54 +29,63 @@ interface UseWebRTCOptions {
 }
 
 export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
-  const [remoteStream, setRemoteStream]       = useState<MediaStream | null>(null);
-  const [connectionState, setConnectionState] = useState<string>("idle");
-  const [signalingStatus, setSignalingStatus] = useState<string>("disconnected");
+  const [remoteStream,     setRemoteStream]     = useState<MediaStream | null>(null);
+  const [connectionState,  setConnectionState]  = useState<string>("idle");
+  const [signalingStatus,  setSignalingStatus]  = useState<string>("disconnected");
 
-  const peerRef         = useRef<RTCPeerConnection | null>(null);
-  const signalingRef    = useRef<SignalingClient | null>(null);
-  const localStreamRef  = useRef<MediaStream | null>(null);
-  const remoteStreamRef = useRef<MediaStream | null>(null);
-  const isCallerRef     = useRef(false);
+  const peerRef          = useRef<RTCPeerConnection | null>(null);
+  const signalingRef     = useRef<SignalingClient | null>(null);
+  const localStreamRef   = useRef<MediaStream | null>(null);
+  const remoteStreamRef  = useRef<MediaStream | null>(null);
+  const isCallerRef      = useRef(false);
+  const iceCandidateQueue = useRef<RTCIceCandidateInit[]>([]); // buffer candidates arriving before SDP
 
-  // Keep localStreamRef current; replace tracks on existing peer — replaceTrack
-  // never triggers renegotiation, keeping signaling clean.
+  // Attach stream tracks to peer transceivers by kind.
+  // replaceTrack never triggers renegotiation; addTrack does only if no matching transceiver.
+  const attachTracks = useCallback((pc: RTCPeerConnection, stream: MediaStream) => {
+    const transceivers = pc.getTransceivers();
+    stream.getTracks().forEach(track => {
+      const transceiver = transceivers.find(t => t.kind === track.kind);
+      if (transceiver) {
+        // replaceTrack works even when sender.track is null
+        transceiver.sender.replaceTrack(track).catch(() => {});
+      } else {
+        // No transceiver for this kind (callee before renegotiation) — addTrack creates one
+        pc.addTrack(track, stream);
+      }
+    });
+  }, []);
+
+  // Drain ICE candidates that arrived before remote description was set
+  const drainQueue = useCallback(async (pc: RTCPeerConnection) => {
+    const queued = iceCandidateQueue.current.splice(0);
+    for (const c of queued) {
+      await pc.addIceCandidate(c).catch(console.error);
+    }
+  }, []);
+
+  // When localStream changes: update ref and push tracks to existing peer
   useEffect(() => {
     localStreamRef.current = localStream;
     const pc = peerRef.current;
     if (!pc || !localStream) return;
-    const senders = pc.getSenders();
-    localStream.getTracks().forEach(track => {
-      const sender = senders.find(s => s.track?.kind === track.kind || s.track === null);
-      if (sender) {
-        sender.replaceTrack(track).catch(() => {});
-      } else {
-        // callee: no transceiver pre-created, so addTrack is fine (triggers renegotiation via onnegotiationneeded, which callee ignores)
-        pc.addTrack(track, localStream);
-      }
-    });
-  }, [localStream]);
+    attachTracks(pc, localStream);
+  }, [localStream, attachTracks]);
 
   const makePeer = useCallback((isCaller: boolean): RTCPeerConnection => {
     peerRef.current?.close();
-    isCallerRef.current = isCaller;
+    isCallerRef.current   = isCaller;
+    iceCandidateQueue.current = [];
 
     const pc = new RTCPeerConnection({
-      iceServers: ICE_SERVERS,
-      bundlePolicy: "max-bundle",
-      rtcpMuxPolicy: "require",
+      iceServers:     ICE_SERVERS,
+      bundlePolicy:   "max-bundle",
+      rtcpMuxPolicy:  "require",
     });
     peerRef.current = pc;
 
-    // Add tracks from current stream (only when callee — caller uses transceivers above)
-    const stream = localStreamRef.current;
-    if (stream && !isCaller) {
-      stream.getTracks().forEach(t => pc.addTrack(t, stream));
-    }
-
     remoteStreamRef.current = new MediaStream();
     pc.ontrack = e => {
-      // e.streams may be empty when caller uses addTransceiver — use e.track directly
       const track = e.track;
       if (!remoteStreamRef.current!.getTrackById(track.id)) {
         remoteStreamRef.current!.addTrack(track);
@@ -91,40 +97,39 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
       if (e.candidate) signalingRef.current?.send({ type: "ice-candidate", candidate: e.candidate.toJSON() });
     };
 
-    pc.onconnectionstatechange = () => setConnectionState(pc.connectionState);
-    pc.oniceconnectionstatechange = () => {
-      if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
-        setConnectionState("connected");
-        applyBandwidthConstraints(pc);
-      }
+    pc.onconnectionstatechange = () => {
+      setConnectionState(pc.connectionState);
+      if (pc.connectionState === "connected") applyBandwidthConstraints(pc);
     };
 
-    // Only the caller drives negotiation — callee never sends unsolicited offers.
-    // onnegotiationneeded is the single source of truth for offer creation.
+    // Only caller initiates offers
     pc.onnegotiationneeded = async () => {
-      if (!isCallerRef.current) return;
-      if (pc.signalingState !== "stable") return;
+      if (!isCallerRef.current || pc.signalingState !== "stable") return;
       try {
         const offer = await pc.createOffer();
-        if (pc.signalingState !== "stable") return; // recheck after async gap
+        if (pc.signalingState !== "stable") return; // re-check after await
         await pc.setLocalDescription(offer);
         signalingRef.current?.send({ type: "offer", sdp: pc.localDescription! });
-      } catch (e) {
-        console.error("onnegotiationneeded error:", e);
+      } catch (err) {
+        console.error("onnegotiationneeded:", err);
       }
     };
 
-    // Caller: add sendrecv transceivers so onnegotiationneeded fires even before camera is ready.
-    // If stream tracks are present they replace the transceiver senders below via replaceTrack.
     if (isCaller) {
+      // Pre-create sendrecv transceivers → triggers onnegotiationneeded once
       pc.addTransceiver("audio", { direction: "sendrecv" });
       pc.addTransceiver("video", { direction: "sendrecv" });
+      // Immediately attach stream if already available (camera was ready before peer-joined)
+      const stream = localStreamRef.current;
+      if (stream) attachTracks(pc, stream);
     }
+    // Callee does NOT add tracks here — it adds them after setRemoteDescription
+    // so tracks match the offer's transceivers correctly.
 
     return pc;
-  }, []);
+  }, [attachTracks]);
 
-  // WebSocket connects once — NOT dependent on localStream
+  // WebSocket — connects once, does NOT depend on localStream
   useEffect(() => {
     if (!roomId) return;
 
@@ -132,7 +137,7 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
     signalingRef.current = signaling;
 
     const unsub = signaling.onMessage(async msg => {
-      const pc = peerRef.current;
+      let pc = peerRef.current;
 
       if (msg.type === "peer-joined") {
         makePeer(true);
@@ -141,14 +146,21 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
 
       if (msg.type === "offer") {
         if (pc && pc.signalingState !== "stable") {
-          console.warn("Glare detected, ignoring offer in state:", pc.signalingState);
+          console.warn("Glare — ignoring offer in state:", pc.signalingState);
           return;
         }
-        // Renegotiation: reuse existing peer; Initial: create new peer
         const activePc = pc ?? makePeer(false);
+
         await activePc.setRemoteDescription(msg.sdp);
-        const ans = await activePc.createAnswer();
-        await activePc.setLocalDescription(ans);
+        await drainQueue(activePc); // flush any early ICE candidates
+
+        // Attach local tracks AFTER setRemoteDescription so they bind
+        // to the offer's transceivers (correct codec/kind pairing)
+        const stream = localStreamRef.current;
+        if (stream) attachTracks(activePc, stream);
+
+        const answer = await activePc.createAnswer();
+        await activePc.setLocalDescription(answer);
         signaling.send({ type: "answer", sdp: activePc.localDescription! });
         return;
       }
@@ -159,12 +171,18 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
           return;
         }
         await pc.setRemoteDescription(msg.sdp).catch(console.error);
+        await drainQueue(pc); // flush any early ICE candidates
         return;
       }
 
       if (msg.type === "ice-candidate") {
-        if (pc?.remoteDescription) {
+        pc = peerRef.current;
+        if (!pc) return;
+        if (pc.remoteDescription) {
           await pc.addIceCandidate(msg.candidate).catch(console.error);
+        } else {
+          // Queue until remote description is set
+          iceCandidateQueue.current.push(msg.candidate);
         }
         return;
       }
@@ -190,11 +208,13 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
       peerRef.current?.close();
       peerRef.current = null;
       signalingRef.current = null;
+      iceCandidateQueue.current = [];
       setSignalingStatus("disconnected");
     };
-  }, [roomId, makePeer]); // NO localStream dependency
+  }, [roomId, makePeer, attachTracks, drainQueue]);
 
   const hangUp = useCallback(() => {
+    signalingRef.current?.send({ type: "peer-left" });
     signalingRef.current?.disconnect();
     peerRef.current?.close();
     peerRef.current = null;
@@ -202,5 +222,11 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
     setConnectionState("idle");
   }, []);
 
-  return { remoteStream, connectionState, signalingStatus, isConnected: connectionState === "connected", hangUp };
+  return {
+    remoteStream,
+    connectionState,
+    signalingStatus,
+    isConnected: connectionState === "connected",
+    hangUp,
+  };
 }
