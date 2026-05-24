@@ -10,6 +10,7 @@ export default function DvdScreensaver() {
   const pos = useRef({ x: 120, y: 80 });
   const vel = useRef({ x: 1.5, y: 1.1 });
   const raf = useRef<number>(0);
+  const lastT = useRef(0);
 
   const disabled = DISABLED_PATHS.some((p) => pathname === p);
 
@@ -18,14 +19,18 @@ export default function DvdScreensaver() {
     const el = elRef.current;
     if (!el) return;
 
-    const tick = () => {
+    const tick = (now: number) => {
+      // dt normalized to 1.0 at 60 fps — keeps speed consistent at any refresh rate
+      const dt = lastT.current > 0 ? Math.min((now - lastT.current) / (1000 / 60), 3) : 1;
+      lastT.current = now;
+
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const w = el.offsetWidth;
       const h = el.offsetHeight;
 
-      pos.current.x += vel.current.x;
-      pos.current.y += vel.current.y;
+      pos.current.x += vel.current.x * dt;
+      pos.current.y += vel.current.y * dt;
 
       if (pos.current.x <= 0) { vel.current.x = Math.abs(vel.current.x); pos.current.x = 0; }
       if (pos.current.x + w >= vw) { vel.current.x = -Math.abs(vel.current.x); pos.current.x = vw - w; }
@@ -37,7 +42,7 @@ export default function DvdScreensaver() {
     };
 
     raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
+    return () => { cancelAnimationFrame(raf.current); lastT.current = 0; };
   }, [disabled]);
 
   if (disabled) return null;

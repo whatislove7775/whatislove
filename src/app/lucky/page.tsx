@@ -23,26 +23,41 @@ function buildDogSprite(leg: number, dead: boolean): HTMLCanvasElement {
   c.width = DOG_W; c.height = DOG_H + p(2);
   const ctx = c.getContext('2d')!;
   const x = 0, y = p(2);
-  px(ctx, INK, x,         y + p(3), p(2), p(1));
-  px(ctx, INK, x + p(1),  y + p(2), p(1), p(1));
-  px(ctx, INK, x,         y + p(1), p(1), p(2));
-  px(ctx, INK, x + p(2),  y + p(3), p(9), p(6));
-  px(ctx, BG,  x + p(3),  y + p(5), p(6), p(2));
-  px(ctx, INK, x + p(8),  y,        p(8), p(7));
-  px(ctx, INK, x + p(8),  y - p(2), p(3), p(3));
-  px(ctx, BG,  x + p(9),  y - p(1), p(1), p(2));
+
+  // tail — raised curl at the back (2 pixels above body level)
+  px(ctx, INK, x + p(1), y - p(1), p(2), p(1)); // tail tip (above body line)
+  px(ctx, INK, x,        y,        p(1), p(3)); // tail base, connects downward
+  px(ctx, INK, x + p(1), y,        p(1), p(2)); // tail base right side
+
+  // body
+  px(ctx, INK, x + p(2), y + p(3), p(9), p(6));
+  px(ctx, BG,  x + p(3), y + p(5), p(6), p(2));
+
+  // head
+  px(ctx, INK, x + p(8), y,        p(8), p(7));
+
+  // ear — wider and floppier (4 wide at base, 2 at tip)
+  px(ctx, INK, x + p(9), y - p(2), p(2), p(1)); // ear tip (2 wide)
+  px(ctx, INK, x + p(8), y - p(1), p(4), p(2)); // ear body (4 wide)
+  px(ctx, BG,  x + p(9), y - p(1), p(1), p(1)); // ear inner hollow
+
+  // snout
   px(ctx, INK, x + p(13), y + p(3), p(3), p(3));
   px(ctx, BG,  x + p(14), y + p(4), p(1), p(1));
+
+  // eye
   if (dead) {
-    px(ctx, BG, x + p(11), y + p(1), p(1), p(1));
-    px(ctx, BG, x + p(13), y + p(1), p(1), p(1));
-    px(ctx, BG, x + p(12), y + p(2), p(1), p(1));
-    px(ctx, BG, x + p(11), y + p(3), p(1), p(1));
-    px(ctx, BG, x + p(13), y + p(3), p(1), p(1));
+    px(ctx, BG,  x + p(11), y + p(1), p(2), p(2)); // clear eye area
+    px(ctx, INK, x + p(11), y + p(1), p(1), p(1)); // X top-left
+    px(ctx, INK, x + p(12), y + p(2), p(1), p(1)); // X bottom-right
+    px(ctx, INK, x + p(12), y + p(1), p(1), p(1)); // X top-right
+    px(ctx, INK, x + p(11), y + p(2), p(1), p(1)); // X bottom-left
   } else {
-    px(ctx, BG,  x + p(11), y + p(1), p(2), p(2));
-    px(ctx, INK, x + p(12), y + p(1), p(1), p(1));
+    px(ctx, BG,  x + p(11), y + p(1), p(2), p(2)); // eye white 2×2
+    px(ctx, INK, x + p(12), y + p(1), p(1), p(1)); // pupil (alert look)
   }
+
+  // legs
   if (leg === 0) {
     px(ctx, INK, x + p(4), y + p(9),  p(2), p(5));
     px(ctx, INK, x + p(4), y + p(13), p(3), p(1));
@@ -63,27 +78,38 @@ const POOP_W = p(12), POOP_H = p(13);
 
 function buildPoopSprite(): HTMLCanvasElement {
   const c = document.createElement('canvas');
-  c.width = POOP_W; c.height = POOP_H;
+  c.width = POOP_W; c.height = POOP_H; // 12 × 13 game units
   const ctx = c.getContext('2d')!;
-  px(ctx, INK, p(5),  0,      p(2), p(2));
-  px(ctx, INK, p(4),  p(1),   p(1), p(1));
-  px(ctx, INK, p(6),  p(1),   p(1), p(2));
-  px(ctx, INK, p(4),  p(2),   p(2), p(1));
-  px(ctx, INK, p(3),  p(3),   p(6), p(3));
-  px(ctx, BG,  p(4),  p(4),   p(1), p(1));
-  px(ctx, INK, p(2),  p(5),   p(8), p(1));
-  px(ctx, INK, p(1),  p(6),   p(10), p(3));
-  px(ctx, BG,  p(2),  p(7),   p(2), p(1));
-  px(ctx, INK, 0,     p(8),   p(12), p(1));
-  px(ctx, INK, 0,     p(9),   p(12), p(4));
-  px(ctx, BG,  p(1),  p(10),  p(3),  p(1));
-  px(ctx, BG,  p(3),  p(6),   p(2), p(2));
-  px(ctx, INK, p(3),  p(6),   p(1), p(1));
-  px(ctx, BG,  p(7),  p(6),   p(2), p(2));
-  px(ctx, INK, p(7),  p(6),   p(1), p(1));
-  px(ctx, INK, p(3),  p(9),   p(1), p(1));
-  px(ctx, INK, p(8),  p(9),   p(1), p(1));
-  px(ctx, INK, p(4),  p(10),  p(4), p(1));
+
+  // spiral knob — rows 0-2 (narrowest, on top)
+  px(ctx, INK, p(5), p(0), p(2), p(1));          // tip: 2 wide
+  px(ctx, INK, p(4), p(1), p(4), p(1));          // knob: 4 wide
+  px(ctx, BG,  p(5), p(1), p(1), p(1));          // swirl gap (creates ∩ shape)
+  px(ctx, INK, p(3), p(2), p(6), p(1));          // knob base: 6 wide
+
+  // tier 1 — rows 3-5 (medium)
+  px(ctx, INK, p(3), p(3), p(6), p(1));          // top edge same as knob base
+  px(ctx, INK, p(2), p(4), p(8), p(2));          // body: 8 wide × 2 rows
+
+  // tier 2 with face — rows 6-9 (wide)
+  px(ctx, INK, p(1), p(6), p(10), p(4));         // block: 10 wide × 4 rows
+  // left eye: 2 wide white + pupil offset right (looking forward)
+  px(ctx, BG,  p(2), p(7), p(2), p(1));
+  px(ctx, INK, p(3), p(7), p(1), p(1));          // left pupil
+  // right eye: same
+  px(ctx, BG,  p(7), p(7), p(2), p(1));
+  px(ctx, INK, p(8), p(7), p(1), p(1));          // right pupil
+  // smile: wide white gap at bottom of tier, with corners kept to look happy
+  px(ctx, BG,  p(3), p(9), p(6), p(1));          // mouth opening (6 wide)
+  px(ctx, INK, p(3), p(9), p(1), p(1));          // fill left corner → ∪ shape
+  px(ctx, INK, p(8), p(9), p(1), p(1));          // fill right corner → ∪ shape
+
+  // base — rows 10-12 (full width, widest)
+  px(ctx, INK, p(0), p(10), p(12), p(3));
+  // base highlight (sheen)
+  px(ctx, BG,  p(1),  p(11), p(3), p(1));
+  px(ctx, BG,  p(8),  p(11), p(2), p(1));
+
   return c;
 }
 
