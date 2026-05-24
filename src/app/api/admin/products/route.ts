@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data, error } = await db()
     .from('products')
-    .select('*, product_variants(id, attribute_value, stock, to_produce)')
+    .select('id, name, slug, price, oldPrice, material, image_url, images, delivery, product_variants(id, attribute_value, stock, to_produce)')
     .order('id', { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);

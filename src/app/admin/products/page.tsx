@@ -34,7 +34,7 @@ export default function ProductsPage() {
       name: p.name ?? '',
       slug: p.slug ?? '',
       price: p.price ?? '',
-      oldPrice: p.old_price ?? '',
+      oldPrice: p.oldPrice ?? '',
       material: p.material ?? '',
       image_url: p.image_url ?? '',
       images: Array.isArray(p.images) ? p.images.join(', ') : (p.images ?? ''),
@@ -60,7 +60,7 @@ export default function ProductsPage() {
       name: form.name,
       slug: form.slug,
       price: Number(form.price),
-      old_price: form.oldPrice ? Number(form.oldPrice) : null,
+      oldPrice: form.oldPrice ? Number(form.oldPrice) : null,
       material: form.material,
       image_url: form.image_url,
       images: form.images ? form.images.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
@@ -184,7 +184,7 @@ export default function ProductsPage() {
             {p.image_url && <img src={p.image_url} alt="" style={{ width: '48px', height: '48px', objectFit: 'cover', flexShrink: 0 }} />}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 800 }}>{p.name}</div>
-              <div style={{ fontSize: '12px', color: '#888' }}>{p.slug} · {Number(p.price).toLocaleString('ru')} ₽{p.old_price ? ` (было ${Number(p.old_price).toLocaleString('ru')} ₽)` : ''}</div>
+              <div style={{ fontSize: '12px', color: '#888' }}>{p.slug} · {Number(p.price).toLocaleString('ru')} ₽{p.oldPrice ? ` (было ${Number(p.oldPrice).toLocaleString('ru')} ₽)` : ''}</div>
             </div>
             <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
               {(p.product_variants ?? []).map((v: any) => (
