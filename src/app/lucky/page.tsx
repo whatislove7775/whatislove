@@ -237,7 +237,7 @@ export default function LuckyPage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d', { alpha: false })!;
+    const ctx = canvas.getContext('2d')!;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width  = CW * dpr;
     canvas.height = CH * dpr;
@@ -293,7 +293,10 @@ export default function LuckyPage() {
 
       if (lastTime > 0 && s.running && !s.dead) {
         accum += Math.min(now - lastTime, 100);
-        while (accum >= STEP) { updateState(s); accum -= STEP; }
+        // cap at 2 steps per frame — prevents CPU spiral when RAF is throttled
+        let steps = 0;
+        while (accum >= STEP && steps < 2) { updateState(s); accum -= STEP; steps++; }
+        if (accum > STEP) accum = 0; // discard excess if we're still behind
       }
       lastTime = now;
 
