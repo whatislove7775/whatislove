@@ -33,7 +33,7 @@ export default function RegisterPage() {
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(JSON.stringify(data));
+      if (!res.ok) throw new Error(data.detail || data.error || JSON.stringify(data));
       setDone(true);
     } catch (err: any) {
       setError(err.message);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 
@@ -14,92 +15,99 @@ interface Session {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  pending: "Ожидает оплаты",
-  paid: "Оплачена",
-  active: "Идёт",
+  pending:   "Ожидает оплаты",
+  paid:      "Оплачена",
+  active:    "Идёт",
   completed: "Завершена",
   cancelled: "Отменена",
 };
 
+const STATUS_BADGE: Record<string, string> = {
+  pending:   "badge",
+  paid:      "badge badge-blue",
+  active:    "badge badge-green",
+  completed: "badge",
+  cancelled: "badge",
+};
+
 export default function SessionsPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState("");
+  const [role,     setRole]     = useState("client");
 
   useEffect(() => {
-    const access = localStorage.getItem("access");
+    const access = localStorage.getItem("access_token");
     if (!access) { window.location.href = "/login"; return; }
+    setRole(localStorage.getItem("role") ?? "client");
     fetch(`${API}/sessions/`, {
       headers: { Authorization: `Bearer ${access}` },
     })
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(data => setSessions(Array.isArray(data) ? data : data.results ?? []))
+      .then(data => setSessions(Array.isArray(data) ? data : (data.results ?? [])))
       .catch(() => setError("Не удалось загрузить сессии"))
       .finally(() => setLoading(false));
   }, []);
 
   return (
     <>
-      <style>{`
-        .row { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border: 1px solid var(--chrome-700); background: var(--chrome-800); gap: 1rem; flex-wrap: wrap; }
-        .row:hover { border-color: var(--chrome-500); }
-        .status { font-family: var(--font-mono); font-size: 0.7rem; padding: 0.2rem 0.6rem; border: 1px solid var(--chrome-600); color: var(--chrome-400); }
-        .status.active { border-color: var(--accent-chrome); color: var(--accent-chrome); }
-        .btn { padding: 0.5rem 1.2rem; border: 1px solid var(--accent-chrome); color: var(--accent-chrome); font-family: var(--font-heading); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: all var(--transition-base); }
-        .btn:hover { background: var(--accent-chrome); color: var(--chrome-900); }
-        .back { font-family: var(--font-heading); font-size: 0.75rem; letter-spacing: 0.1em; color: var(--chrome-500); text-decoration: none; text-transform: uppercase; }
-        .back:hover { color: var(--chrome-200); }
-      `}</style>
+      <nav className="nav">
+        <Link href="/" className="nav-logo">Apro<span>sop</span></Link>
+        <Link href="/dashboard" className="btn btn-ghost btn-sm" style={{ marginLeft: "auto" }}>← Назад</Link>
+      </nav>
 
-      <main style={{ minHeight: "100vh", background: "var(--chrome-900)", padding: "2rem" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "2.5rem" }}>
-            <a href="/dashboard" className="back">← Назад</a>
-            <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.5rem", letterSpacing: "0.15em", color: "var(--accent-chrome)" }}>
-              МОИ СЕССИИ
-            </h1>
+      <div className="page">
+        <div className="page-inner">
+          <div style={{ marginBottom: "28px" }}>
+            <h2>Мои сессии</h2>
+            <p style={{ color: "var(--text-secondary)", marginTop: "6px", fontSize: "14px" }}>
+              {role === "psychologist" ? "Встречи с вашими клиентами" : "Ваши консультации с психологами"}
+            </p>
           </div>
 
-          {loading && <p style={{ color: "var(--chrome-500)", fontFamily: "var(--font-mono)" }}>Загрузка...</p>}
-          {error && <p style={{ color: "#e07070", fontFamily: "var(--font-mono)" }}>{error}</p>}
+          {loading && <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Загрузка...</p>}
+          {error   && <div className="form-error">{error}</div>}
 
           {!loading && !error && sessions.length === 0 && (
-            <div style={{ textAlign: "center", padding: "3rem" }}>
-              <p style={{ color: "var(--chrome-500)", fontFamily: "var(--font-body)", marginBottom: "1.5rem" }}>
-                Сессий пока нет
-              </p>
-              <a href="/psychologists" style={{ padding: "0.75rem 2rem", border: "1px solid var(--accent-chrome)", color: "var(--accent-chrome)", fontFamily: "var(--font-heading)", fontSize: "0.8rem", letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none" }}>
-                Найти специалиста
-              </a>
+            <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
+              <div style={{ fontSize: "32px", marginBottom: "12px" }}>📅</div>
+              <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>Сессий пока нет</p>
+              {role !== "psychologist" && (
+                <Link href="/sessions/book" className="btn btn-primary">Забронировать сессию</Link>
+              )}
             </div>
           )}
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {sessions.map(s => (
-              <div key={s.id} className="row">
+              <div key={s.id} className="card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
                 <div>
-                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "var(--chrome-300)", marginBottom: "0.25rem" }}>
+                  <p style={{ fontSize: "14px", marginBottom: "4px" }}>
                     {s.scheduled_at ? new Date(s.scheduled_at).toLocaleString("ru-RU") : "Дата не указана"}
                   </p>
-                  <p style={{ fontFamily: "var(--font-body)", fontSize: "0.85rem", color: "var(--chrome-500)" }}>
-                    {s.duration_minutes} мин · {(s.amount_kopecks / 100).toLocaleString("ru-RU")} ₽
+                  <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                    {s.duration_minutes} мин
+                    {s.amount_kopecks > 0 && ` · ${(s.amount_kopecks / 100).toLocaleString("ru-RU")} ₽`}
                   </p>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                  <span className={`status${s.status === "active" ? " active" : ""}`}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <span className={STATUS_BADGE[s.status] ?? "badge"}>
                     {STATUS_LABEL[s.status] ?? s.status}
                   </span>
-                  {(s.status === "paid" || s.status === "active") && (
-                    <a href={`/session/${s.webrtc_room_id}?role=client`} className="btn">
+                  {(s.status === "paid" || s.status === "active") && s.webrtc_room_id && (
+                    <Link
+                      href={`/session/${s.webrtc_room_id}?role=${role}`}
+                      className="btn btn-primary btn-sm"
+                    >
                       Войти →
-                    </a>
+                    </Link>
                   )}
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </main>
+      </div>
     </>
   );
 }

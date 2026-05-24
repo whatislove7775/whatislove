@@ -41,16 +41,21 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const isCallerRef     = useRef(false);
 
-  // Keep localStreamRef current; replace tracks on existing peer without reconnecting
+  // Keep localStreamRef current; replace tracks on existing peer — replaceTrack
+  // never triggers renegotiation, keeping signaling clean.
   useEffect(() => {
     localStreamRef.current = localStream;
     const pc = peerRef.current;
     if (!pc || !localStream) return;
     const senders = pc.getSenders();
     localStream.getTracks().forEach(track => {
-      const sender = senders.find(s => s.track?.kind === track.kind);
-      if (sender) sender.replaceTrack(track);
-      else pc.addTrack(track, localStream);
+      const sender = senders.find(s => s.track?.kind === track.kind || s.track === null);
+      if (sender) {
+        sender.replaceTrack(track).catch(() => {});
+      } else {
+        // callee: no transceiver pre-created, so addTrack is fine (triggers renegotiation via onnegotiationneeded, which callee ignores)
+        pc.addTrack(track, localStream);
+      }
     });
   }, [localStream]);
 
@@ -65,13 +70,19 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
     });
     peerRef.current = pc;
 
-    // Add tracks from current stream
+    // Add tracks from current stream (only when callee — caller uses transceivers above)
     const stream = localStreamRef.current;
-    if (stream) stream.getTracks().forEach(t => pc.addTrack(t, stream));
+    if (stream && !isCaller) {
+      stream.getTracks().forEach(t => pc.addTrack(t, stream));
+    }
 
     remoteStreamRef.current = new MediaStream();
     pc.ontrack = e => {
-      e.streams[0].getTracks().forEach(t => remoteStreamRef.current!.addTrack(t));
+      // e.streams may be empty when caller uses addTransceiver — use e.track directly
+      const track = e.track;
+      if (!remoteStreamRef.current!.getTrackById(track.id)) {
+        remoteStreamRef.current!.addTrack(track);
+      }
       setRemoteStream(new MediaStream(remoteStreamRef.current!.getTracks()));
     };
 
@@ -87,12 +98,14 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
       }
     };
 
-    // Only the caller drives renegotiation — callee never sends unsolicited offers
+    // Only the caller drives negotiation — callee never sends unsolicited offers.
+    // onnegotiationneeded is the single source of truth for offer creation.
     pc.onnegotiationneeded = async () => {
       if (!isCallerRef.current) return;
       if (pc.signalingState !== "stable") return;
       try {
         const offer = await pc.createOffer();
+        if (pc.signalingState !== "stable") return; // recheck after async gap
         await pc.setLocalDescription(offer);
         signalingRef.current?.send({ type: "offer", sdp: pc.localDescription! });
       } catch (e) {
@@ -100,11 +113,11 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
       }
     };
 
+    // Caller: add sendrecv transceivers so onnegotiationneeded fires even before camera is ready.
+    // If stream tracks are present they replace the transceiver senders below via replaceTrack.
     if (isCaller) {
-      pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
-        .then(o => pc.setLocalDescription(o))
-        .then(() => signalingRef.current?.send({ type: "offer", sdp: pc.localDescription! }))
-        .catch(console.error);
+      pc.addTransceiver("audio", { direction: "sendrecv" });
+      pc.addTransceiver("video", { direction: "sendrecv" });
     }
 
     return pc;

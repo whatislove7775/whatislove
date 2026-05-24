@@ -17,6 +17,7 @@ export function useFaceMask({ sourceVideo, outputCanvas, enabled }: UseFaceMaskO
   const animFrameRef  = useRef<number>(0);
   const landmarksRef  = useRef<Array<{ x: number; y: number; z: number }> | null>(null);
   const sendTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sendingRef    = useRef(false); // prevent concurrent MediaPipe sends
 
   useEffect(() => {
     if (!sourceVideo || !outputCanvas || !enabled) {
@@ -29,10 +30,13 @@ export function useFaceMask({ sourceVideo, outputCanvas, enabled }: UseFaceMaskO
     const ctx = outputCanvas.getContext("2d");
     if (!ctx) return;
 
-    // Render loop: video frame + chrome mask on top
-    const drawLoop = () => {
+    // Render loop capped at ~30fps to reduce GPU/CPU load
+    let lastDraw = 0;
+    const drawLoop = (ts: number) => {
       if (cancelled) return;
       animFrameRef.current = requestAnimationFrame(drawLoop);
+      if (ts - lastDraw < 33) return; // ~30fps cap
+      lastDraw = ts;
 
       const vw = sourceVideo.videoWidth;
       const vh = sourceVideo.videoHeight;
@@ -42,19 +46,22 @@ export function useFaceMask({ sourceVideo, outputCanvas, enabled }: UseFaceMaskO
       if (outputCanvas.height !== vh) outputCanvas.height = vh;
 
       ctx.drawImage(sourceVideo, 0, 0, vw, vh);
-
-      if (landmarksRef.current) {
-        drawChromeMask(ctx, landmarksRef.current, vw, vh);
-      }
+      if (landmarksRef.current) drawChromeMask(ctx, landmarksRef.current, vw, vh);
     };
 
-    // Detection loop: send frames to FaceMesh at ~15fps (detection is CPU-heavy)
+    // Detection loop at ~10fps; waits for each send to complete before scheduling next
+    // to prevent MediaPipe queue buildup which causes freezing
     const detectLoop = async () => {
       if (cancelled || !faceMeshRef.current) return;
-      if (sourceVideo.readyState >= 2) {
-        await faceMeshRef.current.send({ image: sourceVideo }).catch(() => {});
+      if (sourceVideo.readyState >= 2 && !sendingRef.current) {
+        sendingRef.current = true;
+        try {
+          await faceMeshRef.current.send({ image: sourceVideo });
+        } catch { /* ignore */ } finally {
+          sendingRef.current = false;
+        }
       }
-      sendTimerRef.current = setTimeout(detectLoop, 66); // ~15fps
+      if (!cancelled) sendTimerRef.current = setTimeout(detectLoop, 100); // ~10fps
     };
 
     const init = async () => {
@@ -86,7 +93,7 @@ export function useFaceMask({ sourceVideo, outputCanvas, enabled }: UseFaceMaskO
       setMaskedStream(outputCanvas.captureStream(30));
       setIsReady(true);
 
-      drawLoop();
+      animFrameRef.current = requestAnimationFrame(drawLoop);
       detectLoop();
     };
 
