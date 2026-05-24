@@ -1,17 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import {
-  Room, RoomEvent, Track, VideoPresets,
-  createLocalAudioTrack, createLocalVideoTrack,
-  type RemoteTrack,
-} from "livekit-client";
+import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallSession } from "@/hooks/useCallSession";
 import { useAmbientSound, type AmbientPreset } from "@/hooks/useAmbientSound";
 import { SessionNotepad } from "@/components/session/SessionNotepad";
 import { BreathingSync } from "@/components/session/BreathingSync";
-
-const API         = process.env.NEXT_PUBLIC_API_URL    ?? "/api/v1";
-const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL ?? "ws://155.212.128.231:7880";
 
 interface VideoSessionProps {
   roomId: string;
@@ -20,22 +13,16 @@ interface VideoSessionProps {
 }
 
 export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
-  const [status,       setStatus]       = useState<"connecting" | "connected" | "failed">("connecting");
-  const [isMuted,      setIsMuted]      = useState(false);
-  const [isCameraOff,  setIsCameraOff]  = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const [hasRemote,    setHasRemote]    = useState(false);
-  const [error,        setError]        = useState<string | null>(null);
-  const [micStream,    setMicStream]    = useState<MediaStream | null>(null);
+  const hideTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  const localVideoRef  = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteAudioRef = useRef<HTMLAudioElement>(null);
-  const roomRef        = useRef<Room | null>(null);
-  const hideTimer      = useRef<ReturnType<typeof setTimeout>>();
+  const displayName = role === "psychologist" ? "Психолог" : "Клиент";
 
-  const ambient = useAmbientSound(micStream);
+  const { status, isMuted, isCameraOff, hasRemote, initContainer, toggleMute, toggleCamera, hangUp } =
+    useCallSession({ roomId, displayName, onEnd });
+
+  const ambient = useAmbientSound(null);
 
   const resetHideTimer = useCallback(() => {
     setShowControls(true);
@@ -48,120 +35,37 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
     return () => clearTimeout(hideTimer.current);
   }, [resetHideTimer]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function connect() {
-      try {
-        const access = localStorage.getItem("access_token");
-        const res    = await fetch(`${API}/livekit/token/?room=${roomId}`, {
-          headers: { Authorization: `Bearer ${access}` },
-        });
-        if (!res.ok) throw new Error("Не удалось получить токен сессии");
-        const { token } = await res.json();
-        if (cancelled) return;
-
-        const room = new Room({
-          adaptiveStream: true,
-          dynacast:       true,
-          videoCaptureDefaults: { resolution: VideoPresets.h720.resolution },
-        });
-        roomRef.current = room;
-
-        room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
-          if (track.kind === Track.Kind.Video && remoteVideoRef.current) {
-            track.attach(remoteVideoRef.current);
-            setHasRemote(true);
-          }
-          if (track.kind === Track.Kind.Audio && remoteAudioRef.current) {
-            track.attach(remoteAudioRef.current);
-          }
-        });
-
-        room.on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
-          track.detach();
-          if (track.kind === Track.Kind.Video) setHasRemote(false);
-        });
-
-        room.on(RoomEvent.ParticipantDisconnected, () => setHasRemote(false));
-        room.on(RoomEvent.Disconnected, () => { if (!cancelled) setStatus("failed"); });
-
-        await room.connect(LIVEKIT_URL, token);
-        if (cancelled) { room.disconnect(); return; }
-        setStatus("connected");
-
-        const [audioTrack, videoTrack] = await Promise.all([
-          createLocalAudioTrack({ echoCancellation: true, noiseSuppression: true }),
-          createLocalVideoTrack({ resolution: VideoPresets.h720.resolution }),
-        ]);
-        if (cancelled) { room.disconnect(); return; }
-
-        if (localVideoRef.current) videoTrack.attach(localVideoRef.current);
-        setMicStream(new MediaStream([audioTrack.mediaStreamTrack]));
-
-        await room.localParticipant.publishTrack(audioTrack);
-        await room.localParticipant.publishTrack(videoTrack);
-
-      } catch (err: any) {
-        if (!cancelled) setError(err.message ?? "Ошибка подключения");
-      }
-    }
-
-    connect();
-    return () => {
-      cancelled = true;
-      roomRef.current?.disconnect();
-      roomRef.current = null;
-    };
-  }, [roomId]);
-
-  const toggleMute = async () => {
-    if (!roomRef.current) return;
-    await roomRef.current.localParticipant.setMicrophoneEnabled(isMuted);
-    setIsMuted(m => !m);
-  };
-
-  const toggleCamera = async () => {
-    if (!roomRef.current) return;
-    await roomRef.current.localParticipant.setCameraEnabled(isCameraOff);
-    setIsCameraOff(c => !c);
-  };
-
   const handleHangUp = () => {
     ambient.setEnabled(false);
-    roomRef.current?.disconnect();
-    roomRef.current = null;
-    onEnd?.();
+    hangUp();
   };
 
   const stateColor = status === "connected" && hasRemote ? "#31B557"
-    : status === "failed" ? "#E53935" : "#8D9AA3";
+    : status === "failed"       ? "#E53935"
+    : status === "reconnecting" ? "#F9A825"
+    : "#8D9AA3";
 
-  const stateLabel = status === "failed"    ? "Соединение разорвано"
-    : status === "connecting"               ? "Подключение..."
-    : hasRemote                             ? "Соединение установлено"
-    : role === "client"                     ? "Ожидание психолога..."
+  const stateLabel = status === "failed"        ? "Соединение разорвано"
+    : status === "reconnecting"                 ? "Переподключение..."
+    : status === "loading" || status === "idle" ? "Подключение..."
+    : hasRemote                                 ? "Соединение установлено"
+    : role === "client"                         ? "Ожидание психолога..."
     : "Ожидание клиента...";
-
-  if (error) return (
-    <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0E1621", color: "#8D9AA3", flexDirection: "column", gap: "16px" }}>
-      <span style={{ fontSize: "32px" }}>⚠️</span>
-      <p style={{ fontFamily: "var(--font)" }}>{error}</p>
-      <button className="btn btn-primary" onClick={onEnd}>← Назад</button>
-    </div>
-  );
 
   return (
     <div
       style={{ position: "relative", width: "100vw", height: "100vh", background: "#0E1621", overflow: "hidden", cursor: showControls ? "default" : "none" }}
       onMouseMove={resetHideTimer}
     >
-      <video ref={remoteVideoRef} autoPlay playsInline
-        style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-      <audio ref={remoteAudioRef} autoPlay />
+      {/* Jitsi IFrame renders here */}
+      <div
+        ref={initContainer}
+        style={{ position: "absolute", inset: 0, zIndex: 1 }}
+      />
 
+      {/* Spinner while waiting for remote */}
       {!hasRemote && (
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px", zIndex: 5, pointerEvents: "none" }}>
           <div style={{ width: "48px", height: "48px", border: "2px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
           <p style={{ color: "#8D9AA3", fontSize: "15px", fontFamily: "var(--font)" }}>{stateLabel}</p>
         </div>
@@ -173,21 +77,18 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
         <span style={{ fontSize: "13px", color: "#8D9AA3", fontFamily: "var(--font)" }}>{stateLabel}</span>
       </div>
 
-      {/* Local preview */}
-      <div style={{ position: "absolute", bottom: "84px", right: "16px", width: 176, height: 132, borderRadius: "var(--radius)", border: "1px solid rgba(43,58,76,0.8)", overflow: "hidden", background: "#0E1621", boxShadow: "var(--shadow-lg)", transition: "opacity 0.3s", opacity: showControls ? 1 : 0.4 }}>
-        <video ref={localVideoRef} autoPlay playsInline muted
-          style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }} />
-      </div>
-
       {/* Right-side buttons */}
       <div style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", display: "flex", flexDirection: "column", gap: "10px", transition: "opacity 0.3s", opacity: showControls ? 1 : 0, zIndex: 20 }}>
         <SessionNotepad roomId={roomId} />
         <BreathingSync />
-        <button onClick={() => ambient.setEnabled((e: boolean) => !e)} title={ambient.enabled ? "Выключить звуки природы" : "Включить звуки природы"}
+        <button
+          onClick={() => ambient.setEnabled((e: boolean) => !e)}
+          title={ambient.enabled ? "Выключить звуки природы" : "Включить звуки природы"}
           style={{ width: 44, height: 44, borderRadius: "50%", background: ambient.enabled ? "var(--accent)" : "rgba(23,33,43,0.9)", border: "1px solid var(--border)", color: "#fff", fontSize: "18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(8px)" }}>
           {ambient.enabled ? "🌿" : "🔕"}
         </button>
-        <button onClick={() => setShowSettings(s => !s)}
+        <button
+          onClick={() => setShowSettings(s => !s)}
           style={{ width: 44, height: 44, borderRadius: "50%", background: showSettings ? "var(--bg-elevated)" : "rgba(23,33,43,0.9)", border: "1px solid var(--border)", color: "var(--text-secondary)", fontSize: "18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(8px)" }}>
           ⚙️
         </button>

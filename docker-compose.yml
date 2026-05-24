@@ -55,21 +55,9 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api/v1}
         NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost}
-        NEXT_PUBLIC_LIVEKIT_URL: ${NEXT_PUBLIC_LIVEKIT_URL:-ws://155.212.128.231:7880}
-    restart: unless-stopped
+      restart: unless-stopped
     depends_on:
       - api
-
-  livekit:
-    image: livekit/livekit-server:v1.7
-    restart: unless-stopped
-    command: --config /etc/livekit.yaml
-    ports:
-      - "7880:7880"
-      - "7881:7881"
-      - "50000-50200:50000-50200/udp"
-    volumes:
-      - ./livekit.yaml:/etc/livekit.yaml
 
   nginx:
     image: nginx:alpine
@@ -83,25 +71,6 @@ services:
     depends_on:
       - api
       - web
-
-  turn:
-    image: coturn/coturn:alpine
-    network_mode: host
-    restart: unless-stopped
-    command: >
-      -n
-      --log-file=stdout
-      --lt-cred-mech
-      --fingerprint
-      --no-tlsv1
-      --no-tlsv1_1
-      --no-multicast-peers
-      --realm=aprosop.ru
-      --user=aprosop:anonpsy2024turn
-      --external-ip=155.212.128.231
-      --listening-port=3478
-      --min-port=49152
-      --max-port=65535
 
 volumes:
   pgdata:
