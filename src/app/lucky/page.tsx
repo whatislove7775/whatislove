@@ -145,13 +145,13 @@ function buildLifeSprite(filled: boolean): HTMLCanvasElement {
   return c;
 }
 
-function drawGround(ctx: CanvasRenderingContext2D, offset: number) {
+function drawGround(ctx: CanvasRenderingContext2D, offset: number, W: number) {
   ctx.fillStyle = INK;
-  ctx.fillRect(0, GROUND, CW, 2);
-  for (let x = ((-offset) % 60 + 60) % 60; x < CW; x += 60)
+  ctx.fillRect(0, GROUND, W, 2);
+  for (let x = ((-offset) % 60 + 60) % 60; x < W; x += 60)
     ctx.fillRect(Math.round(x), GROUND + 4, 20, 1);
   ctx.fillStyle = HI;
-  for (let x = ((-offset + 32) % 60 + 60) % 60; x < CW; x += 60)
+  for (let x = ((-offset + 32) % 60 + 60) % 60; x < W; x += 60)
     ctx.fillRect(Math.round(x), GROUND + 8, 7, 1);
 }
 
@@ -174,22 +174,26 @@ interface S {
   nextObs: number; groundOff: number; t: number; lives: number;
 }
 
-function fresh(best = 0): S {
+function fresh(best = 0, W = CW): S {
   return {
     running: false, dead: false, score: 0, best, speed: SPEED0,
     dogY: GROUND - DOG_H, dogVY: 0, onGround: true, jumpsLeft: 2,
     legFrame: 0, legTimer: 0, invincible: 0, obstacles: [],
-    clouds: [{ x: 130, y: 55 }, { x: 390, y: 72 }, { x: 630, y: 42 }],
+    clouds: [
+      { x: Math.round(W * 0.16), y: 55 },
+      { x: Math.round(W * 0.49), y: 72 },
+      { x: Math.round(W * 0.79), y: 42 },
+    ],
     nextObs: 90, groundOff: 0, t: 0, lives: 3,
   };
 }
 
-function updateState(s: S) {
+function updateState(s: S, W: number) {
   s.t++;
   s.speed = Math.min(SPEED_MAX, SPEED0 + s.score / 400);
   if (s.t % 6 === 0) s.score++;
   s.groundOff += s.speed;
-  for (const c of s.clouds) { c.x -= s.speed * 0.22; if (c.x < -70) c.x = CW + 20; }
+  for (const c of s.clouds) { c.x -= s.speed * 0.22; if (c.x < -70) c.x = W + 20; }
   if (!s.onGround) {
     s.dogVY += GRAVITY;
     s.dogY  += s.dogVY;
@@ -203,10 +207,10 @@ function updateState(s: S) {
     if (Math.random() < 0.55) {
       const n = Math.random() < 0.28 ? 2 : 1;
       for (let i = 0; i < n; i++)
-        s.obstacles.push({ x: CW + i * (POOP_W + p(4)), y: GROUND - POOP_H, type: 'poop', w: POOP_W, h: POOP_H });
+        s.obstacles.push({ x: W + i * (POOP_W + p(4)), y: GROUND - POOP_H, type: 'poop', w: POOP_W, h: POOP_H });
     } else {
       const yOpts = [GROUND - DOG_H - p(1) - BIRD_H, GROUND - DOG_H - p(6) - BIRD_H, GROUND - DOG_H - p(14) - BIRD_H];
-      s.obstacles.push({ x: CW, y: yOpts[Math.floor(Math.random() * 3)], type: 'bird', w: BIRD_W, h: BIRD_H });
+      s.obstacles.push({ x: W, y: yOpts[Math.floor(Math.random() * 3)], type: 'bird', w: BIRD_W, h: BIRD_H });
     }
     s.nextObs = Math.max(40, Math.round(70 + Math.random() * 80 - s.speed * 3));
   }
@@ -237,10 +241,16 @@ export default function LuckyPage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // On mobile the canvas fills the screen width at full pixel scale (no downscale)
+    const W = Math.min(CW, window.innerWidth);
+    gsRef.current = fresh(0, W);
+
     const ctx = canvas.getContext('2d')!;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width  = CW * dpr;
+    canvas.width  = W * dpr;
     canvas.height = CH * dpr;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = CH + 'px';
     ctx.scale(dpr, dpr);
     ctx.imageSmoothingEnabled = false;
 
@@ -257,7 +267,7 @@ export default function LuckyPage() {
       const s = gsRef.current;
       if (!s.running && !s.dead) { s.running = true; accum = 0; return; }
       if (s.dead) {
-        gsRef.current = fresh(Math.max(s.best, s.score));
+        gsRef.current = fresh(Math.max(s.best, s.score), W);
         gsRef.current.running = true;
         accum = 0;
         return;
@@ -295,23 +305,23 @@ export default function LuckyPage() {
         accum += Math.min(now - lastTime, 100);
         // cap at 2 steps per frame — prevents CPU spiral when RAF is throttled
         let steps = 0;
-        while (accum >= STEP && steps < 2) { updateState(s); accum -= STEP; steps++; }
+        while (accum >= STEP && steps < 2) { updateState(s, W); accum -= STEP; steps++; }
         if (accum > STEP) accum = 0; // discard excess if we're still behind
       }
       lastTime = now;
 
       ctx.fillStyle = BG;
-      ctx.fillRect(0, 0, CW, CH);
+      ctx.fillRect(0, 0, W, CH);
 
       drawClouds(ctx, s.clouds);
-      drawGround(ctx, s.running ? s.groundOff : 0);
+      drawGround(ctx, s.running ? s.groundOff : 0, W);
 
       if (!s.running) {
         ctx.drawImage(dogSprites[0], DOG_X, GROUND - DOG_H - p(2));
         ctx.font = '700 13px Inter, sans-serif';
         ctx.fillStyle = INK;
         ctx.textAlign = 'center';
-        ctx.fillText('PRESS SPACE / TAP TO START', CW / 2, CH / 2);
+        ctx.fillText('PRESS SPACE / TAP TO START', W / 2, CH / 2);
         ctx.textAlign = 'left';
         rafRef.current = requestAnimationFrame(tick);
         return;
@@ -333,25 +343,25 @@ export default function LuckyPage() {
       ctx.font = '700 11px Inter, sans-serif';
       ctx.textAlign = 'right';
       ctx.fillStyle = HI;
-      ctx.fillText(`HI ${String(s.best).padStart(5, '0')}`, CW - 20, 24);
+      ctx.fillText(`HI ${String(s.best).padStart(5, '0')}`, W - 20, 24);
       ctx.fillStyle = INK;
-      ctx.fillText(String(s.score).padStart(5, '0'), CW - 20, 40);
+      ctx.fillText(String(s.score).padStart(5, '0'), W - 20, 40);
       ctx.textAlign = 'left';
 
       for (let i = 0; i < 3; i++) ctx.drawImage(lifeSprites[i < s.lives ? 1 : 0], 16 + i * 18, 16);
 
       if (s.dead) {
         ctx.fillStyle = 'rgba(255,255,255,0.85)';
-        ctx.fillRect(0, 0, CW, CH);
+        ctx.fillRect(0, 0, W, CH);
         ctx.textAlign = 'center';
         ctx.font = '700 18px Inter, sans-serif';
         ctx.fillStyle = INK;
-        ctx.fillText('GAME OVER', CW / 2, CH / 2 - 14);
+        ctx.fillText('GAME OVER', W / 2, CH / 2 - 14);
         ctx.font = '700 12px Inter, sans-serif';
         ctx.fillStyle = HI;
-        ctx.fillText(`SCORE  ${s.score}`, CW / 2, CH / 2 + 8);
+        ctx.fillText(`SCORE  ${s.score}`, W / 2, CH / 2 + 8);
         ctx.fillStyle = INK;
-        ctx.fillText('PRESS SPACE / TAP', CW / 2, CH / 2 + 28);
+        ctx.fillText('PRESS SPACE / TAP', W / 2, CH / 2 + 28);
         ctx.textAlign = 'left';
       }
 
@@ -372,12 +382,10 @@ export default function LuckyPage() {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', gap: '14px' }}>
-      <div style={{ width: '100%', maxWidth: `${CW}px`, aspectRatio: `${CW} / ${CH}`, overflow: 'hidden', lineHeight: 0 }}>
-        <canvas
-          ref={canvasRef}
-          style={{ display: 'block', width: '100%', height: '100%', touchAction: 'none' }}
-        />
-      </div>
+      <canvas
+        ref={canvasRef}
+        style={{ display: 'block', maxWidth: '100%', touchAction: 'none' }}
+      />
       <Link href="/" style={{ fontSize: '12px', color: '#aaa', textDecoration: 'none' }}>← главная</Link>
     </div>
   );
