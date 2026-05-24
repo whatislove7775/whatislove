@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 
@@ -14,75 +15,76 @@ interface Psychologist {
 }
 
 export default function PsychologistsPage() {
-  const [list, setList] = useState<Psychologist[]>([]);
-  const [error, setError] = useState("");
+  const [list,    setList]    = useState<Psychologist[]>([]);
+  const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const access = localStorage.getItem("access");
+    const access = localStorage.getItem("access_token");
     if (!access) { window.location.href = "/login"; return; }
     fetch(`${API}/auth/psychologists/`, {
       headers: { Authorization: `Bearer ${access}` },
     })
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(setList)
+      .then(data => setList(Array.isArray(data) ? data : (data.results ?? [])))
       .catch(() => setError("Не удалось загрузить список специалистов"))
       .finally(() => setLoading(false));
   }, []);
 
   return (
     <>
-      <style>{`
-        .card { background: var(--chrome-800); border: 1px solid var(--chrome-600); padding: 1.5rem; transition: border-color var(--transition-base); }
-        .card:hover { border-color: var(--accent-chrome); }
-        .tag { display: inline-block; padding: 0.2rem 0.6rem; background: var(--chrome-700); border: 1px solid var(--chrome-600); color: var(--chrome-300); font-family: var(--font-mono); font-size: 0.7rem; margin: 0.2rem 0.2rem 0 0; }
-        .btn { display: inline-block; margin-top: 1rem; padding: 0.6rem 1.4rem; border: 1px solid var(--accent-chrome); color: var(--accent-chrome); font-family: var(--font-heading); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: all var(--transition-base); cursor: pointer; background: transparent; }
-        .btn:hover { background: var(--accent-chrome); color: var(--chrome-900); }
-        .back { font-family: var(--font-heading); font-size: 0.75rem; letter-spacing: 0.1em; color: var(--chrome-500); text-decoration: none; text-transform: uppercase; }
-        .back:hover { color: var(--chrome-200); }
-      `}</style>
+      <nav className="nav">
+        <Link href="/" className="nav-logo">Apro<span>sop</span></Link>
+        <Link href="/dashboard" className="btn btn-ghost btn-sm" style={{ marginLeft: "auto" }}>← Назад</Link>
+      </nav>
 
-      <main style={{ minHeight: "100vh", background: "var(--chrome-900)", padding: "2rem" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "2.5rem" }}>
-            <a href="/dashboard" className="back">← Назад</a>
-            <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.5rem", letterSpacing: "0.15em", color: "var(--accent-chrome)" }}>
-              СПЕЦИАЛИСТЫ
-            </h1>
+      <div className="page">
+        <div className="page-inner">
+          <div style={{ marginBottom: "28px" }}>
+            <h2>Специалисты</h2>
+            <p style={{ color: "var(--text-secondary)", marginTop: "6px", fontSize: "14px" }}>
+              Верифицированные психологи платформы
+            </p>
           </div>
 
-          {loading && <p style={{ color: "var(--chrome-500)", fontFamily: "var(--font-mono)" }}>Загрузка...</p>}
-          {error && <p style={{ color: "#e07070", fontFamily: "var(--font-mono)" }}>{error}</p>}
+          {loading && <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Загрузка...</p>}
+          {error   && <div className="form-error">{error}</div>}
 
           {!loading && !error && list.length === 0 && (
-            <p style={{ color: "var(--chrome-500)", fontFamily: "var(--font-body)" }}>
-              Верифицированных специалистов пока нет.
-            </p>
+            <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
+              <div style={{ fontSize: "32px", marginBottom: "12px" }}>🔍</div>
+              <p style={{ color: "var(--text-secondary)" }}>Верифицированных специалистов пока нет</p>
+            </div>
           )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
+          <div className="grid-3">
             {list.map(p => (
-              <div key={p.id} className="card">
-                <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "1rem", letterSpacing: "0.1em", color: "var(--chrome-100)", marginBottom: "0.5rem" }}>
-                  {p.display_name}
-                </h2>
-                <p style={{ fontFamily: "var(--font-body)", fontSize: "0.85rem", color: "var(--chrome-400)", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+              <div key={p.id} className="card card-hover">
+                <h4 style={{ marginBottom: "8px" }}>{p.display_name}</h4>
+                <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "12px", lineHeight: 1.5 }}>
                   {p.bio || "Описание не указано"}
                 </p>
-                <div style={{ marginBottom: "0.5rem" }}>
-                  {p.specializations.map(s => <span key={s} className="tag">{s}</span>)}
-                </div>
-                <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.85rem", color: "var(--accent-chrome)", marginTop: "0.75rem" }}>
+
+                {p.specializations?.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
+                    {p.specializations.map(s => (
+                      <span key={s} className="badge">{s}</span>
+                    ))}
+                  </div>
+                )}
+
+                <p style={{ fontSize: "14px", color: "var(--accent)", fontWeight: 600, marginBottom: "14px" }}>
                   {p.session_rate_rub} ₽ / сессия
                 </p>
-                <a href={`/sessions/book?psychologist=${p.id}`} className="btn">
+
+                <Link href={`/sessions/book?psychologist=${p.id}`} className="btn btn-primary btn-sm btn-full">
                   Записаться
-                </a>
+                </Link>
               </div>
             ))}
           </div>
         </div>
-      </main>
+      </div>
     </>
   );
 }
