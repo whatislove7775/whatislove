@@ -462,22 +462,22 @@ export default function LuckyPage() {
         </div>
       )}
 
-      {leaderboard.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', minWidth: '200px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 800, color: dimClr, letterSpacing: '0.1em', marginBottom: '4px' }}>
-            ЛУЧШИЕ РЕЗУЛЬТАТЫ
-          </div>
-          {leaderboard.map((e, i) => (
-            <div key={i} style={{ display: 'flex', gap: '10px', fontSize: '13px', color: txtClr, alignItems: 'baseline' }}>
-              <span style={{ color: dimClr, width: '12px', textAlign: 'right', fontSize: '10px' }}>{i + 1}</span>
-              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.player_name}</span>
-              <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                {String(e.score).padStart(5, '0')}
-              </span>
-            </div>
-          ))}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', minWidth: '200px' }}>
+        <div style={{ fontSize: '10px', fontWeight: 800, color: dimClr, letterSpacing: '0.1em', marginBottom: '4px' }}>
+          ЛУЧШИЕ РЕЗУЛЬТАТЫ
         </div>
-      )}
+        {leaderboard.length === 0 ? (
+          <div style={{ fontSize: '12px', color: dimClr }}>пока нет результатов</div>
+        ) : leaderboard.map((e, i) => (
+          <div key={i} style={{ display: 'flex', gap: '10px', fontSize: '13px', color: txtClr, alignItems: 'baseline' }}>
+            <span style={{ color: dimClr, width: '12px', textAlign: 'right', fontSize: '10px' }}>{i + 1}</span>
+            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.player_name}</span>
+            <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+              {String(e.score).padStart(5, '0')}
+            </span>
+          </div>
+        ))}
+      </div>
 
       <Link href="/" style={{ fontSize: '12px', color: dimClr, textDecoration: 'none' }}>← главная</Link>
     </div>
