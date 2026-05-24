@@ -77,14 +77,6 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
           enableWelcomePage:      false,
           prejoinPageEnabled:     false,
           disableDeepLinking:     true,
-          enableLayerSuspension:  true, // adaptive bitrate — suspends invisible layers
-          startBitrate:           800,
-          constraints: {
-            video: {
-              aspectRatio: 16 / 9,
-              height: { ideal: 720, max: 720, min: 180 },
-            },
-          },
         },
 
         interfaceConfigOverwrite: {
