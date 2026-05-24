@@ -13,14 +13,11 @@ function applyBandwidthConstraints(pc: RTCPeerConnection) {
   });
 }
 
-// Grouped to count as 2 servers total (browser warns at 5+)
 const ICE_SERVERS: RTCIceServer[] = [
-  { urls: "stun:stun.l.google.com:19302" }, // single fast public STUN
-  {
-    urls: ["turn:155.212.128.231:3478", "turn:155.212.128.231:3478?transport=tcp"],
-    username: "aprosop",
-    credential: "anonpsy2024turn",
-  },
+  { urls: "stun:stun.l.google.com:19302" },
+  // TURN временно отключён — включить после проверки coturn на сервере
+  // { urls: ["turn:155.212.128.231:3478", "turn:155.212.128.231:3478?transport=tcp"],
+  //   username: "aprosop", credential: "anonpsy2024turn" },
 ];
 
 interface UseWebRTCOptions {
