@@ -18,5 +18,6 @@ urlpatterns = [
     path("api/v1/health/", health),
     path("api/v1/auth/", include("apps.users.urls")),
     path("api/v1/sessions/", include("apps.sessions.urls")),
+    path("api/v1/livekit/token/", __import__("apps.sessions.livekit_views", fromlist=["livekit_token"]).livekit_token),
     path("api/v1/payments/", include("apps.payments.urls")),
 ]
