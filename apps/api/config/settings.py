@@ -126,6 +126,20 @@ CORS_ALLOWED_ORIGINS = env.list(
 )
 CORS_ALLOW_CREDENTIALS = True
 
+# Django 4.0+: CSRF checks Origin header against this list
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[
+        "http://localhost",
+        "http://127.0.0.1",
+        "http://155.212.128.231",
+        "http://aprosop.ru",
+        "https://aprosop.ru",
+        "http://www.aprosop.ru",
+        "https://www.aprosop.ru",
+    ],
+)
+
 YOOKASSA_SHOP_ID = env("YOOKASSA_SHOP_ID", default="")
 YOOKASSA_SECRET_KEY = env("YOOKASSA_SECRET_KEY", default="")
 YOOKASSA_RETURN_URL = env("YOOKASSA_RETURN_URL", default="http://localhost:3000/session/payment-complete")
