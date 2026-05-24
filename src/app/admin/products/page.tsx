@@ -17,7 +17,7 @@ export default function ProductsPage() {
 
   const load = () => {
     setLoading(true);
-    fetch('/api/admin/products', { headers: ah() }).then(r => r.json()).then(d => { setProducts(d ?? []); setLoading(false); });
+    fetch('/api/admin/products', { headers: ah(), cache: 'no-store' }).then(r => r.json()).then(d => { setProducts(Array.isArray(d) ? d : []); setLoading(false); });
   };
 
   useEffect(() => { load(); }, []);
@@ -68,14 +68,22 @@ export default function ProductsPage() {
       variants: variants.map(v => ({ attribute_value: v.attribute_value, stock: Number(v.stock), to_produce: Number(v.to_produce) })),
     };
 
-    if (editing === 'new') {
-      await fetch('/api/admin/products', { method: 'POST', headers: ah(), body: JSON.stringify(payload) });
-    } else {
-      await fetch(`/api/admin/products/${editing}`, { method: 'PUT', headers: ah(), body: JSON.stringify(payload) });
+    try {
+      const res = editing === 'new'
+        ? await fetch('/api/admin/products', { method: 'POST', headers: ah(), body: JSON.stringify(payload) })
+        : await fetch(`/api/admin/products/${editing}`, { method: 'PUT', headers: ah(), body: JSON.stringify(payload) });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(`Ошибка ${res.status}: ${(err as any).error ?? 'неизвестная ошибка'}`);
+        setSaving(false);
+        return;
+      }
+      setEditing(null);
+      load();
+    } catch (e) {
+      alert('Сетевая ошибка: ' + String(e));
     }
     setSaving(false);
-    setEditing(null);
-    load();
   };
 
   const del = async (id: string) => {
