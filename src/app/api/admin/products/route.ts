@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { isAdmin, db } from '../_auth';
 
 export async function GET(req: NextRequest) {
@@ -25,5 +26,7 @@ export async function POST(req: NextRequest) {
       variants.map((v: any) => ({ ...v, product_id: data.id }))
     );
   }
+  revalidatePath('/products');
+  revalidatePath('/products/[slug]', 'page');
   return NextResponse.json(data);
 }

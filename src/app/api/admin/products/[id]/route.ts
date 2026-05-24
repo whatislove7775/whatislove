@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { isAdmin, db } from '../../_auth';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -19,6 +20,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       );
     }
   }
+  revalidatePath('/products');
+  revalidatePath('/products/[slug]', 'page');
   return NextResponse.json({ ok: true });
 }
 
@@ -29,5 +32,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   await supabase.from('product_variants').delete().eq('product_id', id);
   const { error } = await supabase.from('products').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidatePath('/products');
+  revalidatePath('/products/[slug]', 'page');
   return NextResponse.json({ ok: true });
 }
