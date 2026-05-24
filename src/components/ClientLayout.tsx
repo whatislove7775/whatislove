@@ -143,7 +143,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       )}
 
       {/* КОНТЕНТ (Header, Main, Footer) */}
-      <div style={{
+      <div id="site-content" style={{
         fontFamily: 'Inter, sans-serif',
         fontSize: '14px',
         color: '#000',

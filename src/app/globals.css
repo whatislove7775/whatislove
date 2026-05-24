@@ -408,3 +408,16 @@ textarea, [contenteditable="true"] {
 button:disabled, input:disabled, select:disabled, textarea:disabled {
   --cur: no;
 }
+
+/* ── Night mode (toggled by game page on /lucky) ─────────────────────────── */
+html.night-mode body {
+  background: #1a1a1a !important;
+}
+html.night-mode #site-content {
+  color: #d0d0d0 !important;
+  background: #1a1a1a !important;
+}
+/* override hardcoded color:#000 on links inside site-content */
+html.night-mode #site-content a {
+  color: #d0d0d0 !important;
+}

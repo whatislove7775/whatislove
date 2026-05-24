@@ -418,11 +418,10 @@ export default function LuckyPage() {
     };
   }, []);
 
-  // Apply night mode to the full page (body background + text)
+  // Toggle night-mode class on <html> so globals.css rules take effect site-wide
   useEffect(() => {
-    document.body.style.background = nightMode ? '#1a1a1a' : '';
-    document.body.style.color      = nightMode ? '#d0d0d0' : '';
-    return () => { document.body.style.background = ''; document.body.style.color = ''; };
+    document.documentElement.classList.toggle('night-mode', nightMode);
+    return () => document.documentElement.classList.remove('night-mode');
   }, [nightMode]);
 
   const txtClr = nightMode ? '#d0d0d0' : '#535353';
