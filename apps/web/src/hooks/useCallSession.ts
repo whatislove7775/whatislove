@@ -39,6 +39,7 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
   const cancelRef     = useRef(false);
   const retryCount    = useRef(0);
   const retryTimer    = useRef<ReturnType<typeof setTimeout>>();
+  const participantCount = useRef(0);
 
   // Dispose Jitsi instance and clear retry timer
   const dispose = useCallback(() => {
@@ -103,16 +104,18 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
 
       api.addEventListener("videoConferenceJoined", () => {
         retryCount.current = 0;
+        participantCount.current = 0;
+        setHasRemote(false);
         setStatus("connected");
       });
 
-      api.addEventListener("participantJoined", () => setHasRemote(true));
-      api.addEventListener("participantLeft",   () => {
-        // Check if any participants remain
-        try {
-          const count = api.getNumberOfParticipants?.() ?? 0;
-          setHasRemote(count > 1);
-        } catch { setHasRemote(false); }
+      api.addEventListener("participantJoined", () => {
+        participantCount.current += 1;
+        setHasRemote(participantCount.current > 0);
+      });
+      api.addEventListener("participantLeft", () => {
+        participantCount.current = Math.max(0, participantCount.current - 1);
+        setHasRemote(participantCount.current > 0);
       });
 
       api.addEventListener("readyToClose", () => {
@@ -185,6 +188,7 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
   useEffect(() => {
     cancelRef.current  = false;
     retryCount.current = 0;
+    participantCount.current = 0;
     return () => {
       cancelRef.current = true;
       if (apiRef.current?._netCleanup) apiRef.current._netCleanup();
