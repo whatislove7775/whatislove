@@ -21,8 +21,9 @@ function applyBandwidthConstraints(pc: RTCPeerConnection) {
 const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
-  { urls: "turn:openrelay.metered.ca:80",  username: "openrelayproject", credential: "openrelayproject" },
-  { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "stun:155.212.128.231:3478" },
+  { urls: "turn:155.212.128.231:3478", username: "aprosop", credential: "anonpsy2024turn" },
+  { urls: "turn:155.212.128.231:3478?transport=tcp", username: "aprosop", credential: "anonpsy2024turn" },
 ];
 
 interface UseWebRTCOptions {

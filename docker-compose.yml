@@ -72,5 +72,24 @@ services:
       - api
       - web
 
+  turn:
+    image: coturn/coturn:alpine
+    network_mode: host
+    restart: unless-stopped
+    command: >
+      -n
+      --log-file=stdout
+      --lt-cred-mech
+      --fingerprint
+      --no-tlsv1
+      --no-tlsv1_1
+      --no-multicast-peers
+      --realm=aprosop.ru
+      --user=aprosop:anonpsy2024turn
+      --external-ip=155.212.128.231
+      --listening-port=3478
+      --min-port=49152
+      --max-port=65535
+
 volumes:
   pgdata:
