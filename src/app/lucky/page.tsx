@@ -313,7 +313,12 @@ export default function LuckyPage() {
 
     const held = { on: false };
     const onKey    = (e: KeyboardEvent) => {
-      if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); if (!held.on) { held.on = true; doJump(); } }
+      if (e.code === 'Space' || e.code === 'ArrowUp') {
+        const tag = (document.activeElement as HTMLElement)?.tagName?.toLowerCase();
+        if (tag === 'input' || tag === 'textarea') return;
+        e.preventDefault();
+        if (!held.on) { held.on = true; doJump(); }
+      }
     };
     const onKeyUp  = (e: KeyboardEvent) => { if (e.code === 'Space' || e.code === 'ArrowUp') held.on = false; };
     const onTouch  = (e: TouchEvent) => { e.preventDefault(); doJump(); };
@@ -413,6 +418,13 @@ export default function LuckyPage() {
     };
   }, []);
 
+  // Apply night mode to the full page (body background + text)
+  useEffect(() => {
+    document.body.style.background = nightMode ? '#1a1a1a' : '';
+    document.body.style.color      = nightMode ? '#d0d0d0' : '';
+    return () => { document.body.style.background = ''; document.body.style.color = ''; };
+  }, [nightMode]);
+
   const txtClr = nightMode ? '#d0d0d0' : '#535353';
   const dimClr = nightMode ? '#666666' : '#aaaaaa';
   const brdClr = nightMode ? '#333333' : '#cccccc';
@@ -442,7 +454,7 @@ export default function LuckyPage() {
             autoFocus
             style={{
               padding: '7px 12px', border: `1px solid ${brdClr}`,
-              fontFamily: 'inherit', fontSize: '13px',
+              fontFamily: 'inherit', fontSize: '16px',
               background: nightMode ? '#222' : '#fff', color: txtClr, outline: 'none',
             }}
           />

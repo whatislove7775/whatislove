@@ -61,24 +61,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div style={{ minHeight: '100vh', fontFamily: 'inherit', fontSize: '14px' }}>
-      <nav style={{ borderBottom: '2px solid #000', padding: '0 24px', display: 'flex', gap: '0', alignItems: 'stretch', background: '#fff', position: 'sticky', top: 0, zIndex: 100 }}>
-        <span style={{ fontWeight: 800, fontSize: '15px', padding: '14px 20px 14px 0', borderRight: '1px solid #eee', marginRight: '8px' }}>admin</span>
+      <nav style={{ borderBottom: '2px solid #000', padding: '0 12px', display: 'flex', gap: '0', alignItems: 'stretch', background: '#fff', position: 'sticky', top: 0, zIndex: 100, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <span style={{ fontWeight: 800, fontSize: '15px', padding: '14px 12px 14px 0', borderRight: '1px solid #eee', marginRight: '4px', flexShrink: 0 }}>admin</span>
         {NAV.map(({ href, label }) => {
           const active = href === '/admin' ? pathname === '/admin' : pathname?.startsWith(href);
           return (
-            <Link key={href} href={href} style={{ padding: '14px 14px', fontWeight: 800, fontSize: '13px', color: '#000', textDecoration: 'none', textTransform: 'lowercase', borderBottom: active ? '2px solid #000' : '2px solid transparent', marginBottom: '-2px' }}>
+            <Link key={href} href={href} style={{ padding: '14px 10px', fontWeight: 800, fontSize: '13px', color: '#000', textDecoration: 'none', textTransform: 'lowercase', borderBottom: active ? '2px solid #000' : '2px solid transparent', marginBottom: '-2px', flexShrink: 0, whiteSpace: 'nowrap' }}>
               {label}
             </Link>
           );
         })}
         <button
           onClick={() => { localStorage.removeItem('admin_key'); setAuthed(false); }}
-          style={{ marginLeft: 'auto', fontFamily: 'inherit', fontSize: '12px', cursor: 'pointer', background: 'none', border: 'none', fontWeight: 800, color: '#999' }}
+          style={{ marginLeft: 'auto', fontFamily: 'inherit', fontSize: '12px', cursor: 'pointer', background: 'none', border: 'none', fontWeight: 800, color: '#999', flexShrink: 0, paddingLeft: '12px', whiteSpace: 'nowrap' }}
         >
           выйти
         </button>
       </nav>
-      <main style={{ padding: '24px', maxWidth: '1100px', margin: '0 auto' }}>
+      <main style={{ padding: '16px', maxWidth: '1100px', margin: '0 auto' }}>
         {children}
       </main>
     </div>

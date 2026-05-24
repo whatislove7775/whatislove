@@ -104,7 +104,7 @@ export default function ProductsPage() {
           <button onClick={cancel} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#888' }}>отмена</button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '12px' }}>
           {([
             ['name', 'название'],
             ['slug', 'slug (url)'],
@@ -144,7 +144,7 @@ export default function ProductsPage() {
             <button onClick={addVariant} style={{ fontSize: '12px', padding: '4px 10px', border: '1px solid #000', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>+ добавить</button>
           </div>
           {variants.map((v, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px auto', gap: '8px', alignItems: 'end' }}>
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(80px, 1fr) 70px 70px 36px', gap: '8px', alignItems: 'end' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: '11px', color: '#888' }}>размер</label>
                 <input value={v.attribute_value} onChange={e => setVariantField(i, 'attribute_value', e.target.value)} style={inp} placeholder="XS, S, M..." />

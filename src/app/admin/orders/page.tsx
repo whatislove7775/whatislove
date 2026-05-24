@@ -37,7 +37,7 @@ export default function OrdersPage() {
 
             {isOpen && (
               <div style={{ borderTop: '1px solid #eee', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', background: '#fafafa' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '13px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', fontSize: '13px' }}>
                   {[
                     ['email', o.email],
                     ['телефон', o.phone],
