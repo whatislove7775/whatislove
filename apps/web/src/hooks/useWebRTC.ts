@@ -15,7 +15,7 @@ function applyBandwidthConstraints(pc: RTCPeerConnection) {
 
 // Grouped to count as 2 servers total (browser warns at 5+)
 const ICE_SERVERS: RTCIceServer[] = [
-  { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+  { urls: "stun:stun.l.google.com:19302" }, // single fast public STUN
   {
     urls: ["turn:155.212.128.231:3478", "turn:155.212.128.231:3478?transport=tcp"],
     username: "aprosop",
@@ -78,10 +78,11 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
     iceCandidateQueue.current = [];
 
     const pc = new RTCPeerConnection({
-      iceServers:     ICE_SERVERS,
-      bundlePolicy:   "max-bundle",
-      rtcpMuxPolicy:  "require",
-    });
+      iceServers:          ICE_SERVERS,
+      bundlePolicy:        "max-bundle",
+      rtcpMuxPolicy:       "require",
+      iceCandidatePoolSize: 10, // pre-gather candidates before offer/answer
+    } as RTCConfiguration);
     peerRef.current = pc;
 
     remoteStreamRef.current = new MediaStream();
@@ -102,29 +103,20 @@ export function useWebRTC({ roomId, localStream }: UseWebRTCOptions) {
       if (pc.connectionState === "connected") applyBandwidthConstraints(pc);
     };
 
-    // Only caller initiates offers
-    pc.onnegotiationneeded = async () => {
-      if (!isCallerRef.current || pc.signalingState !== "stable") return;
-      try {
-        const offer = await pc.createOffer();
-        if (pc.signalingState !== "stable") return; // re-check after await
-        await pc.setLocalDescription(offer);
-        signalingRef.current?.send({ type: "offer", sdp: pc.localDescription! });
-      } catch (err) {
-        console.error("onnegotiationneeded:", err);
-      }
-    };
-
     if (isCaller) {
-      // Pre-create sendrecv transceivers → triggers onnegotiationneeded once
+      // Add sendrecv transceivers, attach current stream tracks immediately
       pc.addTransceiver("audio", { direction: "sendrecv" });
       pc.addTransceiver("video", { direction: "sendrecv" });
-      // Immediately attach stream if already available (camera was ready before peer-joined)
       const stream = localStreamRef.current;
       if (stream) attachTracks(pc, stream);
+
+      // Create offer immediately — faster than waiting for onnegotiationneeded (async event)
+      pc.createOffer()
+        .then(offer => pc.setLocalDescription(offer))
+        .then(() => signalingRef.current?.send({ type: "offer", sdp: pc.localDescription! }))
+        .catch(err => console.error("createOffer:", err));
     }
-    // Callee does NOT add tracks here — it adds them after setRemoteDescription
-    // so tracks match the offer's transceivers correctly.
+    // Callee does NOT add tracks here — added after setRemoteDescription (correct transceiver binding)
 
     return pc;
   }, [attachTracks]);
