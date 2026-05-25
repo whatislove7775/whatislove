@@ -17,10 +17,10 @@ function loadJitsiScript(): Promise<void> {
   if (typeof (window as any).JitsiMeetExternalAPI !== "undefined") return Promise.resolve();
   if (_scriptPromise) return _scriptPromise;
   _scriptPromise = new Promise((resolve, reject) => {
-    const s   = document.createElement("script");
-    s.src     = `https://${JITSI_DOMAIN}/external_api.js`;
-    s.async   = true;
-    s.onload  = () => resolve();
+    const s  = document.createElement("script");
+    s.src    = `https://${JITSI_DOMAIN}/external_api.js`;
+    s.async  = true;
+    s.onload = () => resolve();
     s.onerror = () => { _scriptPromise = null; reject(new Error("Jitsi script load failed")); };
     document.head.appendChild(s);
   });
@@ -55,14 +55,13 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
     elapsedTimer.current = setInterval(() => setElapsed(e => e + 1), 1000);
   }, [stopElapsed]);
 
-  // ВАЖНО: обнуляем apiRef ДО api.dispose(), чтобы readyToClose
-  // не вызывал onEnd() при плановом пересоздании сессии.
   const dispose = useCallback(() => {
     clearTimeout(retryTimer.current);
     stopElapsed();
     const api = apiRef.current;
-    apiRef.current = null;           // сначала null — потом dispose
+    apiRef.current = null;
     if (api) {
+      if (api._netCleanup) api._netCleanup();
       try { api.dispose(); } catch { /* ignore */ }
     }
   }, [stopElapsed]);
@@ -87,31 +86,30 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
         userInfo:   { displayName },
 
         configOverwrite: {
-          startWithAudioMuted: false,
-          startWithVideoMuted: false,
-          enableWelcomePage:   false,
-          prejoinPageEnabled:  false,
-          disableDeepLinking:  true,
-          // toolbarButtons: [] — современный способ скрыть тулбар Jitsi
-          toolbarButtons:      [],
+          startWithAudioMuted:    false,
+          startWithVideoMuted:    false,
+          enableWelcomePage:      false,
+          prejoinPageEnabled:     false,
+          disableDeepLinking:     true,
         },
 
         interfaceConfigOverwrite: {
-          // Устаревший способ, но оставляем для совместимости со старыми версиями
-          TOOLBAR_BUTTONS:                  [],
-          SHOW_JITSI_WATERMARK:             false,
-          SHOW_WATERMARK_FOR_GUESTS:        false,
-          SHOW_CHROME_EXTENSION_BANNER:     false,
-          MOBILE_APP_PROMO:                 false,
+          TOOLBAR_BUTTONS:                [],
+          HIDE_INVITE_MORE_HEADER:        true,
+          SHOW_JITSI_WATERMARK:           false,
+          SHOW_WATERMARK_FOR_GUESTS:      false,
+          SHOW_CHROME_EXTENSION_BANNER:   false,
+          MOBILE_APP_PROMO:               false,
           DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-          DEFAULT_REMOTE_DISPLAY_NAME:      "Участник",
+          CLOSE_PAGE_GUEST_HINT:          false,
+          DEFAULT_REMOTE_DISPLAY_NAME:    "Участник",
         },
       });
 
       apiRef.current = api;
 
       api.addEventListener("videoConferenceJoined", () => {
-        retryCount.current   = 0;
+        retryCount.current = 0;
         participantCount.current = 0;
         setHasRemote(false);
         setStatus("connected");
@@ -119,21 +117,16 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
 
       api.addEventListener("participantJoined", () => {
         participantCount.current += 1;
-        setHasRemote(true);
-        startElapsed();
+        setHasRemote(participantCount.current > 0);
+        if (participantCount.current === 1) startElapsed();
       });
 
       api.addEventListener("participantLeft", () => {
         participantCount.current = Math.max(0, participantCount.current - 1);
-        if (participantCount.current === 0) {
-          setHasRemote(false);
-          stopElapsed();
-        }
+        setHasRemote(participantCount.current > 0);
+        if (participantCount.current === 0) stopElapsed();
       });
 
-      // readyToClose проверяет что api — текущий экземпляр (apiRef.current === api).
-      // После dispose() apiRef.current = null ≠ api, поэтому onEnd не зовётся
-      // при плановом пересоздании на реконнекте.
       api.addEventListener("readyToClose", () => {
         if (!cancelRef.current && apiRef.current === api) {
           onEndRef.current?.();
@@ -154,16 +147,30 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
           setStatus("failed");
           return;
         }
-        const delay = Math.min(2_000 * 2 ** retryCount.current, 30_000);
+        const delay = Math.min(1000 * 2 ** retryCount.current, 30_000);
         retryCount.current += 1;
         setStatus("reconnecting");
-        dispose();   // безопасно: apiRef обнулён до dispose() → readyToClose не зовёт onEnd
+        dispose();
         retryTimer.current = setTimeout(() => {
           if (!cancelRef.current && containerRef.current) {
             connect(containerRef.current);
           }
         }, delay);
       });
+
+      const nav = navigator as any;
+      if (nav.connection) {
+        const onNetworkChange = () => {
+          if (!apiRef.current) return;
+          const type = nav.connection.effectiveType;
+          if (type === "2g" || type === "slow-2g") {
+            apiRef.current.executeCommand("toggleVideo");
+          }
+        };
+        nav.connection.addEventListener("change", onNetworkChange);
+        (api as any)._netCleanup = () =>
+          nav.connection.removeEventListener("change", onNetworkChange);
+      }
 
     } catch {
       if (!cancelRef.current) setStatus("failed");
@@ -176,7 +183,7 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
   }, [connect]);
 
   const toggleMute   = useCallback(() => apiRef.current?.executeCommand("toggleAudio"), []);
-  const toggleCamera = useCallback(() => apiRef.current?.executeCommand("toggleVideo"),  []);
+  const toggleCamera = useCallback(() => apiRef.current?.executeCommand("toggleVideo"), []);
 
   const hangUp = useCallback(() => {
     cancelRef.current = true;
