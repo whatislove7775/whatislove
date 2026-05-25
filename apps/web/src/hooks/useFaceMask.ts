@@ -1,26 +1,33 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { drawChromeMask } from "@/lib/mediapipe/faceRenderer";
+import { drawAvatarFace, AVATARS, type AvatarConfig } from "@/lib/mediapipe/faceRenderer";
 
 interface UseFaceMaskOptions {
-  sourceVideo: HTMLVideoElement | null;
-  outputCanvas: HTMLCanvasElement | null;
   enabled: boolean;
+  avatarId?: number;
+  outputCanvas: HTMLCanvasElement | null;
 }
 
-export function useFaceMask({ sourceVideo, outputCanvas, enabled }: UseFaceMaskOptions) {
+export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMaskOptions) {
   const [maskedStream, setMaskedStream] = useState<MediaStream | null>(null);
   const [isReady, setIsReady] = useState(false);
 
-  const faceMeshRef   = useRef<any>(null);
-  const animFrameRef  = useRef<number>(0);
-  const landmarksRef  = useRef<Array<{ x: number; y: number; z: number }> | null>(null);
-  const sendTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sendingRef    = useRef(false); // prevent concurrent MediaPipe sends
+  const faceMeshRef    = useRef<any>(null);
+  const animFrameRef   = useRef<number>(0);
+  const landmarksRef   = useRef<Array<{ x: number; y: number; z: number }> | null>(null);
+  const sendTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sendingRef     = useRef(false);
+  const realStreamRef  = useRef<MediaStream | null>(null);
+  const avatarRef      = useRef<AvatarConfig>(AVATARS[0]);
+
+  // Swap avatar without re-initialising MediaPipe
+  useEffect(() => {
+    avatarRef.current = AVATARS.find(a => a.id === avatarId) ?? AVATARS[0];
+  }, [avatarId]);
 
   useEffect(() => {
-    if (!sourceVideo || !outputCanvas || !enabled) {
+    if (!enabled || !outputCanvas) {
       setMaskedStream(null);
       setIsReady(false);
       return;
@@ -30,41 +37,68 @@ export function useFaceMask({ sourceVideo, outputCanvas, enabled }: UseFaceMaskO
     const ctx = outputCanvas.getContext("2d");
     if (!ctx) return;
 
-    // Render loop capped at ~30fps to reduce GPU/CPU load
+    // Hidden video element that receives the real camera feed
+    const video = document.createElement("video");
+    video.autoplay = true;
+    video.playsInline = true;
+    video.muted = true;
+
     let lastDraw = 0;
     const drawLoop = (ts: number) => {
       if (cancelled) return;
       animFrameRef.current = requestAnimationFrame(drawLoop);
-      if (ts - lastDraw < 33) return; // ~30fps cap
-      lastDraw = ts;
+      if (ts - lastDraw < 33) return; // ~30 fps cap
 
-      const vw = sourceVideo.videoWidth;
-      const vh = sourceVideo.videoHeight;
-      if (!vw || !vh || sourceVideo.readyState < 2) return;
+      lastDraw = ts;
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      if (!vw || !vh || video.readyState < 2) return;
 
       if (outputCanvas.width !== vw)  outputCanvas.width  = vw;
       if (outputCanvas.height !== vh) outputCanvas.height = vh;
 
-      ctx.drawImage(sourceVideo, 0, 0, vw, vh);
-      if (landmarksRef.current) drawChromeMask(ctx, landmarksRef.current, vw, vh);
+      ctx.drawImage(video, 0, 0, vw, vh);
+      if (landmarksRef.current) {
+        drawAvatarFace(ctx, landmarksRef.current, vw, vh, avatarRef.current);
+      }
     };
 
-    // Detection loop at ~10fps; waits for each send to complete before scheduling next
-    // to prevent MediaPipe queue buildup which causes freezing
     const detectLoop = async () => {
       if (cancelled || !faceMeshRef.current) return;
-      if (sourceVideo.readyState >= 2 && !sendingRef.current) {
+      if (video.readyState >= 2 && !sendingRef.current) {
         sendingRef.current = true;
         try {
-          await faceMeshRef.current.send({ image: sourceVideo });
+          await faceMeshRef.current.send({ image: video });
         } catch { /* ignore */ } finally {
           sendingRef.current = false;
         }
       }
-      if (!cancelled) sendTimerRef.current = setTimeout(detectLoop, 100); // ~10fps
+      if (!cancelled) sendTimerRef.current = setTimeout(detectLoop, 100); // ~10 fps detection
     };
 
     const init = async () => {
+      // Use original getUserMedia so we bypass any override installed for Jitsi
+      const origGUM: typeof navigator.mediaDevices.getUserMedia =
+        (navigator.mediaDevices as any)._originalGetUserMedia
+        ?? navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+
+      let realStream: MediaStream;
+      try {
+        realStream = await origGUM.call(navigator.mediaDevices, {
+          video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: true,
+        });
+      } catch (e) {
+        console.error("[useFaceMask] camera denied:", e);
+        return;
+      }
+      if (cancelled) { realStream.getTracks().forEach(t => t.stop()); return; }
+      realStreamRef.current = realStream;
+
+      video.srcObject = new MediaStream(realStream.getVideoTracks());
+      await video.play().catch(() => {});
+      if (cancelled) return;
+
       const { FaceMesh } = await import("@mediapipe/face_mesh");
       if (cancelled) return;
 
@@ -72,27 +106,28 @@ export function useFaceMask({ sourceVideo, outputCanvas, enabled }: UseFaceMaskO
         locateFile: (file: string) =>
           `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`,
       });
-
       faceMesh.setOptions({
         maxNumFaces: 1,
         refineLandmarks: false,
         minDetectionConfidence: 0.5,
         minTrackingConfidence: 0.5,
       });
-
       faceMesh.onResults((results: any) => {
-        landmarksRef.current =
-          results.multiFaceLandmarks?.length > 0
-            ? results.multiFaceLandmarks[0]
-            : null;
+        landmarksRef.current = results.multiFaceLandmarks?.[0] ?? null;
       });
 
       faceMeshRef.current = faceMesh;
       if (cancelled) return;
 
-      setMaskedStream(outputCanvas.captureStream(30));
-      setIsReady(true);
+      // Canvas stream = masked video; real audio tracks for sound
+      const canvasStream = outputCanvas.captureStream(30);
+      const combined = new MediaStream([
+        ...canvasStream.getVideoTracks(),
+        ...realStream.getAudioTracks(),
+      ]);
 
+      setMaskedStream(combined);
+      setIsReady(true);
       animFrameRef.current = requestAnimationFrame(drawLoop);
       detectLoop();
     };
@@ -104,12 +139,14 @@ export function useFaceMask({ sourceVideo, outputCanvas, enabled }: UseFaceMaskO
       cancelAnimationFrame(animFrameRef.current);
       if (sendTimerRef.current) clearTimeout(sendTimerRef.current);
       faceMeshRef.current?.close();
-      faceMeshRef.current  = null;
+      faceMeshRef.current = null;
       landmarksRef.current = null;
+      realStreamRef.current?.getTracks().forEach(t => t.stop());
+      realStreamRef.current = null;
       setIsReady(false);
       setMaskedStream(null);
     };
-  }, [sourceVideo, outputCanvas, enabled]);
+  }, [enabled, outputCanvas]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { maskedStream, isReady };
 }
