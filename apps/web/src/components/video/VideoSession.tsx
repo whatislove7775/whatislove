@@ -176,7 +176,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
           objectFit: "cover",
           zIndex: 1,
           background: "#0A0D18",
-          transform: "scaleX(-1)", // mirror for natural feel
+          // no mirror — remote video should look natural
         }}
       />
 

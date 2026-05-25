@@ -123,6 +123,13 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
       }
       if (cancelled) return;
 
+      // Ensure canvas has valid dimensions before captureStream —
+      // a 0×0 canvas produces an invalid/black video track
+      if (!outputCanvas.width || outputCanvas.width < 4)  outputCanvas.width  = 640;
+      if (!outputCanvas.height || outputCanvas.height < 4) outputCanvas.height = 480;
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
+
       // Canvas stream = masked video; real audio tracks for sound
       const canvasStream = outputCanvas.captureStream(30);
       const combined = new MediaStream([
