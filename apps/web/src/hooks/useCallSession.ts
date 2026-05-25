@@ -89,7 +89,6 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
           startWithAudioMuted:    false,
           startWithVideoMuted:    false,
           enableWelcomePage:      false,
-          prejoinPageEnabled:     false,
           disableDeepLinking:     true,
         },
 

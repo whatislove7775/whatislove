@@ -112,7 +112,10 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const isWaiting      = !hasRemote && isConnected;
   const isFailed       = status === "failed";
   const isReconnecting = status === "reconnecting";
-  const isLoading      = status === "loading";
+  const isLoading      = status === "loading" || status === "idle";
+
+  // Во время загрузки Jitsi показывает свою pre-join страницу — скрываем наш UI
+  const showUI = !isLoading;
 
   const stateLabel =
     isFailed            ? "Соединение потеряно"
@@ -154,21 +157,25 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
         }}
       />
 
-      {/* ── Mouse detection layer — active only when controls hidden ── */}
-      <div
-        style={{
-          position: "absolute", inset: 0, zIndex: 3,
-          pointerEvents: showControls ? "none" : "auto",
-        }}
-        onMouseMove={resetHide}
-        onTouchStart={resetHide}
-      />
+      {/* ── Mouse detection layer — transparent during loading so Jitsi pre-join is clickable ── */}
+      {!isLoading && (
+        <div
+          style={{
+            position: "absolute", inset: 0, zIndex: 3,
+            pointerEvents: showControls ? "none" : "auto",
+          }}
+          onMouseMove={resetHide}
+          onTouchStart={resetHide}
+        />
+      )}
 
       {/* ── Subtle dark vignette gradient overlay ─────────────── */}
-      <div style={{
-        position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",
-        background: "linear-gradient(180deg, rgba(10,13,24,0.72) 0%, transparent 15%, transparent 72%, rgba(10,13,24,0.88) 100%)",
-      }}/>
+      {!isLoading && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",
+          background: "linear-gradient(180deg, rgba(10,13,24,0.72) 0%, transparent 15%, transparent 72%, rgba(10,13,24,0.88) 100%)",
+        }}/>
+      )}
 
       {/* ── RECONNECTING TOAST ────────────────────────────────── */}
       {isReconnecting && (
@@ -190,8 +197,8 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
         </div>
       )}
 
-      {/* ── WAITING / CONNECTING / FAILED OVERLAY ────────────── */}
-      {(!hasRemote && (isLoading || isWaiting || isFailed)) && (
+      {/* ── WAITING / FAILED OVERLAY (not shown during loading — Jitsi pre-join page visible) ── */}
+      {(!hasRemote && (isWaiting || isFailed)) && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 5,
           display: "flex", flexDirection: "column",
@@ -237,7 +244,8 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
         </div>
       )}
 
-      {/* ── TOP BAR ──────────────────────────────────────────────── */}
+      {/* ── TOP BAR (hidden during Jitsi pre-join) ────────────────── */}
+      {showUI && (<>
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 20,
         height: 56, display: "flex", alignItems: "center",
@@ -472,6 +480,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
           <PhoneOffIcon />
         </button>
       </div>
+      </>)}
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
