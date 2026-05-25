@@ -17,10 +17,10 @@ function loadJitsiScript(): Promise<void> {
   if (typeof (window as any).JitsiMeetExternalAPI !== "undefined") return Promise.resolve();
   if (_scriptPromise) return _scriptPromise;
   _scriptPromise = new Promise((resolve, reject) => {
-    const s  = document.createElement("script");
-    s.src    = `https://${JITSI_DOMAIN}/external_api.js`;
-    s.async  = true;
-    s.onload = () => resolve();
+    const s   = document.createElement("script");
+    s.src     = `https://${JITSI_DOMAIN}/external_api.js`;
+    s.async   = true;
+    s.onload  = () => resolve();
     s.onerror = () => { _scriptPromise = null; reject(new Error("Jitsi script load failed")); };
     document.head.appendChild(s);
   });
@@ -55,13 +55,15 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
     elapsedTimer.current = setInterval(() => setElapsed(e => e + 1), 1000);
   }, [stopElapsed]);
 
+  // ВАЖНО: обнуляем apiRef ДО api.dispose(), чтобы readyToClose
+  // не вызывал onEnd() при плановом пересоздании сессии.
   const dispose = useCallback(() => {
     clearTimeout(retryTimer.current);
     stopElapsed();
-    if (apiRef.current) {
-      if (apiRef.current._netCleanup) apiRef.current._netCleanup();
-      try { apiRef.current.dispose(); } catch { /* ignore */ }
-      apiRef.current = null;
+    const api = apiRef.current;
+    apiRef.current = null;           // сначала null — потом dispose
+    if (api) {
+      try { api.dispose(); } catch { /* ignore */ }
     }
   }, [stopElapsed]);
 
@@ -85,39 +87,31 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
         userInfo:   { displayName },
 
         configOverwrite: {
-          startWithAudioMuted:    false,
-          startWithVideoMuted:    false,
-          enableWelcomePage:      false,
-          prejoinPageEnabled:     false,
-          disableDeepLinking:     true,
-          p2p:                    { enabled: false },
-          enableLayerSuspension:  true,
-          channelLastN:           2,
-          resolution:             720,
-          constraints: {
-            video: { height: { ideal: 720, max: 720, min: 180 } },
-          },
+          startWithAudioMuted: false,
+          startWithVideoMuted: false,
+          enableWelcomePage:   false,
+          prejoinPageEnabled:  false,
+          disableDeepLinking:  true,
+          // toolbarButtons: [] — современный способ скрыть тулбар Jitsi
+          toolbarButtons:      [],
         },
 
         interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS:                    [],
-          HIDE_INVITE_MORE_HEADER:            true,
-          SHOW_JITSI_WATERMARK:               false,
-          SHOW_WATERMARK_FOR_GUESTS:          false,
-          SHOW_CHROME_EXTENSION_BANNER:       false,
-          MOBILE_APP_PROMO:                   false,
-          DISABLE_JOIN_LEAVE_NOTIFICATIONS:   true,
-          CLOSE_PAGE_GUEST_HINT:              false,
-          DEFAULT_REMOTE_DISPLAY_NAME:        "Участник",
-          DISABLE_VIDEO_BACKGROUND:           true,
-          DISABLE_FOCUS_INDICATOR:            true,
+          // Устаревший способ, но оставляем для совместимости со старыми версиями
+          TOOLBAR_BUTTONS:                  [],
+          SHOW_JITSI_WATERMARK:             false,
+          SHOW_WATERMARK_FOR_GUESTS:        false,
+          SHOW_CHROME_EXTENSION_BANNER:     false,
+          MOBILE_APP_PROMO:                 false,
+          DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+          DEFAULT_REMOTE_DISPLAY_NAME:      "Участник",
         },
       });
 
       apiRef.current = api;
 
       api.addEventListener("videoConferenceJoined", () => {
-        retryCount.current = 0;
+        retryCount.current   = 0;
         participantCount.current = 0;
         setHasRemote(false);
         setStatus("connected");
@@ -137,8 +131,13 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
         }
       });
 
+      // readyToClose проверяет что api — текущий экземпляр (apiRef.current === api).
+      // После dispose() apiRef.current = null ≠ api, поэтому onEnd не зовётся
+      // при плановом пересоздании на реконнекте.
       api.addEventListener("readyToClose", () => {
-        if (!cancelRef.current) onEndRef.current?.();
+        if (!cancelRef.current && apiRef.current === api) {
+          onEndRef.current?.();
+        }
       });
 
       api.addEventListener("audioMuteStatusChanged", ({ muted }: { muted: boolean }) => {
@@ -151,10 +150,14 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
 
       api.addEventListener("connectionFailed", () => {
         if (cancelRef.current) return;
-        const delay = Math.min(1000 * 2 ** retryCount.current, 30_000);
+        if (retryCount.current >= 5) {
+          setStatus("failed");
+          return;
+        }
+        const delay = Math.min(2_000 * 2 ** retryCount.current, 30_000);
         retryCount.current += 1;
         setStatus("reconnecting");
-        dispose();
+        dispose();   // безопасно: apiRef обнулён до dispose() → readyToClose не зовёт onEnd
         retryTimer.current = setTimeout(() => {
           if (!cancelRef.current && containerRef.current) {
             connect(containerRef.current);
@@ -172,24 +175,25 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
     if (el && !cancelRef.current) connect(el);
   }, [connect]);
 
-  const toggleMute   = useCallback(() => apiRef.current?.executeCommand("toggleAudio"),    []);
-  const toggleCamera = useCallback(() => apiRef.current?.executeCommand("toggleVideo"),    []);
-  const hangUp       = useCallback(() => {
+  const toggleMute   = useCallback(() => apiRef.current?.executeCommand("toggleAudio"), []);
+  const toggleCamera = useCallback(() => apiRef.current?.executeCommand("toggleVideo"),  []);
+
+  const hangUp = useCallback(() => {
     cancelRef.current = true;
     dispose();
     onEndRef.current?.();
   }, [dispose]);
 
   const retryNow = useCallback(() => {
-    cancelRef.current = false;
+    cancelRef.current  = false;
     retryCount.current = 0;
     dispose();
     if (containerRef.current) connect(containerRef.current);
   }, [connect, dispose]);
 
   useEffect(() => {
-    cancelRef.current  = false;
-    retryCount.current = 0;
+    cancelRef.current        = false;
+    retryCount.current       = 0;
     participantCount.current = 0;
     return () => {
       cancelRef.current = true;
