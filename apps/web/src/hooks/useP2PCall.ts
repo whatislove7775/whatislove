@@ -3,12 +3,20 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { SignalingClient } from "@/lib/webrtc/signalingClient";
 
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: "stun:stun.l.google.com:19302" },
-  { urls: "stun:stun1.l.google.com:19302" },
-  { urls: "stun:stun2.l.google.com:19302" },
-  { urls: "stun:global.stun.twilio.com:3478" },
-];
+// TURN credentials — must match coturn service in docker-compose.yml
+const TURN_USER = "aprosop";
+const TURN_CRED = "aprosopsecretturn";
+
+function getIceServers(): RTCIceServer[] {
+  const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
+  return [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+    // coturn TURN relay — enables connection between different NATs
+    { urls: `turn:${host}:3478`, username: TURN_USER, credential: TURN_CRED },
+    { urls: `turn:${host}:3478?transport=tcp`, username: TURN_USER, credential: TURN_CRED },
+  ];
+}
 
 export type P2PStatus = "idle" | "connecting" | "waiting" | "connected" | "disconnected" | "failed";
 
@@ -89,7 +97,7 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
     const sig = new SignalingClient(roomId);
     sigRef.current = sig;
 
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const pc = new RTCPeerConnection({ iceServers: getIceServers() });
     pcRef.current = pc;
 
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));

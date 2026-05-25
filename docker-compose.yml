@@ -20,6 +20,24 @@ services:
     restart: unless-stopped
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
 
+  coturn:
+    image: coturn/coturn:4.6
+    network_mode: host
+    restart: unless-stopped
+    command: >
+      -n
+      --realm=aprosop.ru
+      --user=aprosop:aprosopsecretturn
+      --lt-cred-mech
+      --fingerprint
+      --listening-port=3478
+      --min-port=49160
+      --max-port=49200
+      --log-file=stdout
+      --no-tls
+      --no-dtls
+      --verbose
+
   api:
     build:
       context: ./apps/api
