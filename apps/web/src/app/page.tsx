@@ -164,38 +164,68 @@ export default function LandingPage() {
   return (
     <div style={{ background: "#0C0F1A", minHeight: "100vh", color: "#F0F4FF", fontFamily: "Inter, system-ui, sans-serif" }}>
 
-      {/* ── NAV ─────────────────────────────────────── */}
+      {/* ── NAV — floating pill ──────────────────────── */}
       <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        height: 60, display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 32px",
-        background: "rgba(12,15,26,0.85)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", zIndex: 100,
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+        padding: "0 12px 0 16px", height: 52, minWidth: 0,
+        background: "rgba(12,15,26,0.82)", backdropFilter: "blur(24px)",
+        border: "1px solid rgba(255,255,255,0.09)",
+        borderRadius: 9999,
+        boxShadow: "0 8px 32px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.05) inset",
+        whiteSpace: "nowrap",
       }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-          <span style={{ fontSize: 20 }}>🎭</span>
+        {/* Logo */}
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", marginRight: 4 }}>
+          <svg width="28" height="28" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="ng" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#4DA6FF"/>
+                <stop offset="55%" stopColor="#8B6CF8"/>
+                <stop offset="100%" stopColor="#FF7B7B"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="256" cy="256" rx="220" ry="244" fill="url(#ng)"/>
+            <ellipse cx="168" cy="214" rx="52" ry="38" fill="#0C0F1A" opacity="0.85"/>
+            <ellipse cx="344" cy="214" rx="52" ry="38" fill="#0C0F1A" opacity="0.85"/>
+            <rect x="196" y="318" width="120" height="36" rx="18" fill="#0C0F1A" opacity="0.78"/>
+          </svg>
           <span style={{
-            fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em",
+            fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em",
             background: "linear-gradient(135deg,#4DA6FF,#8B6CF8,#FF7B7B)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
           }}>aprosop</span>
         </Link>
-        <div style={{ display: "flex", gap: 28, alignItems: "center" }}>
-          <Link href="#how" style={{ fontSize: 14, color: "#8A9BB8", textDecoration: "none" }}>Как работает</Link>
-          <Link href="/psychologists" style={{ fontSize: 14, color: "#8A9BB8", textDecoration: "none" }}>Специалисты</Link>
-          <Link href="#faq" style={{ fontSize: 14, color: "#8A9BB8", textDecoration: "none" }}>FAQ</Link>
+
+        {/* Nav links */}
+        <div style={{ display: "flex", gap: 2, alignItems: "center", padding: "0 6px" }}>
+          <Link href="#how" style={{
+            fontSize: 13, color: "#8A9BB8", textDecoration: "none",
+            padding: "6px 12px", borderRadius: 9999,
+            transition: "color 0.15s",
+          }}>Как работает</Link>
+          <Link href="/psychologists" style={{
+            fontSize: 13, color: "#8A9BB8", textDecoration: "none",
+            padding: "6px 12px", borderRadius: 9999,
+          }}>Специалисты</Link>
+          <Link href="#faq" style={{
+            fontSize: 13, color: "#8A9BB8", textDecoration: "none",
+            padding: "6px 12px", borderRadius: 9999,
+          }}>FAQ</Link>
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+
+        {/* Auth buttons */}
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           <Link href="/login" style={{
             fontSize: 13, fontWeight: 500, color: "#8A9BB8", textDecoration: "none",
-            padding: "7px 14px", borderRadius: 8,
-            border: "1px solid rgba(255,255,255,0.08)", background: "transparent",
+            padding: "7px 14px", borderRadius: 9999,
+            border: "1px solid rgba(255,255,255,0.09)", background: "transparent",
           }}>Войти</Link>
           <Link href="/register" style={{
             fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none",
-            padding: "8px 18px", borderRadius: 8,
+            padding: "8px 18px", borderRadius: 9999,
             background: "linear-gradient(135deg,#4DA6FF,#8B6CF8)",
-            boxShadow: "0 4px 16px rgba(77,166,255,0.25)",
+            boxShadow: "0 4px 16px rgba(77,166,255,0.3)",
           }}>Начать</Link>
         </div>
       </nav>
