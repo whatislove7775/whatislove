@@ -107,6 +107,19 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
 
       apiRef.current = api;
 
+      // Grant camera/microphone to the Jitsi iframe.
+      // JitsiMeetExternalAPI creates the iframe synchronously — the allow
+      // attribute must be set before the browser evaluates permissions.
+      try {
+        const iframe = api.getIFrame?.() ?? container.querySelector("iframe");
+        if (iframe) {
+          iframe.setAttribute(
+            "allow",
+            "camera *; microphone *; display-capture *; autoplay; clipboard-write"
+          );
+        }
+      } catch { /* non-critical */ }
+
       api.addEventListener("videoConferenceJoined", () => {
         retryCount.current = 0;
         participantCount.current = 0;
