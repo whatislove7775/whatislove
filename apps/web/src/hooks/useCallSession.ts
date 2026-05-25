@@ -90,6 +90,8 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
           startWithVideoMuted:    false,
           enableWelcomePage:      false,
           disableDeepLinking:     true,
+          prejoinPageEnabled:     false,
+          disableThirdPartyRequests: true,
         },
 
         interfaceConfigOverwrite: {
@@ -189,9 +191,15 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
     }
   }, [roomId, displayName, dispose, startElapsed, stopElapsed]);
 
+  // Just saves the ref — call startCall() explicitly to connect.
   const initContainer = useCallback((el: HTMLDivElement | null) => {
     containerRef.current = el;
-    if (el && !cancelRef.current) connect(el);
+  }, []);
+
+  const startCall = useCallback(() => {
+    cancelRef.current  = false;
+    retryCount.current = 0;
+    if (containerRef.current) connect(containerRef.current);
   }, [connect]);
 
   const toggleMute   = useCallback(() => apiRef.current?.executeCommand("toggleAudio"), []);
@@ -222,6 +230,6 @@ export function useCallSession({ roomId, displayName, onEnd }: UseCallSessionOpt
 
   return {
     status, isMuted, isCameraOff, hasRemote, elapsed,
-    initContainer, toggleMute, toggleCamera, hangUp, retryNow,
+    initContainer, startCall, toggleMute, toggleCamera, hangUp, retryNow,
   };
 }
