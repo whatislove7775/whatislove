@@ -52,6 +52,7 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [hasRemote,   setHasRemote]   = useState(false);
   const [elapsed,     setElapsed]     = useState(0);
+  const [retryKey,    setRetryKey]    = useState(0);
 
   const pcRef          = useRef<RTCPeerConnection | null>(null);
   const sigRef         = useRef<SignalingClient | null>(null);
@@ -258,10 +259,19 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
         }
       };
 
+      // connectionState fires faster than iceConnectionState === "failed" in Chrome
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === "failed") {
+          clearTimeout(iceGraceTimer);
+          clearTimeout(iceRestartTimer);
+          doFullReconnect();
+        }
+      };
+
       return pc;
     }
 
-    const pc = setupPC();
+    setupPC();
 
     // ── Обработка сигналинг-сообщений ────────────────────────────
     const unsubscribe = sig.onMessage(async (msg) => {
@@ -342,15 +352,35 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
       lastNetType = newType;
       if (!hasRemoteRef.current || cancelRef.current) return;
 
+      // Адаптивный битрейт — снижаем качество видео на слабых сетях
+      // вместо отключения видео целиком.
+      const cur = pcRef.current;
+      if (cur) {
+        const videoSender = cur.getSenders().find(s => s.track?.kind === "video");
+        if (videoSender) {
+          const params = videoSender.getParameters();
+          const enc = params.encodings?.[0];
+          if (enc) {
+            if (newType === "slow-2g" || newType === "2g") {
+              enc.maxBitrate = 80_000;    // 80 kbps — только силуэт аватара
+            } else if (newType === "3g") {
+              enc.maxBitrate = 350_000;   // 350 kbps — приемлемое качество
+            } else {
+              delete enc.maxBitrate;      // WiFi / 4G — без ограничений
+            }
+            videoSender.setParameters(params).catch(() => {});
+          }
+        }
+      }
+
+      // Смена сети = смена IP → форсируем ICE restart сразу
       clearTimeout(iceGraceTimer);
       clearTimeout(iceRestartTimer);
-      const cur = pcRef.current;
       if (cur) doIceRestart(cur);
     };
     nav.connection?.addEventListener("change", onNetChange);
 
     // ── Инициализация ─────────────────────────────────────────────
-    void pc; // используется через pcRef
     setStatus("connecting");
 
     sig.connect()
@@ -387,7 +417,7 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
       setHasRemote(false);
       hasRemoteRef.current = false;
     };
-  }, [roomId, localStream]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [roomId, localStream, retryKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Controls ──────────────────────────────────────────────────
   const toggleMute = useCallback(() => {
@@ -427,8 +457,11 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
     onEnd?.();
   }, [stopElapsed, onEnd]);
 
+  // Перезапускает соединение с нуля (сбрасывает счётчик попыток)
+  const retryNow = useCallback(() => setRetryKey(k => k + 1), []);
+
   return {
     status, isMuted, isCameraOff, hasRemote, elapsed,
-    remoteVideoRef, toggleMute, toggleCamera, hangUp,
+    remoteVideoRef, toggleMute, toggleCamera, hangUp, retryNow,
   };
 }
