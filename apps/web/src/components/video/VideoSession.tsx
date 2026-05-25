@@ -98,14 +98,14 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const [showNotepad,  setShowNotepad]  = useState(false);
   const [showBreath,   setShowBreath]   = useState(false);
 
-  const canvasRef     = useRef<HTMLCanvasElement | null>(null);
+  const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const hideTimerRef  = useRef<ReturnType<typeof setTimeout>>();
 
   // ── Face mask (avatar rendering + masked stream) ─────────────────
   const { maskedStream, isReady: maskReady } = useFaceMask({
     enabled:      true,
     avatarId,
-    outputCanvas: canvasRef.current,
+    outputCanvas: canvasEl,
   });
 
   // ── P2P call (starts only when masked stream is ready) ────────────
@@ -135,18 +135,21 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const isWaiting   = status === "waiting";
   const isFailed    = status === "failed";
 
+  const isMaskLoading = status === "idle" && !maskedStream;
+
   const stateLabel =
     isFailed            ? "Соединение прервано"
+    : isMaskLoading     ? "Подготовка камеры..."
     : status === "connecting" ? "Подключение..."
     : isWaiting && role === "client" ? "Ожидание специалиста..."
     : isWaiting         ? "Ожидание клиента..."
     : hasRemote         ? "Соединение активно"
-    : "Готово";
+    : "Подключение...";
 
   const dotColor =
     isConnected && hasRemote ? "#31D97B"
     : isFailed               ? "#FF4D4D"
-    : isWaiting              ? "#F59E0B"
+    : isWaiting || isMaskLoading ? "#F59E0B"
     : "#4A5A72";
 
   // ─────────────────────────────────────────────────────────────────
@@ -235,7 +238,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
         opacity: showControls ? 1 : 0.3,
       }}>
         <canvas
-          ref={canvasRef}
+          ref={setCanvasEl}
           style={{
             width: "100%", height: "100%",
             objectFit: "cover",

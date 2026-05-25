@@ -77,14 +77,11 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
     };
 
     const init = async () => {
-      // Use original getUserMedia so we bypass any override installed for Jitsi
-      const origGUM: typeof navigator.mediaDevices.getUserMedia =
-        (navigator.mediaDevices as any)._originalGetUserMedia
-        ?? navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      const gum = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
 
       let realStream: MediaStream;
       try {
-        realStream = await origGUM.call(navigator.mediaDevices, {
+        realStream = await gum({
           video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
           audio: true,
         });
@@ -99,24 +96,31 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
       await video.play().catch(() => {});
       if (cancelled) return;
 
-      const { FaceMesh } = await import("@mediapipe/face_mesh");
-      if (cancelled) return;
+      // Try loading MediaPipe; fall back to raw camera if it fails
+      let mediaPipeLoaded = false;
+      try {
+        const { FaceMesh } = await import("@mediapipe/face_mesh");
+        if (cancelled) return;
 
-      const faceMesh = new FaceMesh({
-        locateFile: (file: string) =>
-          `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`,
-      });
-      faceMesh.setOptions({
-        maxNumFaces: 1,
-        refineLandmarks: false,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      });
-      faceMesh.onResults((results: any) => {
-        landmarksRef.current = results.multiFaceLandmarks?.[0] ?? null;
-      });
+        const faceMesh = new FaceMesh({
+          locateFile: (file: string) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`,
+        });
+        faceMesh.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: false,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        });
+        faceMesh.onResults((results: any) => {
+          landmarksRef.current = results.multiFaceLandmarks?.[0] ?? null;
+        });
 
-      faceMeshRef.current = faceMesh;
+        faceMeshRef.current = faceMesh;
+        mediaPipeLoaded = true;
+      } catch (e) {
+        console.warn("[useFaceMask] MediaPipe failed, using raw camera:", e);
+      }
       if (cancelled) return;
 
       // Canvas stream = masked video; real audio tracks for sound
@@ -128,8 +132,10 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
 
       setMaskedStream(combined);
       setIsReady(true);
+
+      // Start render loop (draws raw video even without MediaPipe, avatar overlay when available)
       animFrameRef.current = requestAnimationFrame(drawLoop);
-      detectLoop();
+      if (mediaPipeLoaded) detectLoop();
     };
 
     init().catch(console.error);

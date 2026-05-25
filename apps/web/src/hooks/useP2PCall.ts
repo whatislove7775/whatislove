@@ -109,44 +109,52 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
 
     const unsubscribe = sig.onMessage(async (msg) => {
       if (cancelRef.current) return;
-      switch (msg.type) {
-        case "peer-joined":
-          // A new peer joined the room — we create the offer (we're already here)
-          await makeOffer();
-          break;
+      try {
+        switch (msg.type) {
+          case "peer-joined":
+            await makeOffer();
+            break;
 
-        case "ready":
-          // Other peer signalled it's ready — create offer if we haven't yet
-          await makeOffer();
-          break;
+          case "ready":
+            await makeOffer();
+            break;
 
-        case "offer":
-          await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          sig.send({ type: "answer", sdp: answer });
-          break;
-
-        case "answer":
-          if (pc.signalingState !== "stable") {
+          case "offer":
+            if (pc.signalingState === "have-local-offer") {
+              // Glare: both peers sent offers. Roll back ours, accept theirs.
+              await pc.setLocalDescription({ type: "rollback" });
+              offerMadeRef.current = false;
+            }
             await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-          }
-          break;
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            sig.send({ type: "answer", sdp: answer });
+            break;
 
-        case "ice-candidate":
-          try { await pc.addIceCandidate(new RTCIceCandidate(msg.candidate)); } catch { /* ignore */ }
-          break;
+          case "answer":
+            if (pc.signalingState === "have-local-offer") {
+              await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+            }
+            break;
 
-        case "peer-left":
-        case "bye":
-          hasRemoteRef.current = false;
-          setHasRemote(false);
-          setStatus("waiting");
-          stopElapsed();
-          if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
-          // Re-arm for next peer
-          offerMadeRef.current = false;
-          break;
+          case "ice-candidate":
+            if (pc.remoteDescription) {
+              await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
+            }
+            break;
+
+          case "peer-left":
+          case "bye":
+            hasRemoteRef.current = false;
+            setHasRemote(false);
+            setStatus("waiting");
+            stopElapsed();
+            if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+            offerMadeRef.current = false;
+            break;
+        }
+      } catch (e) {
+        console.warn("[useP2PCall] signal handling error:", e);
       }
     });
 
