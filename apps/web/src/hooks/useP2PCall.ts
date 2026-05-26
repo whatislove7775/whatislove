@@ -10,12 +10,13 @@ const TURN_CRED = "aprosopsecretturn";
 function getIceServers(): RTCIceServer[] {
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
   return [
-    { urls: "stun:stun.l.google.com:19302" },
+    // Public STUN — несколько провайдеров для надёжности
+    { urls: "stun:stun.l.google.com:19302"  },
     { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun.cloudflare.com:3478" },
+    // Own TURN — UDP быстрее, TCP пробивает NAT
     { urls: `turn:${host}:3478`,               username: TURN_USER, credential: TURN_CRED },
     { urls: `turn:${host}:3478?transport=tcp`,  username: TURN_USER, credential: TURN_CRED },
-    // TLS relay — пробивает корпоративные файрволы и VPN-окружения
-    { urls: `turns:${host}:5349`,              username: TURN_USER, credential: TURN_CRED },
   ];
 }
 

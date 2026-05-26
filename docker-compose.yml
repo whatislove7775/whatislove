@@ -24,29 +24,23 @@ services:
     image: coturn/coturn:4.6
     network_mode: host
     restart: unless-stopped
-    volumes:
-      - certbot-conf:/etc/letsencrypt:ro
-    command: >
-      -n
-      --realm=aprosop.ru
-      --user=aprosop:aprosopsecretturn
-      --lt-cred-mech
-      --fingerprint
-      --listening-port=3478
-      --tls-listening-port=5349
-      --cert=/etc/letsencrypt/live/aprosop.ru/fullchain.pem
-      --pkey=/etc/letsencrypt/live/aprosop.ru/privkey.pem
-      --min-port=49152
-      --max-port=65535
-      --log-file=stdout
-      --verbose
-      --no-loopback-peers
-      --no-multicast-peers
-      --denied-peer-ip=0.0.0.0-0.255.255.255
-      --denied-peer-ip=10.0.0.0-10.255.255.255
-      --denied-peer-ip=127.0.0.0-127.255.255.255
-      --denied-peer-ip=172.16.0.0-172.31.255.255
-      --denied-peer-ip=192.168.0.0-192.168.255.255
+    command:
+      - "-n"
+      - "--realm=aprosop.ru"
+      - "--user=aprosop:aprosopsecretturn"
+      - "--lt-cred-mech"
+      - "--fingerprint"
+      - "--listening-port=3478"
+      - "--min-port=49152"
+      - "--max-port=65535"
+      - "--log-file=stdout"
+      - "--no-cli"
+      - "--no-loopback-peers"
+      - "--no-multicast-peers"
+      - "--denied-peer-ip=10.0.0.0-10.255.255.255"
+      - "--denied-peer-ip=127.0.0.0-127.255.255.255"
+      - "--denied-peer-ip=172.16.0.0-172.31.255.255"
+      - "--denied-peer-ip=192.168.0.0-192.168.255.255"
 
   api:
     build:
@@ -82,7 +76,6 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api/v1}
-        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost}
     restart: unless-stopped
     depends_on:
       - api

@@ -47,7 +47,7 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
     const drawLoop = (ts: number) => {
       if (cancelled) return;
       animFrameRef.current = requestAnimationFrame(drawLoop);
-      if (ts - lastDraw < 33) return; // ~30 fps cap
+      if (ts - lastDraw < 42) return; // ~24 fps cap
 
       lastDraw = ts;
       const vw = video.videoWidth;
@@ -73,7 +73,7 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
           sendingRef.current = false;
         }
       }
-      if (!cancelled) sendTimerRef.current = setTimeout(detectLoop, 100); // ~10 fps detection
+      if (!cancelled) sendTimerRef.current = setTimeout(detectLoop, 150); // ~7 fps detection
     };
 
     const init = async () => {
@@ -82,8 +82,19 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
       let realStream: MediaStream;
       try {
         realStream = await gum({
-          video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
-          audio: true,
+          video: {
+            facingMode: "user",
+            width:     { ideal: 640, max: 1280 },
+            height:    { ideal: 480, max: 720  },
+            frameRate: { ideal: 24,  max: 30   },
+          },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl:  true,
+            channelCount:     1,
+            sampleRate:       48000,
+          },
         });
       } catch (e) {
         console.error("[useFaceMask] camera denied:", e);
@@ -131,7 +142,7 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
       ctx.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
 
       // Canvas stream = masked video; real audio tracks for sound
-      const canvasStream = outputCanvas.captureStream(30);
+      const canvasStream = outputCanvas.captureStream(24);
       const combined = new MediaStream([
         ...canvasStream.getVideoTracks(),
         ...realStream.getAudioTracks(),

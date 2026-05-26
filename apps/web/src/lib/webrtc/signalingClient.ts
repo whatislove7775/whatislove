@@ -26,22 +26,21 @@ export class SignalingClient {
   private isClosed          = false;   // set by disconnect() — stops auto-reconnect
   private readonly maxReconnects = 7;
 
-  constructor(
-    private readonly roomId: string,
-    private readonly wsBaseUrl: string = (() => {
-      const envWs = process.env.NEXT_PUBLIC_WS_URL;
-      if (envWs) return envWs.replace(/\/$/, "");
-      if (typeof window === "undefined") return "ws://localhost";
-      const proto = window.location.protocol === "https:" ? "wss" : "ws";
-      return `${proto}://${window.location.host}`;
-    })()
-  ) {}
+  constructor(private readonly roomId: string) {}
+
+  private buildUrl(): string {
+    // Always derive from window.location at runtime — never from a build-time env var
+    // that gets baked as ws://localhost and breaks for every user's browser.
+    if (typeof window === "undefined") return `ws://localhost/ws/signaling/${this.roomId}/`;
+    const proto = window.location.protocol === "https:" ? "wss" : "ws";
+    return `${proto}://${window.location.host}/ws/signaling/${this.roomId}/`;
+  }
 
   connect(): Promise<void> {
     this.isClosed = false;
 
     return new Promise((resolve, reject) => {
-      const url = `${this.wsBaseUrl}/ws/signaling/${this.roomId}/`;
+      const url = this.buildUrl();
       this.ws = new WebSocket(url);
 
       this.ws.onopen = () => {
