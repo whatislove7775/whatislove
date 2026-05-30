@@ -10,13 +10,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mediapipe/face_mesh": "0.4.1633559619",
+    "axios": "^1.7.2",
     "next": "14.2.3",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "@mediapipe/face_mesh": "0.4.1633559619",
-"zustand": "^4.5.4",
-    "axios": "^1.7.2",
-    "uuid": "^10.0.0"
+    "three": "^0.165.0",
+    "uuid": "^10.0.0",
+    "zustand": "^4.5.4"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
