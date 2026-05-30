@@ -1,69 +1,70 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { AvatarPreset } from "@/lib/avatar/presets";
 
 /**
  * useFaceMask — the on-device Memoji pipeline.
  *
- *   camera  →  MediaPipe FaceLandmarker (52 ARKit blendshapes + head pose)
- *           →  Ready Player Me glTF avatar (Three.js, rendered locally)
- *           →  canvas.captureStream()  →  WebRTC video out
+ *   camera  ──►  MediaPipe FaceLandmarker (52 ARKit blendshapes + head matrix)
+ *           ──►  RPM glTF avatar rendered by Three.js (AvatarScene3D)
+ *           ──►  canvas.captureStream(30)  ──►  WebRTC video out
  *
- * The user's real video never leaves the device — only the rendered avatar
- * is transmitted, preserving anonymity. Returns the avatar video stream and
- * the raw mic audio separately so the caller can apply voice transformation
- * before sending.
+ * The user's real face never leaves the device.  The caller receives:
+ *   videoStream  — the rendered avatar video (sent to remote peer via WebRTC)
+ *   audioStream  — raw mic audio (caller applies voice transform before sending)
+ *   isReady      — true once avatar + camera are up (show spinner until this)
+ *   lightingWarning — true if no face detected for 3 s (bad lighting / framing)
  */
+
 interface UseFaceMaskOptions {
   enabled:        boolean;
-  avatarSeed:     string;
-  /** Visible local-preview canvas (2D) the avatar is blitted into. */
-  previewCanvas?: HTMLCanvasElement | null;
+  preset:         AvatarPreset;
+  previewCanvas?: HTMLCanvasElement | null; // local PIP canvas (2D blit)
 }
 
-// Internal render resolution for the transmitted avatar video.
-const RENDER_W = 480;
-const RENDER_H = 480;
+const RENDER_W = 512;
+const RENDER_H = 512;
 
-export function useFaceMask({ enabled, avatarSeed, previewCanvas }: UseFaceMaskOptions) {
-  const [videoStream,     setVideoStream]     = useState<MediaStream | null>(null);
-  const [audioStream,     setAudioStream]     = useState<MediaStream | null>(null);
-  const [isReady,         setIsReady]         = useState(false);
-  const [lightingWarning, setLightingWarning] = useState(false);
+export function useFaceMask({ enabled, preset, previewCanvas }: UseFaceMaskOptions) {
+  const [videoStream,      setVideoStream]      = useState<MediaStream | null>(null);
+  const [audioStream,      setAudioStream]      = useState<MediaStream | null>(null);
+  const [isReady,          setIsReady]          = useState(false);
+  const [lightingWarning,  setLightingWarning]  = useState(false);
 
-  const sceneRef       = useRef<import("@/lib/avatar/AvatarScene3D").AvatarScene3D | null>(null);
-  const landmarkerRef  = useRef<any>(null);
-  const realStreamRef  = useRef<MediaStream | null>(null);
-  const previewRef     = useRef<HTMLCanvasElement | null>(null);
-  const lastFaceRef    = useRef<number>(Date.now());
-  const seedRef        = useRef(avatarSeed);
+  const sceneRef      = useRef<import("@/lib/avatar/AvatarScene3D").AvatarScene3D | null>(null);
+  const landmarkerRef = useRef<any>(null);
+  const realStreamRef = useRef<MediaStream | null>(null);
+  const previewRef    = useRef<HTMLCanvasElement | null>(null);
+  const lastFaceRef   = useRef(Date.now());
+  const presetRef     = useRef(preset);
 
-  seedRef.current = avatarSeed;
+  presetRef.current  = preset;
   previewRef.current = previewCanvas ?? null;
 
-  // ── Main pipeline: camera + MediaPipe + Three.js scene ───────────
+  // ── Main pipeline init ────────────────────────────────────────────
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
     let detectRaf = 0;
-    let blitRaf = 0;
-    let lastVideoTime = -1;
+    let blitRaf   = 0;
 
-    // Hidden video element feeds MediaPipe (never shown / transmitted)
+    // Hidden video — feeds MediaPipe; never transmitted
     const video = document.createElement("video");
     video.autoplay = true; video.playsInline = true; video.muted = true;
+    video.width = 640; video.height = 480;
 
-    // Offscreen canvas the avatar renders into and we capture from.
+    // Offscreen WebGL canvas — avatar renders here, captured for WebRTC
     const glCanvas = document.createElement("canvas");
     glCanvas.width = RENDER_W; glCanvas.height = RENDER_H;
 
     const init = async () => {
-      // 1) Camera
+      // ── 1. Camera + mic ─────────────────────────────────────────
       let stream: MediaStream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
         });
       } catch (e) {
         console.error("[useFaceMask] camera denied:", e);
@@ -71,71 +72,93 @@ export function useFaceMask({ enabled, avatarSeed, previewCanvas }: UseFaceMaskO
       }
       if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
       realStreamRef.current = stream;
+
       video.srcObject = new MediaStream(stream.getVideoTracks());
       await video.play().catch(() => {});
 
-      // 2) Three.js avatar scene + capture stream
-      const { AvatarScene3D } = await import("@/lib/avatar/AvatarScene3D");
-      const { specForSeed }   = await import("@/lib/avatar/rpmConfig");
+      // ── 2. Three.js avatar scene ─────────────────────────────────
+      const [{ AvatarScene3D }, { specForPreset }] = await Promise.all([
+        import("@/lib/avatar/AvatarScene3D"),
+        import("@/lib/avatar/rpmConfig"),
+      ]);
       if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
+
       const scene = new AvatarScene3D(glCanvas);
       sceneRef.current = scene;
       scene.start();
-      await scene.loadAvatar(specForSeed(seedRef.current));
+
+      // Load avatar without blocking — show ready sooner, face appears once loaded
+      scene.loadAvatar(specForPreset(presetRef.current)).catch(console.warn);
 
       setVideoStream(scene.captureStream(30));
       setAudioStream(stream.getAudioTracks().length ? new MediaStream(stream.getAudioTracks()) : null);
+      setIsReady(true);
 
-      // 3) MediaPipe FaceLandmarker (ARKit blendshapes + head matrix)
-      // GPU delegate is faster but fails silently on many browsers — always fall back to CPU.
+      // ── 3. MediaPipe FaceLandmarker ──────────────────────────────
+      // CPU delegate is the safe default — works on all browsers without COOP/COEP.
+      // GPU delegate is faster but requires cross-origin isolation headers; we try
+      // it first and fall back gracefully.
       try {
         const { FaceLandmarker, FilesetResolver } = await import("@mediapipe/tasks-vision");
         const fileset = await FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm",
         );
         if (cancelled) return;
-        const modelOpts = (delegate: "GPU" | "CPU") => ({
-          baseOptions: {
-            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-            delegate,
-          },
+
+        const baseOpts = {
           outputFaceBlendshapes: true,
           outputFacialTransformationMatrixes: true,
           runningMode: "VIDEO" as const,
           numFaces: 1,
-        });
-        try {
-          landmarkerRef.current = await FaceLandmarker.createFromOptions(fileset, modelOpts("GPU"));
-        } catch {
-          console.warn("[useFaceMask] GPU delegate failed, falling back to CPU");
-          landmarkerRef.current = await FaceLandmarker.createFromOptions(fileset, modelOpts("CPU"));
+        };
+
+        for (const delegate of ["GPU", "CPU"] as const) {
+          try {
+            landmarkerRef.current = await FaceLandmarker.createFromOptions(fileset, {
+              baseOptions: {
+                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                delegate,
+              },
+              ...baseOpts,
+            });
+            console.info(`[useFaceMask] FaceLandmarker ready (${delegate})`);
+            break;
+          } catch (e) {
+            console.warn(`[useFaceMask] ${delegate} delegate failed:`, e);
+          }
         }
       } catch (e) {
-        console.error("[useFaceMask] FaceLandmarker init failed:", e);
+        console.error("[useFaceMask] FaceLandmarker init error:", e);
       }
 
-      setIsReady(true);
+      // ── 4. Detection loop ────────────────────────────────────────
+      // Throttled to 30 fps by wall-clock time — more reliable than comparing
+      // video.currentTime (which browsers may not advance every rAF frame).
+      let lastDetectMs = 0;
+      const DETECT_INTERVAL = 1000 / 30;
+      let warnState = false;
 
-      // 4) Detection loop — feeds the scene target state
-      let warningState = false;
       const detect = () => {
         if (cancelled) return;
         detectRaf = requestAnimationFrame(detect);
-        const lm = landmarkerRef.current;
-        if (!lm || video.readyState < 2 || video.currentTime === lastVideoTime) return;
-        lastVideoTime = video.currentTime;
+
+        const lm  = landmarkerRef.current;
+        const now = performance.now();
+        if (!lm || video.readyState < 2 || now - lastDetectMs < DETECT_INTERVAL) return;
+        lastDetectMs = now;
+
         try {
-          const res = lm.detectForVideo(video, performance.now());
+          const res = lm.detectForVideo(video, now);
           sceneRef.current?.applyResult(res);
-          if (res?.faceBlendshapes?.length) lastFaceRef.current = Date.now();
-        } catch { /* transient — ignore */ }
-        // Only update React state when the value actually changes (avoid per-frame renders).
-        const w = Date.now() - lastFaceRef.current > 3000;
-        if (w !== warningState) { warningState = w; setLightingWarning(w); }
+          if (res?.faceBlendshapes?.[0]?.categories?.length) lastFaceRef.current = Date.now();
+        } catch { /* transient gl context error — ignore */ }
+
+        const warn = Date.now() - lastFaceRef.current > 3000;
+        if (warn !== warnState) { warnState = warn; setLightingWarning(warn); }
       };
       detect();
 
-      // 5) Preview blit — copy the avatar into the small visible canvas
+      // ── 5. Preview blit (avatar → local PIP canvas) ──────────────
       const blit = () => {
         if (cancelled) return;
         blitRaf = requestAnimationFrame(blit);
@@ -167,15 +190,16 @@ export function useFaceMask({ enabled, avatarSeed, previewCanvas }: UseFaceMaskO
     };
   }, [enabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Hot-swap avatar when the seed changes (no camera restart) ────
+  // ── Hot-swap avatar when preset changes (no camera restart) ──────
   useEffect(() => {
-    if (!enabled || !sceneRef.current) return;
+    const scene = sceneRef.current;
+    if (!enabled || !scene) return;
     let active = true;
-    import("@/lib/avatar/rpmConfig").then(({ specForSeed }) => {
-      if (active) sceneRef.current?.loadAvatar(specForSeed(avatarSeed));
+    import("@/lib/avatar/rpmConfig").then(({ specForPreset }) => {
+      if (active) scene.loadAvatar(specForPreset(preset)).catch(console.warn);
     });
     return () => { active = false; };
-  }, [avatarSeed, enabled]);
+  }, [preset, enabled]);
 
   return { videoStream, audioStream, isReady, lightingWarning };
 }

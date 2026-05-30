@@ -7,7 +7,7 @@ import { useVoiceTransform, type VoicePreset } from "@/hooks/useVoiceTransform";
 import { useAmbientSound, type AmbientPreset } from "@/hooks/useAmbientSound";
 import { SessionNotepad } from "@/components/session/SessionNotepad";
 import { BreathingSync }  from "@/components/session/BreathingSync";
-import { generateDNA }    from "@/lib/avatar/AvatarDNA";
+import { AVATAR_PRESETS, presetSwatch, type AvatarPreset } from "@/lib/avatar/presets";
 
 interface VideoSessionProps {
   roomId: string;
@@ -19,17 +19,38 @@ function fmt(s: number) {
   return `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 }
 
-// Six avatar variants per room — each yields a unique, deterministic look.
-const VARIANTS = [0, 1, 2, 3, 4, 5];
-const seedFor = (roomId: string, v: number) => `${roomId}::v${v}`;
-
-/** Skin + hair swatch colours for the picker, derived from the avatar DNA. */
-function swatchColors(seed: string) {
-  const d = generateDNA(seed);
-  return {
-    skin: `hsl(${d.skinH} ${d.skinS}% ${d.skinL}%)`,
-    hair: `hsl(${d.hairH} ${d.hairS}% ${d.hairL}%)`,
-  };
+// ─── Avatar swatch — shows skin + hair disc with preset name ─────────────────
+function PresetSwatch({ preset, size, selected, onClick }: {
+  preset: AvatarPreset; size: number; selected: boolean; onClick?: () => void;
+}) {
+  const c = presetSwatch(preset);
+  return (
+    <button
+      onClick={onClick}
+      title={preset.name}
+      style={{
+        width: size, height: size, borderRadius: "50%", cursor: "pointer",
+        padding: 0, border: `3px solid ${selected ? "#4DA6FF" : "rgba(255,255,255,0.12)"}`,
+        background: "transparent",
+        boxShadow: selected ? "0 0 14px rgba(77,166,255,0.55)" : "none",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        transition: "all 0.18s ease", flexShrink: 0,
+      }}
+    >
+      {/* Disc: upper half = hair colour, lower half = skin colour */}
+      <div style={{
+        width: size - 8, height: size - 8, borderRadius: "50%", overflow: "hidden",
+        background: c.skin,
+        boxShadow: "inset 0 0 4px rgba(0,0,0,0.18)",
+      }}>
+        <div style={{
+          width: "100%", height: "48%",
+          background: c.hair,
+          borderRadius: "100% 100% 0 0 / 80% 80% 0 0",
+        }}/>
+      </div>
+    </button>
+  );
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -76,13 +97,11 @@ function PhoneOffIcon() {
 function MaskIcon({ size = 20 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 40 44" fill="none">
-      <defs>
-        <linearGradient id="mgi2" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#4DA6FF"/>
-          <stop offset="55%" stopColor="#8B6CF8"/>
-          <stop offset="100%" stopColor="#FF7B7B"/>
-        </linearGradient>
-      </defs>
+      <defs><linearGradient id="mgi2" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#4DA6FF"/>
+        <stop offset="55%" stopColor="#8B6CF8"/>
+        <stop offset="100%" stopColor="#FF7B7B"/>
+      </linearGradient></defs>
       <ellipse cx="20" cy="22" rx="19" ry="21" fill="url(#mgi2)"/>
       <ellipse cx="13" cy="19" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.7)"/>
       <ellipse cx="27" cy="19" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.7)"/>
@@ -94,13 +113,11 @@ function MaskIcon({ size = 20 }: { size?: number }) {
 function LogoIcon({ size = 20 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 40 44" fill="none">
-      <defs>
-        <linearGradient id="lggi2" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#4DA6FF"/>
-          <stop offset="55%" stopColor="#8B6CF8"/>
-          <stop offset="100%" stopColor="#FF7B7B"/>
-        </linearGradient>
-      </defs>
+      <defs><linearGradient id="lggi2" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#4DA6FF"/>
+        <stop offset="55%" stopColor="#8B6CF8"/>
+        <stop offset="100%" stopColor="#FF7B7B"/>
+      </linearGradient></defs>
       <ellipse cx="20" cy="22" rx="19" ry="21" fill="url(#lggi2)"/>
       <ellipse cx="13" cy="19" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.7)"/>
       <ellipse cx="27" cy="19" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.7)"/>
@@ -109,23 +126,10 @@ function LogoIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-// ─── Avatar swatch button ───────────────────────────────────────────────────
-function AvatarSwatch({ seed, size, selected }: { seed: string; size: number; selected: boolean }) {
-  const c = swatchColors(seed);
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: "50%", flexShrink: 0,
-      background: `radial-gradient(circle at 50% 32%, ${c.hair} 0%, ${c.hair} 34%, ${c.skin} 35%, ${c.skin} 100%)`,
-      border: `3px solid ${selected ? "#4DA6FF" : "rgba(0,0,0,0.25)"}`,
-      boxShadow: selected ? "0 0 12px rgba(77,166,255,0.5)" : "none",
-    }}/>
-  );
-}
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const [started,      setStarted]      = useState(false);
-  const [variant,      setVariant]      = useState(1);
+  const [presetIdx,    setPresetIdx]    = useState(0);
   const [voicePreset,  setVoicePreset]  = useState<VoicePreset>("off");
   const [canvasEl,     setCanvasEl]     = useState<HTMLCanvasElement | null>(null);
   const [showPicker,   setShowPicker]   = useState(false);
@@ -137,27 +141,26 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const hideTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const ambient = useAmbientSound(null);
 
-  const avatarSeed = seedFor(roomId, variant);
+  const activePreset = AVATAR_PRESETS[presetIdx] ?? AVATAR_PRESETS[0];
 
-  // ── On-device Memoji pipeline: camera → blendshapes → RPM avatar ──
+  // ── On-device Memoji pipeline ────────────────────────────────────
   const { videoStream, audioStream, isReady: maskReady, lightingWarning } = useFaceMask({
     enabled:       started,
-    avatarSeed,
+    preset:        activePreset,
     previewCanvas: canvasEl,
   });
 
-  // ── Local voice masking (stable output stream) ───────────────────
+  // ── Voice masking (browser AudioContext — no server) ─────────────
   const { transformedStream } = useVoiceTransform({ inputStream: audioStream, preset: voicePreset });
 
-  // ── Compose what we send: avatar video + masked audio ────────────
+  // ── Compose stream: avatar video + masked audio ──────────────────
   const localStream = useMemo(() => {
     if (!videoStream) return null;
-    const audioTracks = transformedStream?.getAudioTracks()
-      ?? audioStream?.getAudioTracks() ?? [];
-    return new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
+    const audio = transformedStream?.getAudioTracks() ?? audioStream?.getAudioTracks() ?? [];
+    return new MediaStream([...videoStream.getVideoTracks(), ...audio]);
   }, [videoStream, transformedStream, audioStream]);
 
-  // ── P2P WebRTC call ──────────────────────────────────────────────
+  // ── P2P WebRTC ───────────────────────────────────────────────────
   const {
     status, isMuted, isCameraOff, hasRemote, elapsed,
     remoteVideoRef, toggleMute, toggleCamera, hangUp, retryNow,
@@ -180,7 +183,6 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
     if (!showControls) { setShowPicker(false); setShowSettings(false); }
   }, [showControls]);
 
-  const handleStart  = () => setStarted(true);
   const handleHangUp = () => { ambient.setEnabled(false); hangUp(); };
 
   // ── Derived status ───────────────────────────────────────────────
@@ -191,8 +193,8 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const isConnected     = status === "connected";
 
   const stateLabel =
-    isCameraLoading           ? "Запуск камеры и аватара…"
-    : status === "connecting" ? "Соединение с сервером…"
+    isCameraLoading           ? "Запуск аватара…"
+    : status === "connecting" ? "Соединение…"
     : isWaiting && role === "client" ? "Ожидание специалиста…"
     : isWaiting               ? "Ожидание клиента…"
     : isReconnecting          ? "Восстановление связи…"
@@ -216,20 +218,13 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
       fontFamily: "Inter, system-ui, sans-serif",
     }}>
 
-      {/* ── REMOTE VIDEO — full-screen background ──────────────── */}
-      <video
-        ref={remoteVideoRef}
-        autoPlay
-        playsInline
-        style={{
-          position: "absolute", inset: 0, zIndex: 1,
-          width: "100%", height: "100%",
-          objectFit: "cover",
-          background: "#0A0D18",
-        }}
-      />
+      {/* ── REMOTE VIDEO — full-screen background ─────────────── */}
+      <video ref={remoteVideoRef} autoPlay playsInline style={{
+        position: "absolute", inset: 0, zIndex: 1,
+        width: "100%", height: "100%", objectFit: "cover", background: "#0A0D18",
+      }}/>
 
-      {/* ── Vignette ───────────────────────────────────────────── */}
+      {/* ── Vignette ──────────────────────────────────────────── */}
       {started && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",
@@ -237,9 +232,9 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
         }}/>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════
+      {/* ═══════════════════════════════════════════════════════
           PRE-SESSION SCREEN
-      ══════════════════════════════════════════════════════════════ */}
+      ════════════════════════════════════════════════════════════ */}
       {!started && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 50,
@@ -257,28 +252,25 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
           <div style={{
             background: "rgba(14,18,32,0.85)", backdropFilter: "blur(24px)",
             border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20,
-            padding: "28px 32px", width: 340, marginBottom: 20,
+            padding: "28px 32px", width: 360, marginBottom: 20,
           }}>
             <div style={{ fontSize: 11, color: "#4A5A72", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 18 }}>
-              Выберите анонимную маску
+              Выберите анонимный аватар
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 22 }}>
-              {VARIANTS.map(v => (
-                <button
-                  key={v}
-                  onClick={() => setVariant(v)}
-                  style={{
-                    width: 44, height: 44, borderRadius: "50%", cursor: "pointer",
-                    border: `2px solid ${variant === v ? "#4DA6FF" : "rgba(255,255,255,0.1)"}`,
-                    background: variant === v ? "rgba(77,166,255,0.15)" : "rgba(255,255,255,0.04)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    transition: "all 0.18s ease", padding: 0, overflow: "hidden",
-                  }}
-                >
-                  <AvatarSwatch seed={seedFor(roomId, v)} size={28} selected={variant === v} />
-                </button>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 10 }}>
+              {AVATAR_PRESETS.map((p, i) => (
+                <PresetSwatch key={p.id} preset={p} size={44} selected={presetIdx === i}
+                  onClick={() => setPresetIdx(i)} />
               ))}
+            </div>
+
+            {/* Selected preset name */}
+            <div style={{
+              textAlign: "center", fontSize: 13, color: "#8A9BB8",
+              marginBottom: 18, fontWeight: 500,
+            }}>
+              {activePreset.name}
             </div>
 
             <div style={{
@@ -299,7 +291,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
           </div>
 
           <button
-            onClick={handleStart}
+            onClick={() => setStarted(true)}
             style={{
               padding: "15px 52px", borderRadius: 13, cursor: "pointer",
               background: "linear-gradient(135deg, #4DA6FF 0%, #8B6CF8 100%)",
@@ -322,53 +314,49 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════
+      {/* ═══════════════════════════════════════════════════════
           IN-CALL UI
-      ══════════════════════════════════════════════════════════════ */}
+      ════════════════════════════════════════════════════════════ */}
       {started && (
         <div
           style={{ position: "absolute", inset: 0, zIndex: 10, cursor: showControls ? "default" : "none" }}
           onMouseMove={resetHide}
           onTouchStart={resetHide}
         >
-          {/* Invisible mouse-detection layer when controls are hidden */}
           <div
             style={{ position: "absolute", inset: 0, zIndex: 11, pointerEvents: showControls ? "none" : "auto" }}
-            onMouseMove={resetHide}
-            onTouchStart={resetHide}
+            onMouseMove={resetHide} onTouchStart={resetHide}
           />
 
-          {/* ── LOCAL PREVIEW — your avatar ─────────────────────── */}
+          {/* ── LOCAL PREVIEW — your avatar ───────────────────── */}
           <canvas
             ref={setCanvasEl}
-            width={320}
-            height={320}
+            width={512} height={512}
             style={{
               position: "absolute", bottom: 90, right: 16, zIndex: 15,
-              width: 160, height: 160, borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "linear-gradient(160deg, #1a2236 0%, #0d1322 100%)",
-              opacity: maskReady ? 1 : 0.3,
-              transition: "opacity 0.4s ease",
-              objectFit: "cover",
+              width: 160, height: 160, borderRadius: 16,
+              border: "1px solid rgba(255,255,255,0.14)",
+              background: "linear-gradient(155deg,#151d2e 0%,#0a0f1c 100%)",
+              opacity: maskReady ? 1 : 0.35,
+              transition: "opacity 0.5s ease",
             }}
           />
 
-          {/* ── LIGHTING WARNING ────────────────────────────────── */}
+          {/* ── LIGHTING WARNING ──────────────────────────────── */}
           {lightingWarning && maskReady && (
             <div style={{
-              position: "absolute", bottom: 256, right: 16, zIndex: 16,
+              position: "absolute", bottom: 258, right: 16, zIndex: 16,
               width: 160, textAlign: "center",
-              background: "rgba(245,158,11,0.14)", border: "1px solid rgba(245,158,11,0.35)",
-              borderRadius: 9, padding: "6px 8px",
+              background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)",
+              borderRadius: 8, padding: "5px 8px",
             }}>
-              <span style={{ fontSize: 11, color: "#F59E0B", lineHeight: 1.4 }}>
+              <span style={{ fontSize: 11, color: "#F59E0B", lineHeight: 1.35 }}>
                 Лицо не распознано — проверьте освещение
               </span>
             </div>
           )}
 
-          {/* ── STATUS OVERLAY (camera/connecting/waiting) ──────── */}
+          {/* ── STATUS OVERLAY ────────────────────────────────── */}
           {showSpinner && !isFailed && (
             <div style={{
               position: "absolute", inset: 0, zIndex: 20,
@@ -392,7 +380,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
             </div>
           )}
 
-          {/* ── FAILED OVERLAY ─────────────────────────────────── */}
+          {/* ── FAILED OVERLAY ────────────────────────────────── */}
           {isFailed && (
             <div style={{
               position: "absolute", inset: 0, zIndex: 20,
@@ -409,7 +397,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
             </div>
           )}
 
-          {/* ── RECONNECTING TOAST ─────────────────────────────── */}
+          {/* ── RECONNECTING TOAST ────────────────────────────── */}
           {isReconnecting && (
             <div style={{
               position: "absolute", top: 64, left: "50%", transform: "translateX(-50%)",
@@ -423,14 +411,13 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
             </div>
           )}
 
-          {/* ── TOP BAR ─────────────────────────────────────────── */}
+          {/* ── TOP BAR ───────────────────────────────────────── */}
           <div style={{
             position: "absolute", top: 0, left: 0, right: 0, zIndex: 25,
             height: 56, display: "flex", alignItems: "center",
             justifyContent: "space-between", padding: "0 16px",
             transition: "opacity 0.35s ease",
-            opacity: showControls ? 1 : 0,
-            pointerEvents: showControls ? "auto" : "none",
+            opacity: showControls ? 1 : 0, pointerEvents: showControls ? "auto" : "none",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -468,13 +455,12 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
             </div>
           </div>
 
-          {/* ── LEFT SIDE BUTTONS ──────────────────────────────── */}
+          {/* ── LEFT SIDE BUTTONS ─────────────────────────────── */}
           <div style={{
             position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
             display: "flex", flexDirection: "column", gap: 8, zIndex: 25,
             transition: "opacity 0.35s ease",
-            opacity: showControls ? 1 : 0,
-            pointerEvents: showControls ? "auto" : "none",
+            opacity: showControls ? 1 : 0, pointerEvents: showControls ? "auto" : "none",
           }}>
             <button onClick={() => { setShowNotepad(s => !s); setShowBreath(false); }}
               title="Заметки" style={sideBtn(showNotepad, "#4DA6FF")}>
@@ -495,7 +481,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
                 <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
               </svg>
             </button>
-            <button onClick={() => setShowPicker(s => !s)} title="Маска" style={sideBtn(showPicker, "#8B6CF8")}>
+            <button onClick={() => setShowPicker(s => !s)} title="Аватар" style={sideBtn(showPicker, "#8B6CF8")}>
               <MaskIcon size={18} />
             </button>
             <button onClick={() => setShowSettings(s => !s)} title="Настройки" style={sideBtn(showSettings, "#8A9BB8")}>
@@ -506,7 +492,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
             </button>
           </div>
 
-          {/* ── FLOATING PANELS ────────────────────────────────── */}
+          {/* ── FLOATING PANELS ───────────────────────────────── */}
           {showNotepad && <div style={floatingPanel("left", 70)}><SessionNotepad roomId={roomId} /></div>}
           {showBreath  && <div style={floatingPanel("left", 70)}><BreathingSync /></div>}
 
@@ -515,19 +501,19 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
               <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4A5A72", marginBottom: 14 }}>
                 Ваш аватар
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                {VARIANTS.map(v => (
-                  <button key={v} onClick={() => { setVariant(v); setShowPicker(false); }}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                {AVATAR_PRESETS.map((p, i) => (
+                  <button key={p.id} onClick={() => { setPresetIdx(i); setShowPicker(false); }}
                     style={{
-                      padding: "10px 6px", borderRadius: 10, cursor: "pointer",
-                      border: `2px solid ${variant === v ? "#4DA6FF" : "rgba(255,255,255,0.08)"}`,
-                      background: variant === v ? "rgba(77,166,255,0.12)" : "rgba(255,255,255,0.04)",
+                      padding: "10px 6px", borderRadius: 12, cursor: "pointer",
+                      border: `2px solid ${presetIdx === i ? "#4DA6FF" : "rgba(255,255,255,0.08)"}`,
+                      background: presetIdx === i ? "rgba(77,166,255,0.12)" : "rgba(255,255,255,0.04)",
                       display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
                       fontFamily: "inherit", transition: "all 0.18s ease",
                     }}>
-                    <AvatarSwatch seed={seedFor(roomId, v)} size={30} selected={variant === v} />
-                    <span style={{ fontSize: 10, color: variant === v ? "#4DA6FF" : "#8A9BB8" }}>
-                      {`Аватар ${v + 1}`}
+                    <PresetSwatch preset={p} size={36} selected={presetIdx === i} />
+                    <span style={{ fontSize: 10, color: presetIdx === i ? "#4DA6FF" : "#8A9BB8" }}>
+                      {p.name}
                     </span>
                   </button>
                 ))}
@@ -540,8 +526,6 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
               <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4A5A72", marginBottom: 14 }}>
                 Настройки
               </div>
-
-              {/* Voice masking */}
               <div style={{ fontSize: 11, color: "#4A5A72", marginBottom: 8 }}>Голос</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, marginBottom: 14 }}>
                 {(["off", "lower", "higher"] as VoicePreset[]).map(p => (
@@ -556,7 +540,6 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
                   </button>
                 ))}
               </div>
-
               {ambient.enabled && (
                 <>
                   <div style={{ fontSize: 11, color: "#4A5A72", marginBottom: 8 }}>Звуки природы</div>
@@ -582,18 +565,17 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
             </div>
           )}
 
-          {/* ── BOTTOM CONTROLS ────────────────────────────────── */}
+          {/* ── BOTTOM CONTROLS ───────────────────────────────── */}
           <div style={{
             position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)",
             display: "flex", alignItems: "center", gap: 10, zIndex: 25,
             transition: "opacity 0.35s ease",
-            opacity: showControls ? 1 : 0,
-            pointerEvents: showControls ? "auto" : "none",
+            opacity: showControls ? 1 : 0, pointerEvents: showControls ? "auto" : "none",
           }}>
             <CtrlBtn active={isMuted}     activeColor="#FF4D4D" onClick={toggleMute}   title={isMuted     ? "Включить микрофон" : "Выключить микрофон"}>
               <MicIcon muted={isMuted} />
             </CtrlBtn>
-            <CtrlBtn active={isCameraOff} activeColor="#FF4D4D" onClick={toggleCamera} title={isCameraOff ? "Включить камеру"    : "Выключить камеру"}>
+            <CtrlBtn active={isCameraOff} activeColor="#FF4D4D" onClick={toggleCamera} title={isCameraOff ? "Включить камеру" : "Выключить камеру"}>
               <CamIcon off={isCameraOff} />
             </CtrlBtn>
             <button
@@ -613,7 +595,6 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
               <PhoneOffIcon />
             </button>
           </div>
-
         </div>
       )}
 
@@ -625,7 +606,6 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
 function CtrlBtn({ children, active, activeColor, onClick, title }: {
   children: React.ReactNode; active: boolean; activeColor: string; onClick: () => void; title: string;
 }) {
@@ -639,9 +619,7 @@ function CtrlBtn({ children, active, activeColor, onClick, title }: {
       display: "flex", alignItems: "center", justifyContent: "center",
       transition: "all 0.18s ease",
       boxShadow: active ? `0 0 16px ${activeColor}33` : "none",
-    }}>
-      {children}
-    </button>
+    }}>{children}</button>
   );
 }
 
@@ -673,8 +651,7 @@ function floatingPanel(side: "left" | "right", offsetX: number): React.CSSProper
     background: "rgba(10,13,24,0.92)", backdropFilter: "blur(24px)",
     border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16,
     padding: 18, zIndex: 26, width: 230,
-    boxShadow: "0 16px 48px rgba(0,0,0,0.7)",
-    color: "#F0F4FF",
+    boxShadow: "0 16px 48px rgba(0,0,0,0.7)", color: "#F0F4FF",
   };
   if (side === "left") base.left = offsetX + 4;
   else base.right = offsetX + 4;
