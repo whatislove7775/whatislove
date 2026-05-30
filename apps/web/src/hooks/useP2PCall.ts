@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { SignalingClient } from "@/lib/webrtc/signalingClient";
+import type { FaceLandmarks } from "@/lib/mediapipe/faceRenderer";
 
 // ── TURN credentials — must match coturn in docker-compose.yml ───
 const TURN_USER = "aprosop";
@@ -39,10 +40,14 @@ export type P2PStatus =
 interface UseP2PCallOptions {
   roomId: string;
   localStream: MediaStream | null;
+  role?: "client" | "psychologist";
+  localLandmarksRef?: React.RefObject<FaceLandmarks | null>;
+  avatarId?: number;
+  onRemoteLandmarks?: (lm: FaceLandmarks, avatarId: number) => void;
   onEnd?: () => void;
 }
 
-export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
+export function useP2PCall({ roomId, localStream, role, localLandmarksRef, avatarId, onRemoteLandmarks, onEnd }: UseP2PCallOptions) {
   const [status,      setStatus]      = useState<P2PStatus>("idle");
   const [isMuted,     setIsMuted]     = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
@@ -53,11 +58,16 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
   const pcRef          = useRef<RTCPeerConnection | null>(null);
   const sigRef         = useRef<SignalingClient | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+  const dcRef          = useRef<RTCDataChannel | null>(null);
+  const onRemoteLandmarksRef = useRef(onRemoteLandmarks);
   const cancelRef      = useRef(false);
   const offerMadeRef   = useRef(false);
   const hasRemoteRef   = useRef(false);
   const pendingIceRef  = useRef<RTCIceCandidateInit[]>([]);
   const elapsedTimer   = useRef<ReturnType<typeof setInterval>>();
+
+  // Keep onRemoteLandmarks ref up to date without triggering re-renders
+  onRemoteLandmarksRef.current = onRemoteLandmarks;
 
   const stopElapsed = useCallback(() => {
     clearInterval(elapsedTimer.current);
@@ -183,6 +193,25 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
       pcRef.current = pc;
 
       stream.getTracks().forEach(t => pc.addTrack(t, stream));
+
+      // DataChannel: client creates, psychologist receives
+      if (role === "client") {
+        const dc = pc.createDataChannel("landmarks", { ordered: false, maxRetransmits: 0 });
+        dcRef.current = dc;
+      } else if (role === "psychologist") {
+        pc.ondatachannel = ({ channel }) => {
+          dcRef.current = channel;
+          channel.onmessage = ({ data }: MessageEvent) => {
+            try {
+              const d = JSON.parse(data);
+              if (d.t === "lm" && Array.isArray(d.lm)) {
+                const lm: FaceLandmarks = d.lm.map(([x, y, z]: number[]) => ({ x, y, z }));
+                onRemoteLandmarksRef.current?.(lm, d.av ?? 1);
+              }
+            } catch { /* ignore */ }
+          };
+        };
+      }
 
       // ICE кандидаты → сигналинг
       pc.onicecandidate = ({ candidate }) => {
@@ -375,6 +404,7 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
       unsubscribe();
       unsubReconnect();
       sig.disconnect();
+      dcRef.current = null;
       const oldPc = pcRef.current;
       if (oldPc) {
         oldPc.ontrack                    = null;
@@ -390,6 +420,25 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
       hasRemoteRef.current = false;
     };
   }, [roomId, localStream, retryKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Landmark sending (client only, ~15fps) ────────────────────
+  useEffect(() => {
+    if (role !== "client") return;
+    const iv = setInterval(() => {
+      const dc = dcRef.current;
+      const lm = localLandmarksRef?.current;
+      if (dc?.readyState === "open" && lm) {
+        try {
+          dc.send(JSON.stringify({
+            t: "lm",
+            lm: lm.map(p => [+p.x.toFixed(4), +p.y.toFixed(4), +p.z.toFixed(4)]),
+            av: avatarId ?? 1,
+          }));
+        } catch { /* ignore */ }
+      }
+    }, 67);
+    return () => clearInterval(iv);
+  }, [role, localLandmarksRef, avatarId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Controls ──────────────────────────────────────────────────
   const toggleMute = useCallback(() => {

@@ -12,6 +12,7 @@ interface UseFaceMaskOptions {
 export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMaskOptions) {
   const [maskedStream, setMaskedStream] = useState<MediaStream | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [lightingWarning, setLightingWarning] = useState(false);
 
   const faceMeshRef    = useRef<any>(null);
   const animFrameRef   = useRef<number>(0);
@@ -20,6 +21,7 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
   const sendingRef     = useRef(false);
   const realStreamRef  = useRef<MediaStream | null>(null);
   const avatarRef      = useRef<AvatarConfig>(AVATARS[0]);
+  const lastFaceTimeRef = useRef<number>(Date.now());
 
   // Swap avatar without re-initialising MediaPipe
   useEffect(() => {
@@ -50,6 +52,7 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
       if (ts - lastDraw < 42) return; // ~24 fps cap
 
       lastDraw = ts;
+      setLightingWarning(Date.now() - lastFaceTimeRef.current > 3000);
       const vw = video.videoWidth;
       const vh = video.videoHeight;
       if (!vw || !vh || video.readyState < 2) return;
@@ -124,7 +127,9 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
           minTrackingConfidence: 0.5,
         });
         faceMesh.onResults((results: any) => {
-          landmarksRef.current = results.multiFaceLandmarks?.[0] ?? null;
+          const lm = results.multiFaceLandmarks?.[0] ?? null;
+          landmarksRef.current = lm;
+          if (lm) lastFaceTimeRef.current = Date.now();
         });
 
         faceMeshRef.current = faceMesh;
@@ -169,8 +174,9 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
       realStreamRef.current = null;
       setIsReady(false);
       setMaskedStream(null);
+      setLightingWarning(false);
     };
   }, [enabled, outputCanvas]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { maskedStream, isReady };
+  return { maskedStream, isReady, landmarksRef, lightingWarning };
 }
