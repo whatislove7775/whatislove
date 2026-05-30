@@ -391,144 +391,180 @@ export class AvatarScene3D {
   }
 
   // ── Memoji procedural face ──────────────────────────────────────────────────
+  // Apple Memoji proportions: large expressive eyes (~38% face width each),
+  // small delicate nose, defined lips, thick arched brows.
   // Built to 1.0 unit total height so normalisation leaves it unchanged.
-  // Head centre at y≈0.87 — matches camera target area.
+  // Head centre at y≈0.87 — matches the portrait camera target (y=0.83).
 
   private buildMemoji(p: AvatarPreset): { mesh: THREE.Group; rig: MemojiRig } {
     const g = new THREE.Group();
     g.name = "MemojiRoot";
 
     // ── Materials ────────────────────────────────────────────
-    const skinC   = hsl(p.skinH, p.skinS, p.skinL);
-    const skinMat = new THREE.MeshStandardMaterial({ color: skinC, roughness: 0.50, metalness: 0 });
-    const hairMat = new THREE.MeshStandardMaterial({ color: hsl(p.hairH, p.hairS, p.hairL), roughness: 0.80 });
-    const shirtMat= new THREE.MeshStandardMaterial({ color: hsl(p.shirtH, p.shirtS, p.shirtL), roughness: 0.75 });
-    const scleraMat = new THREE.MeshStandardMaterial({ color: 0xfafbfd, roughness: 0.06, metalness: 0 });
-    const irisMat   = new THREE.MeshStandardMaterial({ color: hsl(p.eyeH, p.eyeS, p.eyeL), roughness: 0.05, metalness: 0.1 });
-    const pupilMat  = new THREE.MeshBasicMaterial({ color: 0x050505 });
-    const lipMat    = new THREE.MeshStandardMaterial({
-      color: hsl(p.skinH, p.skinS * 0.55, p.skinL * 0.72), roughness: 0.35,
+    const skinMat = new THREE.MeshStandardMaterial({
+      color: hsl(p.skinH, p.skinS, p.skinL),
+      roughness: 0.42, metalness: 0,
+    });
+    const hairMat = new THREE.MeshStandardMaterial({
+      color: hsl(p.hairH, p.hairS, p.hairL),
+      roughness: 0.78,
+    });
+    const shirtMat = new THREE.MeshStandardMaterial({
+      color: hsl(p.shirtH, p.shirtS, p.shirtL),
+      roughness: 0.72,
+    });
+    const scleraMat = new THREE.MeshStandardMaterial({
+      color: 0xf8faff, roughness: 0.05, metalness: 0,
+    });
+    const irisMat = new THREE.MeshStandardMaterial({
+      color: hsl(p.eyeH, p.eyeS, Math.min(p.eyeL + 10, 65)),
+      roughness: 0.04, metalness: 0.08,
+    });
+    const pupilMat = new THREE.MeshBasicMaterial({ color: 0x060606 });
+    const lipMat = new THREE.MeshStandardMaterial({
+      color: hsl(p.skinH, Math.min(p.skinS * 0.6, 40), p.skinL * 0.68),
+      roughness: 0.32,
     });
     const lidMat = new THREE.MeshStandardMaterial({
-      color: hsl(p.skinH, p.skinS, p.skinL * 0.88), roughness: 0.45,
+      color: hsl(p.skinH, p.skinS * 0.85, p.skinL * 0.86),
+      roughness: 0.45,
     });
     const invisMat = new THREE.MeshBasicMaterial({ visible: false });
 
-    // ── Invisible body for bounding-box normalisation ─────────
-    // Gives the Memoji the same y=0..1.0 bounding box as a full RPM body.
-    const bodyPad = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.64, 4), invisMat);
-    bodyPad.position.set(0, 0.32, 0);
-    g.add(bodyPad);
+    // ── Invisible anchor keeps bounding box at y=0..1 ────────
+    const anchor = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.64, 3), invisMat);
+    anchor.position.set(0, 0.32, 0);
+    g.add(anchor);
 
-    // ── Shoulders ────────────────────────────────────────────
-    const shoulders = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.27, 0.24, 0.065, 48), shirtMat,
-    );
-    shoulders.position.set(0, 0.66, 0);
+    // ── Shirt / body ─────────────────────────────────────────
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.185, 0.22, 0.115, 40), shirtMat);
+    torso.position.set(0, 0.607, 0);
+    g.add(torso);
+
+    const shoulders = new THREE.Mesh(new THREE.CylinderGeometry(0.265, 0.235, 0.068, 48), shirtMat);
+    shoulders.position.set(0, 0.661, 0);
     g.add(shoulders);
 
-    // Shirt body (partial, just below shoulders)
-    const shirtBody = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.20, 0.23, 0.10, 32), shirtMat,
-    );
-    shirtBody.position.set(0, 0.60, 0);
-    g.add(shirtBody);
+    // Collar / shirt neckline
+    const collar = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.018, 12, 40), shirtMat);
+    collar.rotation.x = Math.PI / 2;
+    collar.position.set(0, 0.695, 0);
+    g.add(collar);
 
     // ── Neck ─────────────────────────────────────────────────
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.054, 0.064, 0.13, 24), skinMat);
-    neck.position.set(0, 0.73, 0);
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.062, 0.125, 28), skinMat);
+    neck.position.set(0, 0.733, 0);
     g.add(neck);
 
-    // ── Head sphere ──────────────────────────────────────────
-    const head = new THREE.Mesh(
-      new THREE.SphereGeometry(0.115, 80, 60), skinMat,
-    );
+    // ── Head ─────────────────────────────────────────────────
+    // Apple Memoji heads are wide and round, slightly flatter in depth.
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.118, 96, 72), skinMat);
     head.name = "HeadMesh";
-    head.scale.set(0.94, 1.00, 0.90);
-    head.position.set(0, 0.870, 0);
+    head.scale.set(0.975, 0.985, 0.900);
+    head.position.set(0, 0.872, 0);
     g.add(head);
 
-    // ── Hair cap ─────────────────────────────────────────────
-    const hairCap = new THREE.Mesh(
-      new THREE.SphereGeometry(0.120, 64, 32, 0, Math.PI * 2, 0, Math.PI * 0.52),
-      hairMat,
-    );
-    hairCap.scale.set(0.96, 1.08, 0.92);
-    hairCap.position.set(0, 0.868, -0.008);
-    g.add(hairCap);
+    // Slight jaw/chin definition — a slightly flattened sub-sphere at the bottom
+    const chin = new THREE.Mesh(new THREE.SphereGeometry(0.072, 40, 28, 0, Math.PI * 2, Math.PI * 0.55, Math.PI * 0.50), skinMat);
+    chin.scale.set(0.88, 1.0, 0.82);
+    chin.position.set(0, 0.772, 0.018);
+    g.add(chin);
 
     // ── Ears ─────────────────────────────────────────────────
     for (const sx of [-1, 1]) {
-      const ear = new THREE.Mesh(new THREE.SphereGeometry(0.038, 24, 18), skinMat);
-      ear.scale.set(0.46, 0.62, 0.5);
-      ear.position.set(sx * 0.108, 0.868, 0);
+      const ear = new THREE.Mesh(new THREE.SphereGeometry(0.036, 28, 20), skinMat);
+      ear.scale.set(0.44, 0.66, 0.48);
+      ear.position.set(sx * 0.114, 0.872, 0.008);
       g.add(ear);
     }
 
-    // ── EYES ─────────────────────────────────────────────────
-    const eyeGroupLeft  = this.makeEye(+1, scleraMat, irisMat, pupilMat, lidMat, g);
-    const eyeGroupRight = this.makeEye(-1, scleraMat, irisMat, pupilMat, lidMat, g);
+    // ── Hair ─────────────────────────────────────────────────
+    // Top cap
+    const cap = new THREE.Mesh(
+      new THREE.SphereGeometry(0.124, 72, 40, 0, Math.PI * 2, 0, Math.PI * 0.535),
+      hairMat,
+    );
+    cap.scale.set(0.985, 1.085, 0.94);
+    cap.position.set(0, 0.870, -0.010);
+    g.add(cap);
 
-    const lidLeft  = eyeGroupLeft.getObjectByName("Lid")!;
-    const lidRight = eyeGroupRight.getObjectByName("Lid")!;
+    // Side volumes — give the impression of styled hair
+    for (const sx of [-1, 1]) {
+      const side = new THREE.Mesh(new THREE.SphereGeometry(0.062, 32, 24), hairMat);
+      side.scale.set(0.58, 0.82, 0.52);
+      side.position.set(sx * 0.118, 0.920, -0.024);
+      g.add(side);
+    }
 
-    // ── EYEBROWS ─────────────────────────────────────────────
-    const browLeft  = this.makeBrow( 1, hairMat, 0.870 + 0.056, g);
-    const browRight = this.makeBrow(-1, hairMat, 0.870 + 0.056, g);
+    // ── Eyes (large — Apple Memoji style) ────────────────────
+    // Each eye is ≈38% of half-face-width. Eyes are flat ovals, not spheres.
+    const eyeGroupLeft  = this.makeEye(+1, p, scleraMat, irisMat, pupilMat, lidMat, g);
+    const eyeGroupRight = this.makeEye(-1, p, scleraMat, irisMat, pupilMat, lidMat, g);
+
+    // lid refs (inside each eye group, named "Lid")
+    const lidLeft  = eyeGroupLeft.getObjectByName("Lid")  as THREE.Object3D;
+    const lidRight = eyeGroupRight.getObjectByName("Lid") as THREE.Object3D;
+
+    // ── Eyebrows ─────────────────────────────────────────────
+    const browY = 0.928;
+    const browLeft  = this.makeBrow( 1, hairMat, browY, g);
+    const browRight = this.makeBrow(-1, hairMat, browY, g);
     browLeft.name  = "BrowLeft";
     browRight.name = "BrowRight";
 
-    // ── NOSE ─────────────────────────────────────────────────
-    const noseBridge = new THREE.Mesh(new THREE.SphereGeometry(0.013, 20, 14), skinMat);
-    noseBridge.scale.set(0.8, 1.2, 1.3);
-    noseBridge.position.set(0, 0.862, 0.110);
-    g.add(noseBridge);
-
+    // ── Nose — subtle, Apple-style (just nostrils + tiny tip) ──
+    // Nose tip
+    const noseTip = new THREE.Mesh(new THREE.SphereGeometry(0.012, 20, 14), skinMat);
+    noseTip.scale.set(1.15, 0.68, 1.3);
+    noseTip.position.set(0, 0.858, 0.114);
+    g.add(noseTip);
+    // Nostrils
     for (const nx of [-1, 1]) {
-      const nostril = new THREE.Mesh(new THREE.SphereGeometry(0.011, 18, 12), skinMat);
-      nostril.scale.set(0.9, 0.55, 1.1);
-      nostril.position.set(nx * 0.016, 0.854, 0.114);
-      g.add(nostril);
+      const ns = new THREE.Mesh(new THREE.SphereGeometry(0.010, 16, 12), skinMat);
+      ns.scale.set(0.85, 0.52, 1.05);
+      ns.position.set(nx * 0.015, 0.852, 0.115);
+      g.add(ns);
     }
 
-    // ── MOUTH ────────────────────────────────────────────────
+    // ── Mouth ────────────────────────────────────────────────
     const mouthGroup = new THREE.Group();
     mouthGroup.name = "MouthGroup";
-    mouthGroup.position.set(0, 0.845, 0.104);
+    mouthGroup.position.set(0, 0.843, 0.105);
     g.add(mouthGroup);
 
-    const upperLip = new THREE.Mesh(new THREE.SphereGeometry(0.022, 32, 18), lipMat);
+    const upperLip = new THREE.Mesh(new THREE.SphereGeometry(0.025, 40, 22), lipMat);
     upperLip.name = "UpperLip";
-    upperLip.scale.set(1.65, 0.50, 0.90);
-    upperLip.position.set(0, 0.006, 0);
+    upperLip.scale.set(1.88, 0.52, 0.88);
+    upperLip.position.set(0, 0.007, 0);
     mouthGroup.add(upperLip);
 
-    const lowerLip = new THREE.Mesh(new THREE.SphereGeometry(0.025, 32, 18), lipMat);
+    // Cupid's bow dip (centre of upper lip slightly recessed)
+    const cupid = new THREE.Mesh(new THREE.SphereGeometry(0.010, 16, 12), lipMat);
+    cupid.scale.set(0.6, 0.45, 0.7);
+    cupid.position.set(0, 0.014, -0.002);
+    mouthGroup.add(cupid);
+
+    const lowerLip = new THREE.Mesh(new THREE.SphereGeometry(0.028, 40, 22), lipMat);
     lowerLip.name = "LowerLip";
-    lowerLip.scale.set(1.75, 0.55, 0.95);
+    lowerLip.scale.set(1.78, 0.58, 0.92);
     lowerLip.position.set(0, -0.007, 0);
     mouthGroup.add(lowerLip);
 
-    const cornerLeft = new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 12), lipMat);
+    const cornerLeft = new THREE.Mesh(new THREE.SphereGeometry(0.013, 18, 14), lipMat);
     cornerLeft.name = "CornerLeft";
-    cornerLeft.scale.set(0.7, 0.6, 0.7);
-    cornerLeft.position.set(-0.028, 0, 0);
+    cornerLeft.scale.set(0.68, 0.60, 0.68);
+    cornerLeft.position.set(-0.034, 0, 0);
     mouthGroup.add(cornerLeft);
 
-    const cornerRight = new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 12), lipMat);
+    const cornerRight = new THREE.Mesh(new THREE.SphereGeometry(0.013, 18, 14), lipMat);
     cornerRight.name = "CornerRight";
-    cornerRight.scale.set(0.7, 0.6, 0.7);
-    cornerRight.position.set( 0.028, 0, 0);
+    cornerRight.scale.set(0.68, 0.60, 0.68);
+    cornerRight.position.set( 0.034, 0, 0);
     mouthGroup.add(cornerRight);
 
-    // ── Philtrum (cupid's bow dip above upper lip) ───────────
-    const philtrum = new THREE.Mesh(new THREE.SphereGeometry(0.008, 14, 10), skinMat);
-    philtrum.scale.set(1.0, 0.5, 0.8);
-    philtrum.position.set(0, 0.852, 0.114);
-    g.add(philtrum);
-
     const rig: MemojiRig = {
-      eyeGroupLeft, eyeGroupRight, lidLeft, lidRight,
+      eyeGroupLeft, eyeGroupRight,
+      lidLeft, lidRight,
       browLeft, browRight,
       mouthGroup, lowerLip, cornerLeft, cornerRight,
       headMesh: head,
@@ -541,7 +577,8 @@ export class AvatarScene3D {
   }
 
   private makeEye(
-    sx: number, // +1 = left eye (avatar's left), -1 = right
+    sx: number, // +1 = avatar-left, -1 = avatar-right
+    p: AvatarPreset,
     scleraMat: THREE.Material, irisMat: THREE.Material,
     pupilMat: THREE.Material, lidMat: THREE.Material,
     parent: THREE.Group,
@@ -549,44 +586,56 @@ export class AvatarScene3D {
     const label = sx > 0 ? "Left" : "Right";
     const grp = new THREE.Group();
     grp.name = `EyeGroup${label}`;
-    grp.position.set(-sx * 0.048, 0.892, 0.100); // mirror: camera-left is avatar's right
+    // Camera-left = avatar-right: negate sx so it mirrors correctly
+    grp.position.set(-sx * 0.054, 0.897, 0.099);
     parent.add(grp);
 
-    // Sclera (slightly flattened sphere)
-    const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.032, 40, 28), scleraMat);
-    sclera.scale.set(1.0, 1.05, 0.75);
+    // ── Sclera: wide flat oval (Apple Memoji style) ───────────
+    const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.040, 48, 36), scleraMat);
+    sclera.scale.set(1.0, 1.08, 0.52);   // wide × tall × flat
     grp.add(sclera);
 
-    // Iris
-    const iris = new THREE.Mesh(new THREE.CircleGeometry(0.020, 40), irisMat);
-    iris.position.z = 0.023;
+    // ── Iris ─────────────────────────────────────────────────
+    const iris = new THREE.Mesh(new THREE.CircleGeometry(0.026, 48), irisMat);
+    iris.position.z = 0.021;
     grp.add(iris);
 
-    // Pupil
-    const pupil = new THREE.Mesh(new THREE.CircleGeometry(0.011, 36), pupilMat);
-    pupil.position.z = 0.024;
+    // Iris rim (slightly darker edge)
+    const irisRimMat = new THREE.MeshBasicMaterial({
+      color: hsl(p.eyeH, Math.max(p.eyeS - 10, 10), Math.max(p.eyeL - 18, 8)),
+    });
+    const irisRim = new THREE.Mesh(new THREE.RingGeometry(0.023, 0.026, 48), irisRimMat);
+    irisRim.position.z = 0.0215;
+    grp.add(irisRim);
+
+    // ── Pupil ─────────────────────────────────────────────────
+    const pupil = new THREE.Mesh(new THREE.CircleGeometry(0.014, 40), pupilMat);
+    pupil.position.z = 0.0220;
     grp.add(pupil);
 
-    // Catchlight (specular dot)
+    // ── Catchlight (two specular dots for realism) ────────────
     const hlMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const hl = new THREE.Mesh(new THREE.CircleGeometry(0.0046, 16), hlMat);
-    hl.position.set(0.008, 0.009, 0.025);
-    grp.add(hl);
+    const hl1 = new THREE.Mesh(new THREE.CircleGeometry(0.0055, 16), hlMat);
+    hl1.position.set(0.009, 0.010, 0.0225);
+    grp.add(hl1);
+    const hl2 = new THREE.Mesh(new THREE.CircleGeometry(0.0028, 12), hlMat);
+    hl2.position.set(-0.011, -0.007, 0.0225);
+    grp.add(hl2);
 
-    // Eyelid (upper semi-sphere that moves down to blink)
-    const lidGeo = new THREE.SphereGeometry(0.034, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
+    // ── Upper eyelid cap (covers top of sclera, skin-coloured) ─
+    const lidGeo = new THREE.SphereGeometry(0.042, 48, 20, 0, Math.PI * 2, 0, Math.PI * 0.48);
     const lid = new THREE.Mesh(lidGeo, lidMat);
     lid.name = "Lid";
-    lid.rotation.x = Math.PI; // cap faces down (upper lid)
-    lid.scale.set(0.96, 0.80, 0.74);
-    lid.position.z = 0.006;
+    lid.rotation.x = Math.PI;          // flip so hemisphere faces downward
+    lid.scale.set(0.97, 0.78, 0.56);
+    lid.position.set(0, 0.002, 0.008);
     grp.add(lid);
 
-    // Lower lid hint
-    const lLidGeo = new THREE.SphereGeometry(0.034, 32, 8, 0, Math.PI * 2, Math.PI * 0.5, Math.PI * 0.15);
+    // ── Lower lid hint ────────────────────────────────────────
+    const lLidGeo = new THREE.SphereGeometry(0.042, 48, 10, 0, Math.PI * 2, Math.PI * 0.52, Math.PI * 0.12);
     const lLid = new THREE.Mesh(lLidGeo, lidMat);
-    lLid.scale.set(0.96, 0.60, 0.70);
-    lLid.position.z = 0.005;
+    lLid.scale.set(0.97, 0.55, 0.52);
+    lLid.position.set(0, 0, 0.007);
     grp.add(lLid);
 
     return grp;
@@ -594,23 +643,22 @@ export class AvatarScene3D {
 
   private makeBrow(sx: number, mat: THREE.Material, worldY: number, parent: THREE.Group): THREE.Group {
     const grp = new THREE.Group();
-    grp.position.set(-sx * 0.048, worldY, 0.098);
-    grp.rotation.z = sx * 0.15;
+    // Camera-left = avatar-right
+    grp.position.set(-sx * 0.054, worldY, 0.093);
+    grp.rotation.z = sx * 0.16;   // natural arch tilt
     parent.add(grp);
 
-    // Three elongated blobs forming an arch
-    const positions: [number, number, number, number][] = [
-      [-0.020,  0.002, 0, 0.60], // inner
-      [ 0.000,  0.005, 0, 0.65], // middle (peak)
-      [ 0.018,  0.000, 0, 0.55], // outer
+    // Four blobs: inner, inner-mid, outer-mid, outer
+    const segs: [number, number, number][] = [
+      [-0.026,  0.000, 0.86],
+      [-0.010,  0.005, 1.00],
+      [ 0.007,  0.005, 1.00],
+      [ 0.022, -0.002, 0.80],
     ];
-    for (const [bx, by, bz, h] of positions) {
-      const blob = new THREE.Mesh(
-        new THREE.SphereGeometry(0.010, 18, 12),
-        mat,
-      );
-      blob.scale.set(1.0, h, 0.65);
-      blob.position.set(bx, by, bz);
+    for (const [bx, by, sy] of segs) {
+      const blob = new THREE.Mesh(new THREE.SphereGeometry(0.012, 20, 14), mat);
+      blob.scale.set(1.0, sy * 0.70, 0.62);
+      blob.position.set(bx, by, 0);
       grp.add(blob);
     }
 

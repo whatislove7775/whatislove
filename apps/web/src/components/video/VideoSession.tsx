@@ -221,7 +221,9 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
       {/* ── REMOTE VIDEO — full-screen background ─────────────── */}
       <video ref={remoteVideoRef} autoPlay playsInline style={{
         position: "absolute", inset: 0, zIndex: 1,
-        width: "100%", height: "100%", objectFit: "cover", background: "#0A0D18",
+        width: "100%", height: "100%",
+        objectFit: "contain",   // was "cover" — cover crops a square stream to landscape, hiding forehead/hair
+        background: "#0A0D18",
       }}/>
 
       {/* ── Vignette ──────────────────────────────────────────── */}
