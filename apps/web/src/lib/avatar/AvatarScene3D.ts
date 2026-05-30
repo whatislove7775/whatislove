@@ -106,20 +106,28 @@ export class AvatarScene3D {
     this.memojiRig  = null;
     this.morphMeshes = [];
 
+    // Try each URL in order; first success wins.
     let gltfScene: THREE.Object3D | null = null;
-    try {
-      const gltf = await new GLTFLoader().loadAsync(spec.url);
-      if (this.disposed || token !== this.loadToken) return;
-      gltfScene = gltf.scene;
-      gltfScene.traverse(o => { o.frustumCulled = false; });
-    } catch (err) {
-      console.warn("[AvatarScene3D] mesh load failed, using procedural fallback:", err);
-      if (this.disposed || token !== this.loadToken) return;
+    const urls = (spec as any).urls ?? [(spec as any).url];
+    for (const url of urls) {
+      try {
+        console.info("[AvatarScene3D] loading avatar from", url);
+        const gltf = await new GLTFLoader().loadAsync(url);
+        if (this.disposed || token !== this.loadToken) return;
+        gltfScene = gltf.scene;
+        gltfScene.traverse(o => { o.frustumCulled = false; });
+        console.info("[AvatarScene3D] loaded OK:", url);
+        break;
+      } catch (err) {
+        console.warn("[AvatarScene3D] failed:", url, err);
+      }
     }
+    if (this.disposed || token !== this.loadToken) return;
 
     if (gltfScene) {
       this.loadGltfHead(gltfScene, spec.preset);
     } else {
+      console.warn("[AvatarScene3D] all URLs failed — using procedural fallback");
       this.loadProceduralMemoji(spec.preset);
     }
 
