@@ -122,7 +122,7 @@ export function useFaceMask({ enabled, avatarId = 1, outputCanvas }: UseFaceMask
         });
         faceMesh.setOptions({
           maxNumFaces: 1,
-          refineLandmarks: false,
+          refineLandmarks: true,   // 478 points: 468 face + 10 iris landmarks
           minDetectionConfidence: 0.5,
           minTrackingConfidence: 0.5,
         });

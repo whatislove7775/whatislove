@@ -197,11 +197,10 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
     const canvas = remoteCanvasRef.current;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    if (canvas.width < 4) { canvas.width = 640; canvas.height = 480; }
-    ctx.fillStyle = "#0A0D18";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Taller canvas gives room for neck/shoulders
+    if (canvas.width < 4) { canvas.width = 640; canvas.height = 560; }
     const av = AVATARS.find(a => a.id === remoteLm.avatarId) ?? AVATARS[0];
-    drawAvatarFace(ctx, remoteLm.lm, canvas.width, canvas.height, av);
+    drawAvatarFace(ctx, remoteLm.lm, canvas.width, canvas.height, av, { drawBackground: true });
   }, [role, remoteLm]);
 
   // ── Auto-hide controls ────────────────────────────────────────
