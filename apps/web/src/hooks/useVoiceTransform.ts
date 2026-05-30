@@ -14,17 +14,16 @@ export function useVoiceTransform({ inputStream, preset }: UseVoiceTransformOpti
   const ctxRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
-    // Cleanup previous AudioContext
-    const prevCtx = ctxRef.current;
-    if (prevCtx) {
-      prevCtx.close().catch(() => {});
+    // Close previous AudioContext on every re-run
+    if (ctxRef.current) {
+      ctxRef.current.close().catch(() => {});
       ctxRef.current = null;
     }
     setTransformedStream(null);
 
     if (!inputStream) return;
 
-    // When preset is "off", return inputStream unchanged (with original video tracks)
+    // preset === "off": return inputStream unchanged
     if (preset === "off") {
       setTransformedStream(inputStream);
       return;
@@ -37,36 +36,35 @@ export function useVoiceTransform({ inputStream, preset }: UseVoiceTransformOpti
     }
 
     let cancelled = false;
-
     const audioCtx = new AudioContext();
     ctxRef.current = audioCtx;
 
     const source = audioCtx.createMediaStreamSource(new MediaStream(audioTracks));
-    const dest = audioCtx.createMediaStreamDestination();
+    const dest   = audioCtx.createMediaStreamDestination();
 
-    // Build BiquadFilter chain
+    // BiquadFilter chain: lowshelf → peaking → highshelf
     const lowshelf = audioCtx.createBiquadFilter();
-    lowshelf.type = "lowshelf";
+    lowshelf.type            = "lowshelf";
     lowshelf.frequency.value = 320;
 
     const peaking = audioCtx.createBiquadFilter();
-    peaking.type = "peaking";
+    peaking.type            = "peaking";
     peaking.frequency.value = 1000;
-    peaking.Q.value = 1.2;
+    peaking.Q.value         = 1.2;
 
     const highshelf = audioCtx.createBiquadFilter();
-    highshelf.type = "highshelf";
+    highshelf.type            = "highshelf";
     highshelf.frequency.value = 2500;
 
     if (preset === "lower") {
-      lowshelf.gain.value  = 7;
+      lowshelf.gain.value  =  7;
       peaking.gain.value   = -4;
       highshelf.gain.value = -3;
     } else {
       // "higher"
       lowshelf.gain.value  = -6;
-      peaking.gain.value   = 3;
-      highshelf.gain.value = 5;
+      peaking.gain.value   =  3;
+      highshelf.gain.value =  5;
     }
 
     source.connect(lowshelf);
@@ -74,13 +72,13 @@ export function useVoiceTransform({ inputStream, preset }: UseVoiceTransformOpti
     peaking.connect(highshelf);
     highshelf.connect(dest);
 
-    // Combine transformed audio with original video tracks
-    const transformedAudioTracks = dest.stream.getAudioTracks();
-    const videoTracks = inputStream.getVideoTracks();
-    const combined = new MediaStream([...transformedAudioTracks, ...videoTracks]);
-
     if (!cancelled) {
-      setTransformedStream(combined);
+      // Transformed audio + original video tracks from inputStream
+      const outStream = new MediaStream([
+        ...dest.stream.getAudioTracks(),
+        ...inputStream.getVideoTracks(),
+      ]);
+      setTransformedStream(outStream);
     }
 
     return () => {
