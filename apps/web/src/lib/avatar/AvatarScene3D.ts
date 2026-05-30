@@ -20,18 +20,21 @@ export interface FaceResult {
   facialTransformationMatrixes?: { data: number[] }[];
 }
 
-// ── Portrait camera — avatar is 1.0 unit tall, feet at y=0.
-// Head spans roughly y=0.80..1.00. Camera at z=0.65, y=0.86, FOV=26°
-// → visible height ≈ 0.30 units → good Memoji portrait framing.
-const CAM_POS    = new THREE.Vector3(0, 0.86, 0.65);
-const CAM_TARGET = new THREE.Vector3(0, 0.83, 0);
-const CAM_FOV    = 26;
+// ── Portrait camera ──────────────────────────────────────────────────────────
+// Avatar is 1.0 unit tall, feet at y=0. Head spans ~y=0.75..1.0.
+// Camera at z=0.62, y=0.87, FOV=24° → face fills ~80% of frame height.
+const CAM_POS    = new THREE.Vector3(0, 0.87, 0.62);
+const CAM_TARGET = new THREE.Vector3(0, 0.84, 0);
+const CAM_FOV    = 24;
 
 const hsl = (h: number, s: number, l: number) =>
   new THREE.Color().setHSL(h / 360, s / 100, l / 100);
 
-// ── Memoji rig — named Object3Ds driven by blendshapes ───────────────────────
+// ── Memoji rig ───────────────────────────────────────────────────────────────
+// All face features are parented to `headGroup` so head-tracking quaternion
+// moves eyes / brows / mouth together — exactly like Apple Memoji / FaceTime.
 interface MemojiRig {
+  headGroup:     THREE.Object3D; // whole face rotates with head tracking
   eyeGroupLeft:  THREE.Object3D;
   eyeGroupRight: THREE.Object3D;
   lidLeft:       THREE.Object3D;
@@ -39,14 +42,13 @@ interface MemojiRig {
   browLeft:      THREE.Object3D;
   browRight:     THREE.Object3D;
   mouthGroup:    THREE.Object3D;
+  jawGroup:      THREE.Object3D; // lower jaw — moves down on jawOpen
   lowerLip:      THREE.Object3D;
   cornerLeft:    THREE.Object3D;
   cornerRight:   THREE.Object3D;
-  headMesh:      THREE.Object3D;
-  // base Y positions for reset
-  browLeftBaseY:  number;
+  headMesh:      THREE.Mesh;
+  browLeftBaseY:  number;        // local-space base Y (headGroup coords)
   browRightBaseY: number;
-  mouthBaseY:     number;
 }
 
 export class AvatarScene3D {
@@ -60,8 +62,8 @@ export class AvatarScene3D {
   private morphMeshes: THREE.Mesh[]          = [];
   private memojiRig:   MemojiRig | null      = null;
 
-  private targetInfluences  = new Map<string, number>();
-  private smoothedInfluences = new Map<string, number>(); // for Memoji rig
+  private targetInfluences   = new Map<string, number>();
+  private smoothedInfluences = new Map<string, number>();
   private headQuat           = new THREE.Quaternion();
   private targetHeadQuat     = new THREE.Quaternion();
 
@@ -77,10 +79,10 @@ export class AvatarScene3D {
     this.renderer.setSize(canvas.width, canvas.height, false);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping      = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.toneMappingExposure = 1.15;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x12141f); // deep blue-charcoal
+    this.scene.background = new THREE.Color(0x12141f);
 
     const pmrem = new THREE.PMREMGenerator(this.renderer);
     this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -91,17 +93,17 @@ export class AvatarScene3D {
     this.camera.lookAt(CAM_TARGET);
 
     // Studio three-point lighting
-    const key  = new THREE.DirectionalLight(0xfff4e0, 2.4);  key.position.set( 0.6, 1.4, 1.2);
-    const fill = new THREE.DirectionalLight(0xb0c8ff, 1.0); fill.position.set(-1.2, 0.8, 0.8);
-    const rim  = new THREE.DirectionalLight(0xe0ecff, 1.4);  rim.position.set( 0,   1.6,-1.4);
-    this.scene.add(key, fill, rim, new THREE.AmbientLight(0x3a4060, 0.6));
+    const key  = new THREE.DirectionalLight(0xfff4e0, 2.6);  key.position.set( 0.6, 1.4, 1.2);
+    const fill = new THREE.DirectionalLight(0xb0c8ff, 1.1); fill.position.set(-1.2, 0.8, 0.8);
+    const rim  = new THREE.DirectionalLight(0xe0ecff, 1.5);  rim.position.set( 0,   1.6,-1.4);
+    this.scene.add(key, fill, rim, new THREE.AmbientLight(0x3a4060, 0.7));
   }
 
   // ── Avatar loading ──────────────────────────────────────────────────────────
 
   async loadAvatar(spec: AvatarSpec): Promise<void> {
     const token = ++this.loadToken;
-    this.memojiRig = null;
+    this.memojiRig  = null;
     this.morphMeshes = [];
 
     let root: THREE.Object3D;
@@ -122,14 +124,12 @@ export class AvatarScene3D {
       isMemoji = true;
     }
 
-    // Hide hands for full-body RPM avatars
     root.getObjectByName("LeftHand")?.scale.set(0, 0, 0);
     root.getObjectByName("RightHand")?.scale.set(0, 0, 0);
 
-    // ── Normalise to 1.0 unit tall, feet at y=0 ──────────────────────────
+    // Normalise to 1.0 unit tall, feet at y=0
     if (this.avatarRoot) this.scene.remove(this.avatarRoot);
     this.scene.add(root);
-    // Render pass → SkinnedMesh world matrices updated
     this.renderer.render(this.scene, this.camera);
 
     const box  = new THREE.Box3().setFromObject(root);
@@ -138,7 +138,6 @@ export class AvatarScene3D {
     if (size.y > 0.001) {
       const s = 1.0 / size.y;
       root.scale.multiplyScalar(s);
-      // Second render → flush SkinnedMesh at new scale
       this.renderer.render(this.scene, this.camera);
       const b2 = new THREE.Box3().setFromObject(root);
       root.position.set(
@@ -148,7 +147,6 @@ export class AvatarScene3D {
       );
     }
 
-    // Swap previous model
     if (this.avatarRoot && this.avatarRoot !== root) {
       this.scene.remove(this.avatarRoot);
       this.disposeObject(this.avatarRoot);
@@ -156,7 +154,6 @@ export class AvatarScene3D {
     this.avatarRoot = root;
 
     if (!isMemoji) {
-      // Collect RPM morph meshes + head bone
       this.headBone = root.getObjectByName("Head") ?? root.getObjectByName("head") ?? null;
       root.traverse(o => {
         const m = o as THREE.Mesh;
@@ -165,23 +162,11 @@ export class AvatarScene3D {
         }
       });
     } else {
-      // For Memoji the "head bone" is the sphere named "HeadMesh"
-      this.headBone = root.getObjectByName("HeadMesh") ?? null;
+      // HeadGroup contains all face features — rotate it for head tracking
+      this.headBone = root.getObjectByName("HeadGroup") ?? null;
+      // Brow base positions stored in headGroup-local coords at build time — no recalibration needed
     }
 
-    // Recalibrate rig positions after normalisation
-    if (this.memojiRig) {
-      const scale = root.scale.x; // uniform scale applied during normalisation
-      // Recompute world-space base positions from rig
-      const browLW = new THREE.Vector3(); this.memojiRig.browLeft.getWorldPosition(browLW);
-      const browRW = new THREE.Vector3(); this.memojiRig.browRight.getWorldPosition(browRW);
-      const mouthW = new THREE.Vector3(); this.memojiRig.mouthGroup.getWorldPosition(mouthW);
-      this.memojiRig.browLeftBaseY  = browLW.y;
-      this.memojiRig.browRightBaseY = browRW.y;
-      this.memojiRig.mouthBaseY     = mouthW.y;
-    }
-
-    // Reset portrait camera
     this.camera.fov    = CAM_FOV;
     this.camera.aspect = this.renderer.domElement.width / this.renderer.domElement.height;
     this.camera.position.copy(CAM_POS);
@@ -191,7 +176,7 @@ export class AvatarScene3D {
     this.smoothedInfluences.clear();
   }
 
-  // ── Material tinting (RPM glTF only) ────────────────────────────────────────
+  // ── Material tinting (RPM glTF) ─────────────────────────────────────────────
 
   private applyPreset(root: THREE.Object3D, p: AvatarPreset) {
     root.traverse(o => {
@@ -202,26 +187,15 @@ export class AvatarScene3D {
         const mat = raw as THREE.MeshStandardMaterial;
         if (!mat?.color) continue;
         const n = (mat.name || m.name || "").toLowerCase();
-
         if (/hair|beard|brow/.test(n)) {
-          // Hair: strong recolour for a clear identity
-          mat.color.lerp(hsl(p.hairH, p.hairS, p.hairL), 0.85);
-          mat.needsUpdate = true;
+          mat.color.lerp(hsl(p.hairH, p.hairS, p.hairL), 0.85); mat.needsUpdate = true;
         } else if (/outfit|shirt|jacket|top|cloth|bottom|pants|shoe|sleeve/.test(n)) {
-          // Outfit: strong recolour
-          mat.color.lerp(hsl(p.shirtH, p.shirtS, p.shirtL), 0.78);
-          mat.needsUpdate = true;
+          mat.color.lerp(hsl(p.shirtH, p.shirtS, p.shirtL), 0.78); mat.needsUpdate = true;
         } else if (/iris/.test(n) || (/eye/.test(n) && !/brow|lash/.test(n))) {
-          // Iris: tint toward preset eye colour
-          mat.color.lerp(hsl(p.eyeH, p.eyeS, p.eyeL), 0.55);
-          mat.needsUpdate = true;
-        } else if ((/skin|head|body|face/.test(n)) && !/eye|teeth|tongue|hair/.test(n)) {
-          // Skin: gentle tint — presets read as different people while the
-          // RPM PBR skin texture/shading stays dominant and realistic.
-          mat.color.lerp(hsl(p.skinH, p.skinS, p.skinL), 0.28);
-          mat.needsUpdate = true;
+          mat.color.lerp(hsl(p.eyeH, p.eyeS, p.eyeL), 0.55); mat.needsUpdate = true;
+        } else if (/skin|head|body|face/.test(n) && !/eye|teeth|tongue|hair/.test(n)) {
+          mat.color.lerp(hsl(p.skinH, p.skinS, p.skinL), 0.28); mat.needsUpdate = true;
         }
-        // teeth, lashes, tongue → untouched
       }
     });
   }
@@ -234,7 +208,7 @@ export class AvatarScene3D {
     const cats = result.faceBlendshapes?.[0]?.categories;
     if (cats) {
       for (const { score, categoryName } of cats) {
-        // Mirror L↔R so the avatar mimics a reflection
+        // Mirror L↔R: camera is a reflection, avatar must mimic it
         let name = categoryName;
         if      (name.includes("Left"))  name = name.replace("Left",  "Right");
         else if (name.includes("Right")) name = name.replace("Right", "Left");
@@ -255,36 +229,32 @@ export class AvatarScene3D {
   // ── Render loop ─────────────────────────────────────────────────────────────
 
   private lastFrameMs = 0;
-  private static readonly FRAME_INTERVAL = 1000 / 30; // cap render at 30 fps
+  private static readonly FRAME_INTERVAL = 1000 / 30;
 
   private animate = () => {
     if (this.disposed) return;
     this.raf = requestAnimationFrame(this.animate);
 
-    // Cap to 30 fps — captureStream samples at 24, so 60 fps rendering just
-    // wastes GPU and steals cycles from the video encoder (→ call latency).
     const nowMs = performance.now();
     if (nowMs - this.lastFrameMs < AvatarScene3D.FRAME_INTERVAL) return;
     this.lastFrameMs = nowMs;
 
     const dt = this.clock.getDelta();
-    const k  = 1 - Math.exp(-dt * 18); // smooth follow
+    const k  = 1 - Math.exp(-dt * 18);
 
-    // Head bone rotation (works for both RPM and Memoji)
+    // Head tracking — rotates the whole HeadGroup (Memoji) or Head bone (RPM)
     if (this.headBone) {
       this.headQuat.slerp(this.targetHeadQuat, k);
       this.headBone.quaternion.copy(this.headQuat);
     }
 
     if (this.memojiRig) {
-      // ── Smooth influences for Memoji rig ──────────────────
       for (const [name, target] of Array.from(this.targetInfluences)) {
         const cur = this.smoothedInfluences.get(name) ?? 0;
         this.smoothedInfluences.set(name, cur + (target - cur) * k);
       }
       this.driveMemojiRig();
     } else {
-      // ── Drive RPM morphTargets ─────────────────────────────
       for (const mesh of this.morphMeshes) {
         const dict = mesh.morphTargetDictionary!;
         const infl = mesh.morphTargetInfluences!;
@@ -298,75 +268,70 @@ export class AvatarScene3D {
     this.renderer.render(this.scene, this.camera);
   };
 
-  private get s(){ return this.smoothedInfluences; }
+  private get s() { return this.smoothedInfluences; }
 
   private driveMemojiRig() {
     const rig = this.memojiRig!;
     const get = (n: string) => this.s.get(n) ?? 0;
-    const scale = this.avatarRoot?.scale.x ?? 1;
 
-    // ── Eyes: blink (scale Y), wide ──────────────────────────
-    const blinkL = get("eyeBlinkLeft");
-    const blinkR = get("eyeBlinkRight");
-    const wideL  = get("eyeWideLeft");
-    const wideR  = get("eyeWideRight");
+    // ── Eyes: blink / wide / squint ────────────────────────────────────────
+    const blinkL  = get("eyeBlinkLeft");
+    const blinkR  = get("eyeBlinkRight");
+    const wideL   = get("eyeWideLeft");
+    const wideR   = get("eyeWideRight");
     const squintL = get("eyeSquintLeft");
     const squintR = get("eyeSquintRight");
 
-    rig.eyeGroupLeft.scale.y  = Math.max(0.05, 1 + wideL * 0.25 - blinkL - squintL * 0.35);
-    rig.eyeGroupRight.scale.y = Math.max(0.05, 1 + wideR * 0.25 - blinkR - squintR * 0.35);
+    // scaleY: 1.0 = open, 0 = closed. blinkL drives the close, wideL pushes open.
+    rig.eyeGroupLeft.scale.y  = Math.max(0.04, 1 + wideL * 0.30 - blinkL * 1.08 - squintL * 0.38);
+    rig.eyeGroupRight.scale.y = Math.max(0.04, 1 + wideR * 0.30 - blinkR * 1.08 - squintR * 0.38);
 
-    // Lid position (goes down on blink, up on wide)
-    rig.lidLeft.position.y  =  0.012 * blinkL - 0.006 * wideL;
-    rig.lidRight.position.y =  0.012 * blinkR - 0.006 * wideR;
+    // Lid slides down over iris on blink, retracts on wide
+    rig.lidLeft.position.y  = 0.015 * blinkL - 0.007 * wideL;
+    rig.lidRight.position.y = 0.015 * blinkR - 0.007 * wideR;
 
-    // ── Brows: down / up ──────────────────────────────────────
-    const browDeltaL = (get("browOuterUpLeft") + get("browInnerUp") * 0.5) * 0.016 * scale
-                     - get("browDownLeft") * 0.014 * scale;
-    const browDeltaR = (get("browOuterUpRight") + get("browInnerUp") * 0.5) * 0.016 * scale
-                     - get("browDownRight") * 0.014 * scale;
+    // ── Eyebrows ────────────────────────────────────────────────────────────
+    // All positions in headGroup-local coords
+    const bdL = (get("browOuterUpLeft")  + get("browInnerUp") * 0.5) * 0.018 - get("browDownLeft")  * 0.016;
+    const bdR = (get("browOuterUpRight") + get("browInnerUp") * 0.5) * 0.018 - get("browDownRight") * 0.016;
 
-    rig.browLeft.position.y  = rig.browLeftBaseY  + browDeltaL;
-    rig.browRight.position.y = rig.browRightBaseY + browDeltaR;
+    rig.browLeft.position.y  = rig.browLeftBaseY  + bdL;
+    rig.browRight.position.y = rig.browRightBaseY + bdR;
 
-    // Brow inner-up tilts inward ends up
-    rig.browLeft.rotation.z  =  0.15 + get("browInnerUp") * 0.20 - get("browDownLeft") * 0.15;
-    rig.browRight.rotation.z = -0.15 - get("browInnerUp") * 0.20 + get("browDownRight") * 0.15;
+    // Inner-up tilts the inner brow end upward (worried look)
+    rig.browLeft.rotation.z  =  0.15 + get("browInnerUp") * 0.22 - get("browDownLeft")  * 0.16;
+    rig.browRight.rotation.z = -0.15 - get("browInnerUp") * 0.22 + get("browDownRight") * 0.16;
 
-    // ── Mouth / jaw ───────────────────────────────────────────
-    const jawOpen   = get("jawOpen");
-    const smileL    = get("mouthSmileLeft");
-    const smileR    = get("mouthSmileRight");
-    const frownL    = get("mouthFrownLeft");
-    const frownR    = get("mouthFrownRight");
-    const pucker    = get("mouthPucker");
-    const funnel    = get("mouthFunnel");
+    // ── Jaw / mouth ─────────────────────────────────────────────────────────
+    const jawOpen = get("jawOpen");
+    const smileL  = get("mouthSmileLeft");
+    const smileR  = get("mouthSmileRight");
+    const frownL  = get("mouthFrownLeft");
+    const frownR  = get("mouthFrownRight");
+    const pucker  = get("mouthPucker");
+    const funnel  = get("mouthFunnel");
 
-    // Jaw open: move mouth group down
-    rig.mouthGroup.position.y = rig.mouthBaseY - jawOpen * 0.018 * scale;
+    // JawGroup drops down — lower lip + lower teeth follow
+    rig.jawGroup.position.y = -jawOpen * 0.022;
 
-    // Lower lip drops further on jawOpen
-    rig.lowerLip.position.y = -0.007 * scale - jawOpen * 0.010 * scale;
-    rig.lowerLip.scale.x    = 1 + jawOpen * 0.25 + funnel * 0.3;
+    // Lower lip shifts further on open, widens on funnel
+    rig.lowerLip.position.y = -0.007 - jawOpen * 0.008;
+    rig.lowerLip.scale.x    = 1 + jawOpen * 0.25 + funnel * 0.30;
 
-    // Upper lip on pucker/funnel
+    // Upper lip: pucker narrows, funnel widens
     const upperLip = rig.mouthGroup.getObjectByName("UpperLip");
-    if (upperLip) upperLip.scale.x = 1 - pucker * 0.35 + funnel * 0.2;
+    if (upperLip) upperLip.scale.x = 1 - pucker * 0.35 + funnel * 0.20;
 
-    // Corners: smile moves up, frown moves down
-    rig.cornerLeft.position.y  = (smileL - frownL) * 0.014 * scale;
-    rig.cornerRight.position.y = (smileR - frownR) * 0.014 * scale;
+    // Corners: smile up, frown down, smile pulls outward
+    rig.cornerLeft.position.y  = (smileL - frownL) * 0.016;
+    rig.cornerRight.position.y = (smileR - frownR) * 0.016;
+    rig.cornerLeft.position.x  = -0.034 - smileL * 0.009;
+    rig.cornerRight.position.x =  0.034 + smileR * 0.009;
 
-    // Corner horizontal pull on smile
-    rig.cornerLeft.position.x  = -0.028 * scale - smileL * 0.008 * scale;
-    rig.cornerRight.position.x =  0.028 * scale + smileR * 0.008 * scale;
-
-    // ── Cheek puff: scale head mesh slightly ─────────────────
+    // ── Cheek puff ──────────────────────────────────────────────────────────
     const puff = get("cheekPuff");
-    if (rig.headMesh) {
-      rig.headMesh.scale.x = 0.94 + puff * 0.08;
-      rig.headMesh.scale.z = 0.90 + puff * 0.08;
-    }
+    rig.headMesh.scale.x = 0.975 + puff * 0.08;
+    rig.headMesh.scale.z = 0.900 + puff * 0.08;
   }
 
   start() {
@@ -390,274 +355,318 @@ export class AvatarScene3D {
     this.camera.updateProjectionMatrix();
   }
 
-  // ── Memoji procedural face ──────────────────────────────────────────────────
-  // Apple Memoji proportions: large expressive eyes (~38% face width each),
-  // small delicate nose, defined lips, thick arched brows.
-  // Built to 1.0 unit total height so normalisation leaves it unchanged.
-  // Head centre at y≈0.87 — matches the portrait camera target (y=0.83).
+  // ── Procedural Memoji face ──────────────────────────────────────────────────
+  //
+  // Design principles (Apple Memoji reference):
+  //  • HeadGroup origin = head centre (root y=0.872). All features are parented
+  //    here so head-tracking quaternion animates the whole face as one unit.
+  //  • Large expressive eyes (~40% face width), flat-oval sclera, iris dome,
+  //    dual catchlights, arched eyelashes.
+  //  • Arched 4-segment brows with inner-up tilt.
+  //  • Mouth has cavity + teeth (upper fixed, lower in JawGroup that drops).
+  //  • Built to ~1.0 unit total height so the normalisation pass is a no-op.
 
   private buildMemoji(p: AvatarPreset): { mesh: THREE.Group; rig: MemojiRig } {
     const g = new THREE.Group();
     g.name = "MemojiRoot";
 
-    // ── Materials ────────────────────────────────────────────
-    const skinMat = new THREE.MeshStandardMaterial({
-      color: hsl(p.skinH, p.skinS, p.skinL),
-      roughness: 0.42, metalness: 0,
-    });
-    const hairMat = new THREE.MeshStandardMaterial({
-      color: hsl(p.hairH, p.hairS, p.hairL),
-      roughness: 0.78,
-    });
-    const shirtMat = new THREE.MeshStandardMaterial({
-      color: hsl(p.shirtH, p.shirtS, p.shirtL),
-      roughness: 0.72,
-    });
-    const scleraMat = new THREE.MeshStandardMaterial({
-      color: 0xf8faff, roughness: 0.05, metalness: 0,
-    });
-    const irisMat = new THREE.MeshStandardMaterial({
-      color: hsl(p.eyeH, p.eyeS, Math.min(p.eyeL + 10, 65)),
-      roughness: 0.04, metalness: 0.08,
-    });
+    // ── Materials ────────────────────────────────────────────────────────────
+    const skinMat  = new THREE.MeshStandardMaterial({ color: hsl(p.skinH,  p.skinS,  p.skinL),  roughness: 0.36, metalness: 0 });
+    const hairMat  = new THREE.MeshStandardMaterial({ color: hsl(p.hairH,  p.hairS,  p.hairL),  roughness: 0.78 });
+    const shirtMat = new THREE.MeshStandardMaterial({ color: hsl(p.shirtH, p.shirtS, p.shirtL), roughness: 0.72 });
+    const scleraMat = new THREE.MeshStandardMaterial({ color: 0xf8faff, roughness: 0.04, metalness: 0 });
+    const irisMat  = new THREE.MeshStandardMaterial({ color: hsl(p.eyeH, p.eyeS, Math.min(p.eyeL + 10, 65)), roughness: 0.04, metalness: 0.10 });
     const pupilMat = new THREE.MeshBasicMaterial({ color: 0x060606 });
-    const lipMat = new THREE.MeshStandardMaterial({
-      color: hsl(p.skinH, Math.min(p.skinS * 0.6, 40), p.skinL * 0.68),
-      roughness: 0.32,
-    });
-    const lidMat = new THREE.MeshStandardMaterial({
-      color: hsl(p.skinH, p.skinS * 0.85, p.skinL * 0.86),
-      roughness: 0.45,
-    });
-    const invisMat = new THREE.MeshBasicMaterial({ visible: false });
+    const lipMat   = new THREE.MeshStandardMaterial({ color: hsl(p.skinH, Math.min(p.skinS * 0.6, 40), p.skinL * 0.66), roughness: 0.26 });
+    const lidMat   = new THREE.MeshStandardMaterial({ color: hsl(p.skinH, p.skinS * 0.85, p.skinL * 0.86), roughness: 0.45 });
+    const lashMat  = new THREE.MeshBasicMaterial({ color: 0x0a0a0a });
+    const teethMat = new THREE.MeshStandardMaterial({ color: 0xf2ede5, roughness: 0.26 });
+    const cavityMat = new THREE.MeshBasicMaterial({ color: 0x160406 });
+    const invisMat  = new THREE.MeshBasicMaterial({ visible: false });
 
-    // ── Invisible anchor keeps bounding box at y=0..1 ────────
+    // ── Invisible anchor — keeps total bounding box y ∈ [0, 1] ──────────────
     const anchor = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.64, 3), invisMat);
     anchor.position.set(0, 0.32, 0);
     g.add(anchor);
 
-    // ── Shirt / body ─────────────────────────────────────────
+    // ── Shirt ────────────────────────────────────────────────────────────────
     const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.185, 0.22, 0.115, 40), shirtMat);
     torso.position.set(0, 0.607, 0);
     g.add(torso);
-
     const shoulders = new THREE.Mesh(new THREE.CylinderGeometry(0.265, 0.235, 0.068, 48), shirtMat);
     shoulders.position.set(0, 0.661, 0);
     g.add(shoulders);
-
-    // Collar / shirt neckline
     const collar = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.018, 12, 40), shirtMat);
     collar.rotation.x = Math.PI / 2;
     collar.position.set(0, 0.695, 0);
     g.add(collar);
 
-    // ── Neck ─────────────────────────────────────────────────
+    // ── Neck ─────────────────────────────────────────────────────────────────
     const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.062, 0.125, 28), skinMat);
     neck.position.set(0, 0.733, 0);
     g.add(neck);
 
-    // ── Head ─────────────────────────────────────────────────
-    // Apple Memoji heads are wide and round, slightly flatter in depth.
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.118, 96, 72), skinMat);
+    // ── HeadGroup — all face features live here ──────────────────────────────
+    // Origin = head centre at root y=0.872.
+    // Head tracking quaternion is applied to this group each frame.
+    const headGroup = new THREE.Group();
+    headGroup.name = "HeadGroup";
+    headGroup.position.set(0, 0.872, 0);
+    g.add(headGroup);
+
+    // Head sphere (headGroup-local coords; origin = head centre)
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.120, 96, 72), skinMat);
     head.name = "HeadMesh";
     head.scale.set(0.975, 0.985, 0.900);
-    head.position.set(0, 0.872, 0);
-    g.add(head);
+    headGroup.add(head);
 
-    // Slight jaw/chin definition — a slightly flattened sub-sphere at the bottom
-    const chin = new THREE.Mesh(new THREE.SphereGeometry(0.072, 40, 28, 0, Math.PI * 2, Math.PI * 0.55, Math.PI * 0.50), skinMat);
+    // Chin / jaw definition
+    const chin = new THREE.Mesh(
+      new THREE.SphereGeometry(0.072, 40, 28, 0, Math.PI * 2, Math.PI * 0.55, Math.PI * 0.50),
+      skinMat,
+    );
     chin.scale.set(0.88, 1.0, 0.82);
-    chin.position.set(0, 0.772, 0.018);
-    g.add(chin);
+    chin.position.set(0, -0.100, 0.018);
+    headGroup.add(chin);
 
-    // ── Ears ─────────────────────────────────────────────────
+    // Ears
     for (const sx of [-1, 1]) {
       const ear = new THREE.Mesh(new THREE.SphereGeometry(0.036, 28, 20), skinMat);
       ear.scale.set(0.44, 0.66, 0.48);
-      ear.position.set(sx * 0.114, 0.872, 0.008);
-      g.add(ear);
+      ear.position.set(sx * 0.116, 0, 0.008);
+      headGroup.add(ear);
     }
 
-    // ── Hair ─────────────────────────────────────────────────
-    // Top cap
+    // Hair cap
     const cap = new THREE.Mesh(
-      new THREE.SphereGeometry(0.124, 72, 40, 0, Math.PI * 2, 0, Math.PI * 0.535),
+      new THREE.SphereGeometry(0.126, 72, 40, 0, Math.PI * 2, 0, Math.PI * 0.535),
       hairMat,
     );
     cap.scale.set(0.985, 1.085, 0.94);
-    cap.position.set(0, 0.870, -0.010);
-    g.add(cap);
+    cap.position.set(0, -0.002, -0.010);
+    headGroup.add(cap);
 
-    // Side volumes — give the impression of styled hair
+    // Hair side volumes
     for (const sx of [-1, 1]) {
       const side = new THREE.Mesh(new THREE.SphereGeometry(0.062, 32, 24), hairMat);
       side.scale.set(0.58, 0.82, 0.52);
-      side.position.set(sx * 0.118, 0.920, -0.024);
-      g.add(side);
+      side.position.set(sx * 0.120, 0.048, -0.024);
+      headGroup.add(side);
     }
 
-    // ── Eyes (large — Apple Memoji style) ────────────────────
-    // Each eye is ≈38% of half-face-width. Eyes are flat ovals, not spheres.
-    const eyeGroupLeft  = this.makeEye(+1, p, scleraMat, irisMat, pupilMat, lidMat, g);
-    const eyeGroupRight = this.makeEye(-1, p, scleraMat, irisMat, pupilMat, lidMat, g);
-
-    // lid refs (inside each eye group, named "Lid")
+    // ── Eyes (large — Apple Memoji proportions) ───────────────────────────────
+    const eyeGroupLeft  = this.makeEye(+1, p, scleraMat, irisMat, pupilMat, lidMat, lashMat, headGroup);
+    const eyeGroupRight = this.makeEye(-1, p, scleraMat, irisMat, pupilMat, lidMat, lashMat, headGroup);
     const lidLeft  = eyeGroupLeft.getObjectByName("Lid")  as THREE.Object3D;
     const lidRight = eyeGroupRight.getObjectByName("Lid") as THREE.Object3D;
 
-    // ── Eyebrows ─────────────────────────────────────────────
-    const browY = 0.928;
-    const browLeft  = this.makeBrow( 1, hairMat, browY, g);
-    const browRight = this.makeBrow(-1, hairMat, browY, g);
+    // ── Eyebrows ──────────────────────────────────────────────────────────────
+    const browLeft  = this.makeBrow( 1, hairMat, 0.056, headGroup);
+    const browRight = this.makeBrow(-1, hairMat, 0.056, headGroup);
     browLeft.name  = "BrowLeft";
     browRight.name = "BrowRight";
 
-    // ── Nose — subtle, Apple-style (just nostrils + tiny tip) ──
-    // Nose tip
-    const noseTip = new THREE.Mesh(new THREE.SphereGeometry(0.012, 20, 14), skinMat);
-    noseTip.scale.set(1.15, 0.68, 1.3);
-    noseTip.position.set(0, 0.858, 0.114);
-    g.add(noseTip);
-    // Nostrils
+    // ── Nose — minimal (Apple-style: just tip + nostril hints) ───────────────
+    const noseTip = new THREE.Mesh(new THREE.SphereGeometry(0.013, 20, 14), skinMat);
+    noseTip.scale.set(1.15, 0.65, 1.3);
+    noseTip.position.set(0, -0.014, 0.116);
+    headGroup.add(noseTip);
     for (const nx of [-1, 1]) {
       const ns = new THREE.Mesh(new THREE.SphereGeometry(0.010, 16, 12), skinMat);
       ns.scale.set(0.85, 0.52, 1.05);
-      ns.position.set(nx * 0.015, 0.852, 0.115);
-      g.add(ns);
+      ns.position.set(nx * 0.015, -0.020, 0.116);
+      headGroup.add(ns);
     }
 
-    // ── Mouth ────────────────────────────────────────────────
+    // ── Mouth ─────────────────────────────────────────────────────────────────
     const mouthGroup = new THREE.Group();
     mouthGroup.name = "MouthGroup";
-    mouthGroup.position.set(0, 0.843, 0.105);
-    g.add(mouthGroup);
+    mouthGroup.position.set(0, -0.029, 0.105); // headGroup-local
+    headGroup.add(mouthGroup);
 
+    // Dark mouth cavity — visible when jaw opens
+    const cavity = new THREE.Mesh(new THREE.SphereGeometry(0.032, 28, 18), cavityMat);
+    cavity.scale.set(1.05, 0.55, 0.80);
+    cavity.position.set(0, 0, -0.007);
+    mouthGroup.add(cavity);
+
+    // Upper teeth (stay with upper lip)
+    const teethTop = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.028, 0.028, 0.010, 24, 1, false, Math.PI * 0.15, Math.PI * 0.70),
+      teethMat,
+    );
+    teethTop.rotation.x = Math.PI / 2;
+    teethTop.position.set(0, 0.006, -0.002);
+    mouthGroup.add(teethTop);
+
+    // Upper lip
     const upperLip = new THREE.Mesh(new THREE.SphereGeometry(0.025, 40, 22), lipMat);
     upperLip.name = "UpperLip";
     upperLip.scale.set(1.88, 0.52, 0.88);
     upperLip.position.set(0, 0.007, 0);
     mouthGroup.add(upperLip);
 
-    // Cupid's bow dip (centre of upper lip slightly recessed)
+    // Cupid's bow dip
     const cupid = new THREE.Mesh(new THREE.SphereGeometry(0.010, 16, 12), lipMat);
     cupid.scale.set(0.6, 0.45, 0.7);
-    cupid.position.set(0, 0.014, -0.002);
+    cupid.position.set(0, 0.013, -0.002);
     mouthGroup.add(cupid);
+
+    // ── JawGroup — lower jaw drops on jawOpen ─────────────────────────────────
+    const jawGroup = new THREE.Group();
+    jawGroup.name = "JawGroup";
+    mouthGroup.add(jawGroup);
+
+    // Lower teeth (in jawGroup)
+    const teethBot = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.026, 0.026, 0.009, 24, 1, false, Math.PI * 0.20, Math.PI * 0.60),
+      teethMat,
+    );
+    teethBot.rotation.x = Math.PI / 2;
+    teethBot.position.set(0, -0.006, -0.002);
+    jawGroup.add(teethBot);
 
     const lowerLip = new THREE.Mesh(new THREE.SphereGeometry(0.028, 40, 22), lipMat);
     lowerLip.name = "LowerLip";
     lowerLip.scale.set(1.78, 0.58, 0.92);
     lowerLip.position.set(0, -0.007, 0);
-    mouthGroup.add(lowerLip);
+    jawGroup.add(lowerLip);
 
     const cornerLeft = new THREE.Mesh(new THREE.SphereGeometry(0.013, 18, 14), lipMat);
     cornerLeft.name = "CornerLeft";
     cornerLeft.scale.set(0.68, 0.60, 0.68);
     cornerLeft.position.set(-0.034, 0, 0);
-    mouthGroup.add(cornerLeft);
+    jawGroup.add(cornerLeft);
 
     const cornerRight = new THREE.Mesh(new THREE.SphereGeometry(0.013, 18, 14), lipMat);
     cornerRight.name = "CornerRight";
     cornerRight.scale.set(0.68, 0.60, 0.68);
     cornerRight.position.set( 0.034, 0, 0);
-    mouthGroup.add(cornerRight);
+    jawGroup.add(cornerRight);
 
     const rig: MemojiRig = {
+      headGroup,
       eyeGroupLeft, eyeGroupRight,
       lidLeft, lidRight,
       browLeft, browRight,
-      mouthGroup, lowerLip, cornerLeft, cornerRight,
+      mouthGroup, jawGroup, lowerLip, cornerLeft, cornerRight,
       headMesh: head,
-      browLeftBaseY:  browLeft.position.y,
+      browLeftBaseY:  browLeft.position.y,  // headGroup-local Y
       browRightBaseY: browRight.position.y,
-      mouthBaseY:     mouthGroup.position.y,
     };
 
     return { mesh: g, rig };
   }
 
+  // ── Eye construction ─────────────────────────────────────────────────────────
+  // Positions are in headGroup-local coords (origin = head centre at root y=0.872).
+  // Eyes sit at y=+0.025 (slightly above equator), x=±0.054, z=+0.099.
+  //
+  // Layers (front to back): catchlights → pupil → iris rim → iris dome → sclera
+  // Lid sweeps down over the iris on blink. Lash arc sits above the lid.
+
   private makeEye(
-    sx: number, // +1 = avatar-left, -1 = avatar-right
+    sx: number, // +1 = avatar-left (viewer's right)
     p: AvatarPreset,
     scleraMat: THREE.Material, irisMat: THREE.Material,
-    pupilMat: THREE.Material, lidMat: THREE.Material,
-    parent: THREE.Group,
+    pupilMat: THREE.Material,  lidMat: THREE.Material,
+    lashMat: THREE.Material,
+    parent: THREE.Object3D,
   ): THREE.Group {
     const label = sx > 0 ? "Left" : "Right";
     const grp = new THREE.Group();
     grp.name = `EyeGroup${label}`;
-    // Camera-left = avatar-right: negate sx so it mirrors correctly
-    grp.position.set(-sx * 0.054, 0.897, 0.099);
+    // Camera is a mirror: negate sx so avatar-left appears on viewer's right
+    grp.position.set(-sx * 0.054, 0.025, 0.099);
     parent.add(grp);
 
-    // ── Sclera: wide flat oval (Apple Memoji style) ───────────
-    const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.040, 48, 36), scleraMat);
-    sclera.scale.set(1.0, 1.08, 0.52);   // wide × tall × flat
+    // Sclera — wide flat oval (Apple Memoji: ~40% of face width per eye)
+    const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.041, 48, 36), scleraMat);
+    sclera.scale.set(1.0, 1.08, 0.52);
     grp.add(sclera);
 
-    // ── Iris ─────────────────────────────────────────────────
-    const iris = new THREE.Mesh(new THREE.CircleGeometry(0.026, 48), irisMat);
-    iris.position.z = 0.021;
-    grp.add(iris);
+    // Iris dome — slight 3-D depth, looks glassy
+    const irisDome = new THREE.Mesh(
+      new THREE.SphereGeometry(0.026, 48, 24, 0, Math.PI * 2, 0, Math.PI * 0.42),
+      irisMat,
+    );
+    irisDome.rotation.x = Math.PI; // dome faces +z
+    irisDome.position.z = 0.019;
+    grp.add(irisDome);
 
-    // Iris rim (slightly darker edge)
+    // Limbal ring (slightly darker edge of iris)
     const irisRimMat = new THREE.MeshBasicMaterial({
-      color: hsl(p.eyeH, Math.max(p.eyeS - 10, 10), Math.max(p.eyeL - 18, 8)),
+      color: hsl(p.eyeH, Math.max(p.eyeS - 8, 10), Math.max(p.eyeL - 22, 6)),
     });
     const irisRim = new THREE.Mesh(new THREE.RingGeometry(0.023, 0.026, 48), irisRimMat);
-    irisRim.position.z = 0.0215;
+    irisRim.position.z = 0.0195;
     grp.add(irisRim);
 
-    // ── Pupil ─────────────────────────────────────────────────
+    // Pupil
     const pupil = new THREE.Mesh(new THREE.CircleGeometry(0.014, 40), pupilMat);
-    pupil.position.z = 0.0220;
+    pupil.position.z = 0.0200;
     grp.add(pupil);
 
-    // ── Catchlight (two specular dots for realism) ────────────
+    // Catchlights — two dots for glass-like shine (key to the Memoji look)
     const hlMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const hl1 = new THREE.Mesh(new THREE.CircleGeometry(0.0055, 16), hlMat);
-    hl1.position.set(0.009, 0.010, 0.0225);
+    const hl1 = new THREE.Mesh(new THREE.CircleGeometry(0.0056, 16), hlMat);
+    hl1.position.set( 0.008,  0.009, 0.0206);
     grp.add(hl1);
     const hl2 = new THREE.Mesh(new THREE.CircleGeometry(0.0028, 12), hlMat);
-    hl2.position.set(-0.011, -0.007, 0.0225);
+    hl2.position.set(-0.010, -0.006, 0.0206);
     grp.add(hl2);
 
-    // ── Upper eyelid cap (covers top of sclera, skin-coloured) ─
-    const lidGeo = new THREE.SphereGeometry(0.042, 48, 20, 0, Math.PI * 2, 0, Math.PI * 0.48);
+    // Upper eyelid (skin-coloured hemisphere, sweeps over iris on blink)
+    const lidGeo = new THREE.SphereGeometry(0.043, 48, 20, 0, Math.PI * 2, 0, Math.PI * 0.47);
     const lid = new THREE.Mesh(lidGeo, lidMat);
     lid.name = "Lid";
-    lid.rotation.x = Math.PI;          // flip so hemisphere faces downward
-    lid.scale.set(0.97, 0.78, 0.56);
-    lid.position.set(0, 0.002, 0.008);
+    lid.rotation.x = Math.PI; // hemisphere opens downward
+    lid.scale.set(0.97, 0.76, 0.54);
+    lid.position.set(0, 0.002, 0.009);
     grp.add(lid);
 
-    // ── Lower lid hint ────────────────────────────────────────
-    const lLidGeo = new THREE.SphereGeometry(0.042, 48, 10, 0, Math.PI * 2, Math.PI * 0.52, Math.PI * 0.12);
+    // Lower lid hint
+    const lLidGeo = new THREE.SphereGeometry(0.043, 48, 10, 0, Math.PI * 2, Math.PI * 0.52, Math.PI * 0.11);
     const lLid = new THREE.Mesh(lLidGeo, lidMat);
-    lLid.scale.set(0.97, 0.55, 0.52);
-    lLid.position.set(0, 0, 0.007);
+    lLid.scale.set(0.97, 0.54, 0.50);
+    lLid.position.set(0, 0, 0.008);
     grp.add(lLid);
+
+    // Eyelashes — thick arc above the eye (signature Apple Memoji feature)
+    const lashGeo = new THREE.TorusGeometry(0.038, 0.0050, 6, 44, Math.PI);
+    const lash = new THREE.Mesh(lashGeo, lashMat);
+    lash.rotation.z = Math.PI; // arc opens downward over the eye
+    lash.scale.set(0.96, 0.82, 0.36);
+    lash.position.set(0, 0.006, 0.016);
+    grp.add(lash);
 
     return grp;
   }
 
-  private makeBrow(sx: number, mat: THREE.Material, worldY: number, parent: THREE.Group): THREE.Group {
+  // ── Eyebrow construction ────────────────────────────────────────────────────
+  // 4-segment arched brow in headGroup-local coords.
+
+  private makeBrow(
+    sx: number,              // +1 = avatar-left
+    mat: THREE.Material,
+    localY: number,          // headGroup-local Y position
+    parent: THREE.Object3D,
+  ): THREE.Group {
     const grp = new THREE.Group();
-    // Camera-left = avatar-right
-    grp.position.set(-sx * 0.054, worldY, 0.093);
-    grp.rotation.z = sx * 0.16;   // natural arch tilt
+    grp.position.set(-sx * 0.054, localY, 0.093);
+    grp.rotation.z = sx * 0.16;
     parent.add(grp);
 
-    // Four blobs: inner, inner-mid, outer-mid, outer
+    // Four overlapping blobs forming a smooth arch
     const segs: [number, number, number][] = [
-      [-0.026,  0.000, 0.86],
+      [-0.026,  0.000, 0.84],
       [-0.010,  0.005, 1.00],
       [ 0.007,  0.005, 1.00],
-      [ 0.022, -0.002, 0.80],
+      [ 0.022, -0.002, 0.78],
     ];
     for (const [bx, by, sy] of segs) {
-      const blob = new THREE.Mesh(new THREE.SphereGeometry(0.012, 20, 14), mat);
-      blob.scale.set(1.0, sy * 0.70, 0.62);
+      const blob = new THREE.Mesh(new THREE.SphereGeometry(0.013, 20, 14), mat);
+      blob.scale.set(1.0, sy * 0.68, 0.60);
       blob.position.set(bx, by, 0);
       grp.add(blob);
     }
@@ -665,7 +674,7 @@ export class AvatarScene3D {
     return grp;
   }
 
-  // ── Cleanup helpers ─────────────────────────────────────────────────────────
+  // ── Cleanup ─────────────────────────────────────────────────────────────────
 
   private disposeObject(obj: THREE.Object3D) {
     obj.traverse(o => {
