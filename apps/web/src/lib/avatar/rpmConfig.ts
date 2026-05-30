@@ -1,42 +1,29 @@
 /**
- * rpmConfig — Ready Player Me avatar sourcing.
+ * rpmConfig — avatar mesh sourcing.
  *
- * RPM avatars are full-body glTF (.glb) models with ?morphTargets=ARKit
- * which exposes 52 ARKit blendshapes matching MediaPipe FaceLandmarker output
- * 1:1, so facial tracking drives the avatar with zero manual remapping.
+ * The avatar is a riggged glTF (.glb) head with the 52 ARKit blendshapes that
+ * MediaPipe FaceLandmarker outputs, so facial tracking drives the mesh in real
+ * time (eyes, brows, jaw, lips, cheeks — the full FaceTime-style range).
  *
- * The .glb is fetched by the USER'S BROWSER at runtime — all compute stays
- * on the client device, the server is never involved.
+ * STRATEGY — bundle the model with the app:
+ *   The .glb is committed to apps/web/public/models and served from OUR OWN
+ *   origin.  This is critical: external CDNs (models.readyplayer.me) are
+ *   unreliable — when the fetch fails the renderer falls back to a crude
+ *   procedural face.  A same-origin model always loads, has no CORS/COEP
+ *   issues, and is cached by the browser after the first request.
  *
- * STRATEGY: we use ONE verified, publicly-accessible base mesh for every
- * preset and recolour skin / hair / outfit / eyes per preset (see presets.ts +
- * AvatarScene3D.applyPreset).  This guarantees every preset renders a real,
- * beautiful human avatar — there are no broken CDN IDs that 404 into the
- * procedural fallback.  The base .glb is fetched once and served from browser
- * cache for all subsequent presets, so switching avatars is instant.
- *
- * To add genuinely different face meshes later, create avatars at
- * https://readyplayer.me and put their 24-char IDs in RPM_AVATAR_POOL.
+ *   The bundled model is three.js's `facecap.glb` — a head scan rigged with
+ *   the canonical 52 ARKit blendshapes (named browDown_L / eyeBlink_L / …).
+ *   AvatarScene3D maps MediaPipe's `browDownLeft` → `browDown_L` at runtime.
  */
 
 import type { AvatarPreset } from "./presets";
 
-/** Verified public RPM base mesh (full-body, A-pose, ARKit morphs). */
-const RPM_BASE_ID = "6460691aa35b2e5b7106734d";
-
-export const RPM_AVATAR_POOL: string[] = [RPM_BASE_ID];
-
-/**
- * RPM render-API query params (https://docs.readyplayer.me/.../avatar-rest-api):
- *  - morphTargets=ARKit  → 52 ARKit blendshapes for expression
- *  - textureAtlas=1024   → single 1024 atlas, fewer GPU texture binds (faster)
- *  - meshLod=1           → mid LOD, lighter mesh for real-time + low latency
- *  - useHands=false      → drop hand bones we don't render
- */
-const RPM_QUERY = "morphTargets=ARKit&textureAtlas=1024&meshLod=1&useHands=false";
+/** Same-origin bundled head mesh with 52 ARKit blendshapes. */
+const LOCAL_AVATAR_URL = "/models/facecap.glb";
 
 export function rpmUrlForPreset(_presetId: number): string {
-  return `https://models.readyplayer.me/${RPM_BASE_ID}.glb?${RPM_QUERY}`;
+  return LOCAL_AVATAR_URL;
 }
 
 /** All AvatarScene3D needs: the CDN URL and the coloring preset. */

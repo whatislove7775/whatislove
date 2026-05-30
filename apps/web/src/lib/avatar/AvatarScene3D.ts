@@ -106,38 +106,81 @@ export class AvatarScene3D {
     this.memojiRig  = null;
     this.morphMeshes = [];
 
-    let root: THREE.Object3D;
-    let isMemoji = false;
-
+    let gltfScene: THREE.Object3D | null = null;
     try {
       const gltf = await new GLTFLoader().loadAsync(spec.url);
       if (this.disposed || token !== this.loadToken) return;
-      root = gltf.scene;
-      root.traverse(o => { o.frustumCulled = false; });
-      this.applyPreset(root, spec.preset);
+      gltfScene = gltf.scene;
+      gltfScene.traverse(o => { o.frustumCulled = false; });
     } catch (err) {
-      console.warn("[AvatarScene3D] RPM load failed, using Memoji fallback:", err);
+      console.warn("[AvatarScene3D] mesh load failed, using procedural fallback:", err);
       if (this.disposed || token !== this.loadToken) return;
-      const { mesh, rig } = this.buildMemoji(spec.preset);
-      root = mesh;
-      this.memojiRig = rig;
-      isMemoji = true;
     }
 
-    root.getObjectByName("LeftHand")?.scale.set(0, 0, 0);
-    root.getObjectByName("RightHand")?.scale.set(0, 0, 0);
+    if (gltfScene) {
+      this.loadGltfHead(gltfScene, spec.preset);
+    } else {
+      this.loadProceduralMemoji(spec.preset);
+    }
+
+    this.smoothedInfluences.clear();
+  }
+
+  // ── Rigged glTF head (primary path — facecap.glb / RPM) ─────────────────────
+  // The model is wrapped in a pivot centred on the head so head-tracking
+  // rotation pivots correctly, and the camera is framed dynamically on the
+  // head's bounding box (works for head-only or full-body meshes alike).
+
+  private loadGltfHead(gltfScene: THREE.Object3D, preset: AvatarPreset) {
+    gltfScene.getObjectByName("LeftHand")?.scale.set(0, 0, 0);
+    gltfScene.getObjectByName("RightHand")?.scale.set(0, 0, 0);
+
+    // Tint skin/hair/eyes per preset where the material names allow it
+    this.applyPreset(gltfScene, preset);
+
+    // Pivot so head rotation pivots around the head centre
+    const pivot = new THREE.Group();
+    pivot.name = "HeadPivot";
+    pivot.add(gltfScene);
+
+    // Measure, recentre on origin, scale head to ~0.5 units tall
+    this.scene.add(pivot);
+    this.renderer.render(this.scene, this.camera);
+    const box  = new THREE.Box3().setFromObject(gltfScene);
+    const size = new THREE.Vector3(); box.getSize(size);
+    const ctr  = new THREE.Vector3(); box.getCenter(ctr);
+    gltfScene.position.sub(ctr);                       // head centre → pivot origin
+    if (size.y > 0.001) pivot.scale.setScalar(0.5 / size.y);
+
+    this.swapRoot(pivot);
+
+    // The head pivot rotates for head tracking
+    this.headBone = pivot;
+
+    // Collect morph-target meshes (the head)
+    gltfScene.traverse(o => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh && m.morphTargetDictionary && m.morphTargetInfluences) {
+        this.morphMeshes.push(m);
+      }
+    });
+
+    this.frameCameraOnHead();
+  }
+
+  // ── Procedural Memoji (fallback only — when no glb loads) ───────────────────
+
+  private loadProceduralMemoji(preset: AvatarPreset) {
+    const { mesh, rig } = this.buildMemoji(preset);
+    const root = mesh;
 
     // Normalise to 1.0 unit tall, feet at y=0
-    if (this.avatarRoot) this.scene.remove(this.avatarRoot);
     this.scene.add(root);
     this.renderer.render(this.scene, this.camera);
-
     const box  = new THREE.Box3().setFromObject(root);
     const size = new THREE.Vector3(); box.getSize(size);
-
     if (size.y > 0.001) {
-      const s = 1.0 / size.y;
-      root.scale.multiplyScalar(s);
+      root.scale.multiplyScalar(1.0 / size.y);
       this.renderer.render(this.scene, this.camera);
       const b2 = new THREE.Box3().setFromObject(root);
       root.position.set(
@@ -147,33 +190,44 @@ export class AvatarScene3D {
       );
     }
 
-    if (this.avatarRoot && this.avatarRoot !== root) {
-      this.scene.remove(this.avatarRoot);
-      this.disposeObject(this.avatarRoot);
-    }
-    this.avatarRoot = root;
+    this.swapRoot(root);
+    this.memojiRig = rig;
+    this.headBone  = root.getObjectByName("HeadGroup") ?? null;
 
-    if (!isMemoji) {
-      this.headBone = root.getObjectByName("Head") ?? root.getObjectByName("head") ?? null;
-      root.traverse(o => {
-        const m = o as THREE.Mesh;
-        if (m.isMesh && m.morphTargetDictionary && m.morphTargetInfluences) {
-          this.morphMeshes.push(m);
-        }
-      });
-    } else {
-      // HeadGroup contains all face features — rotate it for head tracking
-      this.headBone = root.getObjectByName("HeadGroup") ?? null;
-      // Brow base positions stored in headGroup-local coords at build time — no recalibration needed
-    }
-
+    // Fixed portrait camera for the procedural body
     this.camera.fov    = CAM_FOV;
     this.camera.aspect = this.renderer.domElement.width / this.renderer.domElement.height;
     this.camera.position.copy(CAM_POS);
     this.camera.lookAt(CAM_TARGET);
     this.camera.updateProjectionMatrix();
+  }
 
-    this.smoothedInfluences.clear();
+  /** Frame the camera tightly on the current avatar's bounding box (head). */
+  private frameCameraOnHead() {
+    if (!this.avatarRoot) return;
+    this.renderer.render(this.scene, this.camera);
+    const box = new THREE.Box3().setFromObject(this.avatarRoot);
+    const size = new THREE.Vector3(); box.getSize(size);
+    const ctr  = new THREE.Vector3(); box.getCenter(ctr);
+
+    this.camera.fov    = CAM_FOV;
+    this.camera.aspect = this.renderer.domElement.width / this.renderer.domElement.height;
+    // distance to fit the head height in the vertical FOV, with a little margin
+    const halfH = Math.max(size.y, size.x / this.camera.aspect) / 2;
+    const dist  = (halfH / Math.tan((CAM_FOV * Math.PI / 180) / 2)) * 1.15;
+    this.camera.position.set(ctr.x, ctr.y + size.y * 0.04, ctr.z + dist);
+    this.camera.lookAt(ctr.x, ctr.y, ctr.z);
+    this.camera.updateProjectionMatrix();
+  }
+
+  /** Remove the previous avatar and install the new root. */
+  private swapRoot(root: THREE.Object3D) {
+    if (this.avatarRoot && this.avatarRoot !== root) {
+      this.scene.remove(this.avatarRoot);
+      this.disposeObject(this.avatarRoot);
+    }
+    if (!root.parent) this.scene.add(root);
+    this.avatarRoot = root;
   }
 
   // ── Material tinting (RPM glTF) ─────────────────────────────────────────────
@@ -259,7 +313,11 @@ export class AvatarScene3D {
         const dict = mesh.morphTargetDictionary!;
         const infl = mesh.morphTargetInfluences!;
         for (const [name, idx] of Object.entries(dict)) {
-          const target = this.targetInfluences.get(name) ?? 0;
+          // Model may use facecap's `_L`/`_R` naming; MediaPipe emits
+          // `Left`/`Right`. Convert the dict key to the MediaPipe key.
+          const mpName = name.replace(/_L$/, "Left").replace(/_R$/, "Right");
+          const target = this.targetInfluences.get(mpName)
+                      ?? this.targetInfluences.get(name) ?? 0;
           infl[idx] += (target - infl[idx]) * k;
         }
       }
@@ -350,9 +408,15 @@ export class AvatarScene3D {
     if (w <= 0 || h <= 0) return;
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
-    this.camera.position.copy(CAM_POS);
-    this.camera.lookAt(CAM_TARGET);
-    this.camera.updateProjectionMatrix();
+    if (this.memojiRig) {
+      // Fixed portrait camera for the procedural body
+      this.camera.position.copy(CAM_POS);
+      this.camera.lookAt(CAM_TARGET);
+      this.camera.updateProjectionMatrix();
+    } else {
+      // Re-frame the rigged head for the new aspect
+      this.frameCameraOnHead();
+    }
   }
 
   // ── Procedural Memoji face ──────────────────────────────────────────────────
