@@ -184,6 +184,21 @@ export function useP2PCall({ roomId, localStream, onEnd }: UseP2PCallOptions) {
 
       stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
+      // ── Tune the video encoder for low latency ──────────────────
+      // The avatar is light, predictable motion at 384². Cap bitrate/fps and
+      // prefer keeping framerate (smooth) over resolution when CPU is tight —
+      // this is what keeps end-to-end latency low instead of letting the
+      // encoder build a big buffer.
+      const vSender = pc.getSenders().find(s => s.track?.kind === "video");
+      if (vSender) {
+        const params = vSender.getParameters();
+        if (!params.encodings || params.encodings.length === 0) params.encodings = [{}];
+        params.encodings[0].maxBitrate   = 700_000; // 700 kbps is plenty for 384²
+        params.encodings[0].maxFramerate = 24;
+        (params as any).degradationPreference = "maintain-framerate";
+        vSender.setParameters(params).catch(() => { /* not all browsers allow this pre-negotiation */ });
+      }
+
       // ICE кандидаты → сигналинг
       pc.onicecandidate = ({ candidate }) => {
         if (candidate) sig.send({ type: "ice-candidate", candidate: candidate.toJSON() });

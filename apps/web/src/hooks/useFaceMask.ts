@@ -23,8 +23,10 @@ interface UseFaceMaskOptions {
   previewCanvas?: HTMLCanvasElement | null; // local PIP canvas (2D blit)
 }
 
-const RENDER_W = 512;
-const RENDER_H = 512;
+// 384² keeps the avatar crisp at portrait size while cutting fragment-shader
+// and video-encode cost ~45% vs 512² — important for low call latency.
+const RENDER_W = 384;
+const RENDER_H = 384;
 
 export function useFaceMask({ enabled, preset, previewCanvas }: UseFaceMaskOptions) {
   const [videoStream,      setVideoStream]      = useState<MediaStream | null>(null);
@@ -90,7 +92,11 @@ export function useFaceMask({ enabled, preset, previewCanvas }: UseFaceMaskOptio
       // Load avatar without blocking — show ready sooner, face appears once loaded
       scene.loadAvatar(specForPreset(presetRef.current)).catch(console.warn);
 
-      setVideoStream(scene.captureStream(30));
+      const avatarStream = scene.captureStream(24);
+      // Hint the encoder this is smooth motion (a face), not detailed text —
+      // lets it favour framerate/latency over per-frame detail.
+      avatarStream.getVideoTracks().forEach(t => { try { (t as any).contentHint = "motion"; } catch {} });
+      setVideoStream(avatarStream);
       setAudioStream(stream.getAudioTracks().length ? new MediaStream(stream.getAudioTracks()) : null);
       setIsReady(true);
 
@@ -132,10 +138,12 @@ export function useFaceMask({ enabled, preset, previewCanvas }: UseFaceMaskOptio
       }
 
       // ── 4. Detection loop ────────────────────────────────────────
-      // Throttled to 30 fps by wall-clock time — more reliable than comparing
-      // video.currentTime (which browsers may not advance every rAF frame).
+      // Throttled to 24 fps by wall-clock time. FaceLandmarker is the heaviest
+      // CPU/GPU consumer; running it at 24 (vs 30) frees headroom for the video
+      // encoder, which is the real source of call latency. The render loop
+      // interpolates between detections so motion still looks smooth.
       let lastDetectMs = 0;
-      const DETECT_INTERVAL = 1000 / 30;
+      const DETECT_INTERVAL = 1000 / 24;
       let warnState = false;
 
       const detect = () => {
@@ -159,9 +167,16 @@ export function useFaceMask({ enabled, preset, previewCanvas }: UseFaceMaskOptio
       detect();
 
       // ── 5. Preview blit (avatar → local PIP canvas) ──────────────
+      // Throttled to ~15 fps — the small local thumbnail doesn't need full
+      // framerate, and skipping frames keeps the main thread free for encode.
+      let lastBlitMs = 0;
+      const BLIT_INTERVAL = 1000 / 15;
       const blit = () => {
         if (cancelled) return;
         blitRaf = requestAnimationFrame(blit);
+        const now = performance.now();
+        if (now - lastBlitMs < BLIT_INTERVAL) return;
+        lastBlitMs = now;
         const pc = previewRef.current;
         const gl = sceneRef.current?.domElement;
         if (!pc || !gl) return;

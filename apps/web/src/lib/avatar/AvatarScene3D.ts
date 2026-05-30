@@ -202,13 +202,26 @@ export class AvatarScene3D {
         const mat = raw as THREE.MeshStandardMaterial;
         if (!mat?.color) continue;
         const n = (mat.name || m.name || "").toLowerCase();
+
         if (/hair|beard|brow/.test(n)) {
-          mat.color.lerp(hsl(p.hairH, p.hairS, p.hairL), 0.8);
+          // Hair: strong recolour for a clear identity
+          mat.color.lerp(hsl(p.hairH, p.hairS, p.hairL), 0.85);
           mat.needsUpdate = true;
         } else if (/outfit|shirt|jacket|top|cloth|bottom|pants|shoe|sleeve/.test(n)) {
-          mat.color.lerp(hsl(p.shirtH, p.shirtS, p.shirtL), 0.7);
+          // Outfit: strong recolour
+          mat.color.lerp(hsl(p.shirtH, p.shirtS, p.shirtL), 0.78);
+          mat.needsUpdate = true;
+        } else if (/iris/.test(n) || (/eye/.test(n) && !/brow|lash/.test(n))) {
+          // Iris: tint toward preset eye colour
+          mat.color.lerp(hsl(p.eyeH, p.eyeS, p.eyeL), 0.55);
+          mat.needsUpdate = true;
+        } else if ((/skin|head|body|face/.test(n)) && !/eye|teeth|tongue|hair/.test(n)) {
+          // Skin: gentle tint — presets read as different people while the
+          // RPM PBR skin texture/shading stays dominant and realistic.
+          mat.color.lerp(hsl(p.skinH, p.skinS, p.skinL), 0.28);
           mat.needsUpdate = true;
         }
+        // teeth, lashes, tongue → untouched
       }
     });
   }
@@ -241,9 +254,18 @@ export class AvatarScene3D {
 
   // ── Render loop ─────────────────────────────────────────────────────────────
 
+  private lastFrameMs = 0;
+  private static readonly FRAME_INTERVAL = 1000 / 30; // cap render at 30 fps
+
   private animate = () => {
     if (this.disposed) return;
     this.raf = requestAnimationFrame(this.animate);
+
+    // Cap to 30 fps — captureStream samples at 24, so 60 fps rendering just
+    // wastes GPU and steals cycles from the video encoder (→ call latency).
+    const nowMs = performance.now();
+    if (nowMs - this.lastFrameMs < AvatarScene3D.FRAME_INTERVAL) return;
+    this.lastFrameMs = nowMs;
 
     const dt = this.clock.getDelta();
     const k  = 1 - Math.exp(-dt * 18); // smooth follow
