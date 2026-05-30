@@ -28,11 +28,11 @@ export interface FaceResult {
 }
 
 // ── Portrait camera constants (avatar normalised to 1.0 unit tall, feet y=0) ──
-// Head centre is at ~y=0.874 (head = top ~13% of body height).
-// At z=0.32, FOV=30° → ~17cm visible height in avatar-space → full head + shoulders.
-const CAM_POS    = new THREE.Vector3(0, 0.895, 0.32);
-const CAM_TARGET = new THREE.Vector3(0, 0.840, 0);
-const CAM_FOV    = 30;
+// RPM full-body: head spans roughly y=0.80..1.00 (top 20%).
+// At z=0.65 with FOV=26° → ~0.30 units visible height → head + small neck/shoulder.
+const CAM_POS    = new THREE.Vector3(0, 0.86, 0.65);
+const CAM_TARGET = new THREE.Vector3(0, 0.83, 0);
+const CAM_FOV    = 26;
 
 const hsl = (h: number, s: number, l: number) =>
   new THREE.Color().setHSL(h / 360, s / 100, l / 100);
@@ -66,7 +66,8 @@ export class AvatarScene3D {
     this.renderer.toneMappingExposure = 1.0;
 
     this.scene = new THREE.Scene();
-    this.scene.background = null; // transparent — CSS / remote-video provides backdrop
+    // Deep charcoal backdrop — gives Memoji-style depth without full transparency.
+    this.scene.background = new THREE.Color(0x1a1a2e);
 
     const pmrem = new THREE.PMREMGenerator(this.renderer);
     this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -117,8 +118,8 @@ export class AvatarScene3D {
     if (size.y > 0.001) {
       const s = 1.0 / size.y;   // scale so height === 1.0
       root.scale.multiplyScalar(s);
-      // Re-derive bbox after scale (the position needs to change too).
-      root.updateWorldMatrix(false, true);
+      // Second render pass → updates SkinnedMesh bone matrices at new scale.
+      this.renderer.render(this.scene, this.camera);
       const b2 = new THREE.Box3().setFromObject(root);
       root.position.set(
         root.position.x - (b2.min.x + b2.max.x) / 2,  // centre X

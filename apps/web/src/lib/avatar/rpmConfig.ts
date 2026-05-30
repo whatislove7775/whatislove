@@ -17,6 +17,11 @@ import type { AvatarPreset } from "./presets";
 /** RPM avatar IDs (full-body, A-pose, publicly accessible). */
 export const RPM_AVATAR_POOL: string[] = [
   "6460691aa35b2e5b7106734d", // female, neutral — verified working
+  "6374040fa9e94a8cb3fbe8f9", // male, dark skin
+  "638df693d72bffc6fa17943c", // female, light skin
+  "63de3a00d9e6ac54d7464585", // male, medium skin
+  "64d61e519a6b4a9ba831e098", // female, warm skin
+  "6400e8b7bb45fec53fa5e28a", // male, light skin
 ];
 
 /** Only ARKit morphs needed; skip webp/lod to maximise CDN cache hits. */

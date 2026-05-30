@@ -129,7 +129,7 @@ function LogoIcon({ size = 20 }: { size?: number }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const [started,      setStarted]      = useState(false);
-  const [presetIdx,    setPresetIdx]    = useState(0);
+  const [presetIdx,    setPresetIdx]    = useState(() => Math.floor(Math.random() * AVATAR_PRESETS.length));
   const [voicePreset,  setVoicePreset]  = useState<VoicePreset>("off");
   const [canvasEl,     setCanvasEl]     = useState<HTMLCanvasElement | null>(null);
   const [showPicker,   setShowPicker]   = useState(false);
