@@ -87,29 +87,37 @@ export function useFaceMask({ enabled, avatarSeed, previewCanvas }: UseFaceMaskO
       setAudioStream(stream.getAudioTracks().length ? new MediaStream(stream.getAudioTracks()) : null);
 
       // 3) MediaPipe FaceLandmarker (ARKit blendshapes + head matrix)
+      // GPU delegate is faster but fails silently on many browsers — always fall back to CPU.
       try {
         const { FaceLandmarker, FilesetResolver } = await import("@mediapipe/tasks-vision");
         const fileset = await FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm",
         );
         if (cancelled) return;
-        landmarkerRef.current = await FaceLandmarker.createFromOptions(fileset, {
+        const modelOpts = (delegate: "GPU" | "CPU") => ({
           baseOptions: {
             modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-            delegate: "GPU",
+            delegate,
           },
           outputFaceBlendshapes: true,
           outputFacialTransformationMatrixes: true,
-          runningMode: "VIDEO",
+          runningMode: "VIDEO" as const,
           numFaces: 1,
         });
+        try {
+          landmarkerRef.current = await FaceLandmarker.createFromOptions(fileset, modelOpts("GPU"));
+        } catch {
+          console.warn("[useFaceMask] GPU delegate failed, falling back to CPU");
+          landmarkerRef.current = await FaceLandmarker.createFromOptions(fileset, modelOpts("CPU"));
+        }
       } catch (e) {
-        console.warn("[useFaceMask] FaceLandmarker init failed:", e);
+        console.error("[useFaceMask] FaceLandmarker init failed:", e);
       }
 
       setIsReady(true);
 
       // 4) Detection loop — feeds the scene target state
+      let warningState = false;
       const detect = () => {
         if (cancelled) return;
         detectRaf = requestAnimationFrame(detect);
@@ -121,7 +129,9 @@ export function useFaceMask({ enabled, avatarSeed, previewCanvas }: UseFaceMaskO
           sceneRef.current?.applyResult(res);
           if (res?.faceBlendshapes?.length) lastFaceRef.current = Date.now();
         } catch { /* transient — ignore */ }
-        setLightingWarning(Date.now() - lastFaceRef.current > 3000);
+        // Only update React state when the value actually changes (avoid per-frame renders).
+        const w = Date.now() - lastFaceRef.current > 3000;
+        if (w !== warningState) { warningState = w; setLightingWarning(w); }
       };
       detect();
 

@@ -122,44 +122,66 @@ export class AvatarScene3D {
     this.onReady?.();
   }
 
-  /** Point the camera at the avatar's head for a flattering closeup. */
+  /** Point the camera at the avatar's head for a flattering portrait closeup. */
   private frameHead(root: THREE.Object3D) {
-    const head = root.getObjectByName("Head");
-    const target = new THREE.Vector3();
-    if (head) {
-      head.getWorldPosition(target);
+    // Force one render pass so skinned mesh world matrices are computed.
+    this.renderer.render(this.scene, this.camera);
+
+    // Use bounding box — bones may not have world matrices yet before first render.
+    const box = new THREE.Box3().setFromObject(root);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+
+    let targetY: number;
+    if (size.y > 0.8) {
+      // Full-body avatar (~1.8 m): head occupies top ~12% of height.
+      targetY = box.max.y - size.y * 0.10;
+    } else if (size.y > 0.05) {
+      // Bust / head-only model: use bbox center.
+      targetY = (box.min.y + box.max.y) / 2;
     } else {
-      const box = new THREE.Box3().setFromObject(root);
-      box.getCenter(target);
-      target.y = box.max.y - (box.max.y - box.min.y) * 0.12;
+      // Degenerate (scale issue) — try the Head bone directly.
+      const head = root.getObjectByName("Head");
+      if (head) {
+        const wp = new THREE.Vector3();
+        head.getWorldPosition(wp);
+        targetY = wp.y > 0.1 ? wp.y : 1.60;
+      } else {
+        targetY = 1.60;
+      }
     }
-    this.camera.position.set(target.x, target.y + 0.04, target.z + 0.62);
-    this.camera.lookAt(target.x, target.y + 0.02, target.z);
+
+    const targetX = (box.min.x + box.max.x) / 2;
+    const targetZ = (box.min.z + box.max.z) / 2;
+
+    this.camera.fov = 22;
+    // Distance scaled to show roughly a head + slight shoulders.
+    const portraitDist = size.y > 0.8 ? size.y * 0.26 : Math.max(0.38, size.y * 0.8);
+    this.camera.position.set(targetX, targetY + 0.04, targetZ + portraitDist);
+    this.camera.lookAt(targetX, targetY - 0.05, targetZ);
     this.camera.updateProjectionMatrix();
   }
 
-  /** Recolour RPM materials deterministically for per-user uniqueness. */
+  /** Recolour RPM materials deterministically for per-user uniqueness.
+   *  Only hair and outfit are tinted — skin and eyes are left as-is because
+   *  RPM bakes beautiful PBR materials and any tint looks wrong on them. */
   private applyDNA(root: THREE.Object3D, dna: AvatarDNA) {
-    const tint = (mat: THREE.MeshStandardMaterial, color: THREE.Color, amount: number) => {
-      mat.color.lerp(color, amount);
-      mat.needsUpdate = true;
-    };
     root.traverse(o => {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
       const mats = Array.isArray(m.material) ? m.material : [m.material];
       for (const raw of mats) {
         const mat = raw as THREE.MeshStandardMaterial;
+        if (!mat?.color) continue;
         const name = (mat.name || m.name || "").toLowerCase();
-        if (name.includes("hair") || name.includes("beard")) {
-          tint(mat, hsl(dna.hairH, dna.hairS, dna.hairL), 0.85);
-        } else if (name.includes("outfit") || name.includes("top") || name.includes("body")) {
-          tint(mat, hsl(dna.shirtH, dna.shirtS, dna.shirtL), 0.8);
-        } else if (name.includes("skin")) {
-          tint(mat, hsl(dna.skinH, dna.skinS, dna.skinL), 0.35);
-        } else if (name.includes("eye") && !name.includes("eyebrow")) {
-          tint(mat, hsl(dna.eyeH, dna.eyeS, dna.eyeL), 0.45);
+        if (/hair|beard|eyebrow/.test(name)) {
+          mat.color.lerp(hsl(dna.hairH, dna.hairS, dna.hairL), 0.75);
+          mat.needsUpdate = true;
+        } else if (/outfit|shirt|jacket|top|sleeve|cloth|bottom|pants|shoe/.test(name)) {
+          mat.color.lerp(hsl(dna.shirtH, dna.shirtS, dna.shirtL), 0.65);
+          mat.needsUpdate = true;
         }
+        // skin, eyes, teeth, eyelashes: untouched — RPM materials look realistic as-is
       }
     });
   }
