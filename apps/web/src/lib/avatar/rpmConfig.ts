@@ -35,7 +35,6 @@ import type { AvatarPreset } from "./presets";
 export const AVATAR_URLS: string[] = [
   "/models/facecap.glb",
   "https://raw.githubusercontent.com/mrdoob/three.js/r165/examples/models/gltf/facecap.glb",
-  "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/models/gltf/facecap.glb",
 ];
 
 /** All AvatarScene3D needs: ordered URL list and the coloring preset. */

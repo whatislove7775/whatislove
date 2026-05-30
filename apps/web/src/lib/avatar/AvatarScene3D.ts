@@ -111,7 +111,7 @@ export class AvatarScene3D {
     // Decoder WASM is loaded from Google's CDN (reliable, proper CORS headers,
     // works under COEP:credentialless).
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
+    dracoLoader.setDecoderPath("/draco/");
 
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
