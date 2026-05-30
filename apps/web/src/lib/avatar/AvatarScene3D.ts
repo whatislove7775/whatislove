@@ -11,6 +11,7 @@
 
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { AvatarSpec } from "./rpmConfig";
 import type { AvatarPreset } from "./presets";
@@ -106,22 +107,32 @@ export class AvatarScene3D {
     this.memojiRig  = null;
     this.morphMeshes = [];
 
+    // facecap.glb uses Draco mesh compression — GLTFLoader throws without DRACOLoader.
+    // Decoder WASM is loaded from Google's CDN (reliable, proper CORS headers,
+    // works under COEP:credentialless).
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
+
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+
     // Try each URL in order; first success wins.
     let gltfScene: THREE.Object3D | null = null;
-    const urls = (spec as any).urls ?? [(spec as any).url];
+    const urls: string[] = (spec as any).urls ?? [(spec as any).url];
     for (const url of urls) {
       try {
-        console.info("[AvatarScene3D] loading avatar from", url);
-        const gltf = await new GLTFLoader().loadAsync(url);
-        if (this.disposed || token !== this.loadToken) return;
+        console.info("[AvatarScene3D] loading from", url);
+        const gltf = await loader.loadAsync(url);
+        if (this.disposed || token !== this.loadToken) { dracoLoader.dispose(); return; }
         gltfScene = gltf.scene;
         gltfScene.traverse(o => { o.frustumCulled = false; });
         console.info("[AvatarScene3D] loaded OK:", url);
         break;
       } catch (err) {
-        console.warn("[AvatarScene3D] failed:", url, err);
+        console.warn("[AvatarScene3D] failed:", url, (err as Error).message ?? err);
       }
     }
+    dracoLoader.dispose();
     if (this.disposed || token !== this.loadToken) return;
 
     if (gltfScene) {
