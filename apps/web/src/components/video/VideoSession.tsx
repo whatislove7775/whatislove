@@ -1,14 +1,13 @@
 "use client";
 
-import { useCallback, useState, useEffect, useRef } from "react";
-import { useP2PCall }         from "@/hooks/useP2PCall";
-import { useFaceMask }        from "@/hooks/useFaceMask";
+import { useCallback, useState, useEffect, useRef, useMemo } from "react";
+import { useP2PCall }    from "@/hooks/useP2PCall";
+import { useFaceMask }   from "@/hooks/useFaceMask";
 import { useVoiceTransform, type VoicePreset } from "@/hooks/useVoiceTransform";
 import { useAmbientSound, type AmbientPreset } from "@/hooks/useAmbientSound";
-import { SessionNotepad }     from "@/components/session/SessionNotepad";
-import { BreathingSync }      from "@/components/session/BreathingSync";
-import { AvatarCanvas3D }     from "@/components/avatar/AvatarCanvas3D";
-import type { FaceLandmarks } from "@/lib/mediapipe/faceRenderer";
+import { SessionNotepad } from "@/components/session/SessionNotepad";
+import { BreathingSync }  from "@/components/session/BreathingSync";
+import { generateDNA }    from "@/lib/avatar/AvatarDNA";
 
 interface VideoSessionProps {
   roomId: string;
@@ -20,8 +19,18 @@ function fmt(s: number) {
   return `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 }
 
-// 6 deterministic avatar variant seeds (append to roomId)
-const AVATAR_VARIANTS = ["_a1", "_a2", "_a3", "_a4", "_a5", "_a6"];
+// Six avatar variants per room — each yields a unique, deterministic look.
+const VARIANTS = [0, 1, 2, 3, 4, 5];
+const seedFor = (roomId: string, v: number) => `${roomId}::v${v}`;
+
+/** Skin + hair swatch colours for the picker, derived from the avatar DNA. */
+function swatchColors(seed: string) {
+  const d = generateDNA(seed);
+  return {
+    skin: `hsl(${d.skinH} ${d.skinS}% ${d.skinL}%)`,
+    hair: `hsl(${d.hairH} ${d.hairS}% ${d.hairL}%)`,
+  };
+}
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 function MicIcon({ muted }: { muted: boolean }) {
@@ -55,19 +64,29 @@ function CamIcon({ off }: { off: boolean }) {
   );
 }
 
-function HangUpIcon() {
+function PhoneOffIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 1 1 0 0 1-.2-.15M5 3a2 2 0 0 0-2 2v3c0 1.05.81 1.93 1.85 2a12.84 12.84 0 0 0 .65 2.57"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>
     </svg>
   );
 }
 
-function AvatarIcon({ size = 20 }: { size?: number }) {
+function MaskIcon({ size = 20 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-      <circle cx="12" cy="7" r="4"/>
+    <svg width={size} height={size} viewBox="0 0 40 44" fill="none">
+      <defs>
+        <linearGradient id="mgi2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#4DA6FF"/>
+          <stop offset="55%" stopColor="#8B6CF8"/>
+          <stop offset="100%" stopColor="#FF7B7B"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="20" cy="22" rx="19" ry="21" fill="url(#mgi2)"/>
+      <ellipse cx="13" cy="19" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.7)"/>
+      <ellipse cx="27" cy="19" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.7)"/>
+      <rect x="14" y="28" width="12" height="4" rx="2" fill="rgba(0,0,0,0.7)"/>
     </svg>
   );
 }
@@ -90,85 +109,61 @@ function LogoIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-function VoiceIcon() {
+// ─── Avatar swatch button ───────────────────────────────────────────────────
+function AvatarSwatch({ seed, size, selected }: { seed: string; size: number; selected: boolean }) {
+  const c = swatchColors(seed);
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-      <line x1="12" y1="19" x2="12" y2="23"/>
-      <path d="M8 23h8"/>
-    </svg>
+    <div style={{
+      width: size, height: size, borderRadius: "50%", flexShrink: 0,
+      background: `radial-gradient(circle at 50% 32%, ${c.hair} 0%, ${c.hair} 34%, ${c.skin} 35%, ${c.skin} 100%)`,
+      border: `3px solid ${selected ? "#4DA6FF" : "rgba(0,0,0,0.25)"}`,
+      boxShadow: selected ? "0 0 12px rgba(77,166,255,0.5)" : "none",
+    }}/>
   );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const [started,      setStarted]      = useState(false);
-  const [avatarVariant, setAvatarVariant] = useState(0);  // 0–5
+  const [variant,      setVariant]      = useState(1);
+  const [voicePreset,  setVoicePreset]  = useState<VoicePreset>("off");
+  const [canvasEl,     setCanvasEl]     = useState<HTMLCanvasElement | null>(null);
   const [showPicker,   setShowPicker]   = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
   const [showNotepad,  setShowNotepad]  = useState(false);
   const [showBreath,   setShowBreath]   = useState(false);
-  const [voicePreset,  setVoicePreset]  = useState<VoicePreset>("off");
 
   const hideTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const ambient = useAmbientSound(null);
 
-  // Remote landmarks ref (updated without state to avoid re-renders every frame)
-  const remoteLandmarksRef = useRef<FaceLandmarks | null>(null);
-  const [remoteVariant, setRemoteVariant] = useState(0);
+  const avatarSeed = seedFor(roomId, variant);
 
-  // ── Client: face mask (audio + landmarks) ────────────────────────
-  const { audioStream, isReady: maskReady, landmarksRef, lightingWarning } = useFaceMask({
-    enabled: started && role === "client",
+  // ── On-device Memoji pipeline: camera → blendshapes → RPM avatar ──
+  const { videoStream, audioStream, isReady: maskReady, lightingWarning } = useFaceMask({
+    enabled:       started,
+    avatarSeed,
+    previewCanvas: canvasEl,
   });
 
-  const { transformedStream } = useVoiceTransform({
-    inputStream: audioStream,
-    preset:      voicePreset,
-  });
+  // ── Local voice masking (stable output stream) ───────────────────
+  const { transformedStream } = useVoiceTransform({ inputStream: audioStream, preset: voicePreset });
 
-  const clientStream = transformedStream ?? audioStream;
+  // ── Compose what we send: avatar video + masked audio ────────────
+  const localStream = useMemo(() => {
+    if (!videoStream) return null;
+    const audioTracks = transformedStream?.getAudioTracks()
+      ?? audioStream?.getAudioTracks() ?? [];
+    return new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
+  }, [videoStream, transformedStream, audioStream]);
 
-  // ── Psychologist: real camera ────────────────────────────────────
-  const [psychStream, setPsychStream] = useState<MediaStream | null>(null);
-  useEffect(() => {
-    if (!started || role !== "psychologist") return;
-    let cancelled = false;
-    navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-    }).then(s => { if (!cancelled) setPsychStream(s); }).catch(console.error);
-    return () => {
-      cancelled = true;
-      setPsychStream(prev => { prev?.getTracks().forEach(t => t.stop()); return null; });
-    };
-  }, [started, role]);
-
-  const localStream = role === "client" ? clientStream : psychStream;
-
-  // ── Remote landmarks callback (psychologist) ─────────────────────
-  const handleRemoteLandmarks = useCallback((lm: FaceLandmarks, av: number) => {
-    remoteLandmarksRef.current = lm;
-    // Only update state if variant changes (rare)
-    setRemoteVariant(prev => av !== prev ? av : prev);
-  }, []);
-
-  // ── P2P Call ─────────────────────────────────────────────────────
+  // ── P2P WebRTC call ──────────────────────────────────────────────
   const {
     status, isMuted, isCameraOff, hasRemote, elapsed,
     remoteVideoRef, toggleMute, toggleCamera, hangUp, retryNow,
-  } = useP2PCall({
-    roomId,
-    localStream,
-    role,
-    localLandmarksRef: role === "client" ? landmarksRef : undefined,
-    avatarId:          role === "client" ? avatarVariant + 1 : undefined,
-    onRemoteLandmarks: role === "psychologist" ? handleRemoteLandmarks : undefined,
-    onEnd,
-  });
+  } = useP2PCall({ roomId, localStream, onEnd });
 
-  // ── Auto-hide controls ────────────────────────────────────────────
+  // ── Auto-hide controls ───────────────────────────────────────────
   const resetHide = useCallback(() => {
     setShowControls(true);
     clearTimeout(hideTimerRef.current);
@@ -181,41 +176,37 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
     return () => clearTimeout(hideTimerRef.current);
   }, [started, resetHide]);
 
-  useEffect(() => { if (!showControls) setShowPicker(false); }, [showControls]);
+  useEffect(() => {
+    if (!showControls) { setShowPicker(false); setShowSettings(false); }
+  }, [showControls]);
 
   const handleStart  = () => setStarted(true);
   const handleHangUp = () => { ambient.setEnabled(false); hangUp(); };
-  const cycleVoice = () => setVoicePreset(p => p === "off" ? "lower" : p === "lower" ? "higher" : "off");
 
-  // Avatar seed for psychologist display
-  const remoteAvatarSeed = roomId + AVATAR_VARIANTS[remoteVariant % AVATAR_VARIANTS.length];
-  const localAvatarSeed  = roomId + AVATAR_VARIANTS[avatarVariant % AVATAR_VARIANTS.length];
-
-  // ── Derived state ─────────────────────────────────────────────────
-  const isCameraLoading = started && role === "client" && !maskReady;
-  const isPsychLoading  = started && role === "psychologist" && !psychStream;
+  // ── Derived status ───────────────────────────────────────────────
+  const isCameraLoading = started && !maskReady;
   const isWaiting       = status === "waiting";
   const isFailed        = status === "failed";
   const isReconnecting  = status === "reconnecting";
   const isConnected     = status === "connected";
 
   const stateLabel =
-    isCameraLoading || isPsychLoading ? "Запуск камеры…"
-    : status === "connecting"         ? "Соединение с сервером…"
-    : isWaiting && role === "client"  ? "Ожидание специалиста…"
-    : isWaiting                       ? "Ожидание клиента…"
-    : isReconnecting                  ? "Восстановление связи…"
-    : isFailed                        ? "Соединение прервано"
-    : hasRemote                       ? "Соединение активно"
+    isCameraLoading           ? "Запуск камеры и аватара…"
+    : status === "connecting" ? "Соединение с сервером…"
+    : isWaiting && role === "client" ? "Ожидание специалиста…"
+    : isWaiting               ? "Ожидание клиента…"
+    : isReconnecting          ? "Восстановление связи…"
+    : isFailed                ? "Соединение прервано"
+    : hasRemote               ? "Соединение активно"
     : "";
 
   const dotColor =
     isConnected && hasRemote ? "#31D97B"
     : isFailed               ? "#FF4D4D"
+    : isReconnecting         ? "#F59E0B"
     : "#F59E0B";
 
-  const showSpinner = isCameraLoading || isPsychLoading || status === "connecting" || isWaiting || isReconnecting;
-  const voiceLabel  = voicePreset === "off" ? "Голос: откл" : voicePreset === "lower" ? "Голос: ниже" : "Голос: выше";
+  const showSpinner = isCameraLoading || status === "connecting" || isWaiting || isReconnecting;
 
   // ─────────────────────────────────────────────────────────────────
   return (
@@ -225,51 +216,30 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
       fontFamily: "Inter, system-ui, sans-serif",
     }}>
 
-      {/* ══ REMOTE DISPLAY — full-screen ═══════════════════════════ */}
-      {/* Client sees psychologist's real video */}
-      {role === "client" && (
-        <video
-          ref={remoteVideoRef}
-          autoPlay playsInline
-          style={{
-            position: "absolute", inset: 0, zIndex: 1,
-            width: "100%", height: "100%", objectFit: "cover",
-            background: "#0A0D18",
-          }}
-        />
-      )}
+      {/* ── REMOTE VIDEO — full-screen background ──────────────── */}
+      <video
+        ref={remoteVideoRef}
+        autoPlay
+        playsInline
+        style={{
+          position: "absolute", inset: 0, zIndex: 1,
+          width: "100%", height: "100%",
+          objectFit: "cover",
+          background: "#0A0D18",
+        }}
+      />
 
-      {/* Psychologist sees client's 3D avatar (full-screen) */}
-      {role === "psychologist" && (
-        <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
-          <AvatarCanvas3D
-            landmarksRef={remoteLandmarksRef}
-            avatarSeed={remoteAvatarSeed}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
-      )}
-
-      {/* Waiting-for-avatar placeholder */}
-      {role === "psychologist" && started && !hasRemote && (
-        <div style={{
-          position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",
-          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14,
-        }}>
-          <AvatarIcon size={48} />
-          <span style={{ fontSize: 14, color: "#4A5A72" }}>Ожидание аватара клиента…</span>
-        </div>
-      )}
-
-      {/* ══ Vignette ══════════════════════════════════════════════ */}
+      {/* ── Vignette ───────────────────────────────────────────── */}
       {started && (
         <div style={{
-          position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none",
+          position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",
           background: "linear-gradient(180deg, rgba(10,13,24,0.72) 0%, transparent 18%, transparent 70%, rgba(10,13,24,0.88) 100%)",
         }}/>
       )}
 
-      {/* ══ PRE-SESSION SCREEN ═════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════════════════════
+          PRE-SESSION SCREEN
+      ══════════════════════════════════════════════════════════════ */}
       {!started && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 50,
@@ -279,58 +249,50 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 36 }}>
             <LogoIcon size={34} />
-            <span style={{ fontSize: 24, fontWeight: 700, color: "#F0F4FF", letterSpacing: "-0.02em" }}>aprosop</span>
+            <span style={{ fontSize: 24, fontWeight: 700, color: "#F0F4FF", letterSpacing: "-0.02em" }}>
+              aprosop
+            </span>
           </div>
 
-          {role === "client" && (
-            <div style={{
-              background: "rgba(14,18,32,0.88)", backdropFilter: "blur(24px)",
-              border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20,
-              padding: "28px 32px", width: 360, marginBottom: 20,
-            }}>
-              <div style={{ fontSize: 11, color: "#4A5A72", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>
-                Выберите аватар
-              </div>
-
-              {/* Avatar variant picker: 6 mini 3D previews */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 22 }}>
-                {AVATAR_VARIANTS.map((v, i) => (
-                  <button
-                    key={v}
-                    onClick={() => setAvatarVariant(i)}
-                    style={{
-                      width: 44, height: 44, borderRadius: 10, cursor: "pointer", padding: 0,
-                      border: `2px solid ${avatarVariant === i ? "#4DA6FF" : "rgba(255,255,255,0.1)"}`,
-                      background: avatarVariant === i ? "rgba(77,166,255,0.15)" : "rgba(255,255,255,0.04)",
-                      overflow: "hidden", transition: "all 0.18s ease",
-                    }}
-                    title={`Аватар ${i + 1}`}
-                  >
-                    {/* Tiny 3D avatar preview — null landmarksRef, just renders static pose */}
-                    <AvatarCanvas3D
-                      landmarksRef={{ current: null }}
-                      avatarSeed={roomId + v}
-                      width={44}
-                      height={44}
-                      style={{ width: 44, height: 44 }}
-                    />
-                  </button>
-                ))}
-              </div>
-
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10,
-                background: "rgba(77,166,255,0.06)",
-                border: "1px solid rgba(77,166,255,0.15)",
-                borderRadius: 10, padding: "10px 14px",
-              }}>
-                <AvatarIcon size={18} />
-                <span style={{ fontSize: 12, color: "#8A9BB8", lineHeight: 1.5 }}>
-                  Специалист видит только ваш 3D-аватар и не получает видео
-                </span>
-              </div>
+          <div style={{
+            background: "rgba(14,18,32,0.85)", backdropFilter: "blur(24px)",
+            border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20,
+            padding: "28px 32px", width: 340, marginBottom: 20,
+          }}>
+            <div style={{ fontSize: 11, color: "#4A5A72", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 18 }}>
+              Выберите анонимную маску
             </div>
-          )}
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 22 }}>
+              {VARIANTS.map(v => (
+                <button
+                  key={v}
+                  onClick={() => setVariant(v)}
+                  style={{
+                    width: 44, height: 44, borderRadius: "50%", cursor: "pointer",
+                    border: `2px solid ${variant === v ? "#4DA6FF" : "rgba(255,255,255,0.1)"}`,
+                    background: variant === v ? "rgba(77,166,255,0.15)" : "rgba(255,255,255,0.04)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    transition: "all 0.18s ease", padding: 0, overflow: "hidden",
+                  }}
+                >
+                  <AvatarSwatch seed={seedFor(roomId, v)} size={28} selected={variant === v} />
+                </button>
+              ))}
+            </div>
+
+            <div style={{
+              display: "flex", alignItems: "center", gap: 10,
+              background: "rgba(77,166,255,0.06)",
+              border: "1px solid rgba(77,166,255,0.15)",
+              borderRadius: 10, padding: "10px 14px",
+            }}>
+              <MaskIcon size={18} />
+              <span style={{ fontSize: 12, color: "#8A9BB8", lineHeight: 1.5 }}>
+                Специалист видит ваш 3D-аватар, не настоящее лицо
+              </span>
+            </div>
+          </div>
 
           <div style={{ fontSize: 12, color: "#4A5A72", marginBottom: 26, fontFamily: "JetBrains Mono, monospace" }}>
             {role === "psychologist" ? "Комната специалиста" : "Анонимная сессия"} · {roomId.slice(0, 8)}…
@@ -360,54 +322,53 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
         </div>
       )}
 
-      {/* ══ IN-CALL UI ═════════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════════════════════
+          IN-CALL UI
+      ══════════════════════════════════════════════════════════════ */}
       {started && (
         <div
           style={{ position: "absolute", inset: 0, zIndex: 10, cursor: showControls ? "default" : "none" }}
           onMouseMove={resetHide}
           onTouchStart={resetHide}
         >
+          {/* Invisible mouse-detection layer when controls are hidden */}
           <div
             style={{ position: "absolute", inset: 0, zIndex: 11, pointerEvents: showControls ? "none" : "auto" }}
             onMouseMove={resetHide}
             onTouchStart={resetHide}
           />
 
-          {/* ── CLIENT LOCAL PREVIEW — 3D avatar ────────────────── */}
-          {role === "client" && (
-            <div style={{
+          {/* ── LOCAL PREVIEW — your avatar ─────────────────────── */}
+          <canvas
+            ref={setCanvasEl}
+            width={320}
+            height={320}
+            style={{
               position: "absolute", bottom: 90, right: 16, zIndex: 15,
-              width: 160, height: 120, borderRadius: 12, overflow: "hidden",
+              width: 160, height: 160, borderRadius: 12,
               border: "1px solid rgba(255,255,255,0.12)",
-              background: "#0c1122",
+              background: "linear-gradient(160deg, #1a2236 0%, #0d1322 100%)",
               opacity: maskReady ? 1 : 0.3,
               transition: "opacity 0.4s ease",
-            }}>
-              <AvatarCanvas3D
-                landmarksRef={landmarksRef}
-                avatarSeed={localAvatarSeed}
-                style={{ width: "100%", height: "100%" }}
-              />
-            </div>
-          )}
+              objectFit: "cover",
+            }}
+          />
 
-          {/* ── LIGHTING WARNING ─────────────────────────────────── */}
-          {role === "client" && lightingWarning && maskReady && (
+          {/* ── LIGHTING WARNING ────────────────────────────────── */}
+          {lightingWarning && maskReady && (
             <div style={{
-              position: "absolute", top: 64, left: "50%", transform: "translateX(-50%)",
-              zIndex: 30, whiteSpace: "nowrap",
-              background: "rgba(10,13,24,0.92)", backdropFilter: "blur(12px)",
-              border: "1px solid rgba(245,158,11,0.4)", borderRadius: 9999,
-              padding: "7px 18px", display: "flex", alignItems: "center", gap: 8,
+              position: "absolute", bottom: 256, right: 16, zIndex: 16,
+              width: 160, textAlign: "center",
+              background: "rgba(245,158,11,0.14)", border: "1px solid rgba(245,158,11,0.35)",
+              borderRadius: 9, padding: "6px 8px",
             }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              <span style={{ fontSize: 12, color: "#F59E0B" }}>Недостаточное освещение — аватар не определяет лицо</span>
+              <span style={{ fontSize: 11, color: "#F59E0B", lineHeight: 1.4 }}>
+                Лицо не распознано — проверьте освещение
+              </span>
             </div>
           )}
 
-          {/* ── STATUS OVERLAY ──────────────────────────────────── */}
+          {/* ── STATUS OVERLAY (camera/connecting/waiting) ──────── */}
           {showSpinner && !isFailed && (
             <div style={{
               position: "absolute", inset: 0, zIndex: 20,
@@ -431,7 +392,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
             </div>
           )}
 
-          {/* ── FAILED OVERLAY ──────────────────────────────────── */}
+          {/* ── FAILED OVERLAY ─────────────────────────────────── */}
           {isFailed && (
             <div style={{
               position: "absolute", inset: 0, zIndex: 20,
@@ -448,7 +409,7 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
             </div>
           )}
 
-          {/* ── RECONNECTING TOAST ──────────────────────────────── */}
+          {/* ── RECONNECTING TOAST ─────────────────────────────── */}
           {isReconnecting && (
             <div style={{
               position: "absolute", top: 64, left: "50%", transform: "translateX(-50%)",
@@ -468,7 +429,8 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
             height: 56, display: "flex", alignItems: "center",
             justifyContent: "space-between", padding: "0 16px",
             transition: "opacity 0.35s ease",
-            opacity: showControls ? 1 : 0, pointerEvents: showControls ? "auto" : "none",
+            opacity: showControls ? 1 : 0,
+            pointerEvents: showControls ? "auto" : "none",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -502,27 +464,24 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
               padding: "4px 12px",
             }}>
               <span style={{ fontSize: 11, color: "#31D97B" }}>●</span>
-              <span style={{ fontSize: 11, color: "#4A5A72", fontFamily: "JetBrains Mono, monospace", letterSpacing: "0.05em" }}>
-                {role === "client" ? "АНОНИМНО · P2P" : "P2P · ENCRYPTED"}
-              </span>
+              <span style={{ fontSize: 11, color: "#4A5A72", fontFamily: "JetBrains Mono, monospace", letterSpacing: "0.05em" }}>P2P · ENCRYPTED</span>
             </div>
           </div>
 
-          {/* ── LEFT SIDE BUTTONS ───────────────────────────────── */}
+          {/* ── LEFT SIDE BUTTONS ──────────────────────────────── */}
           <div style={{
             position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
             display: "flex", flexDirection: "column", gap: 8, zIndex: 25,
             transition: "opacity 0.35s ease",
-            opacity: showControls ? 1 : 0, pointerEvents: showControls ? "auto" : "none",
+            opacity: showControls ? 1 : 0,
+            pointerEvents: showControls ? "auto" : "none",
           }}>
-            {role === "psychologist" && (
-              <button onClick={() => { setShowNotepad(s => !s); setShowBreath(false); }}
-                title="Заметки" style={sideBtn(showNotepad, "#4DA6FF")}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                </svg>
-              </button>
-            )}
+            <button onClick={() => { setShowNotepad(s => !s); setShowBreath(false); }}
+              title="Заметки" style={sideBtn(showNotepad, "#4DA6FF")}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+            </button>
             <button onClick={() => { setShowBreath(s => !s); setShowNotepad(false); }}
               title="Дыхание" style={sideBtn(showBreath, "#31D97B")}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -536,92 +495,107 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
                 <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
               </svg>
             </button>
-            {role === "client" && (
-              <button onClick={() => setShowPicker(s => !s)} title="Аватар" style={sideBtn(showPicker, "#8B6CF8")}>
-                <AvatarIcon size={18} />
-              </button>
-            )}
-            {role === "client" && (
-              <button onClick={cycleVoice} title={voiceLabel}
-                style={{ ...sideBtn(voicePreset !== "off", "#4DA6FF"), flexDirection: "column", gap: 2, height: "auto", padding: "8px 4px", minWidth: 40 }}>
-                <VoiceIcon />
-                <span style={{ fontSize: 8, letterSpacing: "0.02em", lineHeight: 1, color: voicePreset !== "off" ? "#4DA6FF" : "#4A5A72" }}>
-                  {voicePreset === "off" ? "откл" : voicePreset === "lower" ? "ниже" : "выше"}
-                </span>
-              </button>
-            )}
+            <button onClick={() => setShowPicker(s => !s)} title="Маска" style={sideBtn(showPicker, "#8B6CF8")}>
+              <MaskIcon size={18} />
+            </button>
+            <button onClick={() => setShowSettings(s => !s)} title="Настройки" style={sideBtn(showSettings, "#8A9BB8")}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
           </div>
 
-          {/* ── FLOATING PANELS ─────────────────────────────────── */}
+          {/* ── FLOATING PANELS ────────────────────────────────── */}
           {showNotepad && <div style={floatingPanel("left", 70)}><SessionNotepad roomId={roomId} /></div>}
           {showBreath  && <div style={floatingPanel("left", 70)}><BreathingSync /></div>}
 
-          {showPicker && role === "client" && (
+          {showPicker && (
             <div style={floatingPanel("left", 70)}>
               <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4A5A72", marginBottom: 14 }}>
-                Выберите аватар
+                Ваш аватар
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                {AVATAR_VARIANTS.map((v, i) => (
-                  <button key={v} onClick={() => { setAvatarVariant(i); setShowPicker(false); }}
+                {VARIANTS.map(v => (
+                  <button key={v} onClick={() => { setVariant(v); setShowPicker(false); }}
                     style={{
-                      padding: 0, borderRadius: 10, cursor: "pointer", overflow: "hidden",
-                      border: `2px solid ${avatarVariant === i ? "#4DA6FF" : "rgba(255,255,255,0.08)"}`,
-                      background: "transparent", width: 70, height: 70,
-                      transition: "all 0.18s ease",
+                      padding: "10px 6px", borderRadius: 10, cursor: "pointer",
+                      border: `2px solid ${variant === v ? "#4DA6FF" : "rgba(255,255,255,0.08)"}`,
+                      background: variant === v ? "rgba(77,166,255,0.12)" : "rgba(255,255,255,0.04)",
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                      fontFamily: "inherit", transition: "all 0.18s ease",
                     }}>
-                    <AvatarCanvas3D
-                      landmarksRef={{ current: null }}
-                      avatarSeed={roomId + v}
-                      width={70} height={70}
-                      style={{ width: 70, height: 70 }}
-                    />
+                    <AvatarSwatch seed={seedFor(roomId, v)} size={30} selected={variant === v} />
+                    <span style={{ fontSize: 10, color: variant === v ? "#4DA6FF" : "#8A9BB8" }}>
+                      {`Аватар ${v + 1}`}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {ambient.enabled && (
-            <div style={{ ...floatingPanel("left", 70), top: "auto", bottom: 100, transform: "none" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4A5A72", marginBottom: 10 }}>
-                Звуки природы
+          {showSettings && (
+            <div style={floatingPanel("left", 70)}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4A5A72", marginBottom: 14 }}>
+                Настройки
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, marginBottom: 10 }}>
-                {(["rain", "forest", "ocean"] as AmbientPreset[]).map(p => (
-                  <button key={p} onClick={() => ambient.setPreset(p)}
+
+              {/* Voice masking */}
+              <div style={{ fontSize: 11, color: "#4A5A72", marginBottom: 8 }}>Голос</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, marginBottom: 14 }}>
+                {(["off", "lower", "higher"] as VoicePreset[]).map(p => (
+                  <button key={p} onClick={() => setVoicePreset(p)}
                     style={{
                       padding: "6px 4px", borderRadius: 8, fontSize: 11, cursor: "pointer",
-                      background: ambient.preset === p ? "rgba(77,166,255,0.18)" : "rgba(255,255,255,0.04)",
-                      border: `1px solid ${ambient.preset === p ? "rgba(77,166,255,0.4)" : "rgba(255,255,255,0.06)"}`,
-                      color: ambient.preset === p ? "#4DA6FF" : "#8A9BB8", fontFamily: "inherit",
+                      background: voicePreset === p ? "rgba(139,108,248,0.2)" : "rgba(255,255,255,0.04)",
+                      border: `1px solid ${voicePreset === p ? "rgba(139,108,248,0.45)" : "rgba(255,255,255,0.06)"}`,
+                      color: voicePreset === p ? "#B49CFF" : "#8A9BB8", fontFamily: "inherit",
                     }}>
-                    {p === "rain" ? "Дождь" : p === "forest" ? "Лес" : "Океан"}
+                    {p === "off" ? "Обычный" : p === "lower" ? "Ниже" : "Выше"}
                   </button>
                 ))}
               </div>
-              <div style={{ fontSize: 11, color: "#4A5A72", marginBottom: 6 }}>Громкость</div>
-              <input type="range" min={0} max={1} step={0.05} value={ambient.volume}
-                onChange={e => ambient.setVolume(Number(e.target.value))}
-                style={{ width: "100%", accentColor: "#4DA6FF" }}/>
+
+              {ambient.enabled && (
+                <>
+                  <div style={{ fontSize: 11, color: "#4A5A72", marginBottom: 8 }}>Звуки природы</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, marginBottom: 10 }}>
+                    {(["rain", "forest", "ocean"] as AmbientPreset[]).map(p => (
+                      <button key={p} onClick={() => ambient.setPreset(p)}
+                        style={{
+                          padding: "6px 4px", borderRadius: 8, fontSize: 11, cursor: "pointer",
+                          background: ambient.preset === p ? "rgba(77,166,255,0.18)" : "rgba(255,255,255,0.04)",
+                          border: `1px solid ${ambient.preset === p ? "rgba(77,166,255,0.4)" : "rgba(255,255,255,0.06)"}`,
+                          color: ambient.preset === p ? "#4DA6FF" : "#8A9BB8", fontFamily: "inherit",
+                        }}>
+                        {p === "rain" ? "Дождь" : p === "forest" ? "Лес" : "Океан"}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#4A5A72", marginBottom: 6 }}>Громкость</div>
+                  <input type="range" min={0} max={1} step={0.05} value={ambient.volume}
+                    onChange={e => ambient.setVolume(Number(e.target.value))}
+                    style={{ width: "100%", accentColor: "#4DA6FF" }}/>
+                </>
+              )}
             </div>
           )}
 
-          {/* ── BOTTOM CONTROLS ─────────────────────────────────── */}
+          {/* ── BOTTOM CONTROLS ────────────────────────────────── */}
           <div style={{
             position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)",
             display: "flex", alignItems: "center", gap: 10, zIndex: 25,
             transition: "opacity 0.35s ease",
-            opacity: showControls ? 1 : 0, pointerEvents: showControls ? "auto" : "none",
+            opacity: showControls ? 1 : 0,
+            pointerEvents: showControls ? "auto" : "none",
           }}>
-            <CtrlBtn active={isMuted} activeColor="#FF4D4D" onClick={toggleMute} title={isMuted ? "Включить микрофон" : "Выключить микрофон"}>
+            <CtrlBtn active={isMuted}     activeColor="#FF4D4D" onClick={toggleMute}   title={isMuted     ? "Включить микрофон" : "Выключить микрофон"}>
               <MicIcon muted={isMuted} />
             </CtrlBtn>
-            {role === "psychologist" && (
-              <CtrlBtn active={isCameraOff} activeColor="#FF4D4D" onClick={toggleCamera} title={isCameraOff ? "Включить камеру" : "Выключить камеру"}>
-                <CamIcon off={isCameraOff} />
-              </CtrlBtn>
-            )}
+            <CtrlBtn active={isCameraOff} activeColor="#FF4D4D" onClick={toggleCamera} title={isCameraOff ? "Включить камеру"    : "Выключить камеру"}>
+              <CamIcon off={isCameraOff} />
+            </CtrlBtn>
             <button
               onClick={handleHangUp}
               title="Завершить звонок"
@@ -636,9 +610,10 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
               onMouseEnter={e => Object.assign((e.currentTarget as HTMLElement).style, { transform: "scale(1.1)", boxShadow: "0 6px 30px rgba(255,77,77,0.55)" })}
               onMouseLeave={e => Object.assign((e.currentTarget as HTMLElement).style, { transform: "scale(1)", boxShadow: "0 4px 22px rgba(255,77,77,0.4)" })}
             >
-              <HangUpIcon />
+              <PhoneOffIcon />
             </button>
           </div>
+
         </div>
       )}
 
@@ -697,7 +672,7 @@ function floatingPanel(side: "left" | "right", offsetX: number): React.CSSProper
     position: "absolute", top: "50%", transform: "translateY(-50%)",
     background: "rgba(10,13,24,0.92)", backdropFilter: "blur(24px)",
     border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16,
-    padding: 18, zIndex: 26, width: 240,
+    padding: 18, zIndex: 26, width: 230,
     boxShadow: "0 16px 48px rgba(0,0,0,0.7)",
     color: "#F0F4FF",
   };

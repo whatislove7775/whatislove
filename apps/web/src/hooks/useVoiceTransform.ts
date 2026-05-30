@@ -9,84 +9,67 @@ interface UseVoiceTransformOptions {
   preset: VoicePreset;
 }
 
+/**
+ * useVoiceTransform — local, in-browser voice masking (no server compute).
+ *
+ * A lowshelf → peaking → highshelf BiquadFilter chain reshapes the voice's
+ * formants so it sounds noticeably different while staying intelligible.
+ *
+ * The output MediaStream is created ONCE per input and stays stable across
+ * preset changes — switching presets only retunes the filter gains, so the
+ * WebRTC connection is never torn down mid-call.
+ */
 export function useVoiceTransform({ inputStream, preset }: UseVoiceTransformOptions) {
   const [transformedStream, setTransformedStream] = useState<MediaStream | null>(null);
-  const ctxRef = useRef<AudioContext | null>(null);
+  const ctxRef    = useRef<AudioContext | null>(null);
+  const filtersRef = useRef<{ low: BiquadFilterNode; peak: BiquadFilterNode; high: BiquadFilterNode } | null>(null);
 
+  // Build the audio graph once per input stream.
   useEffect(() => {
-    // Close previous AudioContext on every re-run
-    if (ctxRef.current) {
-      ctxRef.current.close().catch(() => {});
-      ctxRef.current = null;
-    }
     setTransformedStream(null);
-
-    if (!inputStream) return;
-
-    // preset === "off": return inputStream unchanged
-    if (preset === "off") {
+    filtersRef.current = null;
+    if (!inputStream || inputStream.getAudioTracks().length === 0) {
       setTransformedStream(inputStream);
       return;
     }
 
-    const audioTracks = inputStream.getAudioTracks();
-    if (audioTracks.length === 0) {
-      setTransformedStream(inputStream);
-      return;
-    }
-
-    let cancelled = false;
     const audioCtx = new AudioContext();
     ctxRef.current = audioCtx;
 
-    const source = audioCtx.createMediaStreamSource(new MediaStream(audioTracks));
+    const source = audioCtx.createMediaStreamSource(new MediaStream(inputStream.getAudioTracks()));
     const dest   = audioCtx.createMediaStreamDestination();
 
-    // BiquadFilter chain: lowshelf → peaking → highshelf
-    const lowshelf = audioCtx.createBiquadFilter();
-    lowshelf.type            = "lowshelf";
-    lowshelf.frequency.value = 320;
+    const low = audioCtx.createBiquadFilter();
+    low.type = "lowshelf"; low.frequency.value = 320;
+    const peak = audioCtx.createBiquadFilter();
+    peak.type = "peaking"; peak.frequency.value = 1000; peak.Q.value = 1.2;
+    const high = audioCtx.createBiquadFilter();
+    high.type = "highshelf"; high.frequency.value = 2500;
 
-    const peaking = audioCtx.createBiquadFilter();
-    peaking.type            = "peaking";
-    peaking.frequency.value = 1000;
-    peaking.Q.value         = 1.2;
+    source.connect(low); low.connect(peak); peak.connect(high); high.connect(dest);
+    filtersRef.current = { low, peak, high };
 
-    const highshelf = audioCtx.createBiquadFilter();
-    highshelf.type            = "highshelf";
-    highshelf.frequency.value = 2500;
-
-    if (preset === "lower") {
-      lowshelf.gain.value  =  7;
-      peaking.gain.value   = -4;
-      highshelf.gain.value = -3;
-    } else {
-      // "higher"
-      lowshelf.gain.value  = -6;
-      peaking.gain.value   =  3;
-      highshelf.gain.value =  5;
-    }
-
-    source.connect(lowshelf);
-    lowshelf.connect(peaking);
-    peaking.connect(highshelf);
-    highshelf.connect(dest);
-
-    if (!cancelled) {
-      // Transformed audio + original video tracks from inputStream
-      const outStream = new MediaStream([
-        ...dest.stream.getAudioTracks(),
-        ...inputStream.getVideoTracks(),
-      ]);
-      setTransformedStream(outStream);
-    }
+    setTransformedStream(new MediaStream(dest.stream.getAudioTracks()));
 
     return () => {
-      cancelled = true;
       audioCtx.close().catch(() => {});
       if (ctxRef.current === audioCtx) ctxRef.current = null;
+      filtersRef.current = null;
     };
-  }, [inputStream, preset]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [inputStream]);
+
+  // Retune filter gains when the preset changes (no graph rebuild).
+  useEffect(() => {
+    const f = filtersRef.current;
+    if (!f) return;
+    const [lo, pk, hi] =
+      preset === "lower"  ? [ 7, -4, -3] :
+      preset === "higher" ? [-6,  3,  5] :
+      /* off */             [ 0,  0,  0];
+    f.low.gain.value  = lo;
+    f.peak.gain.value = pk;
+    f.high.gain.value = hi;
+  }, [preset, transformedStream]);
 
   return { transformedStream };
 }
