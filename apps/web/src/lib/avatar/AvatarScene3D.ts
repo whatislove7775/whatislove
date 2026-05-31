@@ -72,6 +72,7 @@ export class AvatarScene3D {
   private raf       = 0;
   private disposed  = false;
   private loadToken = 0;
+  private static readonly modelCache = new Map<string, THREE.Object3D>();
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({
@@ -108,37 +109,54 @@ export class AvatarScene3D {
     this.memojiRig  = null;
     this.morphMeshes = [];
 
-    // facecap.glb uses EXT_meshopt_compression (geometry) + KHR_texture_basisu
-    // (KTX2 textures). It does NOT use Draco. Both decoders must be registered
-    // before load or GLTFLoader throws "setMeshoptDecoder/setKTX2Loader must be
-    // called before loading compressed files".
-    //  - MeshoptDecoder: self-contained module with embedded WASM (no file to serve)
-    //  - KTX2Loader: basis_transcoder.wasm served same-origin from /basis/
-    const ktx2Loader = new KTX2Loader();
-    ktx2Loader.setTranscoderPath("/basis/");
-    ktx2Loader.detectSupport(this.renderer);
-
-    const loader = new GLTFLoader();
-    loader.setKTX2Loader(ktx2Loader);
-    loader.setMeshoptDecoder(MeshoptDecoder);
-
     // Try each URL in order; first success wins.
+    // Check the static model cache first to avoid redundant network requests.
     let gltfScene: THREE.Object3D | null = null;
     const urls: string[] = (spec as any).urls ?? [(spec as any).url];
     for (const url of urls) {
-      try {
-        console.info("[AvatarScene3D] loading from", url);
-        const gltf = await loader.loadAsync(url);
-        if (this.disposed || token !== this.loadToken) { ktx2Loader.dispose(); return; }
-        gltfScene = gltf.scene;
+      const cached = AvatarScene3D.modelCache.get(url);
+      if (cached) {
+        console.info("[AvatarScene3D] cache hit:", url);
+        gltfScene = cached.clone();
         gltfScene.traverse(o => { o.frustumCulled = false; });
-        console.info("[AvatarScene3D] loaded OK:", url);
         break;
-      } catch (err) {
-        console.warn("[AvatarScene3D] failed:", url, (err as Error).message ?? err);
       }
     }
-    ktx2Loader.dispose();
+
+    if (!gltfScene) {
+      // facecap.glb uses EXT_meshopt_compression (geometry) + KHR_texture_basisu
+      // (KTX2 textures). It does NOT use Draco. Both decoders must be registered
+      // before load or GLTFLoader throws "setMeshoptDecoder/setKTX2Loader must be
+      // called before loading compressed files".
+      //  - MeshoptDecoder: self-contained module with embedded WASM (no file to serve)
+      //  - KTX2Loader: basis_transcoder.wasm served same-origin from /basis/
+      const ktx2Loader = new KTX2Loader();
+      ktx2Loader.setTranscoderPath("/basis/");
+      ktx2Loader.detectSupport(this.renderer);
+
+      const loader = new GLTFLoader();
+      loader.setKTX2Loader(ktx2Loader);
+      loader.setMeshoptDecoder(MeshoptDecoder);
+
+      for (const url of urls) {
+        try {
+          console.info("[AvatarScene3D] loading from", url);
+          const gltf = await loader.loadAsync(url);
+          if (this.disposed || token !== this.loadToken) { ktx2Loader.dispose(); return; }
+          // Cache the original so future loads skip the network request.
+          AvatarScene3D.modelCache.set(url, gltf.scene);
+          // Use a clone so applyPreset/loadGltfHead don't mutate the cached original.
+          gltfScene = gltf.scene.clone();
+          gltfScene.traverse(o => { o.frustumCulled = false; });
+          console.info("[AvatarScene3D] loaded OK:", url);
+          break;
+        } catch (err) {
+          console.warn("[AvatarScene3D] failed:", url, (err as Error).message ?? err);
+        }
+      }
+      ktx2Loader.dispose();
+    }
+
     if (this.disposed || token !== this.loadToken) return;
 
     if (gltfScene) {

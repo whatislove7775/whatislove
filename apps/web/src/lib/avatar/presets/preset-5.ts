@@ -4,6 +4,7 @@ import type { AvatarPreset } from "../presets";
 const preset: AvatarPreset = {
   id: 5,
   name: "Соль",
+  gender: "male",
   skinH: 18,  skinS: 52,  skinL: 54,
   hairH: 24,  hairS: 55,  hairL: 22,
   shirtH: 342, shirtS: 48, shirtL: 20,

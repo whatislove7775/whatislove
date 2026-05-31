@@ -10,6 +10,7 @@
 export interface AvatarPreset {
   id: number;
   name: string;
+  gender: "male" | "female";
   // HSL components (H: 0-360, S: 0-100, L: 0-100)
   skinH: number;  skinS: number;  skinL: number;
   hairH: number;  hairS: number;  hairL: number;

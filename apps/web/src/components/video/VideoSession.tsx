@@ -126,10 +126,33 @@ function LogoIcon({ size = 20 }: { size?: number }) {
   );
 }
 
+// ─── Gender Toggle ────────────────────────────────────────────────────────────
+function GenderToggle({ value, onChange }: { value: "female" | "male"; onChange: (g: "female" | "male") => void }) {
+  return (
+    <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+      {(["female", "male"] as const).map(g => (
+        <button key={g} onClick={() => onChange(g)} style={{
+          flex: 1, padding: "7px 0", borderRadius: 9, cursor: "pointer", fontSize: 12, fontWeight: 600,
+          fontFamily: "inherit", transition: "all 0.15s ease",
+          background: value === g ? "rgba(139,108,248,0.22)" : "rgba(255,255,255,0.04)",
+          border: `1.5px solid ${value === g ? "rgba(139,108,248,0.6)" : "rgba(255,255,255,0.08)"}`,
+          color: value === g ? "#C8B4FF" : "#4A5A72",
+        }}>
+          {g === "female" ? "♀ Женский" : "♂ Мужской"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const [started,      setStarted]      = useState(false);
-  const [presetIdx,    setPresetIdx]    = useState(() => Math.floor(Math.random() * AVATAR_PRESETS.length));
+  const [gender,       setGender]       = useState<"female" | "male">("female");
+  const [presetIdx,    setPresetIdx]    = useState(() => {
+    const first = AVATAR_PRESETS.findIndex(p => p.gender === "female");
+    return first >= 0 ? first : 0;
+  });
   const [voicePreset,  setVoicePreset]  = useState<VoicePreset>("off");
   const [showPicker,   setShowPicker]   = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -140,6 +163,12 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const hideTimerRef      = useRef<ReturnType<typeof setTimeout>>();
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const ambient = useAmbientSound(null);
+
+  // Reset presetIdx to first matching preset when gender changes.
+  useEffect(() => {
+    const first = AVATAR_PRESETS.findIndex(p => p.gender === gender);
+    if (first >= 0) setPresetIdx(first);
+  }, [gender]);
 
   const activePreset = AVATAR_PRESETS[presetIdx] ?? AVATAR_PRESETS[0];
 
@@ -271,20 +300,28 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
               Выберите анонимный аватар
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 10 }}>
-              {AVATAR_PRESETS.map((p, i) => (
-                <PresetSwatch key={p.id} preset={p} size={44} selected={presetIdx === i}
-                  onClick={() => setPresetIdx(i)} />
-              ))}
-            </div>
+            <GenderToggle value={gender} onChange={setGender} />
 
-            {/* Selected preset name */}
-            <div style={{
-              textAlign: "center", fontSize: 13, color: "#8A9BB8",
-              marginBottom: 18, fontWeight: 500,
-            }}>
-              {activePreset.name}
-            </div>
+            {(() => {
+              const filteredPresets = AVATAR_PRESETS.filter(p => p.gender === gender);
+              return (
+                <>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 10 }}>
+                    {filteredPresets.map(p => (
+                      <PresetSwatch key={p.id} preset={p} size={44} selected={presetIdx === AVATAR_PRESETS.indexOf(p)}
+                        onClick={() => setPresetIdx(AVATAR_PRESETS.indexOf(p))} />
+                    ))}
+                  </div>
+                  {/* Selected preset name */}
+                  <div style={{
+                    textAlign: "center", fontSize: 13, color: "#8A9BB8",
+                    marginBottom: 18, fontWeight: 500,
+                  }}>
+                    {activePreset.name}
+                  </div>
+                </>
+              );
+            })()}
 
             <div style={{
               display: "flex", alignItems: "center", gap: 10,
@@ -514,22 +551,26 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
               <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4A5A72", marginBottom: 14 }}>
                 Ваш аватар
               </div>
+              <GenderToggle value={gender} onChange={setGender} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-                {AVATAR_PRESETS.map((p, i) => (
-                  <button key={p.id} onClick={() => { setPresetIdx(i); setShowPicker(false); }}
-                    style={{
-                      padding: "10px 6px", borderRadius: 12, cursor: "pointer",
-                      border: `2px solid ${presetIdx === i ? "#4DA6FF" : "rgba(255,255,255,0.08)"}`,
-                      background: presetIdx === i ? "rgba(77,166,255,0.12)" : "rgba(255,255,255,0.04)",
-                      display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-                      fontFamily: "inherit", transition: "all 0.18s ease",
-                    }}>
-                    <PresetSwatch preset={p} size={36} selected={presetIdx === i} />
-                    <span style={{ fontSize: 10, color: presetIdx === i ? "#4DA6FF" : "#8A9BB8" }}>
-                      {p.name}
-                    </span>
-                  </button>
-                ))}
+                {AVATAR_PRESETS.filter(p => p.gender === gender).map(p => {
+                  const i = AVATAR_PRESETS.indexOf(p);
+                  return (
+                    <button key={p.id} onClick={() => { setPresetIdx(i); setShowPicker(false); }}
+                      style={{
+                        padding: "10px 6px", borderRadius: 12, cursor: "pointer",
+                        border: `2px solid ${presetIdx === i ? "#4DA6FF" : "rgba(255,255,255,0.08)"}`,
+                        background: presetIdx === i ? "rgba(77,166,255,0.12)" : "rgba(255,255,255,0.04)",
+                        display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                        fontFamily: "inherit", transition: "all 0.18s ease",
+                      }}>
+                      <PresetSwatch preset={p} size={36} selected={presetIdx === i} />
+                      <span style={{ fontSize: 10, color: presetIdx === i ? "#4DA6FF" : "#8A9BB8" }}>
+                        {p.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

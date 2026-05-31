@@ -15,25 +15,31 @@ interface UseVoiceTransformOptions {
  * A lowshelf → peaking → highshelf BiquadFilter chain reshapes the voice's
  * formants so it sounds noticeably different while staying intelligible.
  *
- * The output MediaStream is created ONCE per input and stays stable across
- * preset changes — switching presets only retunes the filter gains, so the
- * WebRTC connection is never torn down mid-call.
+ * Fast path: when preset is "off", the AudioContext is bypassed entirely —
+ * the raw inputStream is returned as-is with zero added latency.
+ *
+ * Switching between "lower" / "higher" rebuilds the graph (and the AudioContext)
+ * once. Switching TO "off" tears it down and returns the raw stream immediately.
  */
 export function useVoiceTransform({ inputStream, preset }: UseVoiceTransformOptions) {
   const [transformedStream, setTransformedStream] = useState<MediaStream | null>(null);
   const ctxRef    = useRef<AudioContext | null>(null);
   const filtersRef = useRef<{ low: BiquadFilterNode; peak: BiquadFilterNode; high: BiquadFilterNode } | null>(null);
 
-  // Build the audio graph once per input stream.
   useEffect(() => {
     setTransformedStream(null);
     filtersRef.current = null;
+
     if (!inputStream || inputStream.getAudioTracks().length === 0) {
       setTransformedStream(inputStream);
       return;
     }
+    if (preset === "off") {
+      setTransformedStream(inputStream);
+      return;
+    }
 
-    const audioCtx = new AudioContext();
+    const audioCtx = new AudioContext({ latencyHint: "interactive", sampleRate: 48000 });
     ctxRef.current = audioCtx;
 
     const source = audioCtx.createMediaStreamSource(new MediaStream(inputStream.getAudioTracks()));
@@ -49,6 +55,11 @@ export function useVoiceTransform({ inputStream, preset }: UseVoiceTransformOpti
     source.connect(low); low.connect(peak); peak.connect(high); high.connect(dest);
     filtersRef.current = { low, peak, high };
 
+    const [lo, pk, hi] =
+      preset === "lower"  ? [ 7, -4, -3] :
+      /* higher */          [-6,  3,  5];
+    low.gain.value = lo; peak.gain.value = pk; high.gain.value = hi;
+
     setTransformedStream(new MediaStream(dest.stream.getAudioTracks()));
 
     return () => {
@@ -56,20 +67,7 @@ export function useVoiceTransform({ inputStream, preset }: UseVoiceTransformOpti
       if (ctxRef.current === audioCtx) ctxRef.current = null;
       filtersRef.current = null;
     };
-  }, [inputStream]);
-
-  // Retune filter gains when the preset changes (no graph rebuild).
-  useEffect(() => {
-    const f = filtersRef.current;
-    if (!f) return;
-    const [lo, pk, hi] =
-      preset === "lower"  ? [ 7, -4, -3] :
-      preset === "higher" ? [-6,  3,  5] :
-      /* off */             [ 0,  0,  0];
-    f.low.gain.value  = lo;
-    f.peak.gain.value = pk;
-    f.high.gain.value = hi;
-  }, [preset, transformedStream]);
+  }, [inputStream, preset]);
 
   return { transformedStream };
 }
