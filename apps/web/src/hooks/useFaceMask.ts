@@ -20,7 +20,6 @@ import type { AvatarPreset } from "@/lib/avatar/presets";
 interface UseFaceMaskOptions {
   enabled:        boolean;
   preset:         AvatarPreset;
-  previewCanvas?: HTMLCanvasElement | null; // local PIP canvas (2D blit)
 }
 
 // 384² keeps the avatar crisp at portrait size while cutting fragment-shader
@@ -28,37 +27,38 @@ interface UseFaceMaskOptions {
 const RENDER_W = 384;
 const RENDER_H = 384;
 
-export function useFaceMask({ enabled, preset, previewCanvas }: UseFaceMaskOptions) {
+export function useFaceMask({ enabled, preset }: UseFaceMaskOptions) {
   const [videoStream,      setVideoStream]      = useState<MediaStream | null>(null);
   const [audioStream,      setAudioStream]      = useState<MediaStream | null>(null);
   const [isReady,          setIsReady]          = useState(false);
   const [lightingWarning,  setLightingWarning]  = useState(false);
+  const [avatarCanvas,     setAvatarCanvas]     = useState<HTMLCanvasElement | null>(null);
 
   const sceneRef      = useRef<import("@/lib/avatar/AvatarScene3D").AvatarScene3D | null>(null);
   const landmarkerRef = useRef<any>(null);
   const realStreamRef = useRef<MediaStream | null>(null);
-  const previewRef    = useRef<HTMLCanvasElement | null>(null);
   const lastFaceRef   = useRef(Date.now());
   const presetRef     = useRef(preset);
 
-  presetRef.current  = preset;
-  previewRef.current = previewCanvas ?? null;
+  presetRef.current = preset;
 
   // ── Main pipeline init ────────────────────────────────────────────
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
     let detectRaf = 0;
-    let blitRaf   = 0;
 
     // Hidden video — feeds MediaPipe; never transmitted
     const video = document.createElement("video");
     video.autoplay = true; video.playsInline = true; video.muted = true;
     video.width = 640; video.height = 480;
 
-    // Offscreen WebGL canvas — avatar renders here, captured for WebRTC
+    // WebGL canvas — avatar renders here, shown directly as preview and captured for WebRTC.
+    // We skip the blit-to-2D-canvas step: the WebGL canvas IS the visible element.
+    // This avoids silent drawImage() failures on Safari with preserved WebGL buffers.
     const glCanvas = document.createElement("canvas");
     glCanvas.width = RENDER_W; glCanvas.height = RENDER_H;
+    if (!cancelled) setAvatarCanvas(glCanvas);
 
     const init = async () => {
       // ── 1. Camera + mic ─────────────────────────────────────────
@@ -166,24 +166,6 @@ export function useFaceMask({ enabled, preset, previewCanvas }: UseFaceMaskOptio
       };
       detect();
 
-      // ── 5. Preview blit (avatar → local PIP canvas) ──────────────
-      // Throttled to ~15 fps — the small local thumbnail doesn't need full
-      // framerate, and skipping frames keeps the main thread free for encode.
-      let lastBlitMs = 0;
-      const BLIT_INTERVAL = 1000 / 15;
-      const blit = () => {
-        if (cancelled) return;
-        blitRaf = requestAnimationFrame(blit);
-        const now = performance.now();
-        if (now - lastBlitMs < BLIT_INTERVAL) return;
-        lastBlitMs = now;
-        const pc = previewRef.current;
-        const gl = sceneRef.current?.domElement;
-        if (!pc || !gl) return;
-        const ctx = pc.getContext("2d");
-        if (ctx) ctx.drawImage(gl, 0, 0, pc.width, pc.height);
-      };
-      blit();
     };
 
     init().catch(console.error);
@@ -191,7 +173,6 @@ export function useFaceMask({ enabled, preset, previewCanvas }: UseFaceMaskOptio
     return () => {
       cancelled = true;
       cancelAnimationFrame(detectRaf);
-      cancelAnimationFrame(blitRaf);
       landmarkerRef.current?.close?.();
       landmarkerRef.current = null;
       sceneRef.current?.dispose();
@@ -200,6 +181,7 @@ export function useFaceMask({ enabled, preset, previewCanvas }: UseFaceMaskOptio
       realStreamRef.current = null;
       setVideoStream(null);
       setAudioStream(null);
+      setAvatarCanvas(null);
       setIsReady(false);
       setLightingWarning(false);
     };
@@ -216,5 +198,5 @@ export function useFaceMask({ enabled, preset, previewCanvas }: UseFaceMaskOptio
     return () => { active = false; };
   }, [preset, enabled]);
 
-  return { videoStream, audioStream, isReady, lightingWarning };
+  return { videoStream, audioStream, isReady, lightingWarning, avatarCanvas };
 }

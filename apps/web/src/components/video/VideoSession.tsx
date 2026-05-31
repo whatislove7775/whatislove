@@ -131,23 +131,22 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   const [started,      setStarted]      = useState(false);
   const [presetIdx,    setPresetIdx]    = useState(() => Math.floor(Math.random() * AVATAR_PRESETS.length));
   const [voicePreset,  setVoicePreset]  = useState<VoicePreset>("off");
-  const [canvasEl,     setCanvasEl]     = useState<HTMLCanvasElement | null>(null);
   const [showPicker,   setShowPicker]   = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showNotepad,  setShowNotepad]  = useState(false);
   const [showBreath,   setShowBreath]   = useState(false);
 
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const hideTimerRef      = useRef<ReturnType<typeof setTimeout>>();
+  const previewContainerRef = useRef<HTMLDivElement>(null);
   const ambient = useAmbientSound(null);
 
   const activePreset = AVATAR_PRESETS[presetIdx] ?? AVATAR_PRESETS[0];
 
   // ── On-device Memoji pipeline ────────────────────────────────────
-  const { videoStream, audioStream, isReady: maskReady, lightingWarning } = useFaceMask({
-    enabled:       started,
-    preset:        activePreset,
-    previewCanvas: canvasEl,
+  const { videoStream, audioStream, isReady: maskReady, lightingWarning, avatarCanvas } = useFaceMask({
+    enabled: started,
+    preset:  activePreset,
   });
 
   // ── Voice masking (browser AudioContext — no server) ─────────────
@@ -182,6 +181,18 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
   useEffect(() => {
     if (!showControls) { setShowPicker(false); setShowSettings(false); }
   }, [showControls]);
+
+  // Mount the WebGL canvas directly into the preview container.
+  // Skips the blit-to-2D step which fails silently on Safari with KTX2 textures.
+  useEffect(() => {
+    const container = previewContainerRef.current;
+    if (!container || !avatarCanvas) return;
+    Object.assign(avatarCanvas.style, {
+      width: "100%", height: "100%", display: "block", borderRadius: "16px",
+    });
+    container.appendChild(avatarCanvas);
+    return () => { if (avatarCanvas.parentNode === container) container.removeChild(avatarCanvas); };
+  }, [avatarCanvas]);
 
   const handleHangUp = () => { ambient.setEnabled(false); hangUp(); };
 
@@ -330,15 +341,15 @@ export function VideoSession({ roomId, role, onEnd }: VideoSessionProps) {
             onMouseMove={resetHide} onTouchStart={resetHide}
           />
 
-          {/* ── LOCAL PREVIEW — your avatar ───────────────────── */}
-          <canvas
-            ref={setCanvasEl}
-            width={512} height={512}
+          {/* ── LOCAL PREVIEW — WebGL canvas mounted imperatively ── */}
+          <div
+            ref={previewContainerRef}
             style={{
               position: "absolute", bottom: 90, right: 16, zIndex: 15,
               width: 160, height: 160, borderRadius: 16,
               border: "1px solid rgba(255,255,255,0.14)",
               background: "linear-gradient(155deg,#151d2e 0%,#0a0f1c 100%)",
+              overflow: "hidden",
               opacity: maskReady ? 1 : 0.35,
               transition: "opacity 0.5s ease",
             }}
