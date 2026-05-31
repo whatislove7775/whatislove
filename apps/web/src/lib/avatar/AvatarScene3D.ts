@@ -11,8 +11,8 @@
 
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
+import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { AvatarSpec } from "./rpmConfig";
 import type { AvatarPreset } from "./presets";
@@ -108,18 +108,19 @@ export class AvatarScene3D {
     this.memojiRig  = null;
     this.morphMeshes = [];
 
-    // facecap.glb uses both Draco mesh compression and KTX2 textures.
-    // Both decoders are served same-origin to avoid COEP issues.
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath("/draco/");
-
+    // facecap.glb uses EXT_meshopt_compression (geometry) + KHR_texture_basisu
+    // (KTX2 textures). It does NOT use Draco. Both decoders must be registered
+    // before load or GLTFLoader throws "setMeshoptDecoder/setKTX2Loader must be
+    // called before loading compressed files".
+    //  - MeshoptDecoder: self-contained module with embedded WASM (no file to serve)
+    //  - KTX2Loader: basis_transcoder.wasm served same-origin from /basis/
     const ktx2Loader = new KTX2Loader();
     ktx2Loader.setTranscoderPath("/basis/");
     ktx2Loader.detectSupport(this.renderer);
 
     const loader = new GLTFLoader();
-    loader.setDRACOLoader(dracoLoader);
     loader.setKTX2Loader(ktx2Loader);
+    loader.setMeshoptDecoder(MeshoptDecoder);
 
     // Try each URL in order; first success wins.
     let gltfScene: THREE.Object3D | null = null;
@@ -128,7 +129,7 @@ export class AvatarScene3D {
       try {
         console.info("[AvatarScene3D] loading from", url);
         const gltf = await loader.loadAsync(url);
-        if (this.disposed || token !== this.loadToken) { dracoLoader.dispose(); ktx2Loader.dispose(); return; }
+        if (this.disposed || token !== this.loadToken) { ktx2Loader.dispose(); return; }
         gltfScene = gltf.scene;
         gltfScene.traverse(o => { o.frustumCulled = false; });
         console.info("[AvatarScene3D] loaded OK:", url);
@@ -137,7 +138,6 @@ export class AvatarScene3D {
         console.warn("[AvatarScene3D] failed:", url, (err as Error).message ?? err);
       }
     }
-    dracoLoader.dispose();
     ktx2Loader.dispose();
     if (this.disposed || token !== this.loadToken) return;
 
