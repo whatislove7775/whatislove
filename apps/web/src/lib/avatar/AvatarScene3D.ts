@@ -12,6 +12,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { AvatarSpec } from "./rpmConfig";
 import type { AvatarPreset } from "./presets";
@@ -107,14 +108,18 @@ export class AvatarScene3D {
     this.memojiRig  = null;
     this.morphMeshes = [];
 
-    // facecap.glb uses Draco mesh compression — GLTFLoader throws without DRACOLoader.
-    // Decoder WASM is loaded from Google's CDN (reliable, proper CORS headers,
-    // works under COEP:credentialless).
+    // facecap.glb uses both Draco mesh compression and KTX2 textures.
+    // Both decoders are served same-origin to avoid COEP issues.
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath("/draco/");
 
+    const ktx2Loader = new KTX2Loader();
+    ktx2Loader.setTranscoderPath("/basis/");
+    ktx2Loader.detectSupport(this.renderer);
+
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
+    loader.setKTX2Loader(ktx2Loader);
 
     // Try each URL in order; first success wins.
     let gltfScene: THREE.Object3D | null = null;
@@ -123,7 +128,7 @@ export class AvatarScene3D {
       try {
         console.info("[AvatarScene3D] loading from", url);
         const gltf = await loader.loadAsync(url);
-        if (this.disposed || token !== this.loadToken) { dracoLoader.dispose(); return; }
+        if (this.disposed || token !== this.loadToken) { dracoLoader.dispose(); ktx2Loader.dispose(); return; }
         gltfScene = gltf.scene;
         gltfScene.traverse(o => { o.frustumCulled = false; });
         console.info("[AvatarScene3D] loaded OK:", url);
@@ -133,6 +138,7 @@ export class AvatarScene3D {
       }
     }
     dracoLoader.dispose();
+    ktx2Loader.dispose();
     if (this.disposed || token !== this.loadToken) return;
 
     if (gltfScene) {
