@@ -200,6 +200,16 @@ export class AvatarScene3D {
     // The head pivot rotates for head tracking
     this.headBone = pivot;
 
+    // Attach procedural hair in normalised world-space.
+    // hairPivot inverts the parent's scale so buildHairMesh works in
+    // consistent 0.5-unit coordinates regardless of the original model scale.
+    const headScaleFactor = size.y > 0.001 ? 0.5 / size.y : 1;
+    const hairPivot = new THREE.Group();
+    hairPivot.name = "HairPivot";
+    hairPivot.scale.setScalar(1 / headScaleFactor);
+    hairPivot.add(this.buildHairMesh(preset));
+    pivot.add(hairPivot);
+
     // Collect morph-target meshes (the head)
     gltfScene.traverse(o => {
       const m = o as THREE.Mesh;
@@ -273,7 +283,10 @@ export class AvatarScene3D {
     this.avatarRoot = root;
   }
 
-  // ── Material tinting (RPM glTF) ─────────────────────────────────────────────
+  // ── Material tinting ───────────────────────────────────────────────────────
+  // facecap.glb has a single material "lambert5" — no named skin/hair slots.
+  // We tint ALL materials as skin by default; RPM avatars with named materials
+  // get per-zone coloring via the regex paths below.
 
   private applyPreset(root: THREE.Object3D, p: AvatarPreset) {
     root.traverse(o => {
@@ -285,16 +298,94 @@ export class AvatarScene3D {
         if (!mat?.color) continue;
         const n = (mat.name || m.name || "").toLowerCase();
         if (/hair|beard|brow/.test(n)) {
-          mat.color.lerp(hsl(p.hairH, p.hairS, p.hairL), 0.85); mat.needsUpdate = true;
+          mat.color.set(hsl(p.hairH, p.hairS, p.hairL));
         } else if (/outfit|shirt|jacket|top|cloth|bottom|pants|shoe|sleeve/.test(n)) {
-          mat.color.lerp(hsl(p.shirtH, p.shirtS, p.shirtL), 0.78); mat.needsUpdate = true;
+          mat.color.set(hsl(p.shirtH, p.shirtS, p.shirtL));
         } else if (/iris/.test(n) || (/eye/.test(n) && !/brow|lash/.test(n))) {
-          mat.color.lerp(hsl(p.eyeH, p.eyeS, p.eyeL), 0.55); mat.needsUpdate = true;
-        } else if (/skin|head|body|face/.test(n) && !/eye|teeth|tongue|hair/.test(n)) {
-          mat.color.lerp(hsl(p.skinH, p.skinS, p.skinL), 0.28); mat.needsUpdate = true;
+          mat.color.set(hsl(p.eyeH, p.eyeS, p.eyeL));
+        } else if (/teeth|tongue/.test(n)) {
+          /* keep white */
+        } else {
+          // facecap.glb "lambert5" and any other untagged skin/face material
+          mat.color.set(hsl(p.skinH, p.skinS, p.skinL));
         }
+        mat.needsUpdate = true;
       }
     });
+  }
+
+  // ── Procedural hair ─────────────────────────────────────────────────────────
+  // Built in normalised world-space (head = 0.5 units tall, centre at origin).
+  // The hairPivot counteracts the parent's scale so these dimensions stay stable.
+
+  private buildHairMesh(p: AvatarPreset): THREE.Group {
+    const mat = new THREE.MeshStandardMaterial({
+      color: hsl(p.hairH, p.hairS, p.hairL), roughness: 0.84, metalness: 0,
+    });
+    const g = new THREE.Group();
+    g.name = "HairGroup";
+
+    if (p.gender === "female") {
+      // ── Female: skull cap + side volume + long back ──────────────────────
+      // Top dome
+      const dome = new THREE.Mesh(
+        new THREE.SphereGeometry(0.196, 40, 28, 0, Math.PI * 2, 0, Math.PI * 0.52),
+        mat,
+      );
+      dome.position.y = 0.065;
+      g.add(dome);
+
+      // Side curtains (L + R)
+      for (const sx of [-1, 1]) {
+        const side = new THREE.Mesh(
+          new THREE.CapsuleGeometry(0.038, 0.22, 8, 16),
+          mat,
+        );
+        side.position.set(sx * 0.162, -0.06, -0.012);
+        side.rotation.z = sx * 0.18;
+        g.add(side);
+      }
+
+      // Back volume
+      const back = new THREE.Mesh(
+        new THREE.SphereGeometry(0.14, 24, 18),
+        mat,
+      );
+      back.scale.set(1.05, 0.95, 0.80);
+      back.position.set(0, -0.04, -0.10);
+      g.add(back);
+
+      // Hairline fringe (front)
+      const fringe = new THREE.Mesh(
+        new THREE.SphereGeometry(0.185, 28, 12, 0, Math.PI * 0.9, 0, Math.PI * 0.18),
+        mat,
+      );
+      fringe.position.set(0, 0.13, 0.06);
+      fringe.rotation.x = 0.3;
+      g.add(fringe);
+
+    } else {
+      // ── Male: short tight cap + subtle temple coverage ────────────────────
+      const dome = new THREE.Mesh(
+        new THREE.SphereGeometry(0.191, 36, 22, 0, Math.PI * 2, 0, Math.PI * 0.44),
+        mat,
+      );
+      dome.position.y = 0.09;
+      g.add(dome);
+
+      // Temple sides (slight coverage)
+      for (const sx of [-1, 1]) {
+        const temple = new THREE.Mesh(
+          new THREE.SphereGeometry(0.06, 18, 14),
+          mat,
+        );
+        temple.scale.set(0.55, 0.70, 0.60);
+        temple.position.set(sx * 0.175, 0.045, -0.015);
+        g.add(temple);
+      }
+    }
+
+    return g;
   }
 
   // ── Face tracking input ─────────────────────────────────────────────────────
