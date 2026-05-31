@@ -1,40 +1,35 @@
 /**
  * rpmConfig — avatar mesh sourcing.
  *
- * The avatar is a riggged glTF (.glb) head with the 52 ARKit blendshapes that
- * MediaPipe FaceLandmarker outputs, so facial tracking drives the mesh in real
- * time (eyes, brows, jaw, lips, cheeks — the full FaceTime-style range).
+ * Avatars are rigged Ready Player Me (RPM) glTF heads carrying the 52 ARKit
+ * blendshapes that MediaPipe FaceLandmarker outputs, plus modelled hair
+ * (Wolf3D_Hair) and named Wolf3D_* materials that AvatarScene3D recolors per
+ * preset. Facial tracking drives the mesh in real time.
  *
- * STRATEGY — bundle the model with the app:
- *   The .glb is committed to apps/web/public/models and served from OUR OWN
- *   origin.  This is critical: external CDNs (models.readyplayer.me) are
- *   unreliable — when the fetch fails the renderer falls back to a crude
- *   procedural face.  A same-origin model always loads, has no CORS/COEP
- *   issues, and is cached by the browser after the first request.
+ * STRATEGY — bundle the models with the app:
+ *   The .glb files are committed to apps/web/public/models and served from OUR
+ *   OWN origin. A same-origin model always loads, has no CORS/COEP issues, and
+ *   is cached by the browser after the first request — unlike external CDNs
+ *   (models.readyplayer.me) which the user's network may block.
  *
- *   The bundled model is three.js's `facecap.glb` — a head scan rigged with
- *   the canonical 52 ARKit blendshapes (named browDown_L / eyeBlink_L / …).
- *   AvatarScene3D maps MediaPipe's `browDownLeft` → `browDown_L` at runtime.
+ *   Two gendered avatars:
+ *     - avatar-male.glb   — bearded RPM male  (Wolf3D rig, ARKit, short hair)
+ *     - avatar-female.glb — RPM female        (Wolf3D rig, ARKit, long hair)
+ *
+ *   facecap.glb is kept as a last-resort fallback (head scan, no hair).
  */
 
 import type { AvatarPreset } from "./presets";
 
-/**
- * Avatar mesh candidates, tried in order by AvatarScene3D.loadAvatar.
- * The browser (not the Docker container) fetches these URLs, so external
- * CDNs work fine from a user's browser even when the build container has
- * no outbound internet access.
- *
- * URL list:
- *  1. Same-origin /models/facecap.glb  — fastest, no CORS, works if Docker
- *     image was built with the file in public/.
- *  2. GitHub raw (r165 tag)            — reliable CDN, COEP:credentialless
- *     allows cross-origin fetches without CORP headers.
- *  3. jsDelivr npm mirror              — alternative CDN fallback.
- */
-export const AVATAR_URLS: string[] = [
-  "/models/facecap.glb",
-  "https://raw.githubusercontent.com/mrdoob/three.js/r165/examples/models/gltf/facecap.glb",
+/** Same-origin gendered avatar models, each tried in order until one loads. */
+export const MALE_URLS: string[] = [
+  "/models/avatar-male.glb",
+  "/models/avatar-female.glb",
+];
+
+export const FEMALE_URLS: string[] = [
+  "/models/avatar-female.glb",
+  "/models/avatar-male.glb",
 ];
 
 /** All AvatarScene3D needs: ordered URL list and the coloring preset. */
@@ -47,7 +42,7 @@ export interface AvatarSpec {
 export function specForPreset(preset: AvatarPreset): AvatarSpec {
   return {
     presetId: preset.id,
-    urls:     AVATAR_URLS,
+    urls:     preset.gender === "male" ? MALE_URLS : FEMALE_URLS,
     preset,
   };
 }

@@ -61,6 +61,7 @@ export class AvatarScene3D {
 
   private avatarRoot:  THREE.Object3D | null = null;
   private headBone:    THREE.Object3D | null = null;
+  private headFrameTarget: THREE.Object3D | null = null; // bbox source for camera framing
   private morphMeshes: THREE.Mesh[]          = [];
   private memojiRig:   MemojiRig | null      = null;
 
@@ -169,48 +170,25 @@ export class AvatarScene3D {
     this.smoothedInfluences.clear();
   }
 
-  // ── Rigged glTF head (primary path — facecap.glb / RPM) ─────────────────────
-  // The model is wrapped in a pivot centred on the head so head-tracking
-  // rotation pivots correctly, and the camera is framed dynamically on the
-  // head's bounding box (works for head-only or full-body meshes alike).
+  // ── Rigged glTF avatar (primary path — Ready Player Me) ─────────────────────
+  // RPM avatars are full-body with a named "Head" bone, Wolf3D_* materials,
+  // real modelled hair (Wolf3D_Hair), and 52 ARKit blendshapes. We rotate ONLY
+  // the Head bone for tracking (body stays planted) and frame the camera on the
+  // head mesh's bounding box for a portrait shot.
 
   private loadGltfHead(gltfScene: THREE.Object3D, preset: AvatarPreset) {
     gltfScene.getObjectByName("LeftHand")?.scale.set(0, 0, 0);
     gltfScene.getObjectByName("RightHand")?.scale.set(0, 0, 0);
 
-    // Tint skin/hair/eyes per preset where the material names allow it
+    // Recolor skin / hair / eyes / outfit per preset
     this.applyPreset(gltfScene, preset);
 
-    // Pivot so head rotation pivots around the head centre
-    const pivot = new THREE.Group();
-    pivot.name = "HeadPivot";
-    pivot.add(gltfScene);
+    const root = new THREE.Group();
+    root.name = "AvatarRoot";
+    root.add(gltfScene);
+    this.swapRoot(root);
 
-    // Measure, recentre on origin, scale head to ~0.5 units tall
-    this.scene.add(pivot);
-    this.renderer.render(this.scene, this.camera);
-    const box  = new THREE.Box3().setFromObject(gltfScene);
-    const size = new THREE.Vector3(); box.getSize(size);
-    const ctr  = new THREE.Vector3(); box.getCenter(ctr);
-    gltfScene.position.sub(ctr);                       // head centre → pivot origin
-    if (size.y > 0.001) pivot.scale.setScalar(0.5 / size.y);
-
-    this.swapRoot(pivot);
-
-    // The head pivot rotates for head tracking
-    this.headBone = pivot;
-
-    // Attach procedural hair in normalised world-space.
-    // hairPivot inverts the parent's scale so buildHairMesh works in
-    // consistent 0.5-unit coordinates regardless of the original model scale.
-    const headScaleFactor = size.y > 0.001 ? 0.5 / size.y : 1;
-    const hairPivot = new THREE.Group();
-    hairPivot.name = "HairPivot";
-    hairPivot.scale.setScalar(1 / headScaleFactor);
-    hairPivot.add(this.buildHairMesh(preset));
-    pivot.add(hairPivot);
-
-    // Collect morph-target meshes (the head)
+    // Collect morph-target meshes (head, teeth, eyes)
     gltfScene.traverse(o => {
       const m = o as THREE.Mesh;
       if (m.isMesh && m.morphTargetDictionary && m.morphTargetInfluences) {
@@ -218,7 +196,18 @@ export class AvatarScene3D {
       }
     });
 
-    this.frameCameraOnHead();
+    // Head tracking rotates the "Head" bone only — body stays put (like the
+    // jays0606 reference). Falls back to whole-scene rotation if no Head bone.
+    const headBone = gltfScene.getObjectByName("Head");
+    this.headBone = headBone ?? root;
+
+    // Frame camera on the head mesh's bounding box for a tight portrait.
+    const headMesh =
+      gltfScene.getObjectByName("Wolf3D_Head") ??
+      gltfScene.getObjectByName("Wolf3D_Avatar") ??
+      this.morphMeshes[0] ?? this.avatarRoot!;
+    this.headFrameTarget = headMesh;
+    this.frameCameraOnHead(headMesh);
   }
 
   // ── Procedural Memoji (fallback only — when no glb loads) ───────────────────
@@ -255,21 +244,22 @@ export class AvatarScene3D {
     this.camera.updateProjectionMatrix();
   }
 
-  /** Frame the camera tightly on the current avatar's bounding box (head). */
-  private frameCameraOnHead() {
-    if (!this.avatarRoot) return;
-    this.renderer.render(this.scene, this.camera);
-    const box = new THREE.Box3().setFromObject(this.avatarRoot);
+  /** Frame the camera tightly on the given object's bounding box (the head). */
+  private frameCameraOnHead(target: THREE.Object3D) {
+    this.scene.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(target);
     const size = new THREE.Vector3(); box.getSize(size);
     const ctr  = new THREE.Vector3(); box.getCenter(ctr);
+    if (size.y < 0.001) return;
 
     this.camera.fov    = CAM_FOV;
     this.camera.aspect = this.renderer.domElement.width / this.renderer.domElement.height;
-    // distance to fit the head height in the vertical FOV, with a little margin
+    // distance to fit the head height in the vertical FOV, with headroom margin
     const halfH = Math.max(size.y, size.x / this.camera.aspect) / 2;
-    const dist  = (halfH / Math.tan((CAM_FOV * Math.PI / 180) / 2)) * 1.15;
-    this.camera.position.set(ctr.x, ctr.y + size.y * 0.04, ctr.z + dist);
-    this.camera.lookAt(ctr.x, ctr.y, ctr.z);
+    const dist  = (halfH / Math.tan((CAM_FOV * Math.PI / 180) / 2)) * 1.35;
+    // Aim slightly above centre so the chin isn't cropped and hair has room.
+    this.camera.position.set(ctr.x, ctr.y + size.y * 0.06, ctr.z + dist);
+    this.camera.lookAt(ctr.x, ctr.y + size.y * 0.02, ctr.z);
     this.camera.updateProjectionMatrix();
   }
 
@@ -284,9 +274,10 @@ export class AvatarScene3D {
   }
 
   // ── Material tinting ───────────────────────────────────────────────────────
-  // facecap.glb has a single material "lambert5" — no named skin/hair slots.
-  // We tint ALL materials as skin by default; RPM avatars with named materials
-  // get per-zone coloring via the regex paths below.
+  // RPM avatars carry realistic baked textures (Wolf3D_Skin, Wolf3D_Hair…).
+  // baseColor = texture × material.color, so a flat color.set() washes the
+  // texture out. We lerp toward the preset color by a per-zone strength that
+  // preserves photographic detail (skin = gentle, hair = strong recolor).
 
   private applyPreset(root: THREE.Object3D, p: AvatarPreset) {
     root.traverse(o => {
@@ -297,95 +288,25 @@ export class AvatarScene3D {
         const mat = raw as THREE.MeshStandardMaterial;
         if (!mat?.color) continue;
         const n = (mat.name || m.name || "").toLowerCase();
+        const hasTex = !!mat.map;
+        const tint = (h: number, s: number, l: number, strength: number) =>
+          hasTex ? mat.color.lerp(hsl(h, s, l), strength) : mat.color.set(hsl(h, s, l));
+
         if (/hair|beard|brow/.test(n)) {
-          mat.color.set(hsl(p.hairH, p.hairS, p.hairL));
+          tint(p.hairH, p.hairS, p.hairL, 0.88);          // strong: hair is the highlight
         } else if (/outfit|shirt|jacket|top|cloth|bottom|pants|shoe|sleeve/.test(n)) {
-          mat.color.set(hsl(p.shirtH, p.shirtS, p.shirtL));
+          tint(p.shirtH, p.shirtS, p.shirtL, 0.7);
         } else if (/iris/.test(n) || (/eye/.test(n) && !/brow|lash/.test(n))) {
-          mat.color.set(hsl(p.eyeH, p.eyeS, p.eyeL));
-        } else if (/teeth|tongue/.test(n)) {
-          /* keep white */
+          tint(p.eyeH, p.eyeS, p.eyeL, 0.45);
+        } else if (/teeth|tongue|nail/.test(n)) {
+          /* keep natural */
         } else {
-          // facecap.glb "lambert5" and any other untagged skin/face material
-          mat.color.set(hsl(p.skinH, p.skinS, p.skinL));
+          // skin / body / face — gentle so the realistic skin texture survives
+          tint(p.skinH, p.skinS, p.skinL, 0.3);
         }
         mat.needsUpdate = true;
       }
     });
-  }
-
-  // ── Procedural hair ─────────────────────────────────────────────────────────
-  // Built in normalised world-space (head = 0.5 units tall, centre at origin).
-  // The hairPivot counteracts the parent's scale so these dimensions stay stable.
-
-  private buildHairMesh(p: AvatarPreset): THREE.Group {
-    const mat = new THREE.MeshStandardMaterial({
-      color: hsl(p.hairH, p.hairS, p.hairL), roughness: 0.84, metalness: 0,
-    });
-    const g = new THREE.Group();
-    g.name = "HairGroup";
-
-    if (p.gender === "female") {
-      // ── Female: skull cap + side volume + long back ──────────────────────
-      // Top dome
-      const dome = new THREE.Mesh(
-        new THREE.SphereGeometry(0.196, 40, 28, 0, Math.PI * 2, 0, Math.PI * 0.52),
-        mat,
-      );
-      dome.position.y = 0.065;
-      g.add(dome);
-
-      // Side curtains (L + R)
-      for (const sx of [-1, 1]) {
-        const side = new THREE.Mesh(
-          new THREE.CapsuleGeometry(0.038, 0.22, 8, 16),
-          mat,
-        );
-        side.position.set(sx * 0.162, -0.06, -0.012);
-        side.rotation.z = sx * 0.18;
-        g.add(side);
-      }
-
-      // Back volume
-      const back = new THREE.Mesh(
-        new THREE.SphereGeometry(0.14, 24, 18),
-        mat,
-      );
-      back.scale.set(1.05, 0.95, 0.80);
-      back.position.set(0, -0.04, -0.10);
-      g.add(back);
-
-      // Hairline fringe (front)
-      const fringe = new THREE.Mesh(
-        new THREE.SphereGeometry(0.185, 28, 12, 0, Math.PI * 0.9, 0, Math.PI * 0.18),
-        mat,
-      );
-      fringe.position.set(0, 0.13, 0.06);
-      fringe.rotation.x = 0.3;
-      g.add(fringe);
-
-    } else {
-      // ── Male: short tight cap + subtle temple coverage ────────────────────
-      const dome = new THREE.Mesh(
-        new THREE.SphereGeometry(0.191, 36, 22, 0, Math.PI * 2, 0, Math.PI * 0.44),
-        mat,
-      );
-      dome.position.y = 0.09;
-      g.add(dome);
-
-      // Temple sides (slight coverage)
-      for (const sx of [-1, 1]) {
-        const temple = new THREE.Mesh(
-          new THREE.SphereGeometry(0.06, 18, 14),
-          mat,
-        );
-        temple.scale.set(0.55, 0.70, 0.60);
-        temple.position.set(sx * 0.175, 0.045, -0.015);
-        g.add(temple);
-      }
-    }
-
-    return g;
   }
 
   // ── Face tracking input ─────────────────────────────────────────────────────
@@ -547,9 +468,9 @@ export class AvatarScene3D {
       this.camera.position.copy(CAM_POS);
       this.camera.lookAt(CAM_TARGET);
       this.camera.updateProjectionMatrix();
-    } else {
+    } else if (this.headFrameTarget) {
       // Re-frame the rigged head for the new aspect
-      this.frameCameraOnHead();
+      this.frameCameraOnHead(this.headFrameTarget);
     }
   }
 
