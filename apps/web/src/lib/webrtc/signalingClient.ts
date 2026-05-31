@@ -42,14 +42,15 @@ export class SignalingClient {
     return new Promise((resolve, reject) => {
       const url = this.buildUrl();
       this.ws = new WebSocket(url);
+      let settled = false;
+      const settle = (fn: () => void) => { if (!settled) { settled = true; fn(); } };
 
       this.ws.onopen = () => {
         const isReconnect = this.reconnectAttempts > 0;
         this.reconnectAttempts = 0;
 
-        if (!isReconnect) {
-          resolve();
-        } else {
+        settle(resolve);
+        if (isReconnect) {
           // Сигналинг восстановился после обрыва — уведомляем хук,
           // чтобы он переотправил "ready" и пересобрал offer/ICE.
           this.reconnectHandlers.forEach(h => h());
@@ -63,10 +64,13 @@ export class SignalingClient {
         } catch { /* ignore malformed */ }
       };
 
-      this.ws.onerror = () => reject(new Error("WebSocket connection failed"));
+      this.ws.onerror = () => settle(() => reject(new Error("WebSocket connection failed")));
 
       this.ws.onclose = () => {
-        if (this.isClosed) return;
+        if (this.isClosed) {
+          settle(() => reject(new Error("disconnected")));
+          return;
+        }
         if (this.reconnectAttempts < this.maxReconnects) {
           this.reconnectAttempts++;
           const delay = Math.min(500 * 2 ** this.reconnectAttempts, 30_000);
@@ -96,10 +100,24 @@ export class SignalingClient {
   disconnect(): void {
     this.isClosed = true;
     this.reconnectAttempts = 0;
-    this.send({ type: "bye" });
-    this.ws?.close();
-    this.ws = null;
     this.handlers.clear();
     this.reconnectHandlers.clear();
+
+    const ws = this.ws;
+    this.ws = null;
+    if (!ws) return;
+
+    if (ws.readyState === WebSocket.CONNECTING) {
+      // Closing a CONNECTING socket triggers a browser error.
+      // Wait for it to open, then close immediately — this is silent.
+      ws.onopen  = () => ws.close();
+      ws.onclose = null;
+      ws.onerror = null;
+    } else {
+      if (ws.readyState === WebSocket.OPEN) {
+        try { ws.send(JSON.stringify({ type: "bye" })); } catch { /* ignore */ }
+      }
+      ws.close();
+    }
   }
 }
