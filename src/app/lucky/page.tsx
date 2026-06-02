@@ -318,7 +318,8 @@ function updateState(s: S, W: number) {
       for (let i = 0; i < n; i++)
         s.obstacles.push({ x: W + i * (POOP_W + p(4)), y: GROUND - POOP_H, type: 'poop', w: POOP_W, h: POOP_H });
     } else {
-      const yOpts = [GROUND - DOG_H - p(1) - BIRD_H, GROUND - DOG_H - p(6) - BIRD_H, GROUND - DOG_H - p(14) - BIRD_H];
+      // low bird grazes the running goose's head → forces a jump
+      const yOpts = [GROUND - DOG_H - BIRD_H + p(5), GROUND - DOG_H - p(6) - BIRD_H, GROUND - DOG_H - p(14) - BIRD_H];
       s.obstacles.push({ x: W, y: yOpts[Math.floor(Math.random() * 3)], type: 'bird', w: BIRD_W, h: BIRD_H });
     }
     s.nextObs = Math.max(38, Math.round(70 + Math.random() * 80 - s.speed * 3));
@@ -423,6 +424,35 @@ export default function LuckyPage() {
     let active = true, lastTime = 0, accum = 0;
     let prevDead = false, prevNight = false;
 
+    // Synthesized "quack" on jump (no asset needed)
+    let audioCtx: AudioContext | null = null;
+    function quack() {
+      try {
+        const AC = (window.AudioContext || (window as any).webkitAudioContext);
+        if (!AC) return;
+        if (!audioCtx) audioCtx = new AC();
+        const ac = audioCtx;
+        if (ac.state === 'suspended') ac.resume();
+        const now = ac.currentTime;
+        const dur = 0.16;
+        const osc = ac.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(640, now);
+        osc.frequency.exponentialRampToValueAtTime(270, now + dur);
+        const bp = ac.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.setValueAtTime(1500, now);
+        bp.frequency.exponentialRampToValueAtTime(720, now + dur);
+        bp.Q.value = 7;
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.exponentialRampToValueAtTime(0.45, now + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+        osc.connect(bp); bp.connect(g); g.connect(ac.destination);
+        osc.start(now); osc.stop(now + dur + 0.03);
+      } catch {}
+    }
+
     function doJump() {
       const s = gsRef.current;
       if (!s.running && !s.dead) { s.running = true; accum = 0; return; }
@@ -438,6 +468,7 @@ export default function LuckyPage() {
         s.dogVY   = s.onGround ? JUMP_V : JUMP_V2;
         s.onGround = false;
         s.jumpsLeft--;
+        quack();
       }
     }
 
@@ -545,6 +576,7 @@ export default function LuckyPage() {
       document.removeEventListener('keyup',    onKeyUp);
       canvas.removeEventListener('touchstart', onTouch);
       canvas.removeEventListener('click',      doJump);
+      if (audioCtx) audioCtx.close().catch(() => {});
     };
   }, []);
 

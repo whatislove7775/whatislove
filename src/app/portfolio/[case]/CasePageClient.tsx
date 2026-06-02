@@ -44,7 +44,7 @@ export default function CasePageClient({ project }: { project: any }) {
     ? project.images
     : project.image_url ? [project.image_url] : [];
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
+  const touchStartX = useState<{ x: number }>(() => ({ x: 0 }))[0];
 
   // Preload all images so switching is instant
   useEffect(() => {
@@ -53,6 +53,23 @@ export default function CasePageClient({ project }: { project: any }) {
 
   const prev = () => setCurrentIndex((i) => (i - 1 + images.length) % images.length);
   const next = () => setCurrentIndex((i) => (i + 1) % images.length);
+
+  // Keyboard arrows navigate the gallery
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') prev();
+      else if (e.key === 'ArrowRight') next();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [images.length]);
+
+  const onTouchStart = (e: React.TouchEvent) => { touchStartX.x = e.touches[0].clientX; };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.x;
+    if (Math.abs(dx) > 40) { dx < 0 ? next() : prev(); }
+  };
 
   return (
     <div style={{
@@ -135,8 +152,8 @@ export default function CasePageClient({ project }: { project: any }) {
               {/* Слайдер */}
               <div
                 style={{ position: 'relative', width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5', overflow: 'hidden' }}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+                onTouchStart={onTouchStart}
+                onTouchEnd={onTouchEnd}
               >
                 {images.length > 0 && (
                   <img
@@ -146,23 +163,35 @@ export default function CasePageClient({ project }: { project: any }) {
                   />
                 )}
 
-                {/* Стрелки и счётчик — только при hover и если картинок больше одной */}
-                {images.length > 1 && isHovered && (
+                {/* Стрелки, счётчик и точки — всегда видны, если картинок больше одной */}
+                {images.length > 1 && (
                   <>
                     <button
                       onClick={prev}
-                      style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '4px 8px', cursor: 'pointer', lineHeight: 1, zIndex: 10 }}
+                      aria-label="предыдущее фото"
+                      style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.45)', border: 'none', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '14px', padding: '8px 10px', cursor: 'pointer', lineHeight: 1, zIndex: 10 }}
                     >
                       [{'<'}]
                     </button>
                     <button
                       onClick={next}
-                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '4px 8px', cursor: 'pointer', lineHeight: 1, zIndex: 10 }}
+                      aria-label="следующее фото"
+                      style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.45)', border: 'none', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '14px', padding: '8px 10px', cursor: 'pointer', lineHeight: 1, zIndex: 10 }}
                     >
                       [{'>'}]
                     </button>
-                    <div style={{ position: 'absolute', bottom: '25px', left: '50%', transform: 'translateX(-50%)', background: 'transparent', border: 'none', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', padding: '3px 10px', lineHeight: 1, zIndex: 10, whiteSpace: 'nowrap' }}>
-                      [ {currentIndex + 1}/{images.length} ]
+                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.45)', color: '#fff', fontFamily: 'inherit', fontWeight: 800, fontSize: '12px', padding: '4px 8px', lineHeight: 1, zIndex: 10, whiteSpace: 'nowrap' }}>
+                      {currentIndex + 1}/{images.length}
+                    </div>
+                    <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px', zIndex: 10 }}>
+                      {images.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setCurrentIndex(i)}
+                          aria-label={`фото ${i + 1}`}
+                          style={{ width: '8px', height: '8px', padding: 0, border: 'none', cursor: 'pointer', borderRadius: '50%', background: i === currentIndex ? '#fff' : 'rgba(255,255,255,0.45)' }}
+                        />
+                      ))}
                     </div>
                   </>
                 )}
