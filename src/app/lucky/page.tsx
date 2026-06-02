@@ -23,157 +23,208 @@ const N_CLOUD = '#2a2a2a', N_CANVAS = '#1a1a1a';
 
 const DOG_W = p(20), DOG_H = p(18);
 
-function buildDuckSprite(leg: number, dead: boolean, ink: string, bg: string): HTMLCanvasElement {
+function buildDuckSprite(leg: number, dead: boolean, ink: string, bg: string, colored = false): HTMLCanvasElement {
+  const FILL = colored ? '#f0f0f0' : bg;    // white body
+  const WING = colored ? '#c0c0c0' : bg;    // wing crease
+  const BEAK = colored ? '#e87820' : ink;   // orange bill
+  const LEGS = colored ? '#e87820' : ink;   // orange legs
+
   const c = document.createElement('canvas');
   c.width = DOG_W; c.height = DOG_H + p(2);
   const ctx = c.getContext('2d')!;
   const y = p(2);
-  // Tail — upturned flick at the back-left
-  px(ctx, ink, p(0), y + p(6),  p(2), p(2));
-  px(ctx, ink, p(1), y + p(5),  p(3), p(1));
-  // Body — rounded oval
-  px(ctx, ink, p(5),  y + p(5),  p(8),  p(1));
-  px(ctx, ink, p(4),  y + p(6),  p(10), p(1));
-  px(ctx, ink, p(3),  y + p(7),  p(12), p(1));
-  px(ctx, ink, p(3),  y + p(8),  p(12), p(1));
-  px(ctx, ink, p(3),  y + p(9),  p(12), p(1));
-  px(ctx, ink, p(3),  y + p(10), p(12), p(1));
-  px(ctx, ink, p(4),  y + p(11), p(10), p(1));
-  px(ctx, ink, p(5),  y + p(12), p(8),  p(1));
-  // Wing — carved fold line + tip
-  px(ctx, bg,  p(6),  y + p(8),  p(6),  p(1));
-  px(ctx, bg,  p(7),  y + p(9),  p(5),  p(1));
-  px(ctx, ink, p(11), y + p(9),  p(2),  p(2));
-  // Neck
-  px(ctx, ink, p(12), y + p(4),  p(3),  p(3));
-  // Head
-  px(ctx, ink, p(13), y + p(0),  p(4),  p(1));
-  px(ctx, ink, p(12), y + p(1),  p(6),  p(1));
-  px(ctx, ink, p(12), y + p(2),  p(6),  p(1));
-  px(ctx, ink, p(12), y + p(3),  p(6),  p(1));
-  // Eye
-  px(ctx, bg,  p(14), y + p(1),  p(2),  p(2));
+
+  // ── Tail (upturned flick, back-left) ──
+  px(ctx, ink,  p(0), y+p(4), p(2), p(1));
+  px(ctx, ink,  p(0), y+p(5), p(3), p(4));
+  px(ctx, FILL, p(1), y+p(5), p(1), p(3));   // tail interior
+
+  // ── Body — fill first, then outline on top ──
+  // Fill (white interior)
+  px(ctx, FILL, p(6), y+p(5), p(5), p(1));   // body top interior
+  px(ctx, FILL, p(4), y+p(6), p(8), p(1));   // upper interior
+  px(ctx, FILL, p(4), y+p(7), p(8), p(5));   // main interior
+  px(ctx, FILL, p(4), y+p(12), p(8), p(1));  // lower interior
+  px(ctx, FILL, p(5), y+p(13), p(6), p(1));  // bottom interior
+  // Outline
+  px(ctx, ink,  p(5),  y+p(5),  p(7),  p(1)); // top edge
+  px(ctx, ink,  p(3),  y+p(6),  p(1),  p(8)); // left side
+  px(ctx, ink,  p(4),  y+p(6),  p(9),  p(1)); // upper row outline
+  px(ctx, ink,  p(12), y+p(6),  p(1),  p(7)); // right side
+  px(ctx, ink,  p(4),  y+p(14), p(1),  p(1)); // bottom-left corner
+  px(ctx, ink,  p(5),  y+p(14), p(7),  p(1)); // bottom edge
+  px(ctx, ink,  p(12), y+p(13), p(1),  p(1)); // bottom-right corner
+
+  // ── Wing crease (diagonal line inside body) ──
+  px(ctx, WING, p(5), y+p(9),  p(6), p(1));
+  px(ctx, WING, p(6), y+p(10), p(5), p(1));
+  px(ctx, WING, p(7), y+p(11), p(3), p(1));
+
+  // ── Neck ──
+  px(ctx, ink,  p(12), y+p(3),  p(3), p(4));
+  px(ctx, FILL, p(13), y+p(3),  p(1), p(3));   // neck interior
+
+  // ── Head — fill then outline ──
+  px(ctx, FILL, p(13), y+p(0),  p(3), p(4));   // head interior
+  px(ctx, ink,  p(13), y-p(1),  p(4), p(1));   // head top dome
+  px(ctx, ink,  p(12), y+p(0),  p(1), p(5));   // head left side
+  px(ctx, ink,  p(16), y+p(0),  p(1), p(4));   // head right side
+  px(ctx, ink,  p(13), y+p(4),  p(3), p(1));   // head chin/bottom
+
+  // ── Eye ──
   if (dead) {
-    px(ctx, ink, p(14), y + p(1), p(1), p(1));
-    px(ctx, ink, p(15), y + p(2), p(1), p(1));
-    px(ctx, ink, p(15), y + p(1), p(1), p(1));
-    px(ctx, ink, p(14), y + p(2), p(1), p(1));
+    px(ctx, ink, p(14), y+p(1), p(1), p(1));
+    px(ctx, ink, p(15), y+p(2), p(1), p(1));
+    px(ctx, ink, p(15), y+p(1), p(1), p(1));
+    px(ctx, ink, p(14), y+p(2), p(1), p(1));
   } else {
-    px(ctx, ink, p(15), y + p(1), p(1), p(1));
+    px(ctx, ink, p(15), y+p(2), p(1), p(1));
   }
-  // Flat duck bill — two prongs with a gap
-  px(ctx, ink, p(17), y + p(1), p(3), p(1));
-  px(ctx, ink, p(18), y + p(2), p(2), p(1));
-  px(ctx, ink, p(17), y + p(3), p(3), p(1));
-  // Legs + wide webbed feet (walk animation)
+
+  // ── Beak (flat duck bill, two prongs) ──
+  px(ctx, BEAK, p(17), y+p(1), p(3), p(1));  // upper bill
+  px(ctx, ink,  p(17), y+p(2), p(1), p(1));  // gap hint
+  px(ctx, BEAK, p(18), y+p(2), p(2), p(1));  // bill tip
+  px(ctx, BEAK, p(17), y+p(3), p(3), p(1));  // lower bill
+
+  // ── Legs + webbed feet (orange) ──
   if (leg === 0) {
-    px(ctx, ink, p(6),  y + p(13), p(2), p(3));   // back leg straight
-    px(ctx, ink, p(4),  y + p(16), p(5), p(1));   // back webbed foot
-    px(ctx, ink, p(11), y + p(13), p(2), p(2));   // front leg bent
-    px(ctx, ink, p(10), y + p(15), p(5), p(1));   // front webbed foot
+    px(ctx, LEGS, p(5),  y+p(14), p(2), p(3));
+    px(ctx, LEGS, p(3),  y+p(16), p(5), p(1));
+    px(ctx, LEGS, p(9),  y+p(14), p(2), p(3));
+    px(ctx, LEGS, p(8),  y+p(16), p(5), p(1));
   } else {
-    px(ctx, ink, p(6),  y + p(13), p(2), p(2));   // back leg bent
-    px(ctx, ink, p(5),  y + p(15), p(5), p(1));   // back webbed foot
-    px(ctx, ink, p(11), y + p(13), p(2), p(3));   // front leg straight
-    px(ctx, ink, p(10), y + p(16), p(5), p(1));   // front webbed foot
+    px(ctx, LEGS, p(5),  y+p(14), p(2), p(2));
+    px(ctx, LEGS, p(4),  y+p(16), p(5), p(1));
+    px(ctx, LEGS, p(9),  y+p(15), p(2), p(3));
+    px(ctx, LEGS, p(9),  y+p(17), p(5), p(1));
   }
   return c;
 }
 
 const POOP_W = p(16), POOP_H = p(18);
 
-function buildHydrantSprite(ink: string, bg: string): HTMLCanvasElement {
+function buildHydrantSprite(ink: string, bg: string, colored = false): HTMLCanvasElement {
+  const RED  = colored ? '#cc2200' : ink;   // main red body
+  const HI   = colored ? '#ff5533' : bg;    // lighter red highlight
+  const BOLT = colored ? '#666666' : bg;    // bolt/detail color
+
   const c = document.createElement('canvas');
   c.width = POOP_W; c.height = POOP_H;
   const ctx = c.getContext('2d')!;
   // Top bolt cap
-  px(ctx, ink, p(6), p(0),  p(4), p(1));
-  px(ctx, ink, p(5), p(1),  p(6), p(1));
+  px(ctx, RED,  p(6), p(0),  p(4), p(1));
+  px(ctx, RED,  p(5), p(1),  p(6), p(1));
   // Dome
-  px(ctx, ink, p(4), p(2),  p(8), p(1));
-  px(ctx, ink, p(3), p(3),  p(10), p(1));
-  px(ctx, bg,  p(7), p(3),  p(2), p(1));   // dome highlight
+  px(ctx, RED,  p(4), p(2),  p(8), p(1));
+  px(ctx, RED,  p(3), p(3),  p(10), p(1));
+  px(ctx, HI,   p(7), p(3),  p(2), p(1));   // dome highlight
   // Neck
-  px(ctx, ink, p(5), p(4),  p(6), p(1));
-  // Bonnet collar flange
-  px(ctx, ink, p(3), p(5),  p(10), p(1));
-  px(ctx, ink, p(2), p(6),  p(12), p(1));
+  px(ctx, RED,  p(5), p(4),  p(6), p(1));
+  // Collar flanges
+  px(ctx, RED,  p(3), p(5),  p(10), p(1));
+  px(ctx, RED,  p(2), p(6),  p(12), p(1));
   // Main barrel
-  px(ctx, ink, p(3), p(7),  p(10), p(8));
-  // Front nozzle cap (carved circle + center bolt)
-  px(ctx, bg,  p(6), p(9),  p(4), p(3));
-  px(ctx, ink, p(7), p(9),  p(1), p(1));
-  px(ctx, ink, p(8), p(11), p(1), p(1));
-  px(ctx, ink, p(7), p(10), p(2), p(1));   // center bolt
+  px(ctx, RED,  p(3), p(7),  p(10), p(8));
+  // Front nozzle highlight + center bolt
+  px(ctx, HI,   p(6), p(9),  p(4), p(3));
+  px(ctx, BOLT, p(7), p(9),  p(1), p(1));
+  px(ctx, BOLT, p(8), p(11), p(1), p(1));
+  px(ctx, BOLT, p(7), p(10), p(2), p(1));
+  // Top-barrel highlight stripe
+  px(ctx, HI,   p(6), p(7),  p(4), p(1));
   // Chain bolt at top of barrel
-  px(ctx, bg,  p(7), p(7),  p(2), p(1));
-  // Side outlet nozzles with caps
-  px(ctx, ink, p(0),  p(8),  p(3), p(3));
-  px(ctx, ink, p(13), p(8),  p(3), p(3));
-  px(ctx, bg,  p(0),  p(9),  p(1), p(1));
-  px(ctx, bg,  p(15), p(9),  p(1), p(1));
+  px(ctx, BOLT, p(7), p(7),  p(2), p(1));
+  // Side nozzles
+  px(ctx, RED,  p(0),  p(8),  p(3), p(3));
+  px(ctx, RED,  p(13), p(8),  p(3), p(3));
+  px(ctx, HI,   p(0),  p(9),  p(1), p(1));
+  px(ctx, HI,   p(15), p(9),  p(1), p(1));
   // Waist
-  px(ctx, ink, p(4), p(15), p(8),  p(1));
-  // Base flange (widening)
-  px(ctx, ink, p(3), p(16), p(10), p(1));
-  px(ctx, ink, p(1), p(17), p(14), p(1));
+  px(ctx, RED,  p(4), p(15), p(8),  p(1));
+  // Base flange
+  px(ctx, RED,  p(3), p(16), p(10), p(1));
+  px(ctx, RED,  p(1), p(17), p(14), p(1));
   return c;
 }
 
 const BIRD_W = p(20), BIRD_H = p(13);
 
-function buildFlyingDuckSprite(wing: number, ink: string, bg: string): HTMLCanvasElement {
+function buildFlyingDuckSprite(wing: number, ink: string, bg: string, colored = false): HTMLCanvasElement {
+  const FILL = colored ? '#f0f0f0' : bg;
+  const WING = colored ? '#c0c0c0' : bg;
+  const BEAK = colored ? '#e87820' : ink;
+
   const c = document.createElement('canvas');
   const yb = p(3);
   c.width = BIRD_W; c.height = BIRD_H;
   const ctx = c.getContext('2d')!;
-  // Tail (left)
-  px(ctx, ink, p(0), yb + p(2), p(3), p(2));
-  px(ctx, ink, p(1), yb + p(1), p(2), p(1));
-  // Body
-  px(ctx, ink, p(2), yb + p(2), p(9),  p(1));
-  px(ctx, ink, p(3), yb + p(3), p(9),  p(3));
-  px(ctx, ink, p(4), yb + p(6), p(7),  p(1));
-  // Neck + head (right)
-  px(ctx, ink, p(11), yb + p(1), p(5), p(1));
-  px(ctx, ink, p(10), yb + p(2), p(6), p(3));
-  px(ctx, ink, p(11), yb + p(5), p(4), p(1));
-  // Eye
-  px(ctx, bg,  p(13), yb + p(2), p(2), p(2));
-  px(ctx, ink, p(14), yb + p(2), p(1), p(1));
-  // Flat duck bill — two prongs
-  px(ctx, ink, p(16), yb + p(2), p(4), p(1));
-  px(ctx, ink, p(16), yb + p(4), p(4), p(1));
-  // Wings (up or down flap)
+
+  // ── Tail ──
+  px(ctx, ink,  p(0), yb+p(2), p(3), p(2));
+  px(ctx, ink,  p(1), yb+p(1), p(2), p(1));
+  px(ctx, FILL, p(1), yb+p(2), p(1), p(1));
+
+  // ── Body fill then outline ──
+  px(ctx, FILL, p(3), yb+p(3), p(7), p(2));   // interior
+  px(ctx, ink,  p(2), yb+p(2), p(9), p(1));   // top edge
+  px(ctx, ink,  p(2), yb+p(3), p(1), p(3));   // left side
+  px(ctx, ink,  p(3), yb+p(6), p(8), p(1));   // bottom edge
+  px(ctx, ink,  p(10),yb+p(3), p(1), p(3));   // right side body
+  // Wing crease
+  px(ctx, WING, p(4), yb+p(4), p(5), p(1));
+
+  // ── Neck + head fill then outline ──
+  px(ctx, FILL, p(12), yb+p(2), p(3), p(2));  // head interior
+  px(ctx, ink,  p(11), yb+p(1), p(5), p(1));  // head top
+  px(ctx, ink,  p(10), yb+p(2), p(2), p(3));  // neck+head left
+  px(ctx, ink,  p(15), yb+p(2), p(1), p(3));  // head right edge
+  px(ctx, ink,  p(11), yb+p(5), p(4), p(1));  // head bottom
+
+  // ── Eye ──
+  px(ctx, ink, p(13), yb+p(2), p(1), p(1));
+
+  // ── Beak (orange, flat bill) ──
+  px(ctx, BEAK, p(16), yb+p(2), p(4), p(1));  // upper bill
+  px(ctx, BEAK, p(17), yb+p(3), p(2), p(1));  // bill tip
+  px(ctx, BEAK, p(16), yb+p(4), p(4), p(1));  // lower bill
+
+  // ── Wings (up or down flap) ──
   if (wing === 0) {
-    px(ctx, ink, p(4), yb - p(2), p(7), p(2));
-    px(ctx, ink, p(5), yb - p(3), p(4), p(1));
+    px(ctx, ink,  p(4), yb-p(2), p(7), p(2));
+    px(ctx, ink,  p(5), yb-p(3), p(4), p(1));
+    px(ctx, FILL, p(5), yb-p(2), p(5), p(1));  // wing fill
   } else {
-    px(ctx, ink, p(4), yb + p(7), p(7), p(2));
-    px(ctx, ink, p(5), yb + p(9), p(4), p(1));
+    px(ctx, ink,  p(4), yb+p(7), p(7), p(2));
+    px(ctx, ink,  p(5), yb+p(9), p(4), p(1));
+    px(ctx, FILL, p(5), yb+p(7), p(5), p(1));  // wing fill
   }
   return c;
 }
 
 const LIFE_W = p(8), LIFE_H = p(8);
 
-function buildDuckFootSprite(filled: boolean, ink: string, lite: string): HTMLCanvasElement {
+function buildDuckFootSprite(filled: boolean, ink: string, lite: string, colored = false): HTMLCanvasElement {
+  const cl = colored
+    ? (filled ? '#e87820' : '#7a4010')   // orange active, dark-brown spent
+    : (filled ? ink : lite);
+
   const c = document.createElement('canvas');
   c.width = LIFE_W; c.height = LIFE_H;
   const ctx = c.getContext('2d')!;
-  const cl = filled ? ink : lite;
-  // Ankle
-  px(ctx, cl, p(3), p(0), p(2), p(2));
-  // Webbing fan (widening triangle)
-  px(ctx, cl, p(2), p(2), p(4), p(1));
-  px(ctx, cl, p(1), p(3), p(6), p(1));
-  px(ctx, cl, p(0), p(4), p(8), p(2));
-  // Three toe tips poking out the bottom
-  px(ctx, cl, p(0), p(6), p(2), p(1));
-  px(ctx, cl, p(3), p(6), p(2), p(1));
-  px(ctx, cl, p(6), p(6), p(2), p(1));
-  px(ctx, cl, p(0), p(7), p(1), p(1));
-  px(ctx, cl, p(7), p(7), p(1), p(1));
+  // ── Flipped: toes at TOP, ankle at BOTTOM ──
+  // Toe tips (top row)
+  px(ctx, cl, p(0), p(0), p(1), p(1));  // outer-left tip
+  px(ctx, cl, p(0), p(1), p(2), p(1));  // left toe
+  px(ctx, cl, p(3), p(1), p(2), p(1));  // middle toe
+  px(ctx, cl, p(6), p(1), p(2), p(1));  // right toe
+  px(ctx, cl, p(7), p(0), p(1), p(1));  // outer-right tip
+  // Webbing fan (widening downward)
+  px(ctx, cl, p(0), p(2), p(8), p(2));
+  px(ctx, cl, p(1), p(4), p(6), p(1));
+  px(ctx, cl, p(2), p(5), p(4), p(1));
+  // Ankle (bottom)
+  px(ctx, cl, p(3), p(6), p(2), p(2));
   return c;
 }
 
@@ -332,10 +383,10 @@ export default function LuckyPage() {
     ctx.imageSmoothingEnabled = false;
 
     const spDay = {
-      dog:  [buildDuckSprite(0, false, D_INK, D_BG), buildDuckSprite(1, false, D_INK, D_BG), buildDuckSprite(0, true, D_INK, D_BG)],
-      poop: buildHydrantSprite(D_INK, D_BG),
-      bird: [buildFlyingDuckSprite(0, D_INK, D_BG), buildFlyingDuckSprite(1, D_INK, D_BG)],
-      life: [buildDuckFootSprite(false, D_INK, D_LITE), buildDuckFootSprite(true, D_INK, D_LITE)],
+      dog:  [buildDuckSprite(0, false, D_INK, D_BG, true), buildDuckSprite(1, false, D_INK, D_BG, true), buildDuckSprite(0, true, D_INK, D_BG, true)],
+      poop: buildHydrantSprite(D_INK, D_BG, true),
+      bird: [buildFlyingDuckSprite(0, D_INK, D_BG, true), buildFlyingDuckSprite(1, D_INK, D_BG, true)],
+      life: [buildDuckFootSprite(false, D_INK, D_LITE, true), buildDuckFootSprite(true, D_INK, D_LITE, true)],
     };
     const spNight = {
       dog:  [buildDuckSprite(0, false, N_INK, N_BG), buildDuckSprite(1, false, N_INK, N_BG), buildDuckSprite(0, true, N_INK, N_BG)],
