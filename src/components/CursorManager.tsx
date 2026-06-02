@@ -98,11 +98,16 @@ export default function CursorManager() {
 
     const hide = () => { shown = false; wrap.style.visibility = 'hidden'; };
 
+    // Prevent native drag from showing OS-level drag cursor (bypasses cursor:none)
+    const cancelDrag = (e: DragEvent) => e.preventDefault();
+
     document.addEventListener('mousemove',  show, { passive: true });
     document.addEventListener('mouseleave', hide);
+    document.addEventListener('dragstart',  cancelDrag);
     return () => {
-      document.removeEventListener('mousemove', show);
+      document.removeEventListener('mousemove',  show);
       document.removeEventListener('mouseleave', hide);
+      document.removeEventListener('dragstart',  cancelDrag);
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);

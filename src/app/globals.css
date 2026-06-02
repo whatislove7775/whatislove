@@ -390,6 +390,13 @@ pre {
   cursor: none !important;
 }
 
+/* Prevent browser native drag ghost + drag cursor from overriding cursor:none */
+img, svg, [draggable] {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* --cur custom property signals the JS CursorManager what type to show.
    Custom properties inherit normally (unaffected by cursor:none !important). */
 a, button, [role="button"],
