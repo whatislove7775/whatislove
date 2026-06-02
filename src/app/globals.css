@@ -141,8 +141,9 @@ pre {
 /* Footer links + disclaimer */
 .footer-links {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
   font-weight: 800;
   text-transform: uppercase;
   padding-bottom: 15px;
