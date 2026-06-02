@@ -21,126 +21,159 @@ const D_CLOUD = '#efefef', D_CANVAS = '#ffffff';
 const N_INK = '#d0d0d0', N_BG = '#1a1a1a', N_HI = '#888888', N_LITE = '#3a3a3a';
 const N_CLOUD = '#2a2a2a', N_CANVAS = '#1a1a1a';
 
-const DOG_W = p(16), DOG_H = p(14);
+const DOG_W = p(20), DOG_H = p(18);
 
 function buildDuckSprite(leg: number, dead: boolean, ink: string, bg: string): HTMLCanvasElement {
   const c = document.createElement('canvas');
   c.width = DOG_W; c.height = DOG_H + p(2);
   const ctx = c.getContext('2d')!;
-  const x = 0, y = p(2);
-  // Tail (left, pointing up)
-  px(ctx, ink, x,          y - p(1), p(1), p(2));
-  px(ctx, ink, x,          y + p(1), p(2), p(4));
-  // Body
-  px(ctx, ink, x + p(2),   y + p(2), p(7), p(8));
-  px(ctx, ink, x + p(3),   y + p(1), p(5), p(1));
-  px(ctx, ink, x + p(1),   y + p(5), p(1), p(3));
-  px(ctx, bg,  x + p(3),   y + p(6), p(3), p(2));
+  const y = p(2);
+  // Tail — upturned flick at the back-left
+  px(ctx, ink, p(0), y + p(6),  p(2), p(2));
+  px(ctx, ink, p(1), y + p(5),  p(3), p(1));
+  // Body — rounded oval
+  px(ctx, ink, p(5),  y + p(5),  p(8),  p(1));
+  px(ctx, ink, p(4),  y + p(6),  p(10), p(1));
+  px(ctx, ink, p(3),  y + p(7),  p(12), p(1));
+  px(ctx, ink, p(3),  y + p(8),  p(12), p(1));
+  px(ctx, ink, p(3),  y + p(9),  p(12), p(1));
+  px(ctx, ink, p(3),  y + p(10), p(12), p(1));
+  px(ctx, ink, p(4),  y + p(11), p(10), p(1));
+  px(ctx, ink, p(5),  y + p(12), p(8),  p(1));
+  // Wing — carved fold line + tip
+  px(ctx, bg,  p(6),  y + p(8),  p(6),  p(1));
+  px(ctx, bg,  p(7),  y + p(9),  p(5),  p(1));
+  px(ctx, ink, p(11), y + p(9),  p(2),  p(2));
+  // Neck
+  px(ctx, ink, p(12), y + p(4),  p(3),  p(3));
   // Head
-  px(ctx, ink, x + p(8),   y - p(1), p(5), p(1));
-  px(ctx, ink, x + p(8),   y,        p(6), p(4));
-  px(ctx, ink, x + p(9),   y + p(4), p(4), p(1));
+  px(ctx, ink, p(13), y + p(0),  p(4),  p(1));
+  px(ctx, ink, p(12), y + p(1),  p(6),  p(1));
+  px(ctx, ink, p(12), y + p(2),  p(6),  p(1));
+  px(ctx, ink, p(12), y + p(3),  p(6),  p(1));
   // Eye
+  px(ctx, bg,  p(14), y + p(1),  p(2),  p(2));
   if (dead) {
-    px(ctx, bg,  x + p(10), y + p(1), p(2), p(2));
-    px(ctx, ink, x + p(10), y + p(1), p(1), p(1));
-    px(ctx, ink, x + p(11), y + p(2), p(1), p(1));
-    px(ctx, ink, x + p(11), y + p(1), p(1), p(1));
-    px(ctx, ink, x + p(10), y + p(2), p(1), p(1));
+    px(ctx, ink, p(14), y + p(1), p(1), p(1));
+    px(ctx, ink, p(15), y + p(2), p(1), p(1));
+    px(ctx, ink, p(15), y + p(1), p(1), p(1));
+    px(ctx, ink, p(14), y + p(2), p(1), p(1));
   } else {
-    px(ctx, bg,  x + p(10), y + p(1), p(2), p(2));
-    px(ctx, ink, x + p(11), y + p(1), p(1), p(1));
+    px(ctx, ink, p(15), y + p(1), p(1), p(1));
   }
-  // Flat duck bill
-  px(ctx, ink, x + p(14),  y + p(1), p(2), p(1));
-  px(ctx, ink, x + p(14),  y + p(3), p(2), p(1));
-  // Legs + wide webbed feet
+  // Flat duck bill — two prongs with a gap
+  px(ctx, ink, p(17), y + p(1), p(3), p(1));
+  px(ctx, ink, p(18), y + p(2), p(2), p(1));
+  px(ctx, ink, p(17), y + p(3), p(3), p(1));
+  // Legs + wide webbed feet (walk animation)
   if (leg === 0) {
-    px(ctx, ink, x + p(4),  y + p(10), p(2), p(3));
-    px(ctx, ink, x + p(3),  y + p(12), p(4), p(1));
-    px(ctx, ink, x + p(8),  y + p(9),  p(2), p(3));
-    px(ctx, ink, x + p(7),  y + p(12), p(4), p(1));
+    px(ctx, ink, p(6),  y + p(13), p(2), p(3));   // back leg straight
+    px(ctx, ink, p(4),  y + p(16), p(5), p(1));   // back webbed foot
+    px(ctx, ink, p(11), y + p(13), p(2), p(2));   // front leg bent
+    px(ctx, ink, p(10), y + p(15), p(5), p(1));   // front webbed foot
   } else {
-    px(ctx, ink, x + p(4),  y + p(9),  p(2), p(3));
-    px(ctx, ink, x + p(4),  y + p(12), p(4), p(1));
-    px(ctx, ink, x + p(8),  y + p(10), p(2), p(3));
-    px(ctx, ink, x + p(8),  y + p(12), p(4), p(1));
+    px(ctx, ink, p(6),  y + p(13), p(2), p(2));   // back leg bent
+    px(ctx, ink, p(5),  y + p(15), p(5), p(1));   // back webbed foot
+    px(ctx, ink, p(11), y + p(13), p(2), p(3));   // front leg straight
+    px(ctx, ink, p(10), y + p(16), p(5), p(1));   // front webbed foot
   }
   return c;
 }
 
-const POOP_W = p(12), POOP_H = p(13);
+const POOP_W = p(16), POOP_H = p(18);
 
 function buildHydrantSprite(ink: string, bg: string): HTMLCanvasElement {
   const c = document.createElement('canvas');
   c.width = POOP_W; c.height = POOP_H;
   const ctx = c.getContext('2d')!;
-  // Top cap
-  px(ctx, ink, p(4), p(0), p(4), p(1));
+  // Top bolt cap
+  px(ctx, ink, p(6), p(0),  p(4), p(1));
+  px(ctx, ink, p(5), p(1),  p(6), p(1));
   // Dome
-  px(ctx, ink, p(3), p(1), p(6), p(1));
-  px(ctx, ink, p(2), p(2), p(8), p(1));
+  px(ctx, ink, p(4), p(2),  p(8), p(1));
+  px(ctx, ink, p(3), p(3),  p(10), p(1));
+  px(ctx, bg,  p(7), p(3),  p(2), p(1));   // dome highlight
   // Neck
-  px(ctx, ink, p(4), p(3), p(4), p(1));
-  // Collar
-  px(ctx, ink, p(3), p(4), p(6), p(1));
-  // Main body
-  px(ctx, ink, p(2), p(5), p(8), p(5));
-  px(ctx, bg,  p(4), p(6), p(4), p(2));
-  px(ctx, ink, p(4), p(6), p(1), p(1));
-  px(ctx, ink, p(7), p(6), p(1), p(1));
-  // Side nozzles
-  px(ctx, ink, p(0),  p(6), p(2), p(3));
-  px(ctx, ink, p(10), p(6), p(2), p(3));
+  px(ctx, ink, p(5), p(4),  p(6), p(1));
+  // Bonnet collar flange
+  px(ctx, ink, p(3), p(5),  p(10), p(1));
+  px(ctx, ink, p(2), p(6),  p(12), p(1));
+  // Main barrel
+  px(ctx, ink, p(3), p(7),  p(10), p(8));
+  // Front nozzle cap (carved circle + center bolt)
+  px(ctx, bg,  p(6), p(9),  p(4), p(3));
+  px(ctx, ink, p(7), p(9),  p(1), p(1));
+  px(ctx, ink, p(8), p(11), p(1), p(1));
+  px(ctx, ink, p(7), p(10), p(2), p(1));   // center bolt
+  // Chain bolt at top of barrel
+  px(ctx, bg,  p(7), p(7),  p(2), p(1));
+  // Side outlet nozzles with caps
+  px(ctx, ink, p(0),  p(8),  p(3), p(3));
+  px(ctx, ink, p(13), p(8),  p(3), p(3));
+  px(ctx, bg,  p(0),  p(9),  p(1), p(1));
+  px(ctx, bg,  p(15), p(9),  p(1), p(1));
   // Waist
-  px(ctx, ink, p(3), p(10), p(6), p(1));
-  // Base
-  px(ctx, ink, p(1), p(11), p(10), p(2));
-  px(ctx, bg,  p(3), p(12), p(6),  p(1));
+  px(ctx, ink, p(4), p(15), p(8),  p(1));
+  // Base flange (widening)
+  px(ctx, ink, p(3), p(16), p(10), p(1));
+  px(ctx, ink, p(1), p(17), p(14), p(1));
   return c;
 }
 
-const BIRD_W = p(15), BIRD_H = p(8);
+const BIRD_W = p(20), BIRD_H = p(13);
 
 function buildFlyingDuckSprite(wing: number, ink: string, bg: string): HTMLCanvasElement {
   const c = document.createElement('canvas');
+  const yb = p(3);
   c.width = BIRD_W; c.height = BIRD_H;
   const ctx = c.getContext('2d')!;
   // Tail (left)
-  px(ctx, ink, p(0), p(3), p(2), p(2));
-  px(ctx, ink, p(1), p(2), p(1), p(1));
+  px(ctx, ink, p(0), yb + p(2), p(3), p(2));
+  px(ctx, ink, p(1), yb + p(1), p(2), p(1));
   // Body
-  px(ctx, ink, p(2), p(3), p(6), p(3));
-  px(ctx, ink, p(3), p(2), p(4), p(1));
-  // Head (right side)
-  px(ctx, ink, p(8),  p(1), p(4), p(1));
-  px(ctx, ink, p(7),  p(2), p(5), p(3));
-  px(ctx, ink, p(8),  p(5), p(4), p(1));
+  px(ctx, ink, p(2), yb + p(2), p(9),  p(1));
+  px(ctx, ink, p(3), yb + p(3), p(9),  p(3));
+  px(ctx, ink, p(4), yb + p(6), p(7),  p(1));
+  // Neck + head (right)
+  px(ctx, ink, p(11), yb + p(1), p(5), p(1));
+  px(ctx, ink, p(10), yb + p(2), p(6), p(3));
+  px(ctx, ink, p(11), yb + p(5), p(4), p(1));
   // Eye
-  px(ctx, bg,  p(10), p(2), p(1), p(1));
-  // Flat duck bill
-  px(ctx, ink, p(12), p(2), p(3), p(1));
-  px(ctx, ink, p(12), p(4), p(3), p(1));
-  // Wings (up or down)
-  if (wing === 0) px(ctx, ink, p(3), p(0),  p(5), p(2));
-  else            px(ctx, ink, p(3), p(5),  p(5), p(2));
+  px(ctx, bg,  p(13), yb + p(2), p(2), p(2));
+  px(ctx, ink, p(14), yb + p(2), p(1), p(1));
+  // Flat duck bill — two prongs
+  px(ctx, ink, p(16), yb + p(2), p(4), p(1));
+  px(ctx, ink, p(16), yb + p(4), p(4), p(1));
+  // Wings (up or down flap)
+  if (wing === 0) {
+    px(ctx, ink, p(4), yb - p(2), p(7), p(2));
+    px(ctx, ink, p(5), yb - p(3), p(4), p(1));
+  } else {
+    px(ctx, ink, p(4), yb + p(7), p(7), p(2));
+    px(ctx, ink, p(5), yb + p(9), p(4), p(1));
+  }
   return c;
 }
 
-const LIFE_W = p(5), LIFE_H = p(5);
+const LIFE_W = p(8), LIFE_H = p(8);
 
 function buildDuckFootSprite(filled: boolean, ink: string, lite: string): HTMLCanvasElement {
   const c = document.createElement('canvas');
   c.width = LIFE_W; c.height = LIFE_H;
   const ctx = c.getContext('2d')!;
   const cl = filled ? ink : lite;
-  // Three toes
-  px(ctx, cl, p(0), 0,    p(1), p(2));
-  px(ctx, cl, p(2), 0,    p(1), p(2));
-  px(ctx, cl, p(4), 0,    p(1), p(2));
-  // Webbing
-  px(ctx, cl, 0,    p(2), p(5), p(2));
-  px(ctx, cl, p(1), p(4), p(3), p(1));
+  // Ankle
+  px(ctx, cl, p(3), p(0), p(2), p(2));
+  // Webbing fan (widening triangle)
+  px(ctx, cl, p(2), p(2), p(4), p(1));
+  px(ctx, cl, p(1), p(3), p(6), p(1));
+  px(ctx, cl, p(0), p(4), p(8), p(2));
+  // Three toe tips poking out the bottom
+  px(ctx, cl, p(0), p(6), p(2), p(1));
+  px(ctx, cl, p(3), p(6), p(2), p(1));
+  px(ctx, cl, p(6), p(6), p(2), p(1));
+  px(ctx, cl, p(0), p(7), p(1), p(1));
+  px(ctx, cl, p(7), p(7), p(1), p(1));
   return c;
 }
 
@@ -408,7 +441,7 @@ export default function LuckyPage() {
       ctx.fillStyle = ink;
       ctx.fillText(String(s.score).padStart(5, '0'), W - 20, 40);
       ctx.textAlign = 'left';
-      for (let i = 0; i < 3; i++) ctx.drawImage(sp.life[i < s.lives ? 1 : 0], 16 + i * 18, 16);
+      for (let i = 0; i < 3; i++) ctx.drawImage(sp.life[i < s.lives ? 1 : 0], 16 + i * 22, 14);
 
       if (s.dead) {
         ctx.fillStyle = isNight ? 'rgba(0,0,0,0.82)' : 'rgba(255,255,255,0.85)';
