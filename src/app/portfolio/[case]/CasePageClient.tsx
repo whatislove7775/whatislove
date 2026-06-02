@@ -44,6 +44,7 @@ export default function CasePageClient({ project }: { project: any }) {
     ? project.images
     : project.image_url ? [project.image_url] : [];
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
   const touchStartX = useState<{ x: number }>(() => ({ x: 0 }))[0];
 
   // Preload all images so switching is instant
@@ -152,6 +153,8 @@ export default function CasePageClient({ project }: { project: any }) {
               {/* Слайдер */}
               <div
                 style={{ position: 'relative', width: '100%', aspectRatio: '16/10', backgroundColor: '#e5e5e5', overflow: 'hidden' }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
                 onTouchStart={onTouchStart}
                 onTouchEnd={onTouchEnd}
               >
@@ -163,8 +166,8 @@ export default function CasePageClient({ project }: { project: any }) {
                   />
                 )}
 
-                {/* Стрелки, счётчик и точки — всегда видны, если картинок больше одной */}
-                {images.length > 1 && (
+                {/* Стрелки/счётчик/точки: на десктопе — при hover, на тач — всегда */}
+                {images.length > 1 && (isHovered || typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) && (
                   <>
                     <button
                       onClick={prev}
