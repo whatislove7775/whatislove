@@ -202,15 +202,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                   t.me/whatislove_r
                 </a>
               </div>
-              <div></div>
+              <div className="footer-disclaimer">
+                данный сайт ничего не&nbsp;навязывает и&nbsp;не&nbsp;пропагандирует. весь контент является выдумкой автора и&nbsp;не&nbsp;имеет смысла. любые совпадения случайны. все файлы cookies используются для&nbsp;улучшения сервиса &lt;333* инн&nbsp;231222682431
+              </div>
               <div className="footer-grid-divider"></div>
               <div className="footer-links">
                 <Link href="/oferta" style={{ color: '#000', textDecoration: 'none' }}>оферта /</Link>
                 <Link href="/privacy" style={{ color: '#000', textDecoration: 'none' }}>политика конфиденциальности /</Link>
                 <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>инфо</Link>
-              </div>
-              <div className="footer-disclaimer">
-                данный сайт ничего не&nbsp;навязывает и&nbsp;не&nbsp;пропагандирует. весь контент является выдумкой автора и&nbsp;не&nbsp;имеет смысла. любые совпадения случайны. все файлы cookies используются для&nbsp;улучшения сервиса &lt;333* инн&nbsp;231222682431
               </div>
             </div>
           </footer>
