@@ -262,10 +262,25 @@ pre {
     gap: 50px;
   }
 
-  /* Footer: 1 колонка на мобиле */
+  /* Footer: 2 колонки на мобиле, явное позиционирование */
   .footer-grid {
-    grid-template-columns: 1fr;
-    column-gap: 0;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 16px;
+  }
+  /* t.me — full width row 1 */
+  .footer-grid > div:first-child {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  /* disclaimer — right col, row 3 */
+  .footer-disclaimer {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  /* divider — full width row 2 */
+  .footer-grid-divider {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 
   /* Breadcrumbs: path не вылезает за экран */
@@ -323,11 +338,12 @@ pre {
     text-transform: lowercase;
   }
 
-  /* Footer links: horizontal + lowercase on mobile */
+  /* Footer links: left col row 3, vertical stacked */
   .footer-links {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 6px;
+    grid-column: 1;
+    grid-row: 3;
+    flex-direction: column;
+    gap: 4px;
     text-transform: lowercase;
     padding-bottom: 10px;
   }
