@@ -434,22 +434,68 @@ export default function LuckyPage() {
         const ac = audioCtx;
         if (ac.state === 'suspended') ac.resume();
         const now = ac.currentTime;
-        const dur = 0.16;
+        const dur = 0.22;
+
+        // Voiced source: sawtooth sweeping down (duck pitch drop)
         const osc = ac.createOscillator();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(640, now);
-        osc.frequency.exponentialRampToValueAtTime(270, now + dur);
-        const bp = ac.createBiquadFilter();
-        bp.type = 'bandpass';
-        bp.frequency.setValueAtTime(1500, now);
-        bp.frequency.exponentialRampToValueAtTime(720, now + dur);
-        bp.Q.value = 7;
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(200, now + dur);
+
+        // Noise burst for the consonant attack ("kw-" onset)
+        const bufLen = Math.floor(ac.sampleRate * 0.04);
+        const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufLen);
+        const noise = ac.createBufferSource();
+        noise.buffer = buf;
+
+        // F1 — low nasal formant (~900→500 Hz)
+        const f1 = ac.createBiquadFilter();
+        f1.type = 'bandpass';
+        f1.frequency.setValueAtTime(880, now);
+        f1.frequency.exponentialRampToValueAtTime(480, now + dur);
+        f1.Q.value = 4;
+
+        // F2 — bright upper formant (~2000→1200 Hz)
+        const f2 = ac.createBiquadFilter();
+        f2.type = 'bandpass';
+        f2.frequency.setValueAtTime(2000, now);
+        f2.frequency.exponentialRampToValueAtTime(1100, now + dur);
+        f2.Q.value = 3.5;
+
+        // F3 — nasal "quack" honk (~3200 Hz, fixed)
+        const f3 = ac.createBiquadFilter();
+        f3.type = 'bandpass';
+        f3.frequency.value = 3200;
+        f3.Q.value = 6;
+
+        // Noise filter (shapes the "kw" onset click)
+        const nf = ac.createBiquadFilter();
+        nf.type = 'bandpass';
+        nf.frequency.value = 1600;
+        nf.Q.value = 2;
+
+        const noiseGain = ac.createGain();
+        noiseGain.gain.setValueAtTime(0.3, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+
+        const mix = ac.createGain();
+        mix.gain.value = 0.5;
+
         const g = ac.createGain();
         g.gain.setValueAtTime(0.0001, now);
-        g.gain.exponentialRampToValueAtTime(0.45, now + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.55, now + 0.015);
+        g.gain.setValueAtTime(0.55, now + 0.04);
         g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-        osc.connect(bp); bp.connect(g); g.connect(ac.destination);
-        osc.start(now); osc.stop(now + dur + 0.03);
+
+        osc.connect(f1); osc.connect(f2); osc.connect(f3);
+        f1.connect(mix); f2.connect(mix); f3.connect(mix);
+        noise.connect(nf); nf.connect(noiseGain); noiseGain.connect(mix);
+        mix.connect(g); g.connect(ac.destination);
+
+        osc.start(now); osc.stop(now + dur + 0.05);
+        noise.start(now); noise.stop(now + 0.05);
       } catch {}
     }
 
