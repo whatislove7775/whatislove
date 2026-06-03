@@ -36,10 +36,10 @@ export default function ProductAddToCart({ product }: { product: any }) {
     });
   };
 
-  // В режиме предзаказа ведём на страницу товара, где есть форма предзаказа
+  // В режиме предзаказа ведём на отдельную страницу предзаказа
   if (isPreorder) {
     return (
-      <Link href={`/products/${product.slug}`} style={{ fontWeight: 800, fontSize: '14px', color: '#000' }}>
+      <Link href={`/products/${product.slug}/preorder`} style={{ fontWeight: 800, fontSize: '14px', color: '#000' }}>
         [ предзаказать ]
       </Link>
     );

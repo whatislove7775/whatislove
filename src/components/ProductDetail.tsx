@@ -6,7 +6,6 @@ import Image from 'next/image';
 import SmartImage from '@/components/SmartImage';
 import { parseTextForLinks } from '@/lib/parseLinks';
 import Link from 'next/link';
-import PreorderButton from '@/components/PreorderButton';
 
 export default function ProductDetail({ product, bottomText }: { product: any; bottomText: string }) {
   const stock: Record<string, number> = product.stock || {};
@@ -197,12 +196,13 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
               {isPreorder ? (
-                /* Режим предзаказа — показываем на desktop и mobile */
-                <PreorderButton
-                  product={{ id: product.id, name: product.name, slug: product.slug }}
-                  sizes={sizes}
-                  initialSize={selectedSize}
-                />
+                /* Режим предзаказа — ведём на отдельную страницу */
+                <Link
+                  href={`/products/${product.slug}/preorder`}
+                  style={{ fontWeight: 800, fontSize: '14px', color: '#000' }}
+                >
+                  [ предзаказать ]
+                </Link>
               ) : (
                 <>
                   {/* Desktop: кнопка добавить */}
