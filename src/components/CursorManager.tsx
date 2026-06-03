@@ -52,6 +52,18 @@ export default function CursorManager() {
   const imgRefs = useRef<Partial<Record<CursorType, HTMLImageElement>>>({});
   const curRef  = useRef<CursorType>('default');
 
+  // Always-on: kill native element drag (ghost + OS drag cursor that bypasses
+  // cursor:none). Preventing dragstart fully cancels the drag, so the native
+  // cursor can never appear alongside the custom one. Runs on every device,
+  // independent of the pointer-type guard below.
+  // Note: only dragstart — leaving dragover/drop untouched so the admin/collab
+  // file-drop upload zones keep working.
+  useEffect(() => {
+    const cancel = (e: Event) => e.preventDefault();
+    document.addEventListener('dragstart', cancel);
+    return () => document.removeEventListener('dragstart', cancel);
+  }, []);
+
   useEffect(() => {
     const wrap = wrapRef.current;
     if (!wrap) return;
@@ -98,16 +110,11 @@ export default function CursorManager() {
 
     const hide = () => { shown = false; wrap.style.visibility = 'hidden'; };
 
-    // Prevent native drag from showing OS-level drag cursor (bypasses cursor:none)
-    const cancelDrag = (e: DragEvent) => e.preventDefault();
-
     document.addEventListener('mousemove',  show, { passive: true });
     document.addEventListener('mouseleave', hide);
-    document.addEventListener('dragstart',  cancelDrag);
     return () => {
       document.removeEventListener('mousemove',  show);
       document.removeEventListener('mouseleave', hide);
-      document.removeEventListener('dragstart',  cancelDrag);
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);

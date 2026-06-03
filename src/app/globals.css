@@ -398,13 +398,22 @@ pre {
 }
 
 /* JS cursor overlay — hide native cursor site-wide */
+html, body,
 *, *::before, *::after {
   cursor: none !important;
 }
 
-/* Prevent browser native drag ghost + drag cursor from overriding cursor:none */
-img, svg, [draggable] {
+/* Prevent browser native drag ghost + drag cursor from overriding cursor:none.
+   Covers every element type that can start a native drag (images, links, media). */
+img, svg, a, picture, video, canvas, [draggable] {
   -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  user-drag: none;
+}
+
+/* Block image/media text-selection that flips the OS cursor back on during a drag.
+   Inputs, textareas, contenteditable and legal text keep normal selection. */
+img, svg, picture, video, canvas {
   user-select: none;
   -webkit-user-select: none;
 }
