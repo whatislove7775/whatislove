@@ -10,6 +10,7 @@ export default function ProductAddToCart({ product }: { product: any }) {
   const sizes = Object.keys(stock).sort((a, b) => Number(a) - Number(b));
   const isAvailable = true;
   const isInCart = items.some((i: any) => i.id === product.id);
+  const isPreorder = !!product.preorder_mode;
 
   const btnStyle: React.CSSProperties = {
     background: 'transparent',
@@ -34,6 +35,15 @@ export default function ProductAddToCart({ product }: { product: any }) {
       imageUrl: product.image_url || undefined,
     });
   };
+
+  // В режиме предзаказа ведём на страницу товара, где есть форма предзаказа
+  if (isPreorder) {
+    return (
+      <Link href={`/products/${product.slug}`} style={{ fontWeight: 800, fontSize: '14px', color: '#000' }}>
+        [ предзаказать ]
+      </Link>
+    );
+  }
 
   return (
     <>

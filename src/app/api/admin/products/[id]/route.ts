@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { isAdmin, db } from '../../_auth';
+import { notifyPreorders } from '@/lib/notifyPreorders';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -8,6 +9,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const body = await req.json();
   const { variants, ...product } = body;
   const supabase = db();
+
+  // Если preorder_mode выключается — проверяем, нужно ли уведомлять подписчиков
+  let shouldNotify = false;
+  if ('preorder_mode' in product && product.preorder_mode === false) {
+    const { data: current } = await supabase.from('products').select('preorder_mode').eq('id', id).single();
+    if (current?.preorder_mode === true) shouldNotify = true;
+  }
 
   const { error } = await supabase.from('products').update(product).eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -22,6 +30,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
   revalidatePath('/products');
   revalidatePath('/products/[slug]', 'page');
+
+  // Авто-уведомление предзаказов при возврате в наличие
+  if (shouldNotify) {
+    await notifyPreorders(supabase, Number(id));
+  }
+
   return NextResponse.json({ ok: true });
 }
 

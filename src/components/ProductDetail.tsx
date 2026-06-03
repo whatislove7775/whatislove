@@ -6,6 +6,7 @@ import Image from 'next/image';
 import SmartImage from '@/components/SmartImage';
 import { parseTextForLinks } from '@/lib/parseLinks';
 import Link from 'next/link';
+import PreorderButton from '@/components/PreorderButton';
 
 export default function ProductDetail({ product, bottomText }: { product: any; bottomText: string }) {
   const stock: Record<string, number> = product.stock || {};
@@ -22,6 +23,7 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
 
   const currentStock = stock[selectedSize] ?? 0;
   const isAvailable = true;
+  const isPreorder = !!product.preorder_mode;
 
   const handleAddToCart = () => {
     if (isAvailable) {
@@ -194,51 +196,62 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
               {parseTextForLinks(bottomText)}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-              {/* Desktop: кнопка добавить */}
-              <button
-                className="desktop-only"
-                onClick={handleAddToCart}
-                disabled={!isAvailable}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  fontWeight: 800,
-                  cursor: isAvailable ? 'pointer' : 'not-allowed',
-                  fontFamily: 'inherit',
-                  padding: 0,
-                  fontSize: '14px',
-                  color: isAvailable ? '#000' : '#d32f2f',
-                  textDecoration: isAvailable ? 'none' : 'line-through',
-                }}
-              >
-                {isAvailable ? "[ +добавить в 🛒'y ]" : '[ нет в наличии ]'}
-              </button>
-
-              {/* Mobile: меняется после добавления */}
-              {!isAvailable ? (
-                <span className="mobile-only" style={{ fontWeight: 800, fontSize: '14px', color: '#d32f2f', textDecoration: 'line-through' }}>
-                  [ нет в наличии ]
-                </span>
-              ) : isInCart ? (
-                <Link href="/checkout" className="mobile-only" style={{ fontWeight: 800, fontSize: '14px', color: '#000' }}>
-                  [перейти к 🛒&apos;е]
-                </Link>
+              {isPreorder ? (
+                /* Режим предзаказа — показываем на desktop и mobile */
+                <PreorderButton
+                  product={{ id: product.id, name: product.name, slug: product.slug }}
+                  sizes={sizes}
+                  initialSize={selectedSize}
+                />
               ) : (
-                <button
-                  className="mobile-only"
-                  onClick={handleAddToCart}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    padding: 0,
-                    fontSize: '14px',
-                  }}
-                >
-                  [ +добавить в 🛒&apos;y ]
-                </button>
+                <>
+                  {/* Desktop: кнопка добавить */}
+                  <button
+                    className="desktop-only"
+                    onClick={handleAddToCart}
+                    disabled={!isAvailable}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      fontWeight: 800,
+                      cursor: isAvailable ? 'pointer' : 'not-allowed',
+                      fontFamily: 'inherit',
+                      padding: 0,
+                      fontSize: '14px',
+                      color: isAvailable ? '#000' : '#d32f2f',
+                      textDecoration: isAvailable ? 'none' : 'line-through',
+                    }}
+                  >
+                    {isAvailable ? "[ +добавить в 🛒'y ]" : '[ нет в наличии ]'}
+                  </button>
+
+                  {/* Mobile: меняется после добавления */}
+                  {!isAvailable ? (
+                    <span className="mobile-only" style={{ fontWeight: 800, fontSize: '14px', color: '#d32f2f', textDecoration: 'line-through' }}>
+                      [ нет в наличии ]
+                    </span>
+                  ) : isInCart ? (
+                    <Link href="/checkout" className="mobile-only" style={{ fontWeight: 800, fontSize: '14px', color: '#000' }}>
+                      [перейти к 🛒&apos;е]
+                    </Link>
+                  ) : (
+                    <button
+                      className="mobile-only"
+                      onClick={handleAddToCart}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        padding: 0,
+                        fontSize: '14px',
+                      }}
+                    >
+                      [ +добавить в 🛒&apos;y ]
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>

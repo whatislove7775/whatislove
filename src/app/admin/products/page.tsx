@@ -11,13 +11,28 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState<any>(EMPTY_PRODUCT);
+  const [preorderMode, setPreorderMode] = useState(false);
   const [variants, setVariants] = useState<any[]>([{ ...EMPTY_VARIANT }]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [preorderCounts, setPreorderCounts] = useState<Record<string, number>>({});
+  const [notifying, setNotifying] = useState<string | null>(null);
 
   const load = () => {
     setLoading(true);
-    fetch('/api/admin/products', { headers: ah(), cache: 'no-store' }).then(r => r.json()).then(d => { setProducts(Array.isArray(d) ? d : []); setLoading(false); });
+    Promise.all([
+      fetch('/api/admin/products', { headers: ah(), cache: 'no-store' }).then(r => r.json()),
+      fetch('/api/admin/preorders', { headers: ah() }).then(r => r.json()),
+    ]).then(([prods, preorders]) => {
+      setProducts(Array.isArray(prods) ? prods : []);
+      // Считаем только не уведомлённые предзаказы
+      const counts: Record<string, number> = {};
+      for (const p of (Array.isArray(preorders) ? preorders : [])) {
+        if (!p.notified_at) counts[p.product_id] = (counts[p.product_id] ?? 0) + 1;
+      }
+      setPreorderCounts(counts);
+      setLoading(false);
+    });
   };
 
   useEffect(() => { load(); }, []);
@@ -25,6 +40,7 @@ export default function ProductsPage() {
   const openCreate = () => {
     setEditing('new');
     setForm(EMPTY_PRODUCT);
+    setPreorderMode(false);
     setVariants([{ ...EMPTY_VARIANT }]);
   };
 
@@ -40,6 +56,7 @@ export default function ProductsPage() {
       images: Array.isArray(p.images) ? p.images.join(', ') : (p.images ?? ''),
       delivery: p.delivery ?? 'cdek',
     });
+    setPreorderMode(p.preorder_mode ?? false);
     setVariants((p.product_variants ?? []).map((v: any) => ({
       attribute_value: v.attribute_value ?? '',
       stock: String(v.stock ?? 0),
@@ -65,6 +82,7 @@ export default function ProductsPage() {
       image_url: form.image_url,
       images: form.images ? form.images.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
       delivery: form.delivery,
+      preorder_mode: preorderMode,
       variants: variants.map(v => ({ attribute_value: v.attribute_value, stock: Number(v.stock), to_produce: Number(v.to_produce) })),
     };
 
@@ -162,6 +180,22 @@ export default function ProductsPage() {
           ))}
         </div>
 
+        {/* Режим предзаказа */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', border: preorderMode ? '2px solid #d32f2f' : '1px solid #eee', background: preorderMode ? '#fff8f8' : '#fafafa' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: '13px' }}>режим предзаказа</div>
+            <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>
+              покупатели не смогут добавить в корзину — только оставить предзаказ. при отключении все подписчики получат уведомление в Telegram.
+            </div>
+          </div>
+          <button
+            onClick={() => setPreorderMode(v => !v)}
+            style={{ padding: '8px 16px', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', border: '2px solid #000', background: preorderMode ? '#d32f2f' : '#fff', color: preorderMode ? '#fff' : '#000', cursor: 'pointer', flexShrink: 0 }}
+          >
+            {preorderMode ? 'включён' : 'выключен'}
+          </button>
+        </div>
+
         <button onClick={save} disabled={saving} style={{ padding: '12px 24px', background: '#000', color: '#fff', border: 'none', fontFamily: 'inherit', fontWeight: 800, fontSize: '14px', cursor: 'pointer', alignSelf: 'flex-start' }}>
           {saving ? 'сохраняем...' : 'сохранить'}
         </button>
@@ -179,28 +213,49 @@ export default function ProductsPage() {
       {products.length === 0 && <div style={{ color: '#888' }}>товаров пока нет</div>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#eee' }}>
-        {products.map(p => (
-          <div key={p.id} style={{ background: '#fff', display: 'flex', gap: '16px', padding: '14px 16px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {p.image_url && <img src={p.image_url} alt="" style={{ width: '48px', height: '48px', objectFit: 'cover', flexShrink: 0 }} />}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 800 }}>{p.name}</div>
-              <div style={{ fontSize: '12px', color: '#888' }}>{p.slug} · {Number(p.price).toLocaleString('ru')} ₽{p.oldPrice ? ` (было ${Number(p.oldPrice).toLocaleString('ru')} ₽)` : ''}</div>
+        {products.map(p => {
+          const pCount = preorderCounts[p.id] ?? 0;
+          return (
+            <div key={p.id} style={{ background: p.preorder_mode ? '#fff8f8' : '#fff', display: 'flex', gap: '16px', padding: '14px 16px', alignItems: 'center', flexWrap: 'wrap' }}>
+              {p.image_url && <img src={p.image_url} alt="" style={{ width: '48px', height: '48px', objectFit: 'cover', flexShrink: 0 }} />}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {p.name}
+                  {p.preorder_mode && <span style={{ fontSize: '10px', fontWeight: 800, background: '#d32f2f', color: '#fff', padding: '2px 6px' }}>ПРЕДЗАКАЗ</span>}
+                  {pCount > 0 && <span style={{ fontSize: '10px', fontWeight: 800, background: '#1565c0', color: '#fff', padding: '2px 6px' }}>{pCount} предзаказов</span>}
+                </div>
+                <div style={{ fontSize: '12px', color: '#888' }}>{p.slug} · {Number(p.price).toLocaleString('ru')} ₽{p.oldPrice ? ` (было ${Number(p.oldPrice).toLocaleString('ru')} ₽)` : ''}</div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
+                {(p.product_variants ?? []).map((v: any) => (
+                  <span key={v.id} style={{ fontSize: '11px', padding: '2px 6px', background: v.stock > 0 ? '#e8f5e9' : '#fafafa', border: '1px solid #ddd' }}>
+                    {v.attribute_value}: {v.stock}шт{v.to_produce > 0 ? ` +${v.to_produce}` : ''}
+                  </span>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap', alignItems: 'center' }}>
+                {pCount > 0 && !p.preorder_mode && (
+                  <button
+                    onClick={async () => {
+                      setNotifying(p.id);
+                      await fetch('/api/admin/preorders/notify', { method: 'POST', headers: ah(), body: JSON.stringify({ product_id: p.id }) });
+                      setNotifying(null);
+                      load();
+                    }}
+                    disabled={notifying === p.id}
+                    style={{ ...btnSecondary, color: '#1565c0', borderColor: '#1565c0' }}
+                  >
+                    {notifying === p.id ? '...' : `уведомить (${pCount})`}
+                  </button>
+                )}
+                <button onClick={() => openEdit(p)} style={btnSecondary}>изменить</button>
+                <button onClick={() => del(p.id)} disabled={deleting === p.id} style={{ ...btnSecondary, color: '#c00', borderColor: '#c00' }}>
+                  {deleting === p.id ? '...' : 'удалить'}
+                </button>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
-              {(p.product_variants ?? []).map((v: any) => (
-                <span key={v.id} style={{ fontSize: '11px', padding: '2px 6px', background: v.stock > 0 ? '#e8f5e9' : '#fafafa', border: '1px solid #ddd' }}>
-                  {v.attribute_value}: {v.stock}шт{v.to_produce > 0 ? ` +${v.to_produce}` : ''}
-                </span>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-              <button onClick={() => openEdit(p)} style={btnSecondary}>изменить</button>
-              <button onClick={() => del(p.id)} disabled={deleting === p.id} style={{ ...btnSecondary, color: '#c00', borderColor: '#c00' }}>
-                {deleting === p.id ? '...' : 'удалить'}
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
