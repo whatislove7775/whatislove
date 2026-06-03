@@ -3,6 +3,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import ProductAddToCart from '@/components/ProductAddToCart';
 import Link from 'next/link';
 import SmartImage from '@/components/SmartImage';
+import CollabButton from '@/components/CollabButton';
 
 export const revalidate = 60;
 
@@ -38,6 +39,10 @@ export default async function ProductsPage() {
         { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
         { name: 'ПРОДУКТЫ', href: '/products', icon: '📦' },
       ]} />
+
+      <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '20px' }}>
+        <CollabButton />
+      </div>
 
       <div className="products-grid">
         {normalized.map((product) => (

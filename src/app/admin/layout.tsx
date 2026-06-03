@@ -7,6 +7,7 @@ const NAV = [
   { href: '/admin', label: 'статистика' },
   { href: '/admin/products', label: 'товары' },
   { href: '/admin/orders', label: 'заказы' },
+  { href: '/admin/collab', label: 'коллабы' },
   { href: '/admin/portfolio', label: 'портфолио' },
   { href: '/admin/settings', label: 'настройки' },
   { href: '/admin/upload', label: 'фото' },
