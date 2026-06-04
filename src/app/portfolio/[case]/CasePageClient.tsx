@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { parseTextForLinks } from '@/lib/parseLinks';
 
@@ -45,7 +45,17 @@ export default function CasePageClient({ project }: { project: any }) {
     : project.image_url ? [project.image_url] : [];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [showMobileControls, setShowMobileControls] = useState(false);
   const touchStartX = useState<{ x: number }>(() => ({ x: 0 }))[0];
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const flashControls = useCallback(() => {
+    setShowMobileControls(true);
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setShowMobileControls(false), 1500);
+  }, []);
+
+  useEffect(() => () => { if (hideTimer.current) clearTimeout(hideTimer.current); }, []);
 
   // Preload all images so switching is instant
   useEffect(() => {
@@ -66,7 +76,10 @@ export default function CasePageClient({ project }: { project: any }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [images.length]);
 
-  const onTouchStart = (e: React.TouchEvent) => { touchStartX.x = e.touches[0].clientX; };
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.x = e.touches[0].clientX;
+    flashControls();
+  };
   const onTouchEnd = (e: React.TouchEvent) => {
     const dx = e.changedTouches[0].clientX - touchStartX.x;
     if (Math.abs(dx) > 40) { dx < 0 ? next() : prev(); }
@@ -166,8 +179,8 @@ export default function CasePageClient({ project }: { project: any }) {
                   />
                 )}
 
-                {/* Стрелки/счётчик/точки: на десктопе — при hover, на тач — всегда */}
-                {images.length > 1 && (isHovered || typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) && (
+                {/* Стрелки/счётчик/точки: на десктопе — при hover, на тач — при нажатии (исчезают через 1.5с) */}
+                {images.length > 1 && (isHovered || showMobileControls) && (
                   <>
                     <button
                       onClick={prev}
