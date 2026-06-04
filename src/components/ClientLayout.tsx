@@ -56,12 +56,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   // Global click/tap → play click sound + flush any pending popup sound
   useEffect(() => {
-    const onGesture = async () => {
+    // На сенсорных устройствах (мобильные) звук нажатия не воспроизводим
+    const isTouch = typeof window !== 'undefined' &&
+      (window.matchMedia?.('(pointer: coarse)').matches || 'ontouchstart' in window);
+    const onGesture = async (e: Event) => {
       try {
         const ac = getAC();
         if (ac.state === 'suspended') await ac.resume();
         await decodeIfNeeded(ac);
-        if (clickBuf.current) playBuf(ac, clickBuf.current, 0.85);
+        const fromTouch = isTouch || e.type === 'touchstart';
+        if (!fromTouch && clickBuf.current) playBuf(ac, clickBuf.current, 0.85);
         if (pendingPopup.current && popupBuf.current) {
           pendingPopup.current = false;
           setTimeout(() => { if (popupBuf.current) playBuf(ac, popupBuf.current); }, 0);
