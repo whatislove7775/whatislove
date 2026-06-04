@@ -710,10 +710,6 @@ export default function DuckGame({ showHomeLink = true, onStart }: { showHomeLin
     }}>
       <canvas ref={canvasRef} style={{ display: 'block', maxWidth: '100%', touchAction: 'none' }} />
 
-      <div className="desktop-only" style={{ fontSize: '11px', color: dimClr, letterSpacing: '0.04em', marginTop: '-8px' }}>
-        ↑ / пробел — прыжок · ↓ — пригнуться под птицей
-      </div>
-
       {showSubmit && !submitted && (
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
           <span style={{ fontSize: '13px', color: txtClr }}>
