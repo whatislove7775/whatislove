@@ -266,7 +266,6 @@ pre {
   .footer-grid {
     grid-template-columns: 1fr;
     column-gap: 0;
-    padding-bottom: max(80px, env(safe-area-inset-bottom, 0px));
   }
   .footer-grid > div:first-child {
     grid-column: 1 / -1;
@@ -327,10 +326,10 @@ pre {
     margin: 0 auto;
   }
 
-  /* Home footer: compact on mobile, leaves room for browser chrome incl. Telegram toolbar */
+  /* Home footer: compact on mobile, leaves room for browser chrome */
   .home-footer {
     padding: 10px 15px;
-    padding-bottom: max(80px, env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
   }
 
   .home-disclaimer {
