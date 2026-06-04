@@ -6,6 +6,8 @@ import Image from 'next/image';
 import SmartImage from '@/components/SmartImage';
 import { parseTextForLinks } from '@/lib/parseLinks';
 import Link from 'next/link';
+import ShareButton from '@/components/ShareButton';
+import RecentlyViewed from '@/components/RecentlyViewed';
 
 export default function ProductDetail({ product, bottomText }: { product: any; bottomText: string }) {
   const stock: Record<string, number> = product.stock || {};
@@ -253,10 +255,18 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
                   )}
                 </>
               )}
+              <ShareButton name={product.name} slug={product.slug} />
             </div>
           </div>
         </div>
       </div>
+
+      <RecentlyViewed current={{
+        slug: product.slug,
+        name: product.name,
+        image: (product.images?.[0]) || product.image_url || null,
+        price: product.price,
+      }} />
     </div>
   );
 }

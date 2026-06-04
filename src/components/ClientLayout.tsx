@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { useCartStore } from '../store/cartStore';
 import DvdScreensaver from './DvdScreensaver';
 import CursorManager from './CursorManager';
+import DuckRain from './DuckRain';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
   const [showCookiePopup, setShowCookiePopup] = useState(false);
+  const [duckRain, setDuckRain] = useState(false);
 
   // ── SOUND ENGINE ────────────────────────────────────────────
   const acRef        = useRef<AudioContext | null>(null);
@@ -87,6 +89,42 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     } catch {}
   }, [showCookiePopup]);
   // ────────────────────────────────────────────────────────────
+
+  // ── CONSOLE EASTER EGG ──────────────────────────────────────
+  useEffect(() => {
+    try {
+      const duck = [
+        '%c',
+        '      __',
+        '   <(o )___',
+        '    ( ._> /   WH4T!SLOV3',
+        '     `---\'',
+        '',
+        'привет, любопытный 🦆',
+        'нашёл консоль? попробуй konami-код на сайте: ↑ ↑ ↓ ↓ ← → ← → B A',
+        'мы делаем штуки с любовью → t.me/whatislove_r',
+      ].join('\n');
+      console.log(duck, 'font-family:monospace;font-size:12px;color:#e8841a;font-weight:bold;');
+    } catch {}
+  }, []);
+
+  // ── KONAMI CODE → DUCK RAIN ─────────────────────────────────
+  useEffect(() => {
+    const seq = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    let idx = 0;
+    const onKey = (e: KeyboardEvent) => {
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      if (key === seq[idx]) {
+        idx++;
+        if (idx === seq.length) { idx = 0; setDuckRain(true); }
+      } else {
+        // allow restart if the wrong key is itself the first key of the sequence
+        idx = key === seq[0] ? 1 : 0;
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
   
   const syncCart = useCartStore((state: any) => state.syncWithStorage);
 
@@ -128,6 +166,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     return (
       <>
         <CursorManager />
+        <DuckRain active={duckRain} onDone={() => setDuckRain(false)} />
         {children}
       </>
     );
@@ -137,6 +176,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     <>
       <CursorManager />
       <DvdScreensaver />
+      <DuckRain active={duckRain} onDone={() => setDuckRain(false)} />
       {/* ЗАГРУЗКА */}
       <div style={{
         position: 'fixed',

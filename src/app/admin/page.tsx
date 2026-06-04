@@ -30,6 +30,35 @@ export default function AdminDashboard() {
         ))}
       </div>
 
+      {stats.daily?.length > 0 && (() => {
+        const maxRev = Math.max(...stats.daily.map((d: any) => d.revenue), 1);
+        const total30 = stats.daily.reduce((s: number, d: any) => s + d.revenue, 0);
+        return (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px' }}>
+              <div style={{ fontWeight: 800, fontSize: '14px' }}>выручка за 30 дней</div>
+              <div style={{ fontSize: '12px', color: '#666' }}>итого {total30.toLocaleString('ru')} ₽</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '140px', borderBottom: '2px solid #000', paddingBottom: '0' }}>
+              {stats.daily.map((d: any, i: number) => {
+                const h = d.revenue > 0 ? Math.max(3, (d.revenue / maxRev) * 132) : 0;
+                const label = d.date.slice(5).replace('-', '.');
+                return (
+                  <div key={i} title={`${label}: ${d.revenue.toLocaleString('ru')} ₽ (${d.orders} зак.)`}
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', height: '100%' }}>
+                    <div style={{ width: '100%', height: `${h}px`, background: d.revenue > 0 ? '#000' : '#e5e5e5', transition: 'height 0.3s' }} />
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#999', marginTop: '6px' }}>
+              <span>{stats.daily[0]?.date.slice(5).replace('-', '.')}</span>
+              <span>сегодня</span>
+            </div>
+          </div>
+        );
+      })()}
+
       {stats.topProducts?.length > 0 && (
         <div>
           <div style={{ fontWeight: 800, fontSize: '14px', marginBottom: '12px' }}>топ товаров</div>

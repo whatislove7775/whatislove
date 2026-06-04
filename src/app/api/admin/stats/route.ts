@@ -19,6 +19,19 @@ export async function GET(req: NextRequest) {
   let monthOrders = 0;
   const productSales: Record<string, { name: string; qty: number; revenue: number }> = {};
 
+  // Последние 30 дней: выручка + заказы по дням
+  const DAYS = 30;
+  const dayMap: Record<string, { revenue: number; orders: number }> = {};
+  const dayKeys: string[] = [];
+  for (let i = DAYS - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    dayKeys.push(key);
+    dayMap[key] = { revenue: 0, orders: 0 };
+  }
+
   for (const row of all) {
     const o = row.order_data;
     const paid = Number(o?.totalPaid ?? 0);
@@ -28,6 +41,8 @@ export async function GET(req: NextRequest) {
       monthRevenue += paid;
       monthOrders++;
     }
+    const dk = new Date(row.created_at).toISOString().slice(0, 10);
+    if (dayMap[dk]) { dayMap[dk].revenue += paid; dayMap[dk].orders++; }
     for (const item of o?.items ?? []) {
       const key = item.id ?? item.name;
       if (!key) continue;
@@ -40,6 +55,7 @@ export async function GET(req: NextRequest) {
   const topProducts = Object.values(productSales).sort((a, b) => b.qty - a.qty).slice(0, 5);
   // all уже отсортирован по created_at DESC
   const recent = all.slice(0, 5).map(r => ({ ...r.order_data, created_at: r.created_at }));
+  const daily = dayKeys.map(k => ({ date: k, revenue: dayMap[k].revenue, orders: dayMap[k].orders }));
 
   return NextResponse.json({
     totalOrders: all.filter(r => Number(r.order_data?.totalPaid) > 0).length,
@@ -48,5 +64,6 @@ export async function GET(req: NextRequest) {
     monthRevenue,
     topProducts,
     recent,
+    daily,
   });
 }
