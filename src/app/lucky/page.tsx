@@ -424,7 +424,7 @@ export default function LuckyPage() {
     let active = true, lastTime = 0, accum = 0;
     let prevDead = false, prevNight = false;
 
-    // Synthesized "quack" on jump (no asset needed)
+    // Synthesized quack — realistic mallard duck (no external asset needed)
     let audioCtx: AudioContext | null = null;
     function quack() {
       try {
@@ -434,68 +434,120 @@ export default function LuckyPage() {
         const ac = audioCtx;
         if (ac.state === 'suspended') ac.resume();
         const now = ac.currentTime;
-        const dur = 0.22;
+        const dur = 0.21;
 
-        // Voiced source: sawtooth sweeping down (duck pitch drop)
+        // ── VOICED SOURCE ────────────────────────────────────────
+        // Mallard female: 560 → 260 Hz pitch glide (downward quack)
         const osc = ac.createOscillator();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(520, now);
-        osc.frequency.exponentialRampToValueAtTime(200, now + dur);
+        osc.frequency.setValueAtTime(560, now);
+        osc.frequency.exponentialRampToValueAtTime(260, now + dur);
 
-        // Noise burst for the consonant attack ("kw-" onset)
-        const bufLen = Math.floor(ac.sampleRate * 0.04);
-        const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
-        const data = buf.getChannelData(0);
-        for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufLen);
-        const noise = ac.createBufferSource();
-        noise.buffer = buf;
+        // Vocal flutter: ~20 Hz FM — duck syrinx is never perfectly stable
+        const flutter = ac.createOscillator();
+        flutter.frequency.value = 21;
+        const flutterAmt = ac.createGain();
+        flutterAmt.gain.value = 16; // ±16 Hz pitch deviation
+        flutter.connect(flutterAmt);
+        flutterAmt.connect(osc.frequency);
 
-        // F1 — low nasal formant (~900→500 Hz)
+        // ── WAVESHAPER (syrinx non-linearity → harsh buzzy timbre) ──
+        const distort = ac.createWaveShaper();
+        const WN = 512;
+        const wc = new Float32Array(WN);
+        for (let i = 0; i < WN; i++) {
+          const x = (i / (WN - 1)) * 2 - 1;
+          // Asymmetric soft-clip: emphasises odd harmonics like a real duck
+          wc[i] = x >= 0
+            ? 1 - Math.exp(-x * 3.8)
+            : -(1 - Math.exp(x * 2.6));
+        }
+        distort.curve = wc;
+        distort.oversample = '4x';
+
+        // ── NOISE ("KW" consonant burst + continuous breathiness) ──
+        const nLen = Math.floor(ac.sampleRate * 0.22);
+        const nBuf = ac.createBuffer(1, nLen, ac.sampleRate);
+        const nd = nBuf.getChannelData(0);
+        for (let i = 0; i < nLen; i++) nd[i] = Math.random() * 2 - 1;
+        const noiseNode = ac.createBufferSource();
+        noiseNode.buffer = nBuf;
+
+        // Consonant burst: shaped noise 1200 Hz, decays in 25 ms
+        const nFiltBurst = ac.createBiquadFilter();
+        nFiltBurst.type = 'bandpass';
+        nFiltBurst.frequency.value = 1200;
+        nFiltBurst.Q.value = 1.6;
+        const nGainBurst = ac.createGain();
+        nGainBurst.gain.setValueAtTime(0.55, now);
+        nGainBurst.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+
+        // Continuous breathiness: quiet hiss throughout quack
+        const nFiltBreath = ac.createBiquadFilter();
+        nFiltBreath.type = 'bandpass';
+        nFiltBreath.frequency.value = 2800;
+        nFiltBreath.Q.value = 1.2;
+        const nGainBreath = ac.createGain();
+        nGainBreath.gain.setValueAtTime(0.0001, now);
+        nGainBreath.gain.linearRampToValueAtTime(0.08, now + 0.01);
+        nGainBreath.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+        // ── FORMANT FILTERS ──────────────────────────────────────
+        // F1: duck throat cavity — glides from ~1000 → 500 Hz with pitch
         const f1 = ac.createBiquadFilter();
         f1.type = 'bandpass';
-        f1.frequency.setValueAtTime(880, now);
-        f1.frequency.exponentialRampToValueAtTime(480, now + dur);
-        f1.Q.value = 4;
+        f1.frequency.setValueAtTime(960, now);
+        f1.frequency.exponentialRampToValueAtTime(490, now + dur);
+        f1.Q.value = 4.5;
 
-        // F2 — bright upper formant (~2000→1200 Hz)
+        // F2: nasal/sinus resonance — fixed ~2100 Hz (classic honk)
         const f2 = ac.createBiquadFilter();
         f2.type = 'bandpass';
-        f2.frequency.setValueAtTime(2000, now);
-        f2.frequency.exponentialRampToValueAtTime(1100, now + dur);
-        f2.Q.value = 3.5;
+        f2.frequency.value = 2100;
+        f2.Q.value = 3.8;
 
-        // F3 — nasal "quack" honk (~3200 Hz, fixed)
-        const f3 = ac.createBiquadFilter();
-        f3.type = 'bandpass';
-        f3.frequency.value = 3200;
-        f3.Q.value = 6;
+        // Low-pass: remove non-realistic >5 kHz harsh artefacts
+        const lp = ac.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = 5000;
+        lp.Q.value = 0.7;
 
-        // Noise filter (shapes the "kw" onset click)
-        const nf = ac.createBiquadFilter();
-        nf.type = 'bandpass';
-        nf.frequency.value = 1600;
-        nf.Q.value = 2;
-
-        const noiseGain = ac.createGain();
-        noiseGain.gain.setValueAtTime(0.3, now);
-        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
-
+        // ── MIX ──────────────────────────────────────────────────
         const mix = ac.createGain();
-        mix.gain.value = 0.5;
+        mix.gain.value = 1;
 
-        const g = ac.createGain();
-        g.gain.setValueAtTime(0.0001, now);
-        g.gain.exponentialRampToValueAtTime(0.55, now + 0.015);
-        g.gain.setValueAtTime(0.55, now + 0.04);
-        g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+        // ── MASTER ENVELOPE: "W-AAAK" shape ──────────────────────
+        // Fast attack → plateau → slight sag → tail
+        const env = ac.createGain();
+        env.gain.setValueAtTime(0.001, now);
+        env.gain.exponentialRampToValueAtTime(0.82, now + 0.006);  // sharp attack
+        env.gain.setValueAtTime(0.82, now + 0.028);                // loud plateau
+        env.gain.linearRampToValueAtTime(0.48, now + 0.08);        // natural sag
+        env.gain.exponentialRampToValueAtTime(0.001, now + dur);   // tail off
 
-        osc.connect(f1); osc.connect(f2); osc.connect(f3);
-        f1.connect(mix); f2.connect(mix); f3.connect(mix);
-        noise.connect(nf); nf.connect(noiseGain); noiseGain.connect(mix);
-        mix.connect(g); g.connect(ac.destination);
+        // ── ROUTING ──────────────────────────────────────────────
+        osc.connect(distort);
+        distort.connect(f1);
+        distort.connect(f2);
+        f1.connect(mix);
+        f2.connect(mix);
 
-        osc.start(now); osc.stop(now + dur + 0.05);
-        noise.start(now); noise.stop(now + 0.05);
+        noiseNode.connect(nFiltBurst);
+        nFiltBurst.connect(nGainBurst);
+        nGainBurst.connect(mix);
+
+        noiseNode.connect(nFiltBreath);
+        nFiltBreath.connect(nGainBreath);
+        nGainBreath.connect(mix);
+
+        mix.connect(lp);
+        lp.connect(env);
+        env.connect(ac.destination);
+
+        // ── START / STOP ─────────────────────────────────────────
+        flutter.start(now); flutter.stop(now + dur + 0.02);
+        osc.start(now);     osc.stop(now + dur + 0.02);
+        noiseNode.start(now); noiseNode.stop(now + dur + 0.02);
       } catch {}
     }
 
