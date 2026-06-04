@@ -66,7 +66,7 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
               <div style={{ position: 'absolute', top: 0, right: 0, transform: 'translate(50%, -50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
               <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'translate(-50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
               <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'translate(50%, 50%)', fontWeight: 300, fontSize: '18px', lineHeight: 1 }}>+</div>
-              <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
+              <div className="share-img-wrap" style={{ position: 'relative', width: '100%', aspectRatio: '1/1', backgroundColor: '#e5e5e5', overflow: 'hidden' }}>
                 {activeImage && (
                   <SmartImage
                     src={activeImage}
@@ -77,6 +77,8 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
                     priority
                   />
                 )}
+                {/* Share icon — hover on desktop, always visible on mobile */}
+                <ShareButton name={product.name} slug={product.slug} iconMode />
               </div>
             </div>
             <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
@@ -255,7 +257,6 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
                   )}
                 </>
               )}
-              <ShareButton name={product.name} slug={product.slug} />
             </div>
           </div>
         </div>

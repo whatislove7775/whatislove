@@ -449,3 +449,18 @@ html.night-mode #site-content {
 html.night-mode #site-content a {
   color: #d0d0d0 !important;
 }
+
+
+/* ── Share overlay button on product image ───────────────────────────────── */
+.share-overlay-btn {
+  opacity: 0;
+  transition: opacity 0.18s;
+}
+.share-img-wrap:hover .share-overlay-btn {
+  opacity: 1;
+}
+@media (max-width: 1024px) {
+  .share-overlay-btn {
+    opacity: 1 !important;
+  }
+}
