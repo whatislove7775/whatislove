@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useCartStore } from '../store/cartStore';
@@ -10,6 +10,83 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
   const [showCookiePopup, setShowCookiePopup] = useState(false);
+
+  // ── SOUND ENGINE ────────────────────────────────────────────
+  const acRef        = useRef<AudioContext | null>(null);
+  const clickBuf     = useRef<AudioBuffer | null>(null);
+  const popupBuf     = useRef<AudioBuffer | null>(null);
+  const clickBytes   = useRef<ArrayBuffer | null>(null);
+  const popupBytes   = useRef<ArrayBuffer | null>(null);
+  const pendingPopup = useRef(false); // play popup sound on next user gesture
+
+  // Prefetch encoded bytes immediately (no AudioContext needed yet)
+  useEffect(() => {
+    fetch('/sounds/click.mp3').then(r => r.arrayBuffer()).then(ab => { clickBytes.current = ab; }).catch(() => {});
+    fetch('/sounds/popup.mp3').then(r => r.arrayBuffer()).then(ab => { popupBytes.current = ab; }).catch(() => {});
+  }, []);
+
+  function getAC(): AudioContext {
+    if (!acRef.current) {
+      const AC = (window.AudioContext || (window as any).webkitAudioContext);
+      acRef.current = new AC();
+    }
+    return acRef.current;
+  }
+
+  async function decodeIfNeeded(ac: AudioContext) {
+    if (!clickBuf.current && clickBytes.current) {
+      try { clickBuf.current = await ac.decodeAudioData(clickBytes.current.slice(0)); } catch {}
+    }
+    if (!popupBuf.current && popupBytes.current) {
+      try { popupBuf.current = await ac.decodeAudioData(popupBytes.current.slice(0)); } catch {}
+    }
+  }
+
+  function playBuf(ac: AudioContext, buf: AudioBuffer, vol = 1) {
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    const g = ac.createGain();
+    g.gain.value = vol;
+    src.connect(g);
+    g.connect(ac.destination);
+    src.start();
+  }
+
+  // Global click/tap → play click sound + flush any pending popup sound
+  useEffect(() => {
+    const onGesture = async () => {
+      try {
+        const ac = getAC();
+        if (ac.state === 'suspended') await ac.resume();
+        await decodeIfNeeded(ac);
+        if (clickBuf.current) playBuf(ac, clickBuf.current, 0.85);
+        if (pendingPopup.current && popupBuf.current) {
+          pendingPopup.current = false;
+          setTimeout(() => { if (popupBuf.current) playBuf(ac, popupBuf.current); }, 0);
+        }
+      } catch {}
+    };
+    document.addEventListener('mousedown', onGesture);
+    document.addEventListener('touchstart', onGesture, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', onGesture);
+      document.removeEventListener('touchstart', onGesture);
+    };
+  }, []);
+
+  // Cookie popup appears → play popup sound (or defer to next click if AC not yet active)
+  useEffect(() => {
+    if (!showCookiePopup) return;
+    try {
+      const ac = acRef.current;
+      if (ac && ac.state === 'running' && popupBuf.current) {
+        playBuf(ac, popupBuf.current);
+      } else {
+        pendingPopup.current = true;
+      }
+    } catch {}
+  }, [showCookiePopup]);
+  // ────────────────────────────────────────────────────────────
   
   const syncCart = useCartStore((state: any) => state.syncWithStorage);
 
