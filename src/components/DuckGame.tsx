@@ -22,6 +22,7 @@ const N_INK = '#d0d0d0', N_BG = '#1a1a1a', N_HI = '#888888', N_LITE = '#3a3a3a';
 const N_CLOUD = '#2a2a2a', N_CANVAS = '#1a1a1a';
 
 const DOG_W = p(20), DOG_H = p(22);
+const DUCK_CROUCH = p(9); // на сколько опускается голова при наклоне
 
 function buildDuckSprite(leg: number, dead: boolean, ink: string, bg: string, colored = false): HTMLCanvasElement {
   const FILL = colored ? '#f4f4f4' : bg;    // white plumage
@@ -277,6 +278,7 @@ interface S {
   running: boolean; dead: boolean;
   score: number; best: number; speed: number;
   dogY: number; dogVY: number; onGround: boolean; jumpsLeft: number;
+  ducking: boolean;
   legFrame: number; legTimer: number; invincible: number;
   obstacles: Obs[]; clouds: { x: number; y: number }[];
   nextObs: number; groundOff: number; t: number; lives: number;
@@ -286,6 +288,7 @@ function fresh(best = 0, W = CW): S {
   return {
     running: false, dead: false, score: 0, best, speed: SPEED0,
     dogY: GROUND - DOG_H, dogVY: 0, onGround: true, jumpsLeft: 2,
+    ducking: false,
     legFrame: 0, legTimer: 0, invincible: 0, obstacles: [],
     clouds: [
       { x: Math.round(W * 0.16), y: 55 },
@@ -329,7 +332,9 @@ function updateState(s: S, W: number) {
     if (s.obstacles[i].x < -120) s.obstacles.splice(i, 1);
   }
   const dl = DOG_X + p(3), dr = DOG_X + DOG_W - p(3);
-  const dt = s.dogY + p(2), db = s.dogY + DOG_H - p(1);
+  // При наклоне (ducking на земле) верх хитбокса опускается — птицы пролетают над головой
+  const crouch = s.ducking && s.onGround ? DUCK_CROUCH : 0;
+  const dt = s.dogY + p(2) + crouch, db = s.dogY + DOG_H - p(1);
   if (!s.dead && s.invincible === 0) {
     for (const o of s.obstacles) {
       if (dr > o.x + p(2) && dl < o.x + o.w - p(2) && db > o.y + p(2) && dt < o.y + o.h - p(1)) {
@@ -485,14 +490,21 @@ export default function DuckGame({ showHomeLink = true }: { showHomeLink?: boole
 
     const held = { on: false };
     const onKey    = (e: KeyboardEvent) => {
+      const tag = (document.activeElement as HTMLElement)?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return;
       if (e.code === 'Space' || e.code === 'ArrowUp') {
-        const tag = (document.activeElement as HTMLElement)?.tagName?.toLowerCase();
-        if (tag === 'input' || tag === 'textarea') return;
         e.preventDefault();
         if (!held.on) { held.on = true; doJump(); }
+      } else if (e.code === 'ArrowDown') {
+        e.preventDefault();
+        const s = gsRef.current;
+        if (s.running && !s.dead) s.ducking = true;
       }
     };
-    const onKeyUp  = (e: KeyboardEvent) => { if (e.code === 'Space' || e.code === 'ArrowUp') held.on = false; };
+    const onKeyUp  = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') held.on = false;
+      else if (e.code === 'ArrowDown') gsRef.current.ducking = false;
+    };
     const onTouch  = (e: TouchEvent) => { e.preventDefault(); doJump(); };
 
     document.addEventListener('keydown',  onKey);
@@ -549,7 +561,16 @@ export default function DuckGame({ showHomeLink = true }: { showHomeLink?: boole
       }
       if (!flash) {
         const spr = s.dead ? sp.dog[2] : sp.dog[s.onGround ? s.legFrame : 0];
-        ctx.drawImage(spr, DOG_X, s.dogY - p(2));
+        if (s.ducking && s.onGround && !s.dead) {
+          // Наклон: сжимаем гуся по высоте и слегка растягиваем вширь, ноги остаются на земле
+          const sx = 1.18, sy = 0.62;
+          const newW = spr.width * sx, newH = spr.height * sy;
+          const drawX = DOG_X - (newW - spr.width) / 2;
+          const drawY = (s.dogY - p(2)) + (spr.height - newH);
+          ctx.drawImage(spr, drawX, drawY, newW, newH);
+        } else {
+          ctx.drawImage(spr, DOG_X, s.dogY - p(2));
+        }
       }
 
       ctx.font = '700 11px Inter, sans-serif';
@@ -611,6 +632,10 @@ export default function DuckGame({ showHomeLink = true }: { showHomeLink?: boole
       minHeight: '100%',
     }}>
       <canvas ref={canvasRef} style={{ display: 'block', maxWidth: '100%', touchAction: 'none' }} />
+
+      <div className="desktop-only" style={{ fontSize: '11px', color: dimClr, letterSpacing: '0.04em', marginTop: '-8px' }}>
+        ↑ / пробел — прыжок · ↓ — пригнуться под птицей
+      </div>
 
       {showSubmit && !submitted && (
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
