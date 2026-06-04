@@ -3,14 +3,14 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div style={{ 
-      flex: 1, 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
+    <div className="home-main" style={{
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
       width: '100%',
-      marginTop: '-60px' 
+      marginTop: '-60px'
     }}>
       
       {/* SVG Логотип — десктоп */}

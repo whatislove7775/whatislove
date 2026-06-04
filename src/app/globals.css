@@ -284,6 +284,13 @@ pre {
     text-overflow: ellipsis;
   }
 
+  /* Home page: push content down from the very top on mobile */
+  .home-main {
+    margin-top: 0 !important;
+    justify-content: flex-start !important;
+    padding-top: 12vh;
+  }
+
   /* Home nav: vertical on mobile */
   .home-nav {
     flex-direction: column !important;
