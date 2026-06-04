@@ -10,23 +10,23 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wh4tislove.ru';
 export const metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'WH4T!SLOV3',
+    default: 'Дизайн-студия "WH4T!SLOV3" — Бескомпромиссно. Функционально. Эстетично.',
     template: '%s | WH4T!SLOV3',
   },
-  description: 'Дизайн-студия whatislove — веб-дизайн, брендинг, лендинги. Заказать дизайн в Telegram.',
+  description: 'студия whatislove делает хороший дизайн, собственные продукты и просто развлекает народ. поисковая выдача не врёт.',
   openGraph: {
     siteName: 'WH4T!SLOV3',
     locale: 'ru_RU',
     type: 'website',
     url: siteUrl,
-    title: 'WH4T!SLOV3',
-    description: 'Дизайн-студия whatislove — веб-дизайн, брендинг, лендинги.',
+    title: 'Дизайн-студия "WH4T!SLOV3" — Бескомпромиссно. Функционально. Эстетично.',
+    description: 'студия whatislove делает хороший дизайн, собственные продукты и просто развлекает народ.',
     images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'WH4T!SLOV3' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'WH4T!SLOV3',
-    description: 'Дизайн-студия whatislove — веб-дизайн, брендинг, лендинги.',
+    title: 'Дизайн-студия "WH4T!SLOV3" — Бескомпромиссно. Функционально. Эстетично.',
+    description: 'студия whatislove делает хороший дизайн, собственные продукты и просто развлекает народ.',
     images: ['/og-default.png'],
   },
   robots: {
@@ -35,6 +35,7 @@ export const metadata = {
   },
   icons: {
     icon: [
+      { url: '/favicon.ico', sizes: 'any' },
       { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
