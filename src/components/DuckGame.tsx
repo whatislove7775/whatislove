@@ -433,6 +433,7 @@ export default function DuckGame({ showHomeLink = true, onStart }: { showHomeLin
   const onDeadRef   = useRef<(score: number) => void>(() => {});
   const onRestartRef = useRef<() => void>(() => {});
   const onStartRef  = useRef<() => void>(() => {});
+  const jumpRef     = useRef<() => void>(() => {});
   onStartRef.current = onStart ?? (() => {});
 
   const [nightMode,   setNightMode]   = useState(false);
@@ -587,6 +588,7 @@ export default function DuckGame({ showHomeLink = true, onStart }: { showHomeLin
       else if (e.code === 'ArrowDown') gsRef.current.ducking = false;
     };
     const onTouch  = (e: TouchEvent) => { e.preventDefault(); doJump(); };
+    jumpRef.current = doJump;
 
     document.addEventListener('keydown',  onKey);
     document.addEventListener('keyup',    onKeyUp);
@@ -699,8 +701,18 @@ export default function DuckGame({ showHomeLink = true, onStart }: { showHomeLin
   const dimClr = nightMode ? '#666666' : '#aaaaaa';
   const brdClr = nightMode ? '#333333' : '#cccccc';
 
+  // На мобильных: тап в любом месте области игры (кроме полей/кнопок/ссылок) = прыжок
+  const onAreaTouch = (e: React.TouchEvent) => {
+    const t = e.target as HTMLElement;
+    if (t.closest('input, button, a, textarea, canvas')) return; // canvas обрабатывает свой touchstart
+    e.preventDefault();
+    jumpRef.current();
+  };
+
   return (
-    <div style={{
+    <div
+      onTouchStart={onAreaTouch}
+      style={{
       flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', width: '100%', gap: '20px',
       background: nightMode ? '#1a1a1a' : 'transparent',
