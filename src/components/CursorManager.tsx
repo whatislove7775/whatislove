@@ -14,34 +14,35 @@ const CURSORS = {
 type CursorType = keyof typeof CURSORS;
 const CURSOR_TYPES = Object.keys(CURSORS) as CursorType[];
 
-// null = "checked, no cursor signal on this element"
-const typeCache = new WeakMap<Element, CursorType | null>();
+// Frame-scoped cache: cleared every rAF so React re-renders never produce stale entries
+let frameGen = 0;
+const typeCache = new WeakMap<Element, { gen: number; val: CursorType | null }>();
 
 function detect(el: EventTarget | null): CursorType {
   let node = el instanceof Element ? el : null;
   while (node && node !== document.documentElement) {
     const cached = typeCache.get(node);
-    if (cached !== undefined) {
-      if (cached !== null) return cached;
+    if (cached !== undefined && cached.gen === frameGen) {
+      if (cached.val !== null) return cached.val;
       node = node.parentElement;
       continue;
     }
 
     if (node instanceof HTMLElement) {
       const v = getComputedStyle(node).getPropertyValue('--cur').trim() as CursorType;
-      if (v in CURSORS) { typeCache.set(node, v); return v; }
+      if (v in CURSORS) { typeCache.set(node, { gen: frameGen, val: v }); return v; }
 
       // Inline style fallback for React elements that set cursor directly
       const s = node.style.cursor;
-      if (s === 'pointer')                  { typeCache.set(node, 'pointer'); return 'pointer'; }
-      if (s === 'text')                     { typeCache.set(node, 'text');    return 'text'; }
-      if (s === 'not-allowed')              { typeCache.set(node, 'no');      return 'no'; }
-      if (s === 'move')                     { typeCache.set(node, 'move');    return 'move'; }
-      if (s === 'crosshair')                { typeCache.set(node, 'cross');   return 'cross'; }
-      if (s === 'wait' || s === 'progress') { typeCache.set(node, 'wait');    return 'wait'; }
+      if (s === 'pointer')                  { typeCache.set(node, { gen: frameGen, val: 'pointer' }); return 'pointer'; }
+      if (s === 'text')                     { typeCache.set(node, { gen: frameGen, val: 'text' });    return 'text'; }
+      if (s === 'not-allowed')              { typeCache.set(node, { gen: frameGen, val: 'no' });      return 'no'; }
+      if (s === 'move')                     { typeCache.set(node, { gen: frameGen, val: 'move' });    return 'move'; }
+      if (s === 'crosshair')                { typeCache.set(node, { gen: frameGen, val: 'cross' });   return 'cross'; }
+      if (s === 'wait' || s === 'progress') { typeCache.set(node, { gen: frameGen, val: 'wait' });    return 'wait'; }
     }
 
-    typeCache.set(node, null);
+    typeCache.set(node, { gen: frameGen, val: null });
     node = node.parentElement;
   }
   return 'default';
@@ -103,6 +104,7 @@ export default function CursorManager() {
       if (!rafId) {
         rafId = requestAnimationFrame(() => {
           rafId = 0;
+          frameGen++;
           applyType(detect(pendingTarget), pendingX, pendingY);
         });
       }

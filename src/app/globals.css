@@ -9,6 +9,10 @@ html {
   overflow-x: hidden;
   max-width: 100%;
   background-color: #ffffff;
+  scrollbar-width: none; /* Firefox: hide scrollbar, page still scrolls */
+}
+html::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Edge: hide scrollbar */
 }
 
 * {
