@@ -121,6 +121,83 @@ function buildDuckSprite(leg: number, dead: boolean, ink: string, bg: string, co
   return c;
 }
 
+// ── CROUCH SPRITE: goose leans low, neck stretched forward parallel to ground ──
+const DOG_CR_W = p(25), DOG_CR_H = p(14);
+
+function buildDuckCrouchSprite(leg: number, dead: boolean, ink: string, bg: string, colored = false): HTMLCanvasElement {
+  const FILL = colored ? '#f4f4f4' : bg;
+  const SHAD = colored ? '#cfcfcf' : bg;
+  const WING = colored ? '#bdbdbd' : bg;
+  const BEAK = colored ? '#e8841a' : ink;
+  const BEAKD= colored ? '#b85f00' : ink;
+  const LEGS = colored ? '#e8841a' : ink;
+
+  const c = document.createElement('canvas');
+  c.width = DOG_CR_W; c.height = DOG_CR_H;
+  const ctx = c.getContext('2d')!;
+
+  // ════ INK SILHOUETTE ════
+  // Tail flick (back-left, slightly up)
+  px(ctx, ink, p(0), p(4), p(3), p(1));
+  px(ctx, ink, p(0), p(5), p(2), p(1));
+  // Body (low horizontal teardrop)
+  px(ctx, ink, p(2),  p(4),  p(11), p(1));
+  px(ctx, ink, p(1),  p(5),  p(13), p(1));
+  px(ctx, ink, p(1),  p(6),  p(14), p(1));
+  px(ctx, ink, p(1),  p(7),  p(14), p(1));
+  px(ctx, ink, p(2),  p(8),  p(13), p(1));
+  px(ctx, ink, p(3),  p(9),  p(11), p(1));
+  // Neck stretched FORWARD, parallel to the ground
+  px(ctx, ink, p(12), p(3),  p(7),  p(1)); // upper neck edge
+  px(ctx, ink, p(13), p(4),  p(6),  p(1)); // lower neck edge
+  // Head (front, low)
+  px(ctx, ink, p(18), p(2),  p(4),  p(1));
+  px(ctx, ink, p(17), p(3),  p(5),  p(1));
+  px(ctx, ink, p(18), p(4),  p(4),  p(1));
+
+  // ════ WHITE FILL (inset) ════
+  px(ctx, FILL, p(3),  p(5),  p(10), p(1));
+  px(ctx, FILL, p(2),  p(6),  p(12), p(1));
+  px(ctx, FILL, p(2),  p(7),  p(12), p(1));
+  px(ctx, FILL, p(3),  p(8),  p(10), p(1));
+  px(ctx, FILL, p(13), p(3),  p(5),  p(1)); // neck interior
+  px(ctx, FILL, p(14), p(4),  p(4),  p(1));
+  px(ctx, FILL, p(19), p(3),  p(2),  p(1)); // head interior
+
+  // ════ BELLY SHADING + WING ════
+  px(ctx, SHAD, p(3),  p(8),  p(9),  p(1));
+  px(ctx, WING, p(5),  p(6),  p(7),  p(1));
+  px(ctx, WING, p(6),  p(7),  p(5),  p(1));
+
+  // ════ EYE ════
+  if (dead) {
+    px(ctx, ink, p(19), p(2), p(1), p(1));
+    px(ctx, ink, p(20), p(3), p(1), p(1));
+  } else {
+    px(ctx, ink, p(20), p(2), p(1), p(1));
+  }
+
+  // ════ BILL (orange, pointing forward) ════
+  px(ctx, BEAK,  p(22), p(2), p(3), p(1)); // upper bill
+  px(ctx, BEAKD, p(24), p(2), p(1), p(1)); // tip shadow
+  px(ctx, BEAK,  p(22), p(3), p(3), p(1)); // lower bill
+  px(ctx, BEAKD, p(22), p(3), p(2), p(1)); // under-bill shadow
+
+  // ════ LEGS + WEBBED FEET (walk cycle) ════
+  if (leg === 0) {
+    px(ctx, LEGS, p(5),  p(9),  p(2), p(3));  // back leg
+    px(ctx, LEGS, p(3),  p(12), p(6), p(1));  // back foot
+    px(ctx, LEGS, p(9),  p(9),  p(2), p(2));  // front leg
+    px(ctx, LEGS, p(8),  p(11), p(6), p(1));  // front foot
+  } else {
+    px(ctx, LEGS, p(5),  p(9),  p(2), p(2));
+    px(ctx, LEGS, p(3),  p(11), p(6), p(1));
+    px(ctx, LEGS, p(9),  p(9),  p(2), p(3));
+    px(ctx, LEGS, p(8),  p(12), p(6), p(1));
+  }
+  return c;
+}
+
 const POOP_W = p(16), POOP_H = p(18);
 
 function buildHydrantSprite(ink: string, bg: string, colored = false): HTMLCanvasElement {
@@ -349,12 +426,14 @@ function updateState(s: S, W: number) {
 
 interface LeaderEntry { player_name: string; score: number; }
 
-export default function DuckGame({ showHomeLink = true }: { showHomeLink?: boolean }) {
+export default function DuckGame({ showHomeLink = true, onStart }: { showHomeLink?: boolean; onStart?: () => void }) {
   const canvasRef   = useRef<HTMLCanvasElement>(null);
   const gsRef       = useRef<S>(fresh());
   const rafRef      = useRef(0);
   const onDeadRef   = useRef<(score: number) => void>(() => {});
   const onRestartRef = useRef<() => void>(() => {});
+  const onStartRef  = useRef<() => void>(() => {});
+  onStartRef.current = onStart ?? (() => {});
 
   const [nightMode,   setNightMode]   = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderEntry[]>([]);
@@ -415,12 +494,14 @@ export default function DuckGame({ showHomeLink = true }: { showHomeLink?: boole
 
     const spDay = {
       dog:  [buildDuckSprite(0, false, D_INK, D_BG, true), buildDuckSprite(1, false, D_INK, D_BG, true), buildDuckSprite(0, true, D_INK, D_BG, true)],
+      crouch: [buildDuckCrouchSprite(0, false, D_INK, D_BG, true), buildDuckCrouchSprite(1, false, D_INK, D_BG, true)],
       poop: buildHydrantSprite(D_INK, D_BG, true),
       bird: [buildFlyingDuckSprite(0, D_INK, D_BG, true), buildFlyingDuckSprite(1, D_INK, D_BG, true)],
       life: [buildDuckFootSprite(false, D_INK, D_LITE, true), buildDuckFootSprite(true, D_INK, D_LITE, true)],
     };
     const spNight = {
       dog:  [buildDuckSprite(0, false, N_INK, N_BG), buildDuckSprite(1, false, N_INK, N_BG), buildDuckSprite(0, true, N_INK, N_BG)],
+      crouch: [buildDuckCrouchSprite(0, false, N_INK, N_BG), buildDuckCrouchSprite(1, false, N_INK, N_BG)],
       poop: buildHydrantSprite(N_INK, N_BG),
       bird: [buildFlyingDuckSprite(0, N_INK, N_BG), buildFlyingDuckSprite(1, N_INK, N_BG)],
       life: [buildDuckFootSprite(false, N_INK, N_LITE), buildDuckFootSprite(true, N_INK, N_LITE)],
@@ -471,7 +552,7 @@ export default function DuckGame({ showHomeLink = true }: { showHomeLink?: boole
 
     function doJump() {
       const s = gsRef.current;
-      if (!s.running && !s.dead) { s.running = true; accum = 0; return; }
+      if (!s.running && !s.dead) { s.running = true; accum = 0; onStartRef.current(); return; }
       if (s.dead) {
         gsRef.current = fresh(Math.max(s.best, s.score), W);
         gsRef.current.running = true;
@@ -560,15 +641,11 @@ export default function DuckGame({ showHomeLink = true }: { showHomeLink?: boole
         else                   ctx.drawImage(sp.bird[wing], o.x, o.y);
       }
       if (!flash) {
-        const spr = s.dead ? sp.dog[2] : sp.dog[s.onGround ? s.legFrame : 0];
         if (s.ducking && s.onGround && !s.dead) {
-          // Наклон: сжимаем гуся по высоте и слегка растягиваем вширь, ноги остаются на земле
-          const sx = 1.18, sy = 0.62;
-          const newW = spr.width * sx, newH = spr.height * sy;
-          const drawX = DOG_X - (newW - spr.width) / 2;
-          const drawY = (s.dogY - p(2)) + (spr.height - newH);
-          ctx.drawImage(spr, drawX, drawY, newW, newH);
+          // Наклон: гусь пригибается, шея вытянута вперёд параллельно земле; ноги на земле
+          ctx.drawImage(sp.crouch[s.legFrame], DOG_X, GROUND - DOG_CR_H + p(1));
         } else {
+          const spr = s.dead ? sp.dog[2] : sp.dog[s.onGround ? s.legFrame : 0];
           ctx.drawImage(spr, DOG_X, s.dogY - p(2));
         }
       }
