@@ -127,9 +127,9 @@ pre {
 }
 .keycap-svg text { font-family: inherit; }
 
-/* размеры = viewBox (big 432×161, heart 164×161) */
-.keycap-main .keycap-svg  { width: calc(432px * var(--s)); height: calc(161px * var(--s)); }
-.keycap-heart .keycap-svg { width: calc(164px * var(--s)); height: calc(161px * var(--s)); }
+/* размеры = viewBox (big 518×157, heart 176×157) */
+.keycap-main .keycap-svg  { width: calc(518px * var(--s)); height: calc(157px * var(--s)); }
+.keycap-heart .keycap-svg { width: calc(176px * var(--s)); height: calc(157px * var(--s)); }
 
 /* наклон в 2D — большая против часовой, <3 по часовой */
 .keycap-main  { transform: rotate(-4deg); }

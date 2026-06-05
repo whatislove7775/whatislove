@@ -1,26 +1,20 @@
 'use client';
 
-const INK = '#3a3a3a';   // цвет символов
-
+// фаски
 const BL = 24, BR = 24, BT = 13, BB = 32;
 const OR = 15, IR = 12;
-const BIG_TW = 384, HEART_TW = 116, FACE_TH = 116;
-const W_MAIN = BL + BIG_TW + BR;
-const FACE_CY = BT + FACE_TH / 2;
 
-// Стрелка Enter — тонкая, без скруглений, вплотную к тексту
-function EnterGlyph({ x, y }: { x: number; y: number }) {
-  return (
-    <g transform={`translate(${x} ${y})`} fill="none" stroke={INK}
-       strokeWidth={6} strokeLinecap="butt" strokeLinejoin="miter">
-      <path d="M46 -26 L46 3 L13 3" />
-      <path d="M13 3 L26 -8 M13 3 L26 15" />
-    </g>
-  );
-}
+// натуральные пропорции присланных PNG
+const MAIN_AR = 1627 / 222;   // wh4tislove + стрелка
+const HEART_AR = 311 / 216;   // <3
 
-function Keycap({ id, tw, th, className, children }: {
-  id: string; tw: number; th: number; className: string; children: React.ReactNode;
+// вытянутые грани
+const BIG_TW = 470, BIG_TH = 112;
+const HEART_TW = 128, HEART_TH = 112;
+
+function Keycap({ id, tw, th, className, img }: {
+  id: string; tw: number; th: number; className: string;
+  img: { src: string; ar: number; h: number };
 }) {
   const W = BL + tw + BR;
   const H = BT + th + BB;
@@ -33,17 +27,21 @@ function Keycap({ id, tw, th, className, children }: {
 
   const clipId = `clip-${id}`, gId = `top-${id}`, fId = `face-${id}`, grainId = `grain-${id}`;
 
+  // размещение глифа по центру грани
+  const imgH = img.h, imgW = img.h * img.ar;
+  const imgX = ix0 + (tw - imgW) / 2;
+  const imgY = iy0 + (th - imgH) / 2;
+
   return (
     <button type="button" className={`keycap ${className}`}>
       <svg viewBox={`0 0 ${W} ${H}`} className="keycap-svg" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <clipPath id={clipId}><rect x={0} y={0} width={W} height={H} rx={OR} /></clipPath>
           <clipPath id={fId}><rect x={ix0} y={iy0} width={tw} height={th} rx={IR} /></clipPath>
-          {/* диагональный linear-градиент — освещает углы */}
           <linearGradient id={gId} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0"    stopColor="#f4f4f4" />
-            <stop offset="0.5"  stopColor="#e9e9e9" />
-            <stop offset="1"    stopColor="#dadada" />
+            <stop offset="0"   stopColor="#f4f4f4" />
+            <stop offset="0.5" stopColor="#e9e9e9" />
+            <stop offset="1"   stopColor="#dadada" />
           </linearGradient>
           <filter id={grainId} x="0" y="0" width="100%" height="100%">
             <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2"
@@ -52,7 +50,7 @@ function Keycap({ id, tw, th, className, children }: {
           </filter>
         </defs>
 
-        {/* Тело — фаски с диагональными градиентами */}
+        {/* Тело — фаски */}
         <g clipPath={`url(#${clipId})`}>
           <polygon points={top}    fill="#f4f4f4" />
           <polygon points={left}   fill="#dcdcdc" />
@@ -63,11 +61,12 @@ function Keycap({ id, tw, th, className, children }: {
         {/* Верхняя грань */}
         <g className="kc-cap">
           <rect x={ix0} y={iy0} width={tw} height={th} rx={IR} fill={`url(#${gId})`} />
-          {/* текстура потёртости */}
           <g clipPath={`url(#${fId})`} opacity={0.09} style={{ mixBlendMode: 'multiply' }}>
             <rect x={ix0} y={iy0} width={tw} height={th} filter={`url(#${grainId})`} />
           </g>
-          {children}
+          {/* присланный глиф */}
+          <image href={img.src} x={imgX} y={imgY} width={imgW} height={imgH}
+                 preserveAspectRatio="xMidYMid meet" />
         </g>
       </svg>
     </button>
@@ -77,20 +76,10 @@ function Keycap({ id, tw, th, className, children }: {
 export default function KeyboardLogo() {
   return (
     <div className="kb-logo" aria-label="wh4tislove">
-      <Keycap id="main" tw={BIG_TW} th={FACE_TH} className="keycap-main">
-        <text x={BL + 12} y={FACE_CY} dominantBaseline="central" textAnchor="start"
-              fontWeight={500} fontSize={58} fill={INK} letterSpacing="-1">
-          wh4tislove
-        </text>
-        <EnterGlyph x={W_MAIN - 96} y={FACE_CY} />
-      </Keycap>
-
-      <Keycap id="heart" tw={HEART_TW} th={FACE_TH} className="keycap-heart">
-        <text x={BL + HEART_TW / 2} y={FACE_CY} dominantBaseline="central" textAnchor="middle"
-              fontWeight={500} fontSize={60} fill={INK} letterSpacing="-1">
-          &lt;3
-        </text>
-      </Keycap>
+      <Keycap id="main" tw={BIG_TW} th={BIG_TH} className="keycap-main"
+              img={{ src: '/keys/wh4tislove_src.png', ar: MAIN_AR, h: 50 }} />
+      <Keycap id="heart" tw={HEART_TW} th={HEART_TH} className="keycap-heart"
+              img={{ src: '/keys/heart_src.png', ar: HEART_AR, h: 66 }} />
     </div>
   );
 }
