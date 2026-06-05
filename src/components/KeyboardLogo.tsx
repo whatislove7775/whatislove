@@ -79,7 +79,7 @@ export default function KeyboardLogo() {
       <Keycap id="main" tw={BIG_TW} th={BIG_TH} className="keycap-main"
               img={{ src: '/keys/wh4tislove_src.png', ar: MAIN_AR, h: 50 }} />
       <Keycap id="heart" tw={HEART_TW} th={HEART_TH} className="keycap-heart"
-              img={{ src: '/keys/heart_src.png', ar: HEART_AR, h: 66 }} />
+              img={{ src: '/keys/heart_src.png', ar: HEART_AR, h: 58 }} />
     </div>
   );
 }
