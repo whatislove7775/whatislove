@@ -382,6 +382,12 @@ pre {
   }
   .home-nav .nav-sep { display: none; }
 
+  /* Links page: content strictly centered on mobile (no desktop offset) */
+  .links-center {
+    margin-top: 0 !important;
+    justify-content: center !important;
+  }
+
   /* Links page: vertical on mobile */
   .links-nav {
     flex-direction: column !important;

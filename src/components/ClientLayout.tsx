@@ -56,16 +56,32 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   // Global click/tap → play click sound + flush any pending popup sound
   useEffect(() => {
-    // На сенсорных устройствах (мобильные) звук нажатия не воспроизводим
     const isTouch = typeof window !== 'undefined' &&
       (window.matchMedia?.('(pointer: coarse)').matches || 'ontouchstart' in window);
+    // Интерактивные элементы — клавиши, кнопки, ссылки и т.п.
+    const INTERACTIVE = 'a, button, [role="button"], input, select, textarea, label, summary, .keycap, [data-click-sound]';
     const onGesture = async (e: Event) => {
       try {
         const ac = getAC();
         if (ac.state === 'suspended') await ac.resume();
         await decodeIfNeeded(ac);
-        const fromTouch = isTouch || e.type === 'touchstart';
-        if (!fromTouch && clickBuf.current) playBuf(ac, clickBuf.current, 0.85);
+
+        // На сенсорных устройствах основное событие — touchstart (исключаем
+        // дубль от синтетического mousedown); на десктопе — mousedown.
+        const isPrimary = isTouch ? e.type === 'touchstart' : e.type === 'mousedown';
+        let shouldClick = false;
+        if (isPrimary) {
+          if (!isTouch) {
+            // Десктоп: звук на любой клик (как было)
+            shouldClick = true;
+          } else {
+            // Мобайл: звук только при нажатии на клавишу/кнопку/ссылку
+            const t = e.target as Element | null;
+            shouldClick = !!(t && t.closest(INTERACTIVE));
+          }
+        }
+        if (shouldClick && clickBuf.current) playBuf(ac, clickBuf.current, 0.85);
+
         if (pendingPopup.current && popupBuf.current) {
           pendingPopup.current = false;
           setTimeout(() => { if (popupBuf.current) playBuf(ac, popupBuf.current); }, 0);

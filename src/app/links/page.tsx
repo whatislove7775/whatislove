@@ -18,7 +18,7 @@ export default function LinksPage() {
       </div>
       
       {/* Контейнер для центрирования посередине экрана */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginTop: '-60px' }}>
+      <div className="links-center" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginTop: '-60px' }}>
         
         <div style={{ marginBottom: '60px', position: 'relative', ['--s' as any]: 0.74 }}>
           {items.map(({ id, x }) => (
