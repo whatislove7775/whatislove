@@ -126,13 +126,13 @@ pre {
   transition: filter 0.09s ease, transform 0.09s ease;
 }
 
-/* фиксированный масштаб для обеих клавиш (px = единицы viewBox * --s) */
-.keycap-main .keycap-svg  { width: calc(522px * var(--s)); height: calc(182px * var(--s)); }
-.keycap-heart .keycap-svg { width: calc(182px * var(--s)); height: calc(182px * var(--s)); }
+/* размеры = viewBox без 6px padding */
+.keycap-main .keycap-svg  { width: calc(520px * var(--s)); height: calc(182px * var(--s)); }
+.keycap-heart .keycap-svg { width: calc(180px * var(--s)); height: calc(182px * var(--s)); }
 
-/* наклон в 2D (как на референсе) — обе против часовой, «<3» сильнее */
+/* наклон в 2D: большая против часовой, <3 — по часовой */
 .keycap-main  { transform: rotate(-4deg); }
-.keycap-heart { transform: rotate(-8deg); }
+.keycap-heart { transform: rotate(6deg); }
 
 /* нажатие — клавиша слегка проседает */
 .keycap:active .keycap-svg {
