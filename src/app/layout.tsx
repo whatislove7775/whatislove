@@ -21,13 +21,13 @@ export const metadata = {
     url: siteUrl,
     title: 'Дизайн-студия "WH4T!SLOV3" — Бескомпромиссно. Функционально. Эстетично.',
     description: 'студия whatislove делает хороший дизайн, собственные продукты и просто развлекает народ.',
-    images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'WH4T!SLOV3' }],
+    images: [{ url: '/api/og', width: 1200, height: 630, alt: 'WH4T!SLOV3' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Дизайн-студия "WH4T!SLOV3" — Бескомпромиссно. Функционально. Эстетично.',
-    description: 'студия whatislove делает хороший дизайн, собственные продукты и просто развлекает народ.',
-    images: ['/og-default.png'],
+    description: 'студия whatислove делает хороший дизайн, собственные продукты и просто развлекает народ.',
+    images: ['/api/og'],
   },
   robots: {
     index: true,
