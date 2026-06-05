@@ -105,7 +105,7 @@ pre {
   justify-content: center;
   gap: clamp(20px, 3vw, 46px);
   user-select: none;
-  --s: 0.84;          /* global render scale */
+  --s: 0.72;          /* global render scale */
 }
 
 .keycap {
@@ -127,13 +127,13 @@ pre {
 }
 .keycap-svg text { font-family: inherit; }
 
-/* размеры = viewBox (big 512×168, heart 172×168) */
-.keycap-main .keycap-svg  { width: calc(512px * var(--s)); height: calc(168px * var(--s)); }
-.keycap-heart .keycap-svg { width: calc(172px * var(--s)); height: calc(168px * var(--s)); }
+/* размеры = viewBox (big 432×161, heart 164×161) */
+.keycap-main .keycap-svg  { width: calc(432px * var(--s)); height: calc(161px * var(--s)); }
+.keycap-heart .keycap-svg { width: calc(164px * var(--s)); height: calc(161px * var(--s)); }
 
-/* наклон в 2D — обе в одну сторону, <3 чуть сильнее */
+/* наклон в 2D — большая против часовой, <3 по часовой */
 .keycap-main  { transform: rotate(-4deg); }
-.keycap-heart { transform: rotate(-8deg); }
+.keycap-heart { transform: rotate(8deg); }
 
 /* нажатие — клавиша слегка проседает */
 .keycap:active .keycap-svg {
