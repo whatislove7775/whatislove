@@ -98,14 +98,14 @@ pre {
   object-fit: contain;
 }
 
-/* ── Keyboard-key logo on home page — real isometric 3D keycaps ───────────── */
+/* ── Keyboard-key logo — flat vector keycaps with painted volume, tilted ──── */
 .kb-logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(26px, 4vw, 60px);
+  gap: clamp(20px, 3vw, 46px);
   user-select: none;
-  --scale: 1;
+  --s: 0.84;          /* global render scale */
 }
 
 .keycap {
@@ -114,136 +114,40 @@ pre {
   cursor: pointer;
   border: none;
   padding: 0;
+  margin: 0;
   background: transparent;
-  position: relative;
-  perspective: 1100px;
-  /* per-key dimensions (px) */
-  width: calc(var(--w) * var(--scale));
-  height: calc(var(--h) * var(--scale));
+  line-height: 0;
 }
 
-.keycap-main  { --w: 540px; --h: 168px; --t: 46px; --fs: 70px; }
-.keycap-heart { --w: 176px; --h: 168px; --t: 46px; --fs: 60px; }
-
-/* floor shadow */
-.keycap::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--scale) * -6px);
-  width: calc(var(--w) * var(--scale) * 0.92);
-  height: calc(var(--scale) * 34px);
-  transform: translateX(-50%);
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.12) 45%, transparent 72%);
-  filter: blur(2px);
-  transition: opacity 0.08s ease, transform 0.08s ease;
-  z-index: 0;
+.keycap-svg {
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 14px 11px rgba(0,0,0,0.20));
+  transition: filter 0.09s ease, transform 0.09s ease;
 }
 
-.cuboid {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: var(--w);
-  height: var(--h);
-  transform-style: preserve-3d;
-  transform: translate(-50%, -50%) scale(var(--scale)) rotateX(15deg) rotateY(-19deg);
-  transition: transform 0.09s ease;
-  z-index: 1;
+/* фиксированный масштаб для обеих клавиш (px = единицы viewBox * --s) */
+.keycap-main .keycap-svg  { width: calc(540px * var(--s)); height: calc(208px * var(--s)); }
+.keycap-heart .keycap-svg { width: calc(168px * var(--s)); height: calc(208px * var(--s)); }
+
+/* наклон в 2D (как на референсе) */
+.keycap-main  { transform: rotate(-3deg); }
+.keycap-heart { transform: rotate(-6deg); }
+
+/* верхняя грань «проваливается» в юбку при нажатии */
+.kc-cap {
+  transition: transform 0.08s ease;
+}
+.keycap:active .kc-cap {
+  transform: translate(-14px, 46px);
+}
+.keycap:active .keycap-svg {
+  filter: drop-shadow(0 6px 6px rgba(0,0,0,0.22));
 }
 
-.kf {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  backface-visibility: hidden;
-}
-
-/* typing surface (+Z) */
-.kf-cap {
-  width: var(--w);
-  height: var(--h);
-  transform: translate(-50%, -50%) translateZ(calc(var(--t) / 2));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: calc(var(--w) * 0.05);
-  box-sizing: border-box;
-  color: #313131;
-  font-weight: 800;
-  font-size: var(--fs);
-  letter-spacing: -0.02em;
-  background: linear-gradient(157deg, #fbfbfb 0%, #efefef 46%, #e2e2e2 100%);
-  border-radius: 12px;
-  box-shadow:
-    0 2px 0 rgba(255,255,255,0.9) inset,
-    0 -10px 18px rgba(0,0,0,0.06) inset,
-    0 0 0 1px rgba(0,0,0,0.06) inset;
-}
-
-/* base (-Z) */
-.kf-base {
-  width: var(--w);
-  height: var(--h);
-  transform: translate(-50%, -50%) translateZ(calc(var(--t) / -2)) rotateY(180deg);
-  background: #8f8f8f;
-  border-radius: 12px;
-}
-
-/* left wall (-X) */
-.kf-wallL {
-  width: var(--t);
-  height: var(--h);
-  transform: translate(-50%, -50%) translateX(calc(var(--w) / -2)) rotateY(-90deg);
-  background: linear-gradient(90deg, #9a9a9a 0%, #c0c0c0 100%);
-}
-
-/* right wall (+X) */
-.kf-wallR {
-  width: var(--t);
-  height: var(--h);
-  transform: translate(-50%, -50%) translateX(calc(var(--w) / 2)) rotateY(90deg);
-  background: linear-gradient(90deg, #c0c0c0 0%, #9a9a9a 100%);
-}
-
-/* upper wall (-Y) */
-.kf-wallT {
-  width: var(--w);
-  height: var(--t);
-  transform: translate(-50%, -50%) translateY(calc(var(--h) / -2)) rotateX(90deg);
-  background: linear-gradient(180deg, #d2d2d2 0%, #bcbcbc 100%);
-}
-
-/* front wall (+Y, the tall edge we see at the bottom) */
-.kf-wallF {
-  width: var(--w);
-  height: var(--t);
-  transform: translate(-50%, -50%) translateY(calc(var(--h) / 2)) rotateX(-90deg);
-  background: linear-gradient(180deg, #cdcdcd 0%, #a6a6a6 60%, #909090 100%);
-  border-radius: 0 0 4px 4px;
-}
-
-.kc-enter {
-  font-weight: 700;
-  color: #7a7a7a;
-  font-size: 0.78em;
-  transform: translateY(0.05em);
-}
-
-/* Pressed — push the whole cap into the board */
-.keycap:active .cuboid {
-  transform: translate(-50%, -50%) scale(var(--scale)) rotateX(15deg) rotateY(-19deg) translateZ(-18px);
-}
-.keycap:active::after {
-  opacity: 0.5;
-  transform: translateX(-50%) scale(0.9);
-}
-
-@media (max-width: 1024px) { .kb-logo { --scale: 0.74; } }
-@media (max-width: 768px)  {
-  .kb-logo { --scale: 0.56; flex-wrap: wrap; gap: 18px; }
-}
-@media (max-width: 420px)  { .kb-logo { --scale: 0.46; } }
+@media (max-width: 1024px) { .kb-logo { --s: 0.62; } }
+@media (max-width: 768px)  { .kb-logo { --s: 0.5; flex-wrap: wrap; gap: 16px; } }
+@media (max-width: 420px)  { .kb-logo { --s: 0.4; } }
 
 /* Home footer */
 .home-footer {
