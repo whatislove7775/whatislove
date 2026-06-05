@@ -1,6 +1,6 @@
 'use client';
 
-const INK = '#454545';        // цвет всех символов на клавишах
+const INK = '#2f2f2f';        // цвет всех символов на клавишах
 
 // Размеры фасок (одинаковые для обеих клавиш — единая толщина)
 const BL = 30;   // левая
@@ -14,7 +14,7 @@ const IR = 14;   // радиус верхней грани
 function EnterGlyph({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x} ${y})`} fill="none" stroke={INK}
-       strokeWidth={11} strokeLinecap="round" strokeLinejoin="round">
+       strokeWidth={10} strokeLinecap="round" strokeLinejoin="round">
       <path d="M58 -32 L58 4 L16 4" />
       <path d="M16 4 L32 -10 M16 4 L32 18" />
     </g>
