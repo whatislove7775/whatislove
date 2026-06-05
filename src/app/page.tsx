@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import KeyboardLogo from '@/components/KeyboardLogo';
 
 export default function Home() {
   return (
@@ -12,21 +13,11 @@ export default function Home() {
       width: '100%',
       marginTop: '-60px'
     }}>
-      
-      {/* SVG Логотип — десктоп */}
-      <img
-        src="/logo-main.svg"
-        alt="whatislove"
-        className="desktop-only"
-        style={{ width: '100%', maxWidth: '650px', marginBottom: '40px', position: 'relative', zIndex: 10 }}
-      />
-      {/* SVG Логотип — мобильный */}
-      <img
-        src="/logo-mobile.svg"
-        alt="whatislove"
-        className="mobile-only home-logo-mobile"
-        style={{ width: '100%', marginBottom: '24px', position: 'relative', zIndex: 10 }}
-      />
+
+      {/* Логотип — нажимаемые клавиши клавиатуры */}
+      <div style={{ marginBottom: '40px', position: 'relative', zIndex: 10 }}>
+        <KeyboardLogo />
+      </div>
 
       {/* Навигация */}
       <nav className="home-nav" style={{

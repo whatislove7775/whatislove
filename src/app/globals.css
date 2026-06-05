@@ -98,6 +98,90 @@ pre {
   object-fit: contain;
 }
 
+/* ── Keyboard-key logo on home page ──────────────────────────────────────── */
+.kb-logo {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(14px, 2.6vw, 30px);
+  user-select: none;
+}
+
+.keycap {
+  --wall: 7px;            /* depth of the side wall */
+  --travel: 6px;         /* how far the key moves on press */
+  appearance: none;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  background: transparent;
+  perspective: 600px;
+}
+
+.keycap-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 1.6vw, 22px);
+  box-sizing: border-box;
+  color: #2f2f2f;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  background:
+    linear-gradient(180deg, #fbfbfb 0%, #ededed 48%, #dcdcdc 100%);
+  border: 1px solid #c2c2c2;
+  border-radius: clamp(8px, 1vw, 14px);
+  box-shadow:
+    0 1px 0 #ffffff inset,
+    0 -3px 4px rgba(0,0,0,0.06) inset,
+    2px 3px 0 #c9c9c9,
+    0 var(--wall) 0 #a6a6a6,            /* front edge / wall */
+    0 calc(var(--wall) + 1px) 0 #969696,
+    0 calc(var(--wall) + 10px) 14px rgba(0,0,0,0.30); /* floor shadow */
+  transform: translateY(0);
+  transition: transform 0.07s ease, box-shadow 0.07s ease;
+  will-change: transform;
+}
+
+.keycap-main .keycap-face {
+  padding: clamp(20px, 3.2vw, 38px) clamp(26px, 4vw, 52px);
+  font-size: clamp(30px, 6.4vw, 74px);
+}
+
+.keycap-heart .keycap-face {
+  padding: clamp(18px, 3vw, 34px) clamp(20px, 3vw, 36px);
+  font-size: clamp(26px, 5.4vw, 60px);
+  aspect-ratio: 1 / 1;
+}
+
+.keycap-enter {
+  font-weight: 700;
+  color: #6a6a6a;
+  font-size: 0.8em;
+  transform: translateY(0.06em);
+}
+
+/* Pressed state — works for mouse, keyboard focus-activate and touch */
+.keycap:active .keycap-face,
+.keycap-pressed .keycap-face {
+  transform: translateY(var(--travel));
+  box-shadow:
+    0 1px 0 #ffffff inset,
+    0 -2px 3px rgba(0,0,0,0.06) inset,
+    1px 1px 0 #c9c9c9,
+    0 calc(var(--wall) - var(--travel)) 0 #a6a6a6,
+    0 calc(var(--wall) - var(--travel) + 1px) 0 #969696,
+    0 calc(var(--wall) - var(--travel) + 4px) 8px rgba(0,0,0,0.28);
+}
+
+@media (max-width: 768px) {
+  .kb-logo {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
 /* Home footer */
 .home-footer {
   text-align: center;
