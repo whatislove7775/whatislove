@@ -18,9 +18,9 @@ export default function LinksPage() {
       {/* Контейнер для центрирования посередине экрана */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginTop: '-60px' }}>
         
-        <div style={{ marginBottom: '60px', ['--s' as any]: 1.05 }}>
+        <div style={{ marginBottom: '60px', ['--s' as any]: 0.74 }}>
           <Keycap id="atme" tw={172} th={112}
-                  img={{ src: '/keys/atme_src.png', ar: 1268 / 522, h: 44 }} />
+                  img={{ src: '/keys/atme_src.png', ar: 1268 / 522, h: 63 }} />
         </div>
 
         <div className="links-nav" style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 700, fontSize: '14px', textTransform: 'uppercase' }}>

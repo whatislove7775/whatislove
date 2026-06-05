@@ -11,9 +11,9 @@ export interface KeycapImg { src: string; ar: number; h: number }
  * tw/th — размеры верхней грани; img — глиф (PNG) по центру.
  */
 export default function Keycap({
-  id, tw, th, img, className = '', press = true,
+  id, tw, th, img, className = '', press = true, onClick,
 }: {
-  id: string; tw: number; th: number; img: KeycapImg; className?: string; press?: boolean;
+  id: string; tw: number; th: number; img: KeycapImg; className?: string; press?: boolean; onClick?: () => void;
 }) {
   const W = BL + tw + BR;
   const H = BT + th + BB;
@@ -31,7 +31,7 @@ export default function Keycap({
   const imgY = iy0 + (th - imgH) / 2;
 
   return (
-    <button type="button" className={`keycap ${className} ${press ? '' : 'keycap-static'}`}>
+    <button type="button" className={`keycap ${className} ${press ? '' : 'keycap-static'}`} onClick={onClick}>
       <svg viewBox={`0 0 ${W} ${H}`} className="keycap-svg" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <clipPath id={clipId}><rect x={0} y={0} width={W} height={H} rx={OR} /></clipPath>

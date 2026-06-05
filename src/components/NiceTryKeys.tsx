@@ -9,11 +9,11 @@ export default function NiceTryKeys() {
   return (
     <div className="nicetry">
       <div className="nt-nice">
-        <Keycap id="nice" tw={196} th={112} press={false}
+        <Keycap id="nice" tw={196} th={112}
                 img={{ src: '/keys/nice_src.png', ar: NICE_AR, h: 50 }} />
       </div>
       <div className="nt-try">
-        <Keycap id="trydot" tw={150} th={112} press={false}
+        <Keycap id="trydot" tw={150} th={112}
                 img={{ src: '/keys/try_src.png', ar: TRY_AR, h: 60 }} />
       </div>
     </div>
