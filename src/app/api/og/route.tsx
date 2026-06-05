@@ -1,8 +1,6 @@
 import { ImageResponse } from 'next/og';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // Keycap rendered as layered divs — simulates the beveled SVG look in Satori
 function Keycap({
@@ -31,29 +29,36 @@ function Keycap({
           padding: `${ph}px ${pw}px`,
         }}>
           {/* glyph PNG */}
-          <img
-            src={src}
-            width={imgW}
-            height={imgH}
-            style={{ display: 'flex' }}
-          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={src} width={imgW} height={imgH} style={{ display: 'flex' }} alt="" />
         </div>
       </div>
     </div>
   );
 }
 
-export async function GET() {
-  const mainBuf  = readFileSync(join(process.cwd(), 'public/keys/wh4tislove_src.png'));
-  const heartBuf = readFileSync(join(process.cwd(), 'public/keys/heart_src.png'));
-  const mainSrc  = `data:image/png;base64,${mainBuf.toString('base64')}`;
-  const heartSrc = `data:image/png;base64,${heartBuf.toString('base64')}`;
+export async function GET(req: Request) {
+  const origin = new URL(req.url).origin;
+
+  // Fetch glyph PNGs over HTTP (works on edge runtime / Vercel)
+  const [mainBuf, heartBuf] = await Promise.all([
+    fetch(`${origin}/keys/wh4tislove_src.png`).then(r => r.arrayBuffer()),
+    fetch(`${origin}/keys/heart_src.png`).then(r => r.arrayBuffer()),
+  ]);
+  const toDataUri = (buf: ArrayBuffer) => {
+    let bin = '';
+    const bytes = new Uint8Array(buf);
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return `data:image/png;base64,${btoa(bin)}`;
+  };
+  const mainSrc = toDataUri(mainBuf);
+  const heartSrc = toDataUri(heartBuf);
 
   // aspect ratios from source PNGs
-  const MAIN_AR  = 1627 / 222;   // wide key
-  const HEART_AR = 311  / 216;   // square key
+  const MAIN_AR = 1627 / 222;   // wide key
+  const HEART_AR = 311 / 216;   // square key
 
-  const mainH  = 58;
+  const mainH = 58;
   const heartH = 68;
 
   return new ImageResponse(
@@ -95,11 +100,11 @@ export async function GET() {
           color:         '#111111',
           letterSpacing: 2,
         }}>
-          <span style={{ display: 'flex' }}>📦 ПРОДУКТЫ</span>
+          <span style={{ display: 'flex' }}>ПРОДУКТЫ</span>
           <span style={{ display: 'flex', color: '#aaaaaa' }}>/</span>
-          <span style={{ display: 'flex' }}>🗂 ПОРТФОЛИО</span>
+          <span style={{ display: 'flex' }}>ПОРТФОЛИО</span>
           <span style={{ display: 'flex', color: '#aaaaaa' }}>/</span>
-          <span style={{ display: 'flex' }}>🔗 ССЫЛКИ</span>
+          <span style={{ display: 'flex' }}>ССЫЛКИ</span>
         </div>
 
         {/* lucky */}
