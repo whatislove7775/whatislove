@@ -1,8 +1,10 @@
 'use client';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import Keycap from '@/components/Keycap';
+import useFloatingEmoji from '@/components/useFloatingEmoji';
 
 export default function LinksPage() {
+  const { items, spawn } = useFloatingEmoji();
   return (
     // 1. Добавляем width: '100%' главному контейнеру
     <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -18,8 +20,11 @@ export default function LinksPage() {
       {/* Контейнер для центрирования посередине экрана */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginTop: '-60px' }}>
         
-        <div style={{ marginBottom: '60px', ['--s' as any]: 0.74 }}>
-          <Keycap id="atme" tw={172} th={112}
+        <div style={{ marginBottom: '60px', position: 'relative', ['--s' as any]: 0.74 }}>
+          {items.map(({ id, x }) => (
+            <span key={id} className="floating-emoji" style={{ '--hx': `${x}px` } as React.CSSProperties}>🫶🏻</span>
+          ))}
+          <Keycap id="atme" tw={172} th={112} onClick={spawn}
                   img={{ src: '/keys/atme_src.png', ar: 1268 / 522, h: 63 }} />
         </div>
 

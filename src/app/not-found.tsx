@@ -22,9 +22,9 @@ export default function NotFound() {
   const showGame = () => setGameVisible(true);
 
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: gameVisible ? 'flex-start' : 'center', alignItems: 'center' }}>
       {!started && (
-        <div style={{ textAlign: 'center', textTransform: 'uppercase', paddingTop: '20px' }}>
+        <div style={{ textAlign: 'center', textTransform: 'uppercase' }}>
           <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'center' }}>
             <NiceTryKeys />
           </div>
@@ -41,7 +41,11 @@ export default function NotFound() {
         </div>
       )}
 
-      {gameVisible && <DuckGame onStart={() => setStarted(true)} />}
+      {gameVisible && (
+        <div style={{ width: '100%' }}>
+          <DuckGame onStart={() => setStarted(true)} />
+        </div>
+      )}
     </div>
   );
 }

@@ -117,6 +117,10 @@ pre {
   margin: 0;
   background: transparent;
   line-height: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
 }
 
 .keycap-svg {
@@ -157,19 +161,19 @@ pre {
   .nt-try  { margin-top: 10px; margin-left: 16px; }
 }
 
-/* ── floating heart reaction (home page <3 keycap) ──────────────────────── */
-@keyframes floatHeart {
+/* ── floating emoji reaction (keycap clicks) ────────────────────────────── */
+@keyframes floatEmoji {
   0%   { opacity: 0.85; transform: translateX(calc(-50% + var(--hx, 0px))) translateY(0)     scale(0.8);  }
   18%  { opacity: 1;    transform: translateX(calc(-50% + var(--hx, 0px))) translateY(-18px) scale(1.15); }
   100% { opacity: 0;    transform: translateX(calc(-50% + var(--hx, 0px))) translateY(-95px) scale(0.85); }
 }
-.floating-heart {
+.floating-emoji {
   position: absolute;
   bottom: 100%;
   left: 50%;
   pointer-events: none;
   font-size: 26px;
-  animation: floatHeart 1s ease-out forwards;
+  animation: floatEmoji 1s ease-out forwards;
   z-index: 100;
 }
 
@@ -363,11 +367,11 @@ pre {
     text-overflow: ellipsis;
   }
 
-  /* Home page: push content down from the very top on mobile */
+  /* Home page: center content vertically on mobile */
   .home-main {
     margin-top: 0 !important;
-    justify-content: flex-start !important;
-    padding-top: 12vh;
+    justify-content: center !important;
+    padding-top: 0;
   }
 
   /* Home nav: vertical on mobile */
