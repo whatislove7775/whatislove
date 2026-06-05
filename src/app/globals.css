@@ -122,27 +122,22 @@ pre {
 .keycap-svg {
   display: block;
   overflow: visible;
-  filter: drop-shadow(0 14px 11px rgba(0,0,0,0.20));
+  filter: drop-shadow(0 12px 10px rgba(0,0,0,0.20));
   transition: filter 0.09s ease, transform 0.09s ease;
 }
 
 /* фиксированный масштаб для обеих клавиш (px = единицы viewBox * --s) */
-.keycap-main .keycap-svg  { width: calc(540px * var(--s)); height: calc(208px * var(--s)); }
-.keycap-heart .keycap-svg { width: calc(168px * var(--s)); height: calc(208px * var(--s)); }
+.keycap-main .keycap-svg  { width: calc(522px * var(--s)); height: calc(182px * var(--s)); }
+.keycap-heart .keycap-svg { width: calc(182px * var(--s)); height: calc(182px * var(--s)); }
 
 /* наклон в 2D (как на референсе) */
 .keycap-main  { transform: rotate(-3deg); }
 .keycap-heart { transform: rotate(-6deg); }
 
-/* верхняя грань «проваливается» в юбку при нажатии */
-.kc-cap {
-  transition: transform 0.08s ease;
-}
-.keycap:active .kc-cap {
-  transform: translate(-14px, 46px);
-}
+/* нажатие — клавиша слегка проседает */
 .keycap:active .keycap-svg {
-  filter: drop-shadow(0 6px 6px rgba(0,0,0,0.22));
+  transform: translateY(5px) scale(0.985);
+  filter: drop-shadow(0 5px 6px rgba(0,0,0,0.22));
 }
 
 @media (max-width: 1024px) { .kb-logo { --s: 0.62; } }
