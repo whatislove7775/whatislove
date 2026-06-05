@@ -78,11 +78,9 @@ export default function CursorManager() {
     let shown = false;
     let rafId = 0;
     let pendingX = 0, pendingY = 0;
-    let pendingTarget: EventTarget | null = null;
 
     const applyType = (type: CursorType, x: number, y: number) => {
       if (type === curRef.current) return;
-      // Toggle pre-loaded images — no src swap, no load event, no flash
       const prev = imgRefs.current[curRef.current];
       const next = imgRefs.current[type];
       if (prev) prev.style.display = 'none';
@@ -95,7 +93,6 @@ export default function CursorManager() {
     const show = (e: MouseEvent) => {
       pendingX = e.clientX;
       pendingY = e.clientY;
-      pendingTarget = e.target;
 
       const { ox, oy } = CURSORS[curRef.current];
       wrap.style.transform = `translate3d(${e.clientX - ox}px,${e.clientY - oy}px,0)`;
@@ -105,7 +102,10 @@ export default function CursorManager() {
         rafId = requestAnimationFrame(() => {
           rafId = 0;
           frameGen++;
-          applyType(detect(pendingTarget), pendingX, pendingY);
+          // elementFromPoint always reflects current DOM state —
+          // immune to stale e.target from React re-renders / emoji animations
+          const el = document.elementFromPoint(pendingX, pendingY);
+          applyType(detect(el), pendingX, pendingY);
         });
       }
     };

@@ -120,7 +120,6 @@ pre {
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
-  touch-action: manipulation;
 }
 
 .keycap-svg {
