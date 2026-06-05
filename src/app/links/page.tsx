@@ -1,5 +1,6 @@
 'use client';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import Keycap from '@/components/Keycap';
 
 export default function LinksPage() {
   return (
@@ -17,7 +18,10 @@ export default function LinksPage() {
       {/* Контейнер для центрирования посередине экрана */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginTop: '-60px' }}>
         
-        <img src="/me.svg" alt="@me" style={{ width: '100%', maxWidth: '350px', marginBottom: '60px' }} />
+        <div style={{ marginBottom: '60px', ['--s' as any]: 1.05 }}>
+          <Keycap id="atme" tw={172} th={112}
+                  img={{ src: '/keys/atme_src.png', ar: 1268 / 522, h: 44 }} />
+        </div>
 
         <div className="links-nav" style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 700, fontSize: '14px', textTransform: 'uppercase' }}>
           <div className="links-nav-item" style={{ display: 'flex', gap: '10px' }}>

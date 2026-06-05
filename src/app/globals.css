@@ -122,21 +122,19 @@ pre {
 .keycap-svg {
   display: block;
   overflow: visible;
+  /* высота = высота viewBox (157) * масштаб; ширина авто из соотношения */
+  height: calc(157px * var(--s, 0.72));
+  width: auto;
   filter: drop-shadow(0 11px 9px rgba(0,0,0,0.18));
   transition: filter 0.09s ease, transform 0.09s ease;
 }
-.keycap-svg text { font-family: inherit; }
-
-/* размеры = viewBox (big 518×157, heart 176×157) */
-.keycap-main .keycap-svg  { width: calc(518px * var(--s)); height: calc(157px * var(--s)); }
-.keycap-heart .keycap-svg { width: calc(176px * var(--s)); height: calc(157px * var(--s)); }
 
 /* наклон в 2D — большая против часовой, <3 по часовой */
 .keycap-main  { transform: rotate(-4deg); }
 .keycap-heart { transform: rotate(8deg); }
 
-/* нажатие — клавиша слегка проседает */
-.keycap:active .keycap-svg {
+/* нажатие — клавиша слегка проседает (не для статичных) */
+.keycap:not(.keycap-static):active .keycap-svg {
   transform: translateY(5px) scale(0.985);
   filter: drop-shadow(0 5px 6px rgba(0,0,0,0.22));
 }
@@ -144,6 +142,20 @@ pre {
 @media (max-width: 1024px) { .kb-logo { --s: 0.62; } }
 @media (max-width: 768px)  { .kb-logo { --s: 0.5; flex-wrap: wrap; gap: 16px; } }
 @media (max-width: 420px)  { .kb-logo { --s: 0.4; } }
+
+/* ── 404: клавиши nice / try. каскадом по диагонали ──────────────────────── */
+.nicetry {
+  --s: 0.82;
+  position: relative;
+  display: inline-block;
+}
+.nt-nice { transform: rotate(-5deg); position: relative; z-index: 2; }
+.nt-try  { transform: rotate(5deg); margin-top: -14px; margin-left: 56px; position: relative; z-index: 1; }
+
+@media (max-width: 768px) {
+  .nicetry { --s: 0.6; }
+  .nt-try  { margin-left: 30px; }
+}
 
 /* Home footer */
 .home-footer {
