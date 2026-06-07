@@ -20,6 +20,40 @@ function getAC(): AudioContext | null {
   return ac;
 }
 
+// ── iOS: воспроизведение даже в бесшумном режиме ──────────────────────────
+// Переключатель «бесшумно» на iPhone глушит Web Audio (категория "ambient").
+// Если на странице крутится зацикленный <audio>, аудио-сессия переходит в
+// "playback" и Web Audio начинает звучать как медиа (как и синтез речи).
+let silentLoop: HTMLAudioElement | null = null;
+
+function makeSilentWavUrl(): string {
+  const sampleRate = 8000, secs = 0.4;
+  const n = Math.floor(sampleRate * secs);
+  const buf = new ArrayBuffer(44 + n * 2);
+  const v = new DataView(buf);
+  const wr = (off: number, s: string) => { for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); };
+  wr(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); wr(8, 'WAVE'); wr(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); wr(36, 'data');
+  v.setUint32(40, n * 2, true); // сэмплы уже нули → тишина
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+
+export function unlockSilentMode() {
+  if (silentLoop || typeof document === 'undefined') return;
+  try {
+    const a = document.createElement('audio');
+    a.setAttribute('playsinline', 'true');
+    a.loop = true;
+    a.preload = 'auto';
+    a.src = makeSilentWavUrl();
+    a.volume = 1; // сэмплы нулевые, реально беззвучно
+    a.play().catch(() => {});
+    silentLoop = a;
+  } catch {}
+}
+
 /**
  * Находит главный голосовой участок: считает RMS по окнам ~20мс,
  * берёт порог от пика и возвращает диапазон [start, end] в секундах.
@@ -103,6 +137,7 @@ async function loadClip(name: string, url: string, mode: 'full' | 'first' | 'las
 
 /** Воспроизводит обрезанный голосовой клип. Вызывать из обработчика клика. */
 export async function playVoice(name: string, url: string, mode: 'full' | 'first' | 'last' = 'full', vol = 1) {
+  unlockSilentMode();
   const ctx = getAC();
   if (!ctx) return;
   if (ctx.state === 'suspended') { try { await ctx.resume(); } catch {} }

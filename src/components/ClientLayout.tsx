@@ -6,6 +6,7 @@ import { useCartStore } from '../store/cartStore';
 import DvdScreensaver from './DvdScreensaver';
 import CursorManager from './CursorManager';
 import DuckRain from './DuckRain';
+import { unlockSilentMode } from './voiceClips';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -62,6 +63,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const INTERACTIVE = 'a, button, [role="button"], input, select, textarea, label, summary, .keycap, [data-click-sound]';
     const onGesture = async (e: Event) => {
       try {
+        unlockSilentMode(); // iOS: разрешаем Web Audio звучать в бесшумном режиме
         const ac = getAC();
         if (ac.state === 'suspended') await ac.resume();
         await decodeIfNeeded(ac);
@@ -290,9 +292,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         width: '100%',
         margin: 0,
         padding: 0,
-        paddingTop: 'env(safe-area-inset-top, 0px)',
       }}>
-        <header style={{ textAlign: 'center', padding: '20px 0', fontWeight: 500, flexShrink: 0 }}>
+        <header style={{ textAlign: 'center', paddingTop: 'max(20px, env(safe-area-inset-top, 0px))', paddingBottom: '20px', fontWeight: 500, flexShrink: 0 }}>
           <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
             <span style={{
               textDecoration: 'underline',
