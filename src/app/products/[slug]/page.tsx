@@ -9,7 +9,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wh4tislove.ru';
 // Per-product SEO overrides
 const SEO_OVERRIDES: Record<string, { title: string; description: string; keywords: string[] }> = {
   'ring-heart': {
-    title: 'Кольцо <3 «меньше чем три» — сердечко из стали | WH4T!SLOV3',
+    title: 'Кольцо <3 «меньше чем три» — сердечко из стали',
     description:
       'Кольцо <3 (меньше чем три) — стальное кольцо-сердечко от дизайн-студии whatislove. ' +
       'Кольцо Егор Крид, кольцо less than three, кольцо <3. Заказать с доставкой по России.',

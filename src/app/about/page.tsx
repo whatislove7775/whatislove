@@ -1,8 +1,14 @@
 import Breadcrumbs from '@/components/Breadcrumbs';
 
 export const metadata = {
-  title: 'О студии | WH4T!SLOV3',
-  description: 'Мы — группа энтузиастов, делающих красивые и практичные продукты и дизайны. Студия wh4tislove, Москва.',
+  title: 'О студии',
+  description:
+    'Дизайн-студия «wh4tislove» из Москвы — группа энтузиастов, делающих красивые и практичные продукты и дизайны: сайты, мерч, изделия и анимации.',
+  openGraph: {
+    title: 'О студии | WH4T!SLOV3',
+    description:
+      'Дизайн-студия «wh4tislove» из Москвы — группа энтузиастов, делающих красивые и практичные продукты и дизайны: сайты, мерч, изделия и анимации.',
+  },
 };
 
 export default function AboutPage() {
