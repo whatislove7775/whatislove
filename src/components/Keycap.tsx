@@ -68,7 +68,7 @@ export default function Keycap({
           {img.text ? (
             <text
               x={cx} y={cy}
-              dy="4"
+              dy="-4"
               textAnchor="middle"
               dominantBaseline="central"
               fontFamily="Inter, -apple-system, BlinkMacSystemFont, sans-serif"

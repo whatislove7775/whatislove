@@ -1,6 +1,7 @@
 'use client';
 import Keycap from './Keycap';
 import useFloatingEmoji from './useFloatingEmoji';
+import { playVoice } from './voiceClips';
 
 const MAIN_AR  = 1627 / 222;
 const HEART_AR = 311  / 216;
@@ -81,7 +82,7 @@ export default function KeyboardLogo() {
         <div>
           <Keycap id="wh4t" tw={240} th={120}
                   img={{ text: 'wh4t', fontSize: 80 }}
-                  onClick={() => speakWord('what', 0)} />
+                  onClick={() => playVoice('what', '/sounds/what.mp3', 'full')} />
         </div>
 
         {/* is */}
@@ -95,7 +96,7 @@ export default function KeyboardLogo() {
         <div>
           <Keycap id="love-key" tw={240} th={120}
                   img={{ text: 'love?', fontSize: 80 }}
-                  onClick={() => speakWord('love', 2)} />
+                  onClick={() => playVoice('love', '/sounds/love.mp3', 'last')} />
         </div>
 
         {/* <3 — наклон на самой клавише; обёртка ровная, чтобы сердечки летели
