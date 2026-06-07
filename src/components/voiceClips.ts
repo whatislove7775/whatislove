@@ -70,7 +70,8 @@ function detectRange(buf: AudioBuffer, mode: 'full' | 'last'): { start: number; 
 
 async function loadClip(name: string, url: string, mode: 'full' | 'last'): Promise<Clip | null> {
   if (cache[name]) return cache[name];
-  if (pending[name]) return pending[name];
+  const inflight = pending[name];
+  if (inflight) return inflight;
   const ctx = getAC();
   if (!ctx) return null;
   pending[name] = (async () => {
