@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 type Props = Omit<ImageProps, 'src'> & { src: string };
 
-export default function SmartImage({ src, alt, onLoad, style, ...props }: Props) {
+export default function SmartImage({ src, alt, onLoad, style, quality, ...props }: Props) {
   const [loaded, setLoaded] = useState(false);
   const isGif = typeof src === 'string' && src.toLowerCase().endsWith('.gif');
 
@@ -54,6 +54,7 @@ export default function SmartImage({ src, alt, onLoad, style, ...props }: Props)
       <Image
         src={src}
         alt={alt}
+        quality={quality ?? 72}
         style={style}
         onLoad={handleLoad}
         {...props}

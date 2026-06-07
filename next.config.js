@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Современные форматы — заметно легче JPEG/PNG
+    formats: ['image/avif', 'image/webp'],
+    // Дольше держим оптимизированные картинки в кэше (сек)
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 дней
     remotePatterns: [
       {
         protocol: 'https',

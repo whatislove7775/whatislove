@@ -61,7 +61,7 @@ export default async function PortfolioPage() {
       </div>
 
       <div className="portfolio-grid">
-        {(projects || []).map((project) => (
+        {(projects || []).map((project, index) => (
           <div key={project.id} style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
             <Link
               href={`/portfolio/${project.slug}`}
@@ -81,6 +81,7 @@ export default async function PortfolioPage() {
                     fill
                     sizes="(max-width: 600px) 100vw, 240px"
                     style={{ objectFit: 'cover' }}
+                    priority={index < 4}
                   />
                 )}
               </div>
