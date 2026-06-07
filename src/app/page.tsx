@@ -59,7 +59,7 @@ export default function Home() {
           zIndex: 50,
         }}
       >
-        мне не везёт!
+        мне повезёт!
       </Link>
 
       {/* Кнопка «О студии» */}
