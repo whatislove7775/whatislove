@@ -18,7 +18,6 @@ export default function Home() {
       alignItems: 'center',
       justifyContent: 'center',
       width: '100%',
-      marginTop: '-60px',
       position: 'relative',
     }}>
 
