@@ -176,6 +176,20 @@ pre {
   z-index: 100;
 }
 
+/* ── Mobile: lock home page to one screen (no scroll) ───────────────────── */
+@media (max-width: 768px) {
+  html.home-lock,
+  html.home-lock body {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  html.home-lock #site-content {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+}
+
 /* ── Info button (home page, links to /about) ───────────────────────────── */
 .info-btn {
   position: fixed;

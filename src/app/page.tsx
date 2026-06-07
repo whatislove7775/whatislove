@@ -1,8 +1,15 @@
 'use client';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import KeyboardLogo from '@/components/KeyboardLogo';
 
 export default function Home() {
+  // На мобиле фиксируем главную страницу на один экран — без скролла
+  useEffect(() => {
+    document.documentElement.classList.add('home-lock');
+    return () => document.documentElement.classList.remove('home-lock');
+  }, []);
+
   return (
     <div className="home-main" style={{
       flex: 1,
