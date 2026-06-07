@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
-const CW = 800, CH = 300, GROUND = 245;
+const CW = 800, CH = 380, GROUND = 325;
 const P = 2;
 const DOG_X = 80;
 const GRAVITY = 0.58, JUMP_V = -13.5, JUMP_V2 = -11;
