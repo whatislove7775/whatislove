@@ -210,9 +210,13 @@ pre {
   color: rgba(0, 0, 0, 0.75);
 }
 @media (max-width: 768px) {
+  /* На мобиле кнопка не фиксируется к экрану, а живёт в потоке страницы —
+     садится над футером, а не поверх него */
   .info-btn {
-    bottom: max(20px, env(safe-area-inset-bottom, 20px));
-    right: 20px;
+    position: absolute;
+    top: auto;
+    bottom: 12px;
+    right: 16px;
     width: 30px;
     height: 30px;
   }
