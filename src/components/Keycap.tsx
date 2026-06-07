@@ -4,16 +4,16 @@
 const BL = 24, BR = 24, BT = 13, BB = 32;
 const OR = 15, IR = 12;
 
-export interface KeycapImg { src: string; ar: number; h: number }
+export interface KeycapImg {
+  src?: string; ar?: number; h?: number;
+  text?: string; fontSize?: number;
+}
 
-/**
- * Одна клавиша клавиатуры (плоская 2D-векторная отрисовка с объёмом).
- * tw/th — размеры верхней грани; img — глиф (PNG) по центру.
- */
 export default function Keycap({
   id, tw, th, img, className = '', press = true, onClick,
 }: {
-  id: string; tw: number; th: number; img: KeycapImg; className?: string; press?: boolean; onClick?: () => void;
+  id: string; tw: number; th: number; img: KeycapImg;
+  className?: string; press?: boolean; onClick?: () => void;
 }) {
   const W = BL + tw + BR;
   const H = BT + th + BB;
@@ -26,7 +26,8 @@ export default function Keycap({
 
   const clipId = `clip-${id}`, gId = `top-${id}`, fId = `face-${id}`, grainId = `grain-${id}`;
 
-  const imgH = img.h, imgW = img.h * img.ar;
+  const imgH = img.h ?? 0;
+  const imgW = imgH * (img.ar ?? 1);
   const imgX = ix0 + (tw - imgW) / 2;
   const imgY = iy0 + (th - imgH) / 2;
 
@@ -60,8 +61,23 @@ export default function Keycap({
           <g clipPath={`url(#${fId})`} opacity={0.09} style={{ mixBlendMode: 'multiply' }}>
             <rect x={ix0} y={iy0} width={tw} height={th} filter={`url(#${grainId})`} />
           </g>
-          <image href={img.src} x={imgX} y={imgY} width={imgW} height={imgH}
-                 preserveAspectRatio="xMidYMid meet" />
+          {img.text ? (
+            <text
+              x={ix0 + tw / 2} y={iy0 + th / 2}
+              textAnchor="middle" dominantBaseline="central"
+              fontFamily="Inter, -apple-system, BlinkMacSystemFont, sans-serif"
+              fontWeight="500"
+              fontSize={img.fontSize ?? 60}
+              fill="#3d3d3d"
+            >
+              {img.text}
+            </text>
+          ) : (
+            img.src && (
+              <image href={img.src} x={imgX} y={imgY} width={imgW} height={imgH}
+                     preserveAspectRatio="xMidYMid meet" />
+            )
+          )}
         </g>
       </svg>
     </button>

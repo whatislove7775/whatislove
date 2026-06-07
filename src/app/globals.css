@@ -146,6 +146,20 @@ pre {
 @media (max-width: 768px)  { .kb-logo { --s: 0.5; flex-wrap: wrap; gap: 16px; } }
 @media (max-width: 420px)  { .kb-logo { --s: 0.4; } }
 
+/* Mobile 2×2 keyboard logo */
+.kb-logo-mobile {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 12px;
+  --s: 0.85;
+  user-select: none;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+}
+@media (max-width: 420px) { .kb-logo-mobile { --s: 0.72; gap: 10px; } }
+@media (max-width: 360px) { .kb-logo-mobile { --s: 0.62; } }
+
 /* ── 404: клавиши nice / try. каскадом по диагонали ──────────────────────── */
 .nicetry {
   --s: 0.62;
