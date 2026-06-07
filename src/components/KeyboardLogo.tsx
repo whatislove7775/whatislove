@@ -96,7 +96,7 @@ export default function KeyboardLogo() {
         <div>
           <Keycap id="love-key" tw={240} th={120}
                   img={{ text: 'love?', fontSize: 80 }}
-                  onClick={() => playVoice('love', '/sounds/love.mp3', 'last')} />
+                  onClick={() => playVoice('love', '/sounds/love.mp3', 'first')} />
         </div>
 
         {/* <3 — наклон на самой клавише; обёртка ровная, чтобы сердечки летели

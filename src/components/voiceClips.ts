@@ -27,7 +27,7 @@ function getAC(): AudioContext | null {
  * mode 'last'  — последний сегмент после паузы (полезно, когда нужно
  *                извлечь конкретное слово в конце записи).
  */
-function detectRange(buf: AudioBuffer, mode: 'full' | 'last'): { start: number; end: number } {
+function detectRange(buf: AudioBuffer, mode: 'full' | 'first' | 'last'): { start: number; end: number } {
   const data = buf.getChannelData(0);
   const sr = buf.sampleRate;
   const win = Math.max(1, Math.floor(sr * 0.02)); // 20 мс
@@ -49,9 +49,10 @@ function detectRange(buf: AudioBuffer, mode: 'full' | 'last'): { start: number; 
   let last = voiced.lastIndexOf(true);
   if (first === -1) return { start: 0, end: buf.duration };
 
+  const gapWins = Math.ceil(0.06 / 0.02); // пауза > ~60мс разделяет сегменты
+
   if (mode === 'last') {
-    // ищем начало последнего сегмента: идём от конца назад до паузы
-    const gapWins = Math.ceil(0.06 / 0.02); // пауза > ~60мс разделяет сегменты
+    // начало последнего сегмента: идём от конца назад до паузы
     let segStart = last;
     let silence = 0;
     for (let k = last; k >= first; k--) {
@@ -59,6 +60,15 @@ function detectRange(buf: AudioBuffer, mode: 'full' | 'last'): { start: number; 
       else { silence++; if (silence >= gapWins) break; }
     }
     first = segStart;
+  } else if (mode === 'first') {
+    // конец первого сегмента: идём от начала вперёд до паузы
+    let segEnd = first;
+    let silence = 0;
+    for (let k = first; k <= last; k++) {
+      if (voiced[k]) { segEnd = k; silence = 0; }
+      else { silence++; if (silence >= gapWins) break; }
+    }
+    last = segEnd;
   }
 
   // небольшой запас по краям (10мс)
@@ -68,7 +78,7 @@ function detectRange(buf: AudioBuffer, mode: 'full' | 'last'): { start: number; 
   return { start, end };
 }
 
-async function loadClip(name: string, url: string, mode: 'full' | 'last'): Promise<Clip | null> {
+async function loadClip(name: string, url: string, mode: 'full' | 'first' | 'last'): Promise<Clip | null> {
   if (cache[name]) return cache[name];
   const inflight = pending[name];
   if (inflight) return inflight;
@@ -92,7 +102,7 @@ async function loadClip(name: string, url: string, mode: 'full' | 'last'): Promi
 }
 
 /** Воспроизводит обрезанный голосовой клип. Вызывать из обработчика клика. */
-export async function playVoice(name: string, url: string, mode: 'full' | 'last' = 'full', vol = 1) {
+export async function playVoice(name: string, url: string, mode: 'full' | 'first' | 'last' = 'full', vol = 1) {
   const ctx = getAC();
   if (!ctx) return;
   if (ctx.state === 'suspended') { try { await ctx.resume(); } catch {} }
