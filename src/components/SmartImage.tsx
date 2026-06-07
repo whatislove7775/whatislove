@@ -1,14 +1,20 @@
+'use client';
 import Image, { ImageProps } from 'next/image';
+import { useState } from 'react';
 
 type Props = Omit<ImageProps, 'src'> & { src: string };
 
-// Renders a plain <img> for .gif files (preserves animation),
-// and Next.js <Image> (optimized) for everything else.
-export default function SmartImage({ src, alt, ...props }: Props) {
+export default function SmartImage({ src, alt, onLoad, style, ...props }: Props) {
+  const [loaded, setLoaded] = useState(false);
   const isGif = typeof src === 'string' && src.toLowerCase().endsWith('.gif');
 
+  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    setLoaded(true);
+    if (typeof onLoad === 'function') onLoad(e);
+  };
+
   if (isGif) {
-    const { fill, style, className, width, height } = props;
+    const { fill, className, width, height } = props;
 
     if (fill) {
       return (
@@ -40,5 +46,18 @@ export default function SmartImage({ src, alt, ...props }: Props) {
     );
   }
 
-  return <Image src={src} alt={alt} {...props} />;
+  return (
+    <>
+      {!loaded && props.fill && (
+        <div className="img-skeleton" />
+      )}
+      <Image
+        src={src}
+        alt={alt}
+        style={style}
+        onLoad={handleLoad}
+        {...props}
+      />
+    </>
+  );
 }
