@@ -4,7 +4,6 @@ import Link from 'next/link';
 
 const CW = 800, CH = 300, GROUND = 245;
 const P = 2;
-const CEILING = 6; // верхняя граница для гуся, чтобы спрайт не обрезался краем холста
 const DOG_X = 80;
 const GRAVITY = 0.58, JUMP_V = -13.5, JUMP_V2 = -11;
 const SPEED0 = 5, SPEED_MAX = 16;
@@ -387,8 +386,6 @@ function updateState(s: S, W: number) {
   if (!s.onGround) {
     s.dogVY += GRAVITY;
     s.dogY  += s.dogVY;
-    // Не даём гусю улетать за верх холста — иначе спрайт обрезается невидимым «потолком»
-    if (s.dogY < CEILING) { s.dogY = CEILING; if (s.dogVY < 0) s.dogVY = 0; }
     if (s.dogY >= GROUND - DOG_H) {
       s.dogY = GROUND - DOG_H; s.dogVY = 0; s.onGround = true; s.jumpsLeft = 2;
     }
