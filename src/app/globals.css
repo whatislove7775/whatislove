@@ -224,7 +224,12 @@ pre {
   color: rgba(0, 0, 0, 0.75);
 }
 @media (max-width: 768px) {
-  .info-btn { display: none !important; }
+  .info-btn {
+    bottom: 70px;
+    right: 16px;
+    width: 30px;
+    height: 30px;
+  }
 }
 
 /* Home footer */

@@ -98,10 +98,7 @@ export default async function ProductsPage() {
 
               {/* Mobile layout */}
               <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontWeight: 800, fontSize: '16px', gap: '6px' }}>
-                  <div>{product.name.toLowerCase()}</div>
-                  <ProductAddToCart product={product} />
-                </div>
+                <div style={{ fontWeight: 800, fontSize: '16px' }}>{product.name.toLowerCase()}</div>
                 <div style={{ fontWeight: 800, marginTop: '2px' }}>
                   {product.oldPrice && (
                     <div style={{ fontSize: '13px', textDecoration: 'line-through', color: '#999' }}>{product.oldPrice} руб</div>
@@ -110,6 +107,9 @@ export default async function ProductsPage() {
                 </div>
                 <div style={{ fontSize: '13px', fontWeight: 500, lineHeight: 1.4, marginTop: '2px' }}>
                   {product.material}<br />{product.delivery}
+                </div>
+                <div style={{ marginTop: '8px' }}>
+                  <ProductAddToCart product={product} />
                 </div>
               </div>
 
