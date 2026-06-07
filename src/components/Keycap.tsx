@@ -31,6 +31,10 @@ export default function Keycap({
   const imgX = ix0 + (tw - imgW) / 2;
   const imgY = iy0 + (th - imgH) / 2;
 
+  // Центр лицевой панели
+  const cx = ix0 + tw / 2;
+  const cy = iy0 + th / 2;
+
   return (
     <button type="button" className={`keycap ${className} ${press ? '' : 'keycap-static'}`} onClick={onClick}>
       <svg viewBox={`0 0 ${W} ${H}`} className="keycap-svg" xmlns="http://www.w3.org/2000/svg">
@@ -63,8 +67,10 @@ export default function Keycap({
           </g>
           {img.text ? (
             <text
-              x={ix0 + tw / 2} y={iy0 + th / 2}
-              textAnchor="middle" dominantBaseline="central"
+              x={cx} y={cy}
+              dy="4"
+              textAnchor="middle"
+              dominantBaseline="central"
               fontFamily="Inter, -apple-system, BlinkMacSystemFont, sans-serif"
               fontWeight="500"
               fontSize={img.fontSize ?? 60}
