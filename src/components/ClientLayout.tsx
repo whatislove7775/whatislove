@@ -331,7 +331,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               t.me/whatislove_r
             </a>
             <div className="home-disclaimer">
-              ДАННЫЙ САЙТ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРА И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333*
+              ДАННАЯ ДИЗАЙН-СТУДИЯ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРОВ И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333*
             </div>
           </footer>
         ) : (
@@ -351,7 +351,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 <Link href="/info" style={{ color: '#000', textDecoration: 'none' }}>инфо</Link>
               </div>
               <div className="footer-disclaimer">
-                данный сайт ничего не&nbsp;навязывает и&nbsp;не&nbsp;пропагандирует. весь контент является выдумкой автора и&nbsp;не&nbsp;имеет смысла. любые совпадения случайны. все файлы cookies используются для&nbsp;улучшения сервиса &lt;333* инн&nbsp;231222682431
+                ДАННАЯ ДИЗАЙН-СТУДИЯ НИЧЕГО НЕ&nbsp;НАВЯЗЫВАЕТ И&nbsp;НЕ&nbsp;ПРОПАГАНДИРУЕТ. ВЕСЬ КОНТЕНТ ЯВЛЯЕТСЯ ВЫДУМКОЙ АВТОРОВ И&nbsp;НЕ&nbsp;ИМЕЕТ СМЫСЛА. ЛЮБЫЕ СОВПАДЕНИЯ СЛУЧАЙНЫ. ВСЕ ФАЙЛЫ COOKIES ИСПОЛЬЗУЮТСЯ ДЛЯ&nbsp;УЛУЧШЕНИЯ СЕРВИСА &lt;333* ИНН&nbsp;231222682431
               </div>
             </div>
           </footer>
