@@ -278,13 +278,14 @@ pre {
 
 /* Footer links + disclaimer */
 .footer-links {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 6px;
   font-weight: 800;
   text-transform: uppercase;
   padding-bottom: 15px;
+  line-height: 1.8;
+}
+.footer-links a {
+  display: inline;
+  margin-right: 5px;
 }
 
 .footer-disclaimer {
