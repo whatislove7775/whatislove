@@ -167,6 +167,9 @@ pre {
 @media (max-width: 420px) { .kb-logo-mobile { --s: 0.52; gap: 8px; } }
 @media (max-width: 360px) { .kb-logo-mobile { --s: 0.45; } }
 
+/* <3 чуть дальше от остальных клавиш */
+.heart-cell-m { margin-left: 18px; }
+
 /* ── 404: клавиши nice / try. каскадом по диагонали ──────────────────────── */
 .nicetry {
   --s: 0.62;

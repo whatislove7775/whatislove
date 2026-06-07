@@ -98,13 +98,14 @@ export default function KeyboardLogo() {
                   onClick={() => speakWord('love', 2)} />
         </div>
 
-        {/* <3 — с летящими сердечками (z-index > верхний ряд) */}
-        <div style={{ position: 'relative', transform: 'rotate(8deg)', zIndex: 10 }}>
+        {/* <3 — наклон на самой клавише; обёртка ровная, чтобы сердечки летели
+            строго вверх, перпендикулярно футеру */}
+        <div className="heart-cell-m" style={{ position: 'relative', zIndex: 10 }}>
           {items.map(({ id, x }) => (
             <span key={id} className="floating-emoji"
                   style={{ '--hx': `${x}px`, zIndex: 50 } as React.CSSProperties}>❤️</span>
           ))}
-          <Keycap id="heart-m" tw={128} th={120}
+          <Keycap id="heart-m" className="keycap-heart" tw={128} th={120}
                   img={{ src: '/keys/heart_src.png', ar: HEART_AR, h: 64 }}
                   onClick={spawn} />
         </div>
