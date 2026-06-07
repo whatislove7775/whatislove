@@ -281,7 +281,8 @@ pre {
   font-weight: 800;
   text-transform: uppercase;
   padding-bottom: 15px;
-  line-height: 1.8;
+  line-height: 1.4;
+  font-size: 14px;
 }
 .footer-links a {
   display: inline;
