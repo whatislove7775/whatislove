@@ -79,21 +79,21 @@ export default function KeyboardLogo() {
       <div className="kb-logo-mobile mobile-only" aria-label="wh4tislove">
         {/* wh4t */}
         <div>
-          <Keycap id="wh4t" tw={272} th={120}
+          <Keycap id="wh4t" tw={240} th={120}
                   img={{ text: 'wh4t', fontSize: 80 }}
                   onClick={() => speakWord('what', 0)} />
         </div>
 
         {/* is */}
         <div>
-          <Keycap id="is-key" tw={150} th={120}
+          <Keycap id="is-key" tw={128} th={120}
                   img={{ text: 'is', fontSize: 80 }}
                   onClick={() => speakWord('is', 1)} />
         </div>
 
         {/* love? */}
         <div>
-          <Keycap id="love-key" tw={272} th={120}
+          <Keycap id="love-key" tw={240} th={120}
                   img={{ text: 'love?', fontSize: 80 }}
                   onClick={() => speakWord('love', 2)} />
         </div>
@@ -104,7 +104,7 @@ export default function KeyboardLogo() {
             <span key={id} className="floating-emoji"
                   style={{ '--hx': `${x}px`, zIndex: 50 } as React.CSSProperties}>❤️</span>
           ))}
-          <Keycap id="heart-m" tw={150} th={120}
+          <Keycap id="heart-m" tw={128} th={120}
                   img={{ src: '/keys/heart_src.png', ar: HEART_AR, h: 64 }}
                   onClick={spawn} />
         </div>
