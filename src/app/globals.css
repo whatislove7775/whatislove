@@ -150,15 +150,15 @@ pre {
 .kb-logo-mobile {
   display: grid;
   grid-template-columns: auto auto;
-  gap: 12px;
-  --s: 0.85;
+  gap: 10px;
+  --s: 0.6;
   user-select: none;
   justify-content: center;
   align-items: center;
   overflow: visible;
 }
-@media (max-width: 420px) { .kb-logo-mobile { --s: 0.72; gap: 10px; } }
-@media (max-width: 360px) { .kb-logo-mobile { --s: 0.62; } }
+@media (max-width: 420px) { .kb-logo-mobile { --s: 0.52; gap: 8px; } }
+@media (max-width: 360px) { .kb-logo-mobile { --s: 0.45; } }
 
 /* ── 404: клавиши nice / try. каскадом по диагонали ──────────────────────── */
 .nicetry {

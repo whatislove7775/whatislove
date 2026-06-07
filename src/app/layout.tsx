@@ -13,20 +13,20 @@ export const metadata = {
     default: 'Дизайн-студия "WH4T!SLOV3" — Бескомпромиссно. Функционально. Эстетично.',
     template: '%s | WH4T!SLOV3',
   },
-  description: 'студия whatislove делает хороший дизайн, собственные продукты и просто развлекает народ. поисковая выдача не врёт.',
+  description: 'дизайн-студия/производство «wh4tislove» — дизайн всего, продакшен, производство.',
   openGraph: {
     siteName: 'WH4T!SLOV3',
     locale: 'ru_RU',
     type: 'website',
     url: siteUrl,
     title: 'Дизайн-студия "WH4T!SLOV3" — Бескомпромиссно. Функционально. Эстетично.',
-    description: 'студия whatislove делает хороший дизайн, собственные продукты и просто развлекает народ.',
+    description: 'дизайн-студия/производство «wh4tislove» — дизайн всего, продакшен, производство.',
     images: [{ url: '/og-v2.png', width: 1200, height: 630, alt: 'WH4T!SLOV3' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Дизайн-студия "WH4T!SLOV3" — Бескомпромиссно. Функционально. Эстетично.',
-    description: 'студия whatislove делает хороший дизайн, собственные продукты и просто развлекает народ.',
+    description: 'дизайн-студия/производство «wh4tislove» — дизайн всего, продакшен, производство.',
     images: ['/og-v2.png'],
   },
   robots: {

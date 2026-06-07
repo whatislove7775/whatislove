@@ -47,21 +47,21 @@ export default function KeyboardLogo() {
       {/* ── Mobile: 2×2 сетка ── */}
       <div className="kb-logo-mobile mobile-only" aria-label="wh4tislove">
         {/* wh4t */}
-        <div style={{ transform: 'rotate(-4deg)' }}>
+        <div>
           <Keycap id="wh4t" tw={188} th={112}
                   img={{ text: 'wh4t', fontSize: 68 }}
                   onClick={() => speakWord('what', 0)} />
         </div>
 
         {/* is */}
-        <div style={{ transform: 'rotate(8deg)' }}>
+        <div>
           <Keycap id="is-key" tw={100} th={112}
                   img={{ text: 'is', fontSize: 72 }}
                   onClick={() => speakWord('is', 1)} />
         </div>
 
         {/* love? */}
-        <div style={{ transform: 'rotate(-3deg)' }}>
+        <div>
           <Keycap id="love-key" tw={188} th={112}
                   img={{ text: 'love?', fontSize: 54 }}
                   onClick={() => speakWord('love', 2)} />
