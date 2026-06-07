@@ -646,6 +646,9 @@ export default function DuckGame({ showHomeLink = true, onStart }: { showHomeLin
         if (s.ducking && s.onGround && !s.dead) {
           // Наклон: гусь пригибается, шея вытянута вперёд параллельно земле; ноги на земле
           ctx.drawImage(sp.crouch[s.legFrame], DOG_X, GROUND - DOG_CR_H + p(1));
+        } else if (!s.dead && !s.onGround && s.jumpsLeft === 0 && s.dogVY <= 3) {
+          // Double-jump: duck transforms into flying duck (wings flapping)
+          ctx.drawImage(sp.bird[wing], DOG_X, s.dogY + (DOG_H - BIRD_H) / 2);
         } else {
           const spr = s.dead ? sp.dog[2] : sp.dog[s.onGround ? s.legFrame : 0];
           ctx.drawImage(spr, DOG_X, s.dogY - p(2));

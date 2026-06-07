@@ -45,7 +45,7 @@ export default async function ProductsPage() {
       </div>
 
       <div className="products-grid">
-        {normalized.map((product) => (
+        {normalized.map((product, index) => (
           <div key={product.id} className="product-card" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
 
             {/* Image column */}
@@ -64,6 +64,7 @@ export default async function ProductsPage() {
                         fill
                         sizes="(max-width: 768px) 44vw, (max-width: 1000px) 50vw, 400px"
                         style={{ objectFit: 'cover' }}
+                        priority={index < 4}
                       />
                     )}
                   </div>
