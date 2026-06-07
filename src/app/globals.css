@@ -176,6 +176,48 @@ pre {
   z-index: 100;
 }
 
+/* ── Info button (home page, links to /about) ───────────────────────────── */
+.info-btn {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.25);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.4);
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+  z-index: 200;
+  --cur: pointer;
+}
+.info-btn::after {
+  content: 'i';
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1;
+}
+.info-btn:hover {
+  border-color: rgba(0, 0, 0, 0.55);
+  color: rgba(0, 0, 0, 0.75);
+}
+@media (max-width: 768px) {
+  .info-btn {
+    bottom: max(20px, env(safe-area-inset-bottom, 20px));
+    right: 20px;
+    width: 30px;
+    height: 30px;
+  }
+}
+
 /* Home footer */
 .home-footer {
   text-align: center;

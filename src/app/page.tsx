@@ -11,7 +11,8 @@ export default function Home() {
       alignItems: 'center',
       justifyContent: 'center',
       width: '100%',
-      marginTop: '-60px'
+      marginTop: '-60px',
+      position: 'relative',
     }}>
 
       {/* Логотип — нажимаемые клавиши клавиатуры */}
@@ -54,6 +55,9 @@ export default function Home() {
       >
         мне не везёт!
       </Link>
+
+      {/* Кнопка «О студии» */}
+      <Link href="/about" className="info-btn" aria-label="О студии" />
 
     </div>
   );
