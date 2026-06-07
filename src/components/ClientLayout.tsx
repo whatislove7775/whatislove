@@ -294,7 +294,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         padding: 0,
       }}>
         <header style={{ textAlign: 'center', paddingTop: 'max(20px, env(safe-area-inset-top, 0px))', paddingBottom: '20px', fontWeight: 500, flexShrink: 0 }}>
-          <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+          <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-block', position: 'relative' }}>
             <span style={{
               textDecoration: 'underline',
               textDecorationStyle: 'dotted',
@@ -302,7 +302,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               textDecorationThickness: '2px',
               textUnderlineOffset: '3px',
             }}>wh4tislove</span>
-            <span style={{ position: 'relative', top: '1px' }}>©</span>
+            <span style={{ position: 'absolute', left: '100%', top: '1px', marginLeft: '3px' }}>©</span>
           </Link>
         </header>
 
