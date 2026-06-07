@@ -49,21 +49,21 @@ export default function KeyboardLogo() {
         {/* wh4t */}
         <div>
           <Keycap id="wh4t" tw={188} th={112}
-                  img={{ text: 'wh4t', fontSize: 68 }}
+                  img={{ text: 'wh4t', fontSize: 60 }}
                   onClick={() => speakWord('what', 0)} />
         </div>
 
         {/* is */}
         <div>
           <Keycap id="is-key" tw={100} th={112}
-                  img={{ text: 'is', fontSize: 72 }}
+                  img={{ text: 'is', fontSize: 60 }}
                   onClick={() => speakWord('is', 1)} />
         </div>
 
         {/* love? */}
         <div>
           <Keycap id="love-key" tw={188} th={112}
-                  img={{ text: 'love?', fontSize: 54 }}
+                  img={{ text: 'love?', fontSize: 60 }}
                   onClick={() => speakWord('love', 2)} />
         </div>
 

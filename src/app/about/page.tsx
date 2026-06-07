@@ -29,8 +29,7 @@ export default function AboutPage() {
           <div className="info-grid">
             <div style={{ fontWeight: 800, textAlign: 'right' }}>[ОБ ОСНОВАТЕЛЕ]</div>
             <div style={{ fontWeight: 500, lineHeight: '1.5', maxWidth: '500px' }}>
-              Я — vlad m // арт. директор и владелец этой студии дизайна,<br />
-              где мы делаем дизайн-приколюхи.
+              Я — vlad m // арт. директор и владелец этой студии дизайна, где мы делаем дизайн-приколюхи.
             </div>
           </div>
 
