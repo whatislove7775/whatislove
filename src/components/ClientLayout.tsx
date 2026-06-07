@@ -360,7 +360,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
       {/* Info button — desktop only, all pages except about itself */}
       {pathname !== '/about' && (
-        <Link href="/about" className="info-btn" aria-label="О студии">i</Link>
+        <Link href="/about" className="info-btn" aria-label="О студии" />
       )}
     </>
   );
