@@ -357,6 +357,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           </footer>
         )}
       </div>
+
+      {/* Info button — desktop only, all pages except about itself */}
+      {pathname !== '/about' && (
+        <Link href="/about" className="info-btn" aria-label="О студии">i</Link>
+      )}
     </>
   );
 }
