@@ -5,19 +5,39 @@ import useFloatingEmoji from './useFloatingEmoji';
 const MAIN_AR  = 1627 / 222;
 const HEART_AR = 311  / 216;
 
-// TTS — разные женские голоса для каждой клавиши
-const FEMALE_NAMES = ['Samantha', 'Karen', 'Moira', 'Tessa', 'Fiona', 'Victoria', 'Allison', 'Susan', 'Zoe', 'Nicky', 'Alice'];
+// Известные женские голоса разных платформ (Apple / Google / Microsoft)
+const FEMALE_NAMES = [
+  'Samantha', 'Karen', 'Moira', 'Tessa', 'Fiona', 'Victoria', 'Allison',
+  'Susan', 'Zoe', 'Nicky', 'Alice', 'Serena', 'Kathy', 'Ava',
+  'Google US English', 'Google UK English Female',
+  'Zira', 'Hazel', 'Aria', 'Jenny', 'Eva', 'Female',
+];
+const MALE_HINT = /male|david|mark|daniel|fred|alex|rishi|oliver|george|james|guy|tom|arthur/i;
+
+// Питч для каждой клавиши — чтобы голоса звучали по-разному, но все женские
+const SLOT_PITCH = [1.35, 1.15, 1.5];
 
 function speakWord(word: string, slot: number) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
   const synth = window.speechSynthesis;
   const go = (voices: SpeechSynthesisVoice[]) => {
-    const female = voices.filter(v => v.lang.startsWith('en') && FEMALE_NAMES.some(n => v.name.includes(n)));
-    const pool   = female.length ? female : voices.filter(v => v.lang.startsWith('en'));
-    const voice  = pool[slot % Math.max(pool.length, 1)];
+    const en = voices.filter(v => v.lang.toLowerCase().startsWith('en'));
+    // Строго женские: по имени из списка ИЛИ содержит "female", и не мужские
+    let female = en.filter(v =>
+      !MALE_HINT.test(v.name) &&
+      (FEMALE_NAMES.some(n => v.name.includes(n)) || /female/i.test(v.name))
+    );
+    // Если ничего не нашли — берём любые en-голоса, исключив явно мужские
+    if (!female.length) female = en.filter(v => !MALE_HINT.test(v.name));
+    if (!female.length) female = en;
+
+    const voice = female[slot % Math.max(female.length, 1)];
     const u = new SpeechSynthesisUtterance(word);
     if (voice) u.voice = voice;
-    u.lang = 'en-US'; u.pitch = 1.2; u.rate = 0.85;
+    u.lang = 'en-US';
+    u.pitch = SLOT_PITCH[slot % SLOT_PITCH.length];
+    u.rate = 0.85;
+    synth.cancel();
     synth.speak(u);
   };
   const v = synth.getVoices();
