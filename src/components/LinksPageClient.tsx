@@ -3,7 +3,8 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import Keycap from '@/components/Keycap';
 import useFloatingEmoji from '@/components/useFloatingEmoji';
 
-interface LinkItem { id: string; label: string; url: string; }
+interface LinkItem { id: string; label: string; url: string; column_id?: string | null; }
+interface ColumnItem { id: string; title: string; sort_order: number; }
 
 const DEFAULT_LINKS: LinkItem[] = [
   { id: 'd1', label: '[КАНАЛ В ТГ]', url: 'https://t.me/whatislove_r' },
@@ -20,9 +21,24 @@ function hrefUrl(url: string) {
   return /^(https?:|mailto:|tel:)/.test(url) ? url : `https://${url}`;
 }
 
-export default function LinksPageClient({ links }: { links: LinkItem[] }) {
+function LinkRow({ l }: { l: LinkItem }) {
+  return (
+    <div className="links-nav-item" style={{ display: 'flex', gap: '10px', fontWeight: 700, fontSize: '14px', textTransform: 'uppercase' }}>
+      <span>{l.label}</span>
+      <a href={hrefUrl(l.url)} target={l.url.startsWith('mailto:') ? undefined : '_blank'} rel="noopener noreferrer">
+        {displayUrl(l.url)}
+      </a>
+    </div>
+  );
+}
+
+export default function LinksPageClient({ links, columns = [] }: { links: LinkItem[]; columns?: ColumnItem[] }) {
   const { items, spawn } = useFloatingEmoji();
   const list = links.length > 0 ? links : DEFAULT_LINKS;
+
+  // Колонки показываем только если реально сконфигурированы в админке — иначе всё как раньше, одной строкой.
+  const useColumns = columns.length > 0 && links.length > 0;
+  const rest = useColumns ? list.filter(l => !l.column_id) : [];
 
   return (
     <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -44,16 +60,29 @@ export default function LinksPageClient({ links }: { links: LinkItem[] }) {
                   img={{ src: '/keys/atme_src.png', ar: 1268 / 522, h: 63 }} />
         </div>
 
-        <div className="links-nav" style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', flexWrap: 'wrap' }}>
-          {list.map((l) => (
-            <div key={l.id} className="links-nav-item" style={{ display: 'flex', gap: '10px' }}>
-              <span>{l.label}</span>
-              <a href={hrefUrl(l.url)} target={l.url.startsWith('mailto:') ? undefined : '_blank'} rel="noopener noreferrer">
-                {displayUrl(l.url)}
-              </a>
-            </div>
-          ))}
-        </div>
+        {useColumns ? (
+          <div className="links-columns">
+            {columns.map(col => {
+              const group = list.filter(l => l.column_id === col.id);
+              if (group.length === 0) return null;
+              return (
+                <div key={col.id} className="links-column">
+                  {col.title && <div className="links-column-title">{col.title}</div>}
+                  {group.map(l => <LinkRow key={l.id} l={l} />)}
+                </div>
+              );
+            })}
+            {rest.length > 0 && (
+              <div className="links-column">
+                {rest.map(l => <LinkRow key={l.id} l={l} />)}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="links-nav" style={{ display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
+            {list.map(l => <LinkRow key={l.id} l={l} />)}
+          </div>
+        )}
       </div>
     </div>
   );
