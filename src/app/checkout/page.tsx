@@ -153,6 +153,7 @@ export default function CheckoutPage() {
       deliveryCost: deliveryCost,
       items: items,
       total: totalPrice(),
+      website: formData.get('website'),
     };
 
     try {
@@ -189,6 +190,16 @@ export default function CheckoutPage() {
           <div style={{ textAlign: 'center', fontWeight: 700, marginTop: '50px' }}>корзина пуста...</div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+
+            {/* Honeypot: скрыто от людей стилями, боты часто заполняют все поля вслепую */}
+            <input
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}
+              aria-hidden="true"
+            />
 
             {items.map((item, idx) => {
               const pData = productData[item.id];

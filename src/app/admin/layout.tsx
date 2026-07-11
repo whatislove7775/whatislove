@@ -26,14 +26,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const login = async () => {
+    setError('');
     const res = await fetch('/api/admin/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
     });
-    if (res.ok) {
-      localStorage.setItem('admin_key', password);
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.token) {
+      localStorage.setItem('admin_key', data.token);
       setAuthed(true);
+    } else if (res.status === 429) {
+      setError(data.message ?? 'слишком много попыток, попробуйте позже');
     } else {
       setError('неверный пароль');
     }
@@ -75,7 +79,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           );
         })}
         <button
-          onClick={() => { localStorage.removeItem('admin_key'); setAuthed(false); }}
+          onClick={() => {
+            const key = localStorage.getItem('admin_key');
+            if (key) fetch('/api/admin/auth', { method: 'DELETE', headers: { 'x-admin-key': key } }).catch(() => {});
+            localStorage.removeItem('admin_key');
+            setAuthed(false);
+          }}
           style={{ marginLeft: 'auto', fontFamily: 'inherit', fontSize: '12px', cursor: 'pointer', background: 'none', border: 'none', fontWeight: 800, color: '#999', flexShrink: 0, paddingLeft: '12px', whiteSpace: 'nowrap' }}
         >
           выйти

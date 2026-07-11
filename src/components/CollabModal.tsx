@@ -46,6 +46,7 @@ export default function CollabModal({ onClose }: { onClose: () => void }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [website, setWebsite] = useState(''); // honeypot — реальные пользователи это поле не видят и не заполняют
 
   const [pending, setPending] = useState<Pending[]>([]);
   const [dragging, setDragging] = useState(false);
@@ -101,7 +102,7 @@ export default function CollabModal({ onClose }: { onClose: () => void }) {
       const res = await fetch('/api/collab', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, telegram, phone, title, description, price, images: urls }),
+        body: JSON.stringify({ name, telegram, phone, title, description, price, images: urls, website }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'не удалось отправить заявку');
@@ -142,6 +143,18 @@ export default function CollabModal({ onClose }: { onClose: () => void }) {
             <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.5, marginTop: '-6px' }}>
               прикрепите фото товара или эскизов, опишите идею, предложите цену и оставьте контакты — мы рассмотрим заявку.
             </div>
+
+            {/* Honeypot: скрыто от людей стилями, боты часто заполняют все поля вслепую */}
+            <input
+              type="text"
+              name="website"
+              value={website}
+              onChange={e => setWebsite(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}
+              aria-hidden="true"
+            />
 
             {/* Контакты */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>

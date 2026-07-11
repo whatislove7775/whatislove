@@ -8,8 +8,9 @@ import { parseTextForLinks } from '@/lib/parseLinks';
 import Link from 'next/link';
 import ShareButton from '@/components/ShareButton';
 import RecentlyViewed from '@/components/RecentlyViewed';
+import RelatedProducts from '@/components/RelatedProducts';
 
-export default function ProductDetail({ product, bottomText }: { product: any; bottomText: string }) {
+export default function ProductDetail({ product, bottomText, relatedProducts = [] }: { product: any; bottomText: string; relatedProducts?: any[] }) {
   const stock: Record<string, number> = product.stock || {};
   const sizes = Object.keys(stock).sort((a, b) => Number(a) - Number(b));
   const firstAvailableSize = sizes.find((s) => (stock[s] || 0) > 0) ?? sizes[0] ?? '17';
@@ -261,6 +262,8 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
           </div>
         </div>
       </div>
+
+      <RelatedProducts items={relatedProducts} />
 
       <RecentlyViewed current={{
         slug: product.slug,

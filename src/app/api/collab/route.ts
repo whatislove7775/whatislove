@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { isRateLimited, getClientIp } from '@/lib/rateLimit';
 
 const escapeHtml = (text: string) =>
   String(text ?? '')
@@ -10,12 +11,22 @@ const escapeHtml = (text: string) =>
 
 export async function POST(req: NextRequest) {
   try {
+    if (isRateLimited(`collab:${getClientIp(req)}`, 5, 10 * 60 * 1000)) {
+      return NextResponse.json({ error: 'слишком много заявок, попробуйте позже' }, { status: 429 });
+    }
+
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceKey) {
       return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY не задан' }, { status: 500 });
     }
 
     const body = await req.json();
+
+    // Honeypot: скрытое поле, которое реальный пользователь никогда не заполнит
+    if (String(body.website ?? '').trim()) {
+      return NextResponse.json({ ok: true }); // тихо "успех", не раскрываем защиту ботам
+    }
+
     const name = String(body.name ?? '').trim().slice(0, 200);
     const telegram = String(body.telegram ?? '').trim().slice(0, 200);
     const phone = String(body.phone ?? '').trim().slice(0, 100);

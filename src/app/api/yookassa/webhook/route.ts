@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { sendOrderConfirmationEmail } from '@/lib/orderEmail';
 
 const escapeHtml = (t: string) =>
   String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -37,6 +38,20 @@ export async function POST(req: Request) {
 
     const items = JSON.parse(meta.order_items ?? '[]');
     const deliveryCost = Number(meta.order_delivery_cost ?? 0);
+
+    // Email-подтверждение покупателю (ошибки логируются внутри и не прерывают обработку)
+    if (meta.order_email) {
+      await sendOrderConfirmationEmail({
+        to: meta.order_email,
+        name: meta.order_name,
+        items,
+        deliveryCost,
+        totalPaid: Number(payment.amount?.value ?? 0),
+        city: meta.order_city,
+        address: meta.order_address,
+        delivery: meta.order_delivery,
+      });
+    }
 
     // Telegram уведомление
     const token = process.env.TELEGRAM_BOT_TOKEN;
