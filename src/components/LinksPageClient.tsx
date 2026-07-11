@@ -15,6 +15,11 @@ function displayUrl(url: string) {
   return url.replace(/^mailto:/, '').replace(/^https?:\/\//, '');
 }
 
+// Если в админке забыли указать протокол — ссылка не должна ломаться и вести на /url-как-относительный-путь
+function hrefUrl(url: string) {
+  return /^(https?:|mailto:|tel:)/.test(url) ? url : `https://${url}`;
+}
+
 export default function LinksPageClient({ links }: { links: LinkItem[] }) {
   const { items, spawn } = useFloatingEmoji();
   const list = links.length > 0 ? links : DEFAULT_LINKS;
@@ -43,7 +48,7 @@ export default function LinksPageClient({ links }: { links: LinkItem[] }) {
           {list.map((l) => (
             <div key={l.id} className="links-nav-item" style={{ display: 'flex', gap: '10px' }}>
               <span>{l.label}</span>
-              <a href={l.url} target={l.url.startsWith('mailto:') ? undefined : '_blank'} rel="noopener noreferrer">
+              <a href={hrefUrl(l.url)} target={l.url.startsWith('mailto:') ? undefined : '_blank'} rel="noopener noreferrer">
                 {displayUrl(l.url)}
               </a>
             </div>
