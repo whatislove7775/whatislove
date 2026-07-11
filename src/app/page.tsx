@@ -39,7 +39,7 @@ export default function Home() {
         flexWrap: 'wrap',
         justifyContent: 'center',
       }}>
-        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 ПРОДУКТЫ</Link>
+        <Link href="/products" style={{ textDecoration: 'none', color: '#000' }}>📦 МАГАЗИН</Link>
         <span className="nav-sep">/</span>
         <Link href="/portfolio" style={{ textDecoration: 'none', color: '#000' }}>📁 ПОРТФОЛИО</Link>
         <span className="nav-sep">/</span>
