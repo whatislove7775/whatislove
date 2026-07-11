@@ -14,6 +14,7 @@ export default function PortfolioPage() {
   const [credits, setCredits] = useState<any[]>([{ ...EMPTY_CREDIT }]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [reordering, setReordering] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -84,6 +85,28 @@ export default function PortfolioPage() {
     setDeleting(id);
     await fetch(`/api/admin/portfolio/${id}`, { method: 'DELETE', headers: ah() });
     setDeleting(null);
+    load();
+  };
+
+  const move = async (idx: number, dir: -1 | 1) => {
+    const target = idx + dir;
+    if (target < 0 || target >= cases.length) return;
+    setReordering(true);
+    // Если sort_order ещё ни у кого не выставлен (миграция только что применена) — нормализуем
+    // весь текущий порядок в конкретные значения перед первой перестановкой.
+    const needsInit = cases.some(c => c.sort_order == null);
+    const list = needsInit ? cases.map((c, i) => ({ ...c, sort_order: i })) : cases;
+    if (needsInit) {
+      await Promise.all(list.map(c =>
+        fetch(`/api/admin/portfolio/${c.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: c.sort_order }) })
+      ));
+    }
+    const a = list[idx], b = list[target];
+    await Promise.all([
+      fetch(`/api/admin/portfolio/${a.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: b.sort_order }) }),
+      fetch(`/api/admin/portfolio/${b.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: a.sort_order }) }),
+    ]);
+    setReordering(false);
     load();
   };
 
@@ -169,13 +192,18 @@ export default function PortfolioPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div style={{ fontWeight: 800, fontSize: '18px' }}>портфолио ({cases.length})</div>
         <button onClick={openCreate} style={{ padding: '8px 16px', background: '#000', color: '#fff', border: 'none', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }}>+ добавить</button>
+        <a href="/portfolio" target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#888' }}>смотреть портфолио →</a>
       </div>
 
       {cases.length === 0 && <div style={{ color: '#888' }}>кейсов пока нет</div>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#eee' }}>
-        {cases.map(c => (
+        {cases.map((c, i) => (
           <div key={c.id} style={{ background: '#fff', display: 'flex', gap: '16px', padding: '14px 16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <button onClick={() => move(i, -1)} disabled={i === 0 || reordering} style={arrowBtn}>▲</button>
+              <button onClick={() => move(i, 1)} disabled={i === cases.length - 1 || reordering} style={arrowBtn}>▼</button>
+            </div>
             {c.image_url && <img src={c.image_url} alt="" style={{ width: '60px', height: '40px', objectFit: 'cover', flexShrink: 0 }} />}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 800 }}>{c.title}</div>
@@ -187,6 +215,7 @@ export default function PortfolioPage() {
               )}
             </div>
             <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+              <a href={`/portfolio/${c.slug}`} target="_blank" rel="noopener noreferrer" style={{ ...btnSecondary, textDecoration: 'none', color: '#000', display: 'inline-block' }}>смотреть</a>
               <button onClick={() => openEdit(c)} style={btnSecondary}>изменить</button>
               <button onClick={() => del(c.id)} disabled={deleting === c.id} style={{ ...btnSecondary, color: '#c00', borderColor: '#c00' }}>
                 {deleting === c.id ? '...' : 'удалить'}
@@ -201,3 +230,4 @@ export default function PortfolioPage() {
 
 const inp: React.CSSProperties = { padding: '8px 10px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '13px', outline: 'none', width: '100%', boxSizing: 'border-box' };
 const btnSecondary: React.CSSProperties = { padding: '6px 12px', border: '1px solid #ccc', background: '#fff', fontFamily: 'inherit', fontSize: '12px', cursor: 'pointer', fontWeight: 700 };
+const arrowBtn: React.CSSProperties = { padding: '2px 6px', border: '1px solid #ccc', background: '#fff', fontFamily: 'inherit', fontSize: '10px', cursor: 'pointer', lineHeight: 1 };

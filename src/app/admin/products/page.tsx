@@ -15,6 +15,7 @@ export default function ProductsPage() {
   const [variants, setVariants] = useState<any[]>([{ ...EMPTY_VARIANT }]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [reordering, setReordering] = useState(false);
   const [preorderCounts, setPreorderCounts] = useState<Record<string, number>>({});
   const [notifying, setNotifying] = useState<string | null>(null);
 
@@ -109,6 +110,28 @@ export default function ProductsPage() {
     setDeleting(id);
     await fetch(`/api/admin/products/${id}`, { method: 'DELETE', headers: ah() });
     setDeleting(null);
+    load();
+  };
+
+  const move = async (idx: number, dir: -1 | 1) => {
+    const target = idx + dir;
+    if (target < 0 || target >= products.length) return;
+    setReordering(true);
+    // Если sort_order ещё ни у кого не выставлен (миграция только что применена) — нормализуем
+    // весь текущий порядок в конкретные значения перед первой перестановкой.
+    const needsInit = products.some(p => p.sort_order == null);
+    const list = needsInit ? products.map((p, i) => ({ ...p, sort_order: i })) : products;
+    if (needsInit) {
+      await Promise.all(list.map(p =>
+        fetch(`/api/admin/products/${p.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: p.sort_order }) })
+      ));
+    }
+    const a = list[idx], b = list[target];
+    await Promise.all([
+      fetch(`/api/admin/products/${a.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: b.sort_order }) }),
+      fetch(`/api/admin/products/${b.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: a.sort_order }) }),
+    ]);
+    setReordering(false);
     load();
   };
 
@@ -208,15 +231,20 @@ export default function ProductsPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div style={{ fontWeight: 800, fontSize: '18px' }}>товары ({products.length})</div>
         <button onClick={openCreate} style={{ padding: '8px 16px', background: '#000', color: '#fff', border: 'none', fontFamily: 'inherit', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }}>+ добавить</button>
+        <a href="/products" target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#888' }}>смотреть каталог →</a>
       </div>
 
       {products.length === 0 && <div style={{ color: '#888' }}>товаров пока нет</div>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#eee' }}>
-        {products.map(p => {
+        {products.map((p, i) => {
           const pCount = preorderCounts[p.id] ?? 0;
           return (
             <div key={p.id} style={{ background: p.preorder_mode ? '#fff8f8' : '#fff', display: 'flex', gap: '16px', padding: '14px 16px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <button onClick={() => move(i, -1)} disabled={i === 0 || reordering} style={arrowBtn}>▲</button>
+                <button onClick={() => move(i, 1)} disabled={i === products.length - 1 || reordering} style={arrowBtn}>▼</button>
+              </div>
               {p.image_url && <img src={p.image_url} alt="" style={{ width: '48px', height: '48px', objectFit: 'cover', flexShrink: 0 }} />}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -248,6 +276,7 @@ export default function ProductsPage() {
                     {notifying === p.id ? '...' : `уведомить (${pCount})`}
                   </button>
                 )}
+                <a href={`/products/${p.slug}`} target="_blank" rel="noopener noreferrer" style={{ ...btnSecondary, textDecoration: 'none', color: '#000', display: 'inline-block' }}>смотреть</a>
                 <button onClick={() => openEdit(p)} style={btnSecondary}>изменить</button>
                 <button onClick={() => del(p.id)} disabled={deleting === p.id} style={{ ...btnSecondary, color: '#c00', borderColor: '#c00' }}>
                   {deleting === p.id ? '...' : 'удалить'}
@@ -263,3 +292,4 @@ export default function ProductsPage() {
 
 const inp: React.CSSProperties = { padding: '8px 10px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '13px', outline: 'none', width: '100%', boxSizing: 'border-box' };
 const btnSecondary: React.CSSProperties = { padding: '6px 12px', border: '1px solid #ccc', background: '#fff', fontFamily: 'inherit', fontSize: '12px', cursor: 'pointer', fontWeight: 700 };
+const arrowBtn: React.CSSProperties = { padding: '2px 6px', border: '1px solid #ccc', background: '#fff', fontFamily: 'inherit', fontSize: '10px', cursor: 'pointer', lineHeight: 1 };

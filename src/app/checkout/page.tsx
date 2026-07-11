@@ -50,12 +50,29 @@ function DeliveryAddressBlock({ deliveryService, city, address, setAddress, deli
   );
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function normalizePhoneDigits(phone: string): string {
+  return phone.replace(/\D/g, '');
+}
+
+function isValidPhone(phone: string): boolean {
+  const digits = normalizePhoneDigits(phone);
+  return digits.length === 10 || (digits.length === 11 && /^[78]/.test(digits));
+}
+
 export default function CheckoutPage() {
   const { items, updateQuantity, updateItemSize, totalPrice, clearCart } = useCartStore();
   const [address, setAddress] = useState('');
   const [deliveryService, setDeliveryService] = useState('СДЭК');
   const [deliveryCost, setDeliveryCost] = useState(0);
   const [productData, setProductData] = useState<Record<string, { imageUrl?: string; oldPrice?: number; sizes: number[] }>>({});
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [touched, setTouched] = useState<{ email?: boolean; phone?: boolean }>({});
+
+  const emailValid = EMAIL_RE.test(email.trim());
+  const phoneValid = isValidPhone(phone);
 
   useEffect(() => {
     if (items.length === 0) return;
@@ -118,13 +135,17 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (items.length === 0) return;
+    if (!emailValid || !phoneValid) {
+      setTouched({ email: true, phone: true });
+      return;
+    }
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
     const orderData = {
       name: formData.get('name'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
+      email: email.trim(),
+      phone: phone.trim(),
       tg: formData.get('tg'),
       city: formData.get('city'),
       delivery: formData.get('delivery'),
@@ -231,12 +252,35 @@ export default function CheckoutPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>email</label>
-                <input name="email" required type="email" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+                <input
+                  name="email"
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                  style={{ padding: '12px', border: `1px solid ${touched.email && !emailValid ? '#c00' : '#ccc'}`, fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }}
+                />
+                {touched.email && !emailValid && (
+                  <span style={{ fontSize: '12px', color: '#c00', marginTop: '4px' }}>укажите корректный email</span>
+                )}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>телефон</label>
-                <input name="phone" required type="tel" placeholder="+7 (000) 000-00 00" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+                <input
+                  name="phone"
+                  required
+                  type="tel"
+                  placeholder="+7 (000) 000-00 00"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+                  style={{ padding: '12px', border: `1px solid ${touched.phone && !phoneValid ? '#c00' : '#ccc'}`, fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }}
+                />
+                {touched.phone && !phoneValid && (
+                  <span style={{ fontSize: '12px', color: '#c00', marginTop: '4px' }}>укажите корректный номер телефона</span>
+                )}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -304,7 +348,7 @@ export default function CheckoutPage() {
                 <div style={{ fontWeight: 800, fontSize: '18px', textTransform: 'lowercase' }}>
                   итог: {totalPrice() + deliveryCost} руб
                 </div>
-                <button type="submit" disabled={isLoading || !address || !consent} style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address || !consent) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isLoading || !address || !consent) ? 0.5 : 1 }}>
+                <button type="submit" disabled={isLoading || !address || !consent || !emailValid || !phoneValid} style={{ background: 'transparent', border: 'none', fontWeight: 800, fontSize: '16px', cursor: (isLoading || !address || !consent || !emailValid || !phoneValid) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isLoading || !address || !consent || !emailValid || !phoneValid) ? 0.5 : 1 }}>
                   {isLoading ? '[отправка...]' : '[заказать] 📦'}
                 </button>
               </div>

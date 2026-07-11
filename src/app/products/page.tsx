@@ -23,15 +23,32 @@ function buildStock(variants: any[]): Record<string, number> {
   }, {});
 }
 
-export default async function ProductsPage() {
-  const { data: products } = await supabase
-    .from('products')
-    .select('*, product_variants(attribute_value, stock)');
+function sortByOrder<T extends { id: any }>(rows: T[], orderMap: Map<any, number | null>): T[] {
+  return [...rows].sort((a, b) => {
+    const oa = orderMap.get(a.id), ob = orderMap.get(b.id);
+    if (oa == null && ob == null) return 0;
+    if (oa == null) return 1;
+    if (ob == null) return -1;
+    return oa - ob;
+  });
+}
 
-  const normalized = (products || []).map((p) => ({
+export default async function ProductsPage() {
+  const [{ data: products }, { data: orderRows }] = await Promise.all([
+    supabase
+      .from('products')
+      .select('id, slug, name, price, oldPrice, material, delivery, image_url, preorder_mode, product_variants(attribute_value, stock)'),
+    // Отдельный лёгкий запрос за ручным порядком сортировки — если колонка sort_order ещё
+    // не добавлена в БД (миграция не выполнена), просто вернётся ошибка и сортировка не изменится.
+    supabase.from('products').select('id, sort_order'),
+  ]);
+
+  const orderMap = new Map((orderRows ?? []).map((r: any) => [r.id, r.sort_order]));
+
+  const normalized = sortByOrder((products || []).map((p) => ({
     ...p,
     stock: buildStock(p.product_variants || []),
-  }));
+  })), orderMap);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'inherit' }}>
@@ -45,7 +62,7 @@ export default async function ProductsPage() {
       </div>
 
       <div className="products-grid">
-        {normalized.map((product) => (
+        {normalized.map((product, index) => (
           <div key={product.id} className="product-card" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
 
             {/* Image column */}
@@ -64,6 +81,7 @@ export default async function ProductsPage() {
                         fill
                         sizes="(max-width: 768px) 44vw, (max-width: 1000px) 50vw, 400px"
                         style={{ objectFit: 'cover' }}
+                        priority={index < 4}
                       />
                     )}
                   </div>

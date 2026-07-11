@@ -46,5 +46,21 @@ export default async function CasePage({ params }: { params: Promise<{ case: str
 
   if (!project) notFound();
 
-  return <CasePageClient project={project} />;
+  const caseJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: project.title,
+    description: project.desc,
+    image: project.image_url ? [project.image_url] : undefined,
+    url: `${siteUrl}/portfolio/${slug}`,
+    ...(project.year ? { datePublished: String(project.year) } : {}),
+    creator: { '@type': 'Organization', name: 'WH4T!SLOV3' },
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(caseJsonLd) }} />
+      <CasePageClient project={project} />
+    </>
+  );
 }

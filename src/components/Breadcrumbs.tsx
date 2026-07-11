@@ -4,6 +4,22 @@ import { usePathname } from 'next/navigation';
 import Cart from '@/components/Cart';
 import { useCartStore } from '@/store/cartStore';
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wh4tislove.ru';
+
+function BreadcrumbJsonLd({ path }: { path: any[] }) {
+  const json = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: path.map((item: any, i: number) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.name,
+      ...(item.href ? { item: `${siteUrl}${item.href}` } : {}),
+    })),
+  };
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }} />;
+}
+
 export default function Breadcrumbs({ path, rightAddon }: any) {
   const pathname = usePathname();
   const backLink = path.length > 1 && path[path.length - 2].href ? path[path.length - 2].href : '/';
@@ -23,6 +39,8 @@ export default function Breadcrumbs({ path, rightAddon }: any) {
   };
 
   return (
+    <>
+    <BreadcrumbJsonLd path={path} />
     <div style={{
       display: 'flex',
       justifyContent: 'space-between',
@@ -99,5 +117,6 @@ export default function Breadcrumbs({ path, rightAddon }: any) {
         )}
       </div>
     </div>
+    </>
   );
 }
