@@ -1,10 +1,32 @@
 // Письмо-подтверждение покупателю после успешной оплаты.
-// Отправляется через HTTP API Resend (https://resend.com) — если RESEND_API_KEY
-// не задан в переменных окружения, отправка тихо пропускается (как и с Telegram-токенами
-// в остальных вебхуках), чтобы отсутствие ключа не ломало оформление заказа.
+// Отправляется через SMTP (например, почта на Beget) с помощью nodemailer.
+// Если SMTP_USER/SMTP_PASSWORD не заданы в переменных окружения, отправка тихо
+// пропускается (как и с Telegram-токенами в остальных вебхуках), чтобы отсутствие
+// настроенной почты не ломало оформление заказа.
+
+import nodemailer from 'nodemailer';
 
 function escapeHtml(t: any): string {
   return String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+let transporter: import('nodemailer').Transporter | null = null;
+
+function getTransporter() {
+  if (transporter) return transporter;
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASSWORD;
+  if (!host || !user || !pass) return null;
+
+  const port = Number(process.env.SMTP_PORT ?? 465);
+  transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : port === 465,
+    auth: { user, pass },
+  });
+  return transporter;
 }
 
 interface OrderEmailItem { name: string; size: string | number; quantity: number; price: number; }
@@ -19,13 +41,14 @@ export async function sendOrderConfirmationEmail(params: {
   address: string;
   delivery: string;
 }) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL || 'wh4tislove <orders@wh4tislove.ru>';
-  if (!apiKey) {
-    console.warn('[order-email] RESEND_API_KEY not set — skipping customer email');
+  const t = getTransporter();
+  if (!t) {
+    console.warn('[order-email] SMTP_HOST/SMTP_USER/SMTP_PASSWORD not set — skipping customer email');
     return;
   }
   if (!params.to) return;
+
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER!;
 
   const itemsHtml = params.items
     .map(
@@ -62,19 +85,12 @@ export async function sendOrderConfirmationEmail(params: {
     </div>`;
 
   try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        from,
-        to: params.to,
-        subject: 'заказ оплачен — wh4tislove',
-        html,
-      }),
+    await t.sendMail({
+      from,
+      to: params.to,
+      subject: 'заказ оплачен — wh4tislove',
+      html,
     });
-    if (!res.ok) {
-      console.error('[order-email] Resend API error:', res.status, await res.text().catch(() => ''));
-    }
   } catch (e) {
     console.error('[order-email] send failed:', e);
   }
