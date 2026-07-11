@@ -409,6 +409,26 @@ pre {
   }
 }
 
+/* Links page: grouped into columns (only when configured in admin) */
+.links-columns {
+  display: flex;
+  justify-content: center;
+  gap: 56px;
+  flex-wrap: wrap;
+}
+.links-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.links-column-title {
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: #999;
+  text-transform: uppercase;
+}
+
 /* ── Mobile ─────────────────────────────── */
 @media (max-width: 768px) {
   .product-page-layout {
@@ -493,6 +513,19 @@ pre {
     flex-direction: column !important;
     align-items: center !important;
     gap: 4px !important;
+    text-align: center;
+  }
+
+  /* Links page: columns stack vertically on mobile */
+  .links-columns {
+    flex-direction: column !important;
+    align-items: center;
+    gap: 28px !important;
+  }
+  .links-column {
+    align-items: center;
+  }
+  .links-column-title {
     text-align: center;
   }
 
