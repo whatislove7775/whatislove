@@ -83,10 +83,37 @@ export default async function ProductPage({ params }: { params: { slug: string }
     {}
   );
 
+  const totalStock = Object.values(stock).reduce((sum: number, n: any) => sum + (Number(n) || 0), 0);
+  const availability = product.preorder_mode
+    ? 'https://schema.org/PreOrder'
+    : totalStock > 0
+      ? 'https://schema.org/InStock'
+      : 'https://schema.org/OutOfStock';
+
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    image: product.image_url ? [product.image_url] : undefined,
+    description: product.material || product.name,
+    sku: String(product.id),
+    offers: {
+      '@type': 'Offer',
+      url: `${siteUrl}/products/${params.slug}`,
+      priceCurrency: 'RUB',
+      price: product.price,
+      availability,
+      itemCondition: 'https://schema.org/NewCondition',
+    },
+  };
+
   return (
-    <ProductDetail
-      product={{ ...product, stock }}
-      bottomText={textData?.value || 'произведём, упакуем,\nи доставим'}
-    />
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+      <ProductDetail
+        product={{ ...product, stock }}
+        bottomText={textData?.value || 'произведём, упакуем,\nи доставим'}
+      />
+    </>
   );
 }

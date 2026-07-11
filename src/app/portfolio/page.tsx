@@ -45,11 +45,25 @@ function renderTitle(title: string, externalLink: string, slug: string) {
 }
 
 export default async function PortfolioPage() {
-  const { data: projects } = await supabase
-    .from('cases')
-    .select('*')
-    .order('year', { ascending: false })
-    .order('id', { ascending: false });
+  const [{ data: projects }, { data: orderRows }] = await Promise.all([
+    supabase
+      .from('cases')
+      .select('id, slug, title, desc, year, image_url, project_link')
+      .order('year', { ascending: false })
+      .order('id', { ascending: false }),
+    // Отдельный лёгкий запрос за ручным порядком сортировки — если колонка sort_order ещё
+    // не добавлена в БД (миграция не выполнена), просто вернётся ошибка и сортировка не изменится.
+    supabase.from('cases').select('id, sort_order'),
+  ]);
+
+  const orderMap = new Map((orderRows ?? []).map((r: any) => [r.id, r.sort_order]));
+  const sortedProjects = [...(projects ?? [])].sort((a, b) => {
+    const oa = orderMap.get(a.id), ob = orderMap.get(b.id);
+    if (oa == null && ob == null) return 0;
+    if (oa == null) return 1;
+    if (ob == null) return -1;
+    return oa - ob;
+  });
 
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, fontFamily: 'inherit' }}>
@@ -61,7 +75,7 @@ export default async function PortfolioPage() {
       </div>
 
       <div className="portfolio-grid">
-        {(projects || []).map((project, index) => (
+        {sortedProjects.map((project, index) => (
           <div key={project.id} style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
             <Link
               href={`/portfolio/${project.slug}`}

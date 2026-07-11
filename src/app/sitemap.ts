@@ -12,8 +12,11 @@ export default async function sitemap() {
     { url: siteUrl, priority: 1.0, changeFrequency: 'weekly' as const },
     { url: `${siteUrl}/portfolio`, priority: 0.9, changeFrequency: 'weekly' as const },
     { url: `${siteUrl}/products`, priority: 0.9, changeFrequency: 'weekly' as const },
+    { url: `${siteUrl}/about`, priority: 0.5, changeFrequency: 'monthly' as const },
     { url: `${siteUrl}/info`, priority: 0.5, changeFrequency: 'monthly' as const },
     { url: `${siteUrl}/links`, priority: 0.4, changeFrequency: 'monthly' as const },
+    { url: `${siteUrl}/oferta`, priority: 0.2, changeFrequency: 'yearly' as const },
+    { url: `${siteUrl}/privacy`, priority: 0.2, changeFrequency: 'yearly' as const },
   ].map(r => ({ ...r, lastModified: new Date() }));
 
   const caseRoutes = (cases || []).map(c => ({

@@ -150,7 +150,10 @@ export default function LinksAdminPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', maxWidth: '900px' }}>
       <div>
-        <div style={{ fontWeight: 800, fontSize: '18px', marginBottom: '6px' }}>ссылки</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+          <div style={{ fontWeight: 800, fontSize: '18px' }}>ссылки</div>
+          <a href="/links" target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#888' }}>смотреть страницу →</a>
+        </div>
         <div style={{ fontSize: '12px', color: '#888' }}>
           страница /links. без колонок все ссылки идут одной строкой, как раньше. добавьте колонку — ссылки в ней будут показаны отдельной группой с заголовком.
         </div>
