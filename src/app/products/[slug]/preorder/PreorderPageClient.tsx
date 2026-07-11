@@ -51,7 +51,7 @@ export default function PreorderPageClient({ product, sizes }: {
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, fontFamily: 'inherit' }}>
       <Breadcrumbs path={[
         { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-        { name: 'ПРОДУКТЫ', href: '/products', icon: '📦' },
+        { name: 'МАГАЗИН', href: '/products', icon: '📦' },
         { name: product.name.toLowerCase(), href: `/products/${product.slug}`, icon: '💍' },
         { name: 'ПРЕДЗАКАЗ', icon: '🔔' },
       ]} />

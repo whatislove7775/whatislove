@@ -8,10 +8,10 @@ import CollabButton from '@/components/CollabButton';
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'Продукты',
+  title: 'Магазин',
   description: 'Дизайнерские изделия от студии whatislove — авторские товары с доставкой.',
   openGraph: {
-    title: 'Продукты | WH4T!SLOV3',
+    title: 'Магазин | WH4T!SLOV3',
     description: 'Дизайнерские изделия от студии whatislove — авторские товары с доставкой.',
   },
 };
@@ -37,7 +37,7 @@ export default async function ProductsPage() {
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'inherit' }}>
       <Breadcrumbs path={[
         { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-        { name: 'ПРОДУКТЫ', href: '/products', icon: '📦' },
+        { name: 'МАГАЗИН', href: '/products', icon: '📦' },
       ]} />
 
       <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '20px' }}>

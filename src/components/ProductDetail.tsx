@@ -52,7 +52,7 @@ export default function ProductDetail({ product, bottomText }: { product: any; b
       <div style={{ width: '100%', alignSelf: 'flex-start' }}>
         <Breadcrumbs path={[
           { name: 'WH4T!SLOV3', href: '/', icon: '📁' },
-          { name: 'ПРОДУКТЫ', href: '/products', icon: '📦' },
+          { name: 'МАГАЗИН', href: '/products', icon: '📦' },
           { name: product.name.toLowerCase(), icon: '💍' },
         ]} />
       </div>
