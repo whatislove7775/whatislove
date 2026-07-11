@@ -75,6 +75,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
   if (!product) notFound();
 
+  const { data: relatedProducts } = await supabase
+    .from('products')
+    .select('id, slug, name, price, image_url')
+    .neq('id', product.id)
+    .order('id', { ascending: false })
+    .limit(4);
+
   const stock = (product.product_variants || []).reduce(
     (acc: Record<string, number>, v: any) => {
       acc[String(v.attribute_value)] = v.stock ?? 0;
@@ -113,6 +120,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <ProductDetail
         product={{ ...product, stock }}
         bottomText={textData?.value || 'произведём, упакуем,\nи доставим'}
+        relatedProducts={relatedProducts ?? []}
       />
     </>
   );

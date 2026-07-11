@@ -15,6 +15,7 @@ export default function PreorderPageClient({ product, sizes }: {
   const [size, setSize] = useState(sizes[0] ?? '');
   const [name, setName] = useState('');
   const [telegram, setTelegram] = useState('');
+  const [website, setWebsite] = useState(''); // honeypot — реальные пользователи это поле не видят и не заполняют
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
@@ -35,6 +36,7 @@ export default function PreorderPageClient({ product, sizes }: {
           size,
           name: name.trim(),
           telegram: telegram.trim().replace(/^@/, ''),
+          website,
         }),
       });
       const data = await res.json();
@@ -85,6 +87,17 @@ export default function PreorderPageClient({ product, sizes }: {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', borderTop: '2px dotted rgba(0,0,0,0.2)', paddingTop: '22px' }}>
+            {/* Honeypot: скрыто от людей стилями, боты часто заполняют все поля вслепую */}
+            <input
+              type="text"
+              name="website"
+              value={website}
+              onChange={e => setWebsite(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}
+              aria-hidden="true"
+            />
             <div style={{ fontSize: '14px', lineHeight: 1.5, color: '#555' }}>
               оплачивать ничего не нужно — оставьте предзаказ, и мы напишем вам, как только товар появится.
             </div>

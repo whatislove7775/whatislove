@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin } from '../admin/_auth';
 
 export async function POST(req: NextRequest) {
-  const adminKey = req.headers.get('x-admin-key');
-  if (!adminKey || adminKey !== process.env.ADMIN_PASSWORD) {
+  if (!isAdmin(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

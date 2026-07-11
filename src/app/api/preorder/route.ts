@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { isRateLimited, getClientIp } from '@/lib/rateLimit';
 
 function esc(t: any) {
   return String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -7,10 +8,20 @@ function esc(t: any) {
 
 export async function POST(req: NextRequest) {
   try {
+    if (isRateLimited(`preorder:${getClientIp(req)}`, 8, 10 * 60 * 1000)) {
+      return NextResponse.json({ error: 'слишком много запросов, попробуйте позже' }, { status: 429 });
+    }
+
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceKey) return NextResponse.json({ error: 'server error' }, { status: 500 });
 
     const body = await req.json();
+
+    // Honeypot: скрытое поле, которое реальный пользователь никогда не заполнит
+    if (String(body.website ?? '').trim()) {
+      return NextResponse.json({ ok: true });
+    }
+
     const productId = Number(body.product_id);
     const name = String(body.name ?? '').trim().slice(0, 200);
     const telegram = String(body.telegram ?? '').trim().replace(/^@/, '').toLowerCase().slice(0, 200);

@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
+import { isRateLimited, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
+    if (isRateLimited(`order:${getClientIp(req)}`, 10, 10 * 60 * 1000)) {
+      return NextResponse.json({ error: 'слишком много попыток оформить заказ, попробуйте позже' }, { status: 429 });
+    }
+
     const { orderData } = await req.json();
+
+    // Honeypot: скрытое поле, которое реальный пользователь никогда не заполнит
+    if (String(orderData?.website ?? '').trim()) {
+      return NextResponse.json({ error: 'Ошибка создания платежа' }, { status: 400 });
+    }
 
     const shopId = process.env.YOOKASSA_SHOP_ID;
     const secretKey = process.env.YOOKASSA_SECRET_KEY;
