@@ -1,4 +1,5 @@
 'use client';
+import { adminFetch } from '@/lib/adminFetch';
 import { useEffect, useState } from 'react';
 
 function ah() { return { 'x-admin-key': localStorage.getItem('admin_key') ?? '', 'Content-Type': 'application/json' }; }
@@ -22,8 +23,8 @@ export default function ProductsPage() {
   const load = () => {
     setLoading(true);
     Promise.all([
-      fetch('/api/admin/products', { headers: ah(), cache: 'no-store' }).then(r => r.json()),
-      fetch('/api/admin/preorders', { headers: ah() }).then(r => r.json()),
+      adminFetch('/api/admin/products', { headers: ah(), cache: 'no-store' }).then(r => r.json()),
+      adminFetch('/api/admin/preorders', { headers: ah() }).then(r => r.json()),
     ]).then(([prods, preorders]) => {
       setProducts(Array.isArray(prods) ? prods : []);
       // Считаем только не уведомлённые предзаказы
@@ -89,8 +90,8 @@ export default function ProductsPage() {
 
     try {
       const res = editing === 'new'
-        ? await fetch('/api/admin/products', { method: 'POST', headers: ah(), body: JSON.stringify(payload) })
-        : await fetch(`/api/admin/products/${editing}`, { method: 'PUT', headers: ah(), body: JSON.stringify(payload) });
+        ? await adminFetch('/api/admin/products', { method: 'POST', headers: ah(), body: JSON.stringify(payload) })
+        : await adminFetch(`/api/admin/products/${editing}`, { method: 'PUT', headers: ah(), body: JSON.stringify(payload) });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         alert(`Ошибка ${res.status}: ${(err as any).error ?? 'неизвестная ошибка'}`);
@@ -108,7 +109,7 @@ export default function ProductsPage() {
   const del = async (id: string) => {
     if (!confirm('удалить товар?')) return;
     setDeleting(id);
-    await fetch(`/api/admin/products/${id}`, { method: 'DELETE', headers: ah() });
+    await adminFetch(`/api/admin/products/${id}`, { method: 'DELETE', headers: ah() });
     setDeleting(null);
     load();
   };
@@ -123,13 +124,13 @@ export default function ProductsPage() {
     const list = needsInit ? products.map((p, i) => ({ ...p, sort_order: i })) : products;
     if (needsInit) {
       await Promise.all(list.map(p =>
-        fetch(`/api/admin/products/${p.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: p.sort_order }) })
+        adminFetch(`/api/admin/products/${p.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: p.sort_order }) })
       ));
     }
     const a = list[idx], b = list[target];
     await Promise.all([
-      fetch(`/api/admin/products/${a.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: b.sort_order }) }),
-      fetch(`/api/admin/products/${b.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: a.sort_order }) }),
+      adminFetch(`/api/admin/products/${a.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: b.sort_order }) }),
+      adminFetch(`/api/admin/products/${b.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: a.sort_order }) }),
     ]);
     setReordering(false);
     load();
@@ -266,7 +267,7 @@ export default function ProductsPage() {
                   <button
                     onClick={async () => {
                       setNotifying(p.id);
-                      await fetch('/api/admin/preorders/notify', { method: 'POST', headers: ah(), body: JSON.stringify({ product_id: p.id }) });
+                      await adminFetch('/api/admin/preorders/notify', { method: 'POST', headers: ah(), body: JSON.stringify({ product_id: p.id }) });
                       setNotifying(null);
                       load();
                     }}

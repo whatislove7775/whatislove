@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { adminFetch } from '@/lib/adminFetch';
 
 function ah() { return { 'x-admin-key': localStorage.getItem('admin_key') ?? '', 'Content-Type': 'application/json' }; }
 
@@ -10,7 +11,7 @@ export default function SettingsPage() {
   const [bottomText, setBottomText] = useState('');
 
   const load = () => {
-    fetch('/api/admin/settings', { headers: ah() }).then(r => r.json()).then(d => {
+    adminFetch('/api/admin/settings', { headers: ah() }).then(r => r.json()).then(d => {
       setSettings(d ?? {});
       setBottomText(d?.product_bottom_text ?? '');
       setLoading(false);
@@ -22,14 +23,14 @@ export default function SettingsPage() {
   const toggle = async (key: string, current: string) => {
     const next = current === 'true' ? 'false' : 'true';
     setSaving(key);
-    await fetch('/api/admin/settings', { method: 'POST', headers: ah(), body: JSON.stringify({ key, value: next }) });
+    await adminFetch('/api/admin/settings', { method: 'POST', headers: ah(), body: JSON.stringify({ key, value: next }) });
     setSaving(null);
     load();
   };
 
   const saveText = async () => {
     setSaving('product_bottom_text');
-    await fetch('/api/admin/settings', { method: 'POST', headers: ah(), body: JSON.stringify({ key: 'product_bottom_text', value: bottomText }) });
+    await adminFetch('/api/admin/settings', { method: 'POST', headers: ah(), body: JSON.stringify({ key: 'product_bottom_text', value: bottomText }) });
     setSaving(null);
     load();
   };

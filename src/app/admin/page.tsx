@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { adminFetch } from '@/lib/adminFetch';
 
 function ah() { return { 'x-admin-key': localStorage.getItem('admin_key') ?? '', 'Content-Type': 'application/json' }; }
 
@@ -7,7 +8,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
-    fetch('/api/admin/stats', { headers: ah() }).then(r => r.json()).then(setStats);
+    adminFetch('/api/admin/stats', { headers: ah() }).then(r => r.json()).then(setStats);
   }, []);
 
   if (!stats) return <div style={{ fontWeight: 800 }}>загрузка...</div>;

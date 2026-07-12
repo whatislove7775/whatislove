@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { adminFetch } from '@/lib/adminFetch';
 
 function ah() { return { 'x-admin-key': localStorage.getItem('admin_key') ?? '', 'Content-Type': 'application/json' }; }
 
@@ -12,7 +13,7 @@ export default function CollabPage() {
 
   const load = () => {
     setLoading(true);
-    fetch('/api/admin/collab', { headers: ah() })
+    adminFetch('/api/admin/collab', { headers: ah() })
       .then(r => r.json())
       .then(d => { setItems(Array.isArray(d) ? d : []); setLoading(false); });
   };
@@ -21,7 +22,7 @@ export default function CollabPage() {
 
   const setStatus = async (id: string, status: string) => {
     setBusy(id);
-    await fetch(`/api/admin/collab/${id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ status }) });
+    await adminFetch(`/api/admin/collab/${id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ status }) });
     setItems(its => its.map(i => i.id === id ? { ...i, status } : i));
     setBusy(null);
   };
@@ -29,7 +30,7 @@ export default function CollabPage() {
   const del = async (id: string) => {
     if (!confirm('удалить заявку?')) return;
     setBusy(id);
-    await fetch(`/api/admin/collab/${id}`, { method: 'DELETE', headers: ah() });
+    await adminFetch(`/api/admin/collab/${id}`, { method: 'DELETE', headers: ah() });
     setItems(its => its.filter(i => i.id !== id));
     setBusy(null);
   };

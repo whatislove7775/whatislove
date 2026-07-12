@@ -1,4 +1,5 @@
 'use client';
+import { adminFetch } from '@/lib/adminFetch';
 import { useEffect, useState } from 'react';
 
 function ah() { return { 'x-admin-key': localStorage.getItem('admin_key') ?? '', 'Content-Type': 'application/json' }; }
@@ -15,8 +16,8 @@ export default function LinksAdminPage() {
   const load = () => {
     setLoading(true);
     Promise.all([
-      fetch('/api/admin/link-columns', { headers: ah() }).then(r => r.json()),
-      fetch('/api/admin/links', { headers: ah() }).then(r => r.json()),
+      adminFetch('/api/admin/link-columns', { headers: ah() }).then(r => r.json()),
+      adminFetch('/api/admin/links', { headers: ah() }).then(r => r.json()),
     ]).then(([cols, lks]) => {
       setColumns(cols ?? []);
       setLinks(lks ?? []);
@@ -35,13 +36,13 @@ export default function LinksAdminPage() {
 
   const saveColumn = async (c: ColumnRow) => {
     setBusy(c.id);
-    await fetch(`/api/admin/link-columns/${c.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ title: c.title }) });
+    await adminFetch(`/api/admin/link-columns/${c.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ title: c.title }) });
     setBusy(null);
   };
 
   const addColumn = async () => {
     setBusy('new-col');
-    await fetch('/api/admin/link-columns', { method: 'POST', headers: ah(), body: JSON.stringify({ title: 'новая колонка' }) });
+    await adminFetch('/api/admin/link-columns', { method: 'POST', headers: ah(), body: JSON.stringify({ title: 'новая колонка' }) });
     setBusy(null);
     load();
   };
@@ -49,7 +50,7 @@ export default function LinksAdminPage() {
   const delColumn = async (id: string) => {
     if (!confirm('удалить колонку? ссылки в ней станут "без колонки"')) return;
     setBusy(id);
-    await fetch(`/api/admin/link-columns/${id}`, { method: 'DELETE', headers: ah() });
+    await adminFetch(`/api/admin/link-columns/${id}`, { method: 'DELETE', headers: ah() });
     setBusy(null);
     load();
   };
@@ -60,8 +61,8 @@ export default function LinksAdminPage() {
     const a = columns[idx], b = columns[target];
     setBusy('reorder-col');
     await Promise.all([
-      fetch(`/api/admin/link-columns/${a.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: b.sort_order }) }),
-      fetch(`/api/admin/link-columns/${b.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: a.sort_order }) }),
+      adminFetch(`/api/admin/link-columns/${a.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: b.sort_order }) }),
+      adminFetch(`/api/admin/link-columns/${b.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: a.sort_order }) }),
     ]);
     setBusy(null);
     load();
@@ -73,13 +74,13 @@ export default function LinksAdminPage() {
 
   const saveLink = async (l: LinkRow) => {
     setBusy(l.id);
-    await fetch(`/api/admin/links/${l.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ label: l.label, url: l.url }) });
+    await adminFetch(`/api/admin/links/${l.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ label: l.label, url: l.url }) });
     setBusy(null);
   };
 
   const addLink = async (columnId: string | null) => {
     setBusy('new-link');
-    await fetch('/api/admin/links', { method: 'POST', headers: ah(), body: JSON.stringify({ label: 'новая ссылка', url: 'https://', column_id: columnId }) });
+    await adminFetch('/api/admin/links', { method: 'POST', headers: ah(), body: JSON.stringify({ label: 'новая ссылка', url: 'https://', column_id: columnId }) });
     setBusy(null);
     load();
   };
@@ -87,7 +88,7 @@ export default function LinksAdminPage() {
   const delLink = async (id: string) => {
     if (!confirm('удалить ссылку?')) return;
     setBusy(id);
-    await fetch(`/api/admin/links/${id}`, { method: 'DELETE', headers: ah() });
+    await adminFetch(`/api/admin/links/${id}`, { method: 'DELETE', headers: ah() });
     setBusy(null);
     load();
   };
@@ -98,8 +99,8 @@ export default function LinksAdminPage() {
     const a = group[idx], b = group[target];
     setBusy('reorder-link');
     await Promise.all([
-      fetch(`/api/admin/links/${a.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: b.sort_order }) }),
-      fetch(`/api/admin/links/${b.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: a.sort_order }) }),
+      adminFetch(`/api/admin/links/${a.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: b.sort_order }) }),
+      adminFetch(`/api/admin/links/${b.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: a.sort_order }) }),
     ]);
     setBusy(null);
     load();
@@ -109,7 +110,7 @@ export default function LinksAdminPage() {
     const group = grouped(columnId);
     const nextOrder = group.length > 0 ? Math.max(...group.map(x => x.sort_order)) + 1 : 0;
     setBusy(l.id);
-    await fetch(`/api/admin/links/${l.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ column_id: columnId, sort_order: nextOrder }) });
+    await adminFetch(`/api/admin/links/${l.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ column_id: columnId, sort_order: nextOrder }) });
     setBusy(null);
     load();
   };

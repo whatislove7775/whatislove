@@ -1,4 +1,5 @@
 'use client';
+import { adminFetch } from '@/lib/adminFetch';
 import { useEffect, useState } from 'react';
 
 function ah() { return { 'x-admin-key': localStorage.getItem('admin_key') ?? '', 'Content-Type': 'application/json' }; }
@@ -18,7 +19,7 @@ export default function PortfolioPage() {
 
   const load = () => {
     setLoading(true);
-    fetch('/api/admin/portfolio', { headers: ah() }).then(r => r.json()).then(d => { setCases(d ?? []); setLoading(false); });
+    adminFetch('/api/admin/portfolio', { headers: ah() }).then(r => r.json()).then(d => { setCases(d ?? []); setLoading(false); });
   };
 
   useEffect(() => { load(); }, []);
@@ -71,9 +72,9 @@ export default function PortfolioPage() {
     };
 
     if (editing === 'new') {
-      await fetch('/api/admin/portfolio', { method: 'POST', headers: ah(), body: JSON.stringify(payload) });
+      await adminFetch('/api/admin/portfolio', { method: 'POST', headers: ah(), body: JSON.stringify(payload) });
     } else {
-      await fetch(`/api/admin/portfolio/${editing}`, { method: 'PUT', headers: ah(), body: JSON.stringify(payload) });
+      await adminFetch(`/api/admin/portfolio/${editing}`, { method: 'PUT', headers: ah(), body: JSON.stringify(payload) });
     }
     setSaving(false);
     setEditing(null);
@@ -83,7 +84,7 @@ export default function PortfolioPage() {
   const del = async (id: string) => {
     if (!confirm('удалить кейс?')) return;
     setDeleting(id);
-    await fetch(`/api/admin/portfolio/${id}`, { method: 'DELETE', headers: ah() });
+    await adminFetch(`/api/admin/portfolio/${id}`, { method: 'DELETE', headers: ah() });
     setDeleting(null);
     load();
   };
@@ -98,13 +99,13 @@ export default function PortfolioPage() {
     const list = needsInit ? cases.map((c, i) => ({ ...c, sort_order: i })) : cases;
     if (needsInit) {
       await Promise.all(list.map(c =>
-        fetch(`/api/admin/portfolio/${c.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: c.sort_order }) })
+        adminFetch(`/api/admin/portfolio/${c.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: c.sort_order }) })
       ));
     }
     const a = list[idx], b = list[target];
     await Promise.all([
-      fetch(`/api/admin/portfolio/${a.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: b.sort_order }) }),
-      fetch(`/api/admin/portfolio/${b.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: a.sort_order }) }),
+      adminFetch(`/api/admin/portfolio/${a.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: b.sort_order }) }),
+      adminFetch(`/api/admin/portfolio/${b.id}`, { method: 'PUT', headers: ah(), body: JSON.stringify({ sort_order: a.sort_order }) }),
     ]);
     setReordering(false);
     load();
