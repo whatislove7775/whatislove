@@ -135,6 +135,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const seq = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
     let idx = 0;
     const onKey = (e: KeyboardEvent) => {
+      if (!e.key) return; // некоторые расширения/синтетические события шлют keydown без key
       const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
       if (key === seq[idx]) {
         idx++;
