@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { adminFetch } from '@/lib/adminFetch';
 
 function ah() { return { 'x-admin-key': localStorage.getItem('admin_key') ?? '' }; }
 
@@ -9,7 +10,7 @@ export default function OrdersPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/admin/orders', { headers: ah() }).then(r => r.json()).then(d => { setOrders(d); setLoading(false); });
+    adminFetch('/api/admin/orders', { headers: ah() }).then(r => r.json()).then(d => { setOrders(d); setLoading(false); });
   }, []);
 
   if (loading) return <div style={{ fontWeight: 800 }}>загрузка...</div>;

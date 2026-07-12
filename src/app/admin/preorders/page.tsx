@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { adminFetch } from '@/lib/adminFetch';
 
 function ah() { return { 'x-admin-key': localStorage.getItem('admin_key') ?? '', 'Content-Type': 'application/json' }; }
 
@@ -11,7 +12,7 @@ export default function PreordersPage() {
 
   const load = () => {
     setLoading(true);
-    fetch('/api/admin/preorders', { headers: ah() })
+    adminFetch('/api/admin/preorders', { headers: ah() })
       .then(r => r.json())
       .then(d => { setItems(Array.isArray(d) ? d : []); setLoading(false); });
   };
@@ -20,7 +21,7 @@ export default function PreordersPage() {
 
   const notify = async (productId: number) => {
     setNotifying(productId);
-    await fetch('/api/admin/preorders/notify', { method: 'POST', headers: ah(), body: JSON.stringify({ product_id: productId }) });
+    await adminFetch('/api/admin/preorders/notify', { method: 'POST', headers: ah(), body: JSON.stringify({ product_id: productId }) });
     setNotifying(null);
     load();
   };

@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { adminFetch } from '@/lib/adminFetch';
 
 function ah() { return { 'x-admin-key': localStorage.getItem('admin_key') ?? '' }; }
 function ahJson() { return { ...ah(), 'Content-Type': 'application/json' }; }
@@ -60,7 +61,7 @@ export default function AdminUploadPage() {
   const loadStored = useCallback((f: string) => {
     setLoadingStored(true);
     setStoredFiles([]);
-    fetch(`/api/admin/storage?folder=${encodeURIComponent(f)}`, { headers: ah() })
+    adminFetch(`/api/admin/storage?folder=${encodeURIComponent(f)}`, { headers: ah() })
       .then(r => r.json())
       .then(d => { setStoredFiles(Array.isArray(d) ? d : []); setLoadingStored(false); });
   }, []);
@@ -89,7 +90,7 @@ export default function AdminUploadPage() {
       const formData = new FormData();
       formData.append('file', new File([blob], name, { type: compressed ? 'image/jpeg' : file.type }));
       formData.append('path', `${activeFolder}/${name}`);
-      await fetch('/api/upload-image', { method: 'POST', headers: ah(), body: formData });
+      await adminFetch('/api/upload-image', { method: 'POST', headers: ah(), body: formData });
     }
     setPendingFiles([]);
     setUploading(false);
@@ -99,7 +100,7 @@ export default function AdminUploadPage() {
   const del = async (path: string) => {
     if (!confirm('удалить фото?')) return;
     setDeleting(path);
-    await fetch('/api/admin/storage', { method: 'DELETE', headers: ahJson(), body: JSON.stringify({ path }) });
+    await adminFetch('/api/admin/storage', { method: 'DELETE', headers: ahJson(), body: JSON.stringify({ path }) });
     setDeleting(null);
     setStoredFiles(f => f.filter(x => x.path !== path));
   };
