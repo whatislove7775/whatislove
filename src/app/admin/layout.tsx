@@ -33,8 +33,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       body: JSON.stringify({ password }),
     });
     const data = await res.json().catch(() => ({}));
-    if (res.ok && data.token) {
-      localStorage.setItem('admin_key', data.token);
+    if (res.ok) {
+      localStorage.setItem('admin_key', password);
       setAuthed(true);
     } else if (res.status === 429) {
       setError(data.message ?? 'слишком много попыток, попробуйте позже');
@@ -80,8 +80,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         })}
         <button
           onClick={() => {
-            const key = localStorage.getItem('admin_key');
-            if (key) fetch('/api/admin/auth', { method: 'DELETE', headers: { 'x-admin-key': key } }).catch(() => {});
             localStorage.removeItem('admin_key');
             setAuthed(false);
           }}
