@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSession, destroySession } from '../_auth';
 
 // Эскалирующая блокировка по IP: 5 неверных попыток → 30с, ещё 5 (10 всего) → 5 мин,
 // ещё 5 (15 всего) → 1 день. После истечения дневной блокировки счётчик сбрасывается.
@@ -49,8 +48,7 @@ export async function POST(req: NextRequest) {
   const { password } = await req.json();
   if (password && password === process.env.ADMIN_PASSWORD) {
     attempts.delete(key);
-    const token = createSession();
-    return NextResponse.json({ ok: true, token });
+    return NextResponse.json({ ok: true });
   }
 
   const current = attempts.get(key) ?? { count: 0, lockedUntil: 0 };
@@ -60,9 +58,4 @@ export async function POST(req: NextRequest) {
   attempts.set(key, current);
 
   return NextResponse.json({ ok: false, error: 'invalid_password' }, { status: 401 });
-}
-
-export async function DELETE(req: NextRequest) {
-  destroySession(req.headers.get('x-admin-key'));
-  return NextResponse.json({ ok: true });
 }

@@ -1,33 +1,13 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { randomBytes } from 'crypto';
 
-const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 дней
-
-// Сессии живут в памяти процесса — при перезапуске сервера все админы
-// разлогиниваются, что нормально для внутренней панели.
-const sessions = new Map<string, number>(); // token -> expiresAt
-
-export function createSession(): string {
-  const token = randomBytes(32).toString('hex');
-  sessions.set(token, Date.now() + SESSION_TTL_MS);
-  return token;
-}
-
-export function destroySession(token: string | null) {
-  if (token) sessions.delete(token);
-}
-
+// Простая проверка по паролю. Ключ, который хранит админка в localStorage —
+// это и есть пароль (ADMIN_PASSWORD). Без серверного состояния: работает
+// одинаково на любом бессерверном инстансе (Vercel), поэтому вход не "слетает".
 export function isAdmin(req: NextRequest): boolean {
   const key = req.headers.get('x-admin-key');
-  if (!key) return false;
-  const expiresAt = sessions.get(key);
-  if (!expiresAt) return false;
-  if (Date.now() > expiresAt) {
-    sessions.delete(key);
-    return false;
-  }
-  return true;
+  const pass = process.env.ADMIN_PASSWORD;
+  return !!pass && key === pass;
 }
 
 export function db() {
