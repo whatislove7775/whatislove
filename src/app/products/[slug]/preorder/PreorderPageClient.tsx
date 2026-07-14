@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SmartImage from '@/components/SmartImage';
 
-const BOT_LINK = 'https://t.me/wh4tislove_orders_bot';
+const BOT_LINK = 'https://telegram.me/wh4tislove_orders_bot';
 
 export default function PreorderPageClient({ product, sizes }: {
   product: { id: number; name: string; slug: string; price: number; image_url: string | null };

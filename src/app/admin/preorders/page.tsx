@@ -92,7 +92,7 @@ export default function PreordersPage() {
                     {new Date(r.created_at).toLocaleDateString('ru', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                   </span>
                   <span style={{ fontWeight: 800 }}>{r.name}</span>
-                  <a href={`https://t.me/${r.telegram.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', fontWeight: 700 }}>@{r.telegram}</a>
+                  <a href={`https://telegram.me/${r.telegram.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: '#0088cc', fontWeight: 700 }}>@{r.telegram}</a>
                   {r.size && <span style={{ color: '#555' }}>р.{r.size}</span>}
                   <span style={{ marginLeft: 'auto', fontSize: '11px', color: r.notified_at ? '#090' : '#888' }}>
                     {r.notified_at ? `✓ уведомлён ${new Date(r.notified_at).toLocaleDateString('ru', { day: '2-digit', month: '2-digit' })}` : 'ожидает'}

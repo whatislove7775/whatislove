@@ -16,9 +16,12 @@ function displayUrl(url: string) {
   return url.replace(/^mailto:/, '').replace(/^https?:\/\//, '');
 }
 
-// Если в админке забыли указать протокол — ссылка не должна ломаться и вести на /url-как-относительный-путь
+// В ССЫЛКЕ (href) t.me меняем на telegram.me — t.me местами блокируется и перестаёт
+// открываться, а telegram.me — тот же официальный домен Telegram. Внешний ВИД ссылки
+// (displayUrl) при этом остаётся прежним: t.me/...
 function hrefUrl(url: string) {
-  return /^(https?:|mailto:|tel:)/.test(url) ? url : `https://${url}`;
+  const withProto = /^(https?:|mailto:|tel:)/.test(url) ? url : `https://${url}`;
+  return withProto.replace(/\/t\.me\//g, '/telegram.me/');
 }
 
 function LinkRow({ l }: { l: LinkItem }) {
