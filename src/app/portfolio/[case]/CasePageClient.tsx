@@ -106,7 +106,7 @@ export default function CasePageClient({ project }: { project: any }) {
           ]}
           rightAddon={
             <a
-              href="https://t.me/whatislove_r"
+              href="https://telegram.me/whatislove_r"
               target="_blank"
               rel="noopener noreferrer"
               style={{

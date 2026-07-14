@@ -21,7 +21,7 @@ function SuccessContent() {
       </div>
 
       <a
-        href="https://t.me/wh4tislove_orders_bot"
+        href="https://telegram.me/wh4tislove_orders_bot"
         target="_blank"
         rel="noopener noreferrer"
         style={{ display: 'block', padding: '14px 24px', background: '#000', color: '#fff', fontWeight: 800, fontSize: '14px', textDecoration: 'none', textTransform: 'lowercase', width: '100%', boxSizing: 'border-box' }}

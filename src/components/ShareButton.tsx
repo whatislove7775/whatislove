@@ -24,7 +24,7 @@ export default function ShareButton({ name, slug, iconMode }: Props) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {
-      window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank');
+      window.open(`https://telegram.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank');
     }
   };
 
