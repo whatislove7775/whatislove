@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import { telegramHref } from '@/lib/telegram';
 
 // Улучшенная регулярка: понимает русские домены (асия.com, сайт.рф) и отсекает скобки в конце
 // eslint-disable-next-line no-useless-escape
@@ -27,10 +28,13 @@ export const parseTextForLinks = (text: string | null | undefined): React.ReactN
             href = `https://${href}`;
           }
 
+          // t.me → telegram.me в адресе ссылки (текст ссылки не меняем)
+          href = telegramHref(href);
+
           return (
-            <a 
-              key={index} 
-              href={href} 
+            <a
+              key={index}
+              href={href}
               target="_blank" 
               rel="noopener noreferrer"
               style={{ 

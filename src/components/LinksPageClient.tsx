@@ -2,6 +2,7 @@
 import Breadcrumbs from '@/components/Breadcrumbs';
 import Keycap from '@/components/Keycap';
 import useFloatingEmoji from '@/components/useFloatingEmoji';
+import { telegramHref } from '@/lib/telegram';
 
 interface LinkItem { id: string; label: string; url: string; column_id?: string | null; }
 interface ColumnItem { id: string; title: string; sort_order: number; }
@@ -16,12 +17,11 @@ function displayUrl(url: string) {
   return url.replace(/^mailto:/, '').replace(/^https?:\/\//, '');
 }
 
-// В ССЫЛКЕ (href) t.me меняем на telegram.me — t.me местами блокируется и перестаёт
-// открываться, а telegram.me — тот же официальный домен Telegram. Внешний ВИД ссылки
-// (displayUrl) при этом остаётся прежним: t.me/...
+// Добавляем протокол (если в админке забыли) и переписываем t.me → telegram.me в href.
+// Внешний ВИД ссылки (displayUrl) при этом остаётся прежним: t.me/...
 function hrefUrl(url: string) {
   const withProto = /^(https?:|mailto:|tel:)/.test(url) ? url : `https://${url}`;
-  return withProto.replace(/\/t\.me\//g, '/telegram.me/');
+  return telegramHref(withProto);
 }
 
 function LinkRow({ l }: { l: LinkItem }) {
