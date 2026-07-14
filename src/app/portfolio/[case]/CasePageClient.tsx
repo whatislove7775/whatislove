@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { parseTextForLinks } from '@/lib/parseLinks';
+import { telegramHref } from '@/lib/telegram';
 
 function parseTags(tags: any): string[] {
   if (!tags) return [];
@@ -261,7 +262,7 @@ export default function CasePageClient({ project }: { project: any }) {
                   <div style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{credit.role}</div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', overflow: 'hidden' }}>
                     <a
-                      href={credit.url}
+                      href={telegramHref(credit.url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: '#3b00ff', textDecoration: 'none', fontWeight: 800, whiteSpace: 'nowrap', position: 'relative', zIndex: 100 }}

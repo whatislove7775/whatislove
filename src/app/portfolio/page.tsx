@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import Link from 'next/link';
 import SmartImage from '@/components/SmartImage';
+import { telegramHref } from '@/lib/telegram';
 
 export const revalidate = 60;
 
@@ -29,7 +30,7 @@ function renderTitle(title: string, externalLink: string, slug: string) {
       {parts.map((part, index) => {
         if (part.match(urlRegex)) {
           return (
-            <a key={index} href={externalLink} target="_blank" rel="noopener noreferrer" style={{ color: '#3b00ff', textDecoration: 'none' }}>
+            <a key={index} href={telegramHref(externalLink)} target="_blank" rel="noopener noreferrer" style={{ color: '#3b00ff', textDecoration: 'none' }}>
               {part}
             </a>
           );
