@@ -43,9 +43,15 @@ export default function TeamPage() {
   const del = async (id: string) => {
     if (!confirm('удалить сотрудника? он больше не сможет войти')) return;
     setDeleting(id);
-    await adminFetch(`/api/admin/admin-users/${id}`, { method: 'DELETE', headers: ah() });
-    setMembers(cur => cur.filter(m => m.id !== id));
-    setDeleting(null);
+    try {
+      const res = await adminFetch(`/api/admin/admin-users/${id}`, { method: 'DELETE', headers: ah() });
+      if (!res.ok) { alert('не удалось удалить, попробуйте ещё раз'); return; }
+      setMembers(cur => cur.filter(m => m.id !== id));
+    } catch {
+      alert('сетевая ошибка, попробуйте ещё раз');
+    } finally {
+      setDeleting(null);
+    }
   };
 
   return (

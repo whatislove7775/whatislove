@@ -100,9 +100,15 @@ export default function AdminUploadPage() {
   const del = async (path: string) => {
     if (!confirm('удалить фото?')) return;
     setDeleting(path);
-    await adminFetch('/api/admin/storage', { method: 'DELETE', headers: ahJson(), body: JSON.stringify({ path }) });
-    setDeleting(null);
-    setStoredFiles(f => f.filter(x => x.path !== path));
+    try {
+      const res = await adminFetch('/api/admin/storage', { method: 'DELETE', headers: ahJson(), body: JSON.stringify({ path }) });
+      if (!res.ok) { alert('не удалось удалить, попробуйте ещё раз'); return; }
+      setStoredFiles(f => f.filter(x => x.path !== path));
+    } catch {
+      alert('сетевая ошибка, попробуйте ещё раз');
+    } finally {
+      setDeleting(null);
+    }
   };
 
   const copy = (url: string) => {
