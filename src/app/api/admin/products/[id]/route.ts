@@ -7,7 +7,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const body = await req.json();
-  const { variants, ...product } = body;
+  // delivery_services пишем отдельно (best-effort), чтобы сохранение товара не падало,
+  // если колонка ещё не добавлена миграцией.
+  const { variants, delivery_services, ...product } = body;
   const supabase = db();
 
   // Если preorder_mode выключается — проверяем, нужно ли уведомлять подписчиков
@@ -17,8 +19,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (current?.preorder_mode === true) shouldNotify = true;
   }
 
-  const { error } = await supabase.from('products').update(product).eq('id', id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (Object.keys(product).length > 0) {
+    const { error } = await supabase.from('products').update(product).eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (delivery_services !== undefined) {
+    await supabase.from('products').update({ delivery_services }).eq('id', id);
+  }
 
   if (variants) {
     await supabase.from('product_variants').delete().eq('product_id', id);

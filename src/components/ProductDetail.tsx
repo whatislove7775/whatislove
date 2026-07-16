@@ -9,6 +9,7 @@ import Link from 'next/link';
 import ShareButton from '@/components/ShareButton';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import RelatedProducts from '@/components/RelatedProducts';
+import { serviceLabels } from '@/lib/delivery';
 
 export default function ProductDetail({ product, bottomText, relatedProducts = [] }: { product: any; bottomText: string; relatedProducts?: any[] }) {
   const stock: Record<string, number> = product.stock || {};
@@ -33,10 +34,13 @@ export default function ProductDetail({ product, bottomText, relatedProducts = [
     }
   };
 
-  const deliveryText = product.delivery || '';
-  const deliveryParts = deliveryText.split('+');
-  const deliveryMain = deliveryParts[0] || '';
-  const deliveryExtra = deliveryParts[1] ? `+${deliveryParts[1]}` : '';
+  // Доступные сервисы доставки для этого товара (из delivery_services, с откатом на старое поле delivery).
+  const deliveryList = serviceLabels(product.delivery_services ?? product.delivery);
+
+  // Единый список фото для галереи: дополнительные фото, иначе — одно главное.
+  const galleryImages: string[] = (Array.isArray(product.images) && product.images.length > 0)
+    ? product.images
+    : (product.image_url ? [product.image_url] : []);
 
   const InfoRow = ({ label, value, isBold = false, isRed = false }: any) => (
     <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
@@ -85,34 +89,33 @@ export default function ProductDetail({ product, bottomText, relatedProducts = [
             <div style={{ textAlign: 'center', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}>&lt;333*</div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '55px', marginTop: '15px' }}>
-            {[0, 1, 2, 3].map((i) => {
-              const imgUrl = product.images ? product.images[i] : null;
-              const isActive = activeImage === imgUrl;
-              return (
-                <div
-                  key={i}
-                  onClick={() => imgUrl && setActiveImage(imgUrl)}
-                  style={{
-                    position: 'relative',
-                    width: '55px',
-                    height: '55px',
-                    flexShrink: 0,
-                    backgroundColor: '#e5e5e5',
-                    overflow: 'hidden',
-                    cursor: imgUrl ? 'pointer' : 'default',
-                    transition: 'transform 0.2s ease-in-out',
-                    transform: isActive && imgUrl ? 'scale(1.15)' : 'scale(1)',
-                    zIndex: isActive ? 10 : 1,
-                  }}
-                >
-                  {imgUrl && (
+          {galleryImages.length > 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '55px', marginTop: '15px' }}>
+              {galleryImages.map((imgUrl, i) => {
+                const isActive = activeImage === imgUrl;
+                return (
+                  <div
+                    key={i}
+                    onClick={() => setActiveImage(imgUrl)}
+                    style={{
+                      position: 'relative',
+                      width: '55px',
+                      height: '55px',
+                      flexShrink: 0,
+                      backgroundColor: '#e5e5e5',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s ease-in-out',
+                      transform: isActive ? 'scale(1.15)' : 'scale(1)',
+                      zIndex: isActive ? 10 : 1,
+                    }}
+                  >
                     <SmartImage src={imgUrl} alt="" fill sizes="55px" style={{ objectFit: 'cover' }} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Инфо */}
@@ -146,13 +149,7 @@ export default function ProductDetail({ product, bottomText, relatedProducts = [
             ..........................................................................................................................................................................................
           </div>
 
-          <InfoRow label="доставка" value={deliveryMain} />
-          {deliveryExtra && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'flex-end', width: '100%', marginBottom: '4px' }}>
-              <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8 }}>............................................................................................................................</div>
-              <span style={{ fontWeight: 500, paddingLeft: '8px' }}>{deliveryExtra}</span>
-            </div>
-          )}
+          <InfoRow label="доставка" value={deliveryList.join(', ')} />
 
           <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', opacity: 0.8, marginBottom: '4px' }}>
             ..........................................................................................................................................................................................

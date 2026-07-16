@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '../_auth';
 
 // Эскалирующая блокировка по IP: 5 неверных попыток → 30с, ещё 5 (10 всего) → 5 мин,
 // ещё 5 (15 всего) → 1 день. После истечения дневной блокировки счётчик сбрасывается.
@@ -46,9 +47,22 @@ export async function POST(req: NextRequest) {
   }
 
   const { password } = await req.json();
+
+  // Владелец (пароль из env) — полный доступ.
   if (password && password === process.env.ADMIN_PASSWORD) {
     attempts.delete(key);
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, role: 'owner' });
+  }
+
+  // Дополнительный сотрудник — ищем в admin_users по паролю.
+  if (password) {
+    try {
+      const { data } = await db().from('admin_users').select('role, username').eq('password', password).limit(1).maybeSingle();
+      if (data) {
+        attempts.delete(key);
+        return NextResponse.json({ ok: true, role: data.role ?? 'processor', username: data.username });
+      }
+    } catch {}
   }
 
   const current = attempts.get(key) ?? { count: 0, lockedUntil: 0 };

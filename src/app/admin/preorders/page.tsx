@@ -8,6 +8,7 @@ export default function PreordersPage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notifying, setNotifying] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'notified'>('pending');
 
   const load = () => {
@@ -24,6 +25,14 @@ export default function PreordersPage() {
     await adminFetch('/api/admin/preorders/notify', { method: 'POST', headers: ah(), body: JSON.stringify({ product_id: productId }) });
     setNotifying(null);
     load();
+  };
+
+  const del = async (id: string) => {
+    if (!confirm('удалить этот предзаказ?')) return;
+    setDeleting(id);
+    await adminFetch(`/api/admin/preorders/${id}`, { method: 'DELETE', headers: ah() });
+    setItems(cur => cur.filter(i => i.id !== id));
+    setDeleting(null);
   };
 
   if (loading) return <div style={{ fontWeight: 800 }}>загрузка...</div>;
@@ -97,6 +106,13 @@ export default function PreordersPage() {
                   <span style={{ marginLeft: 'auto', fontSize: '11px', color: r.notified_at ? '#090' : '#888' }}>
                     {r.notified_at ? `✓ уведомлён ${new Date(r.notified_at).toLocaleDateString('ru', { day: '2-digit', month: '2-digit' })}` : 'ожидает'}
                   </span>
+                  <button
+                    onClick={() => del(r.id)}
+                    disabled={deleting === r.id}
+                    style={{ flexShrink: 0, padding: '4px 10px', border: '1px solid #c00', background: '#fff', color: '#c00', fontFamily: 'inherit', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    {deleting === r.id ? '...' : 'удалить'}
+                  </button>
                 </div>
               ))}
             </div>
