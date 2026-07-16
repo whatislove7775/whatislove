@@ -4,6 +4,7 @@ import ProductAddToCart from '@/components/ProductAddToCart';
 import Link from 'next/link';
 import SmartImage from '@/components/SmartImage';
 import CollabButton from '@/components/CollabButton';
+import { serviceLabels } from '@/lib/delivery';
 
 export const revalidate = 60;
 
@@ -34,20 +35,23 @@ function sortByOrder<T extends { id: any }>(rows: T[], orderMap: Map<any, number
 }
 
 export default async function ProductsPage() {
-  const [{ data: products }, { data: orderRows }] = await Promise.all([
+  const [{ data: products }, { data: orderRows }, { data: delivRows }] = await Promise.all([
     supabase
       .from('products')
       .select('id, slug, name, price, oldPrice, material, delivery, image_url, preorder_mode, product_variants(attribute_value, stock)'),
-    // Отдельный лёгкий запрос за ручным порядком сортировки — если колонка sort_order ещё
-    // не добавлена в БД (миграция не выполнена), просто вернётся ошибка и сортировка не изменится.
+    // Отдельные лёгкие запросы за sort_order и delivery_services — если колонка ещё не
+    // добавлена в БД (миграция не выполнена), вернётся ошибка и мы её проигнорируем.
     supabase.from('products').select('id, sort_order'),
+    supabase.from('products').select('id, delivery_services'),
   ]);
 
   const orderMap = new Map((orderRows ?? []).map((r: any) => [r.id, r.sort_order]));
+  const delivMap = new Map((delivRows ?? []).map((r: any) => [r.id, r.delivery_services]));
 
   const normalized = sortByOrder((products || []).map((p) => ({
     ...p,
     stock: buildStock(p.product_variants || []),
+    deliveryLabels: serviceLabels(delivMap.get(p.id) ?? p.delivery),
   })), orderMap);
 
   return (
@@ -104,7 +108,7 @@ export default async function ProductsPage() {
                   </div>
                 </div>
                 <div style={{ fontSize: '14px', marginTop: '5px', fontWeight: 500 }}>
-                  {product.material}<br />{product.delivery}
+                  {product.material}<br />доставка: {product.deliveryLabels.join(', ')}
                 </div>
                 <div style={{ display: 'flex', gap: '20px', marginTop: 'auto', paddingTop: '15px', alignItems: 'center' }}>
                   <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', fontWeight: 800 }}>
@@ -124,7 +128,7 @@ export default async function ProductsPage() {
                   <span style={{ color: '#d32f2f' }}>{product.price} руб</span>
                 </div>
                 <div style={{ fontSize: '13px', fontWeight: 500, lineHeight: 1.4, marginTop: '2px' }}>
-                  {product.material}<br />{product.delivery}
+                  {product.material}<br />доставка: {product.deliveryLabels.join(', ')}
                 </div>
                 <div style={{ marginTop: '8px' }}>
                   <ProductAddToCart product={product} />

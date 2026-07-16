@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdmin, db } from '../_auth';
+import { getAdminRole, db } from '../_auth';
 
 export async function GET(req: NextRequest) {
-  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await getAdminRole(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data, error } = await db()
     .from('preorders')
     .select('*')

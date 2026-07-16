@@ -1,10 +1,11 @@
 'use client';
 import { adminFetch } from '@/lib/adminFetch';
 import { useEffect, useState } from 'react';
+import { DELIVERY_SERVICES, DeliveryKey, normalizeServices } from '@/lib/delivery';
 
 function ah() { return { 'x-admin-key': localStorage.getItem('admin_key') ?? '', 'Content-Type': 'application/json' }; }
 
-const EMPTY_PRODUCT = { name: '', slug: '', price: '', oldPrice: '', material: '', image_url: '', images: '', delivery: 'cdek' };
+const EMPTY_PRODUCT = { name: '', slug: '', price: '', oldPrice: '', material: '', image_url: '', images: '' };
 const EMPTY_VARIANT = { attribute_value: '', stock: '0', to_produce: '0' };
 
 export default function ProductsPage() {
@@ -13,6 +14,7 @@ export default function ProductsPage() {
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState<any>(EMPTY_PRODUCT);
   const [preorderMode, setPreorderMode] = useState(false);
+  const [deliveryServices, setDeliveryServices] = useState<DeliveryKey[]>(['cdek']);
   const [variants, setVariants] = useState<any[]>([{ ...EMPTY_VARIANT }]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -43,6 +45,7 @@ export default function ProductsPage() {
     setEditing('new');
     setForm(EMPTY_PRODUCT);
     setPreorderMode(false);
+    setDeliveryServices(['cdek']);
     setVariants([{ ...EMPTY_VARIANT }]);
   };
 
@@ -56,9 +59,9 @@ export default function ProductsPage() {
       material: p.material ?? '',
       image_url: p.image_url ?? '',
       images: Array.isArray(p.images) ? p.images.join(', ') : (p.images ?? ''),
-      delivery: p.delivery ?? 'cdek',
     });
     setPreorderMode(p.preorder_mode ?? false);
+    setDeliveryServices(normalizeServices(p.delivery_services ?? p.delivery));
     setVariants((p.product_variants ?? []).map((v: any) => ({
       attribute_value: v.attribute_value ?? '',
       stock: String(v.stock ?? 0),
@@ -83,7 +86,7 @@ export default function ProductsPage() {
       material: form.material,
       image_url: form.image_url,
       images: form.images ? form.images.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
-      delivery: form.delivery,
+      delivery_services: deliveryServices.length ? deliveryServices : ['cdek'],
       preorder_mode: preorderMode,
       variants: variants.map(v => ({ attribute_value: v.attribute_value, stock: Number(v.stock), to_produce: Number(v.to_produce) })),
     };
@@ -160,14 +163,31 @@ export default function ProductsPage() {
             </div>
           ))}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '11px', color: '#888' }}>доставка</label>
-            <select value={form.delivery} onChange={e => setField('delivery', e.target.value)} style={inp}>
-              <option value="cdek">СДЭК</option>
-              <option value="yandex">Яндекс.Доставка</option>
-              <option value="both">обе</option>
-            </select>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <label style={{ fontSize: '11px', color: '#888' }}>сервисы доставки (можно несколько)</label>
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            {DELIVERY_SERVICES.map(({ key, label }) => {
+              const checked = deliveryServices.includes(key);
+              return (
+                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => setDeliveryServices(cur =>
+                      cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key]
+                    )}
+                    style={{ width: '16px', height: '16px', accentColor: '#000', cursor: 'pointer' }}
+                  />
+                  {label}
+                </label>
+              );
+            })}
           </div>
+          {deliveryServices.length === 0 && (
+            <span style={{ fontSize: '11px', color: '#c00' }}>выберите хотя бы один сервис (иначе будет СДЭК по умолчанию)</span>
+          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

@@ -1,51 +1,37 @@
 'use client';
-import { useState, useEffect, useRef } from 'react'; // useRef used for dropdown
+import { useState, useEffect, useRef, useMemo } from 'react'; // useRef used for dropdown
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useCartStore } from '@/store/cartStore';
 import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
+import { DELIVERY_SERVICES, DeliveryKey, normalizeServices, serviceLabel } from '@/lib/delivery';
 
-function DeliveryAddressBlock({ deliveryService, city, address, setAddress, deliveryCost, setDeliveryCost, getCdekPrice, getYandexPrice }: any) {
-  const isCdek = deliveryService === 'СДЭК';
-  const yPrice = !isCdek ? getYandexPrice(city) : null;
-  const unavailable = !isCdek && yPrice === null;
+function DeliveryAddressBlock({ serviceKey, city, address, setAddress, setDeliveryCost, priceFor }: any) {
+  const price: number | null = priceFor(serviceKey, city);
+  const unavailable = price === null;
+  const label = serviceLabel(serviceKey);
 
   useEffect(() => {
-    if (isCdek) {
-      setDeliveryCost(city ? getCdekPrice(city) : 0);
-      return;
-    }
-    setDeliveryCost(unavailable ? 0 : yPrice);
-  }, [city, deliveryService]);
-
-  if (isCdek) {
-    const cdekPrice = city ? getCdekPrice(city) : 0;
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <label style={{ fontSize: '14px', textTransform: 'lowercase' }}>адрес или пункт выдачи</label>
-        <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="улица, дом или адрес ПВЗ СДЭК" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
-        <span style={{ fontSize: '12px', color: '#888', lineHeight: 1.4 }}>
-          можно указать любой адрес или адрес ПВЗ СДЭК — мы доставим в ближайший удобный пункт выдачи
-        </span>
-        {cdekPrice > 0 && <span style={{ fontSize: '12px', fontWeight: 700 }}>{cdekPrice} руб — доставка СДЭК</span>}
-      </div>
-    );
-  }
+    setDeliveryCost(unavailable ? 0 : (price ?? 0));
+  }, [city, serviceKey, price, unavailable]);
 
   if (unavailable) {
     return (
       <div style={{ fontSize: '13px', fontWeight: 700, color: '#c00', padding: '10px 0' }}>
-        Яндекс Доставка доступна только в Москве, Санкт-Петербурге и городах-миллионниках. Для других городов выберите СДЭК.
+        {label} доступна только в Москве, Санкт-Петербурге и городах-миллионниках. Для других городов выберите другой сервис.
       </div>
     );
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <label style={{ fontSize: '14px', textTransform: 'lowercase' }}>адрес доставки (улица, дом, квартира)</label>
-      <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="ул. Ленина, д. 1, кв. 5" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
-      <span style={{ fontSize: '12px', fontWeight: 700 }}>{yPrice} руб — доставка Яндекс</span>
+      <label style={{ fontSize: '14px', textTransform: 'lowercase' }}>адрес доставки или пункт выдачи</label>
+      <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="улица, дом, квартира или адрес ПВЗ" style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+      <span style={{ fontSize: '12px', color: '#888', lineHeight: 1.4 }}>
+        можно указать любой адрес или адрес пункта выдачи — мы доставим в ближайший удобный
+      </span>
+      {price != null && price > 0 && <span style={{ fontSize: '12px', fontWeight: 700 }}>{price} руб — доставка {label}</span>}
     </div>
   );
 }
@@ -64,9 +50,10 @@ function isValidPhone(phone: string): boolean {
 export default function CheckoutPage() {
   const { items, updateQuantity, updateItemSize, totalPrice, clearCart } = useCartStore();
   const [address, setAddress] = useState('');
-  const [deliveryService, setDeliveryService] = useState('СДЭК');
+  const [deliveryService, setDeliveryService] = useState<DeliveryKey>('cdek');
   const [deliveryCost, setDeliveryCost] = useState(0);
   const [productData, setProductData] = useState<Record<string, { imageUrl?: string; oldPrice?: number; sizes: number[] }>>({});
+  const [productDeliv, setProductDeliv] = useState<Record<string, DeliveryKey[]>>({});
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [touched, setTouched] = useState<{ email?: boolean; phone?: boolean }>({});
@@ -88,6 +75,15 @@ export default function CheckoutPage() {
           setProductData(map);
         }
       });
+    // Отдельный (best-effort) запрос за сервисами доставки — не ломается, если колонки ещё нет.
+    supabase.from('products').select('id, delivery_services').in('id', ids)
+      .then(({ data }) => {
+        if (data) {
+          const map: Record<string, DeliveryKey[]> = {};
+          data.forEach((p: any) => { map[p.id] = normalizeServices(p.delivery_services); });
+          setProductDeliv(map);
+        }
+      });
   }, [items.length]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -96,7 +92,28 @@ export default function CheckoutPage() {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const deliveryOptions = ['СДЭК', 'Яндекс Доставка'];
+
+  const ALL_KEYS = DELIVERY_SERVICES.map((s) => s.key) as DeliveryKey[];
+
+  // Доступные сервисы = пересечение доступных сервисов по всем товарам корзины.
+  const availableKeys = useMemo<DeliveryKey[]>(() => {
+    const ids = Array.from(new Set(items.map((i) => i.id)));
+    if (ids.length === 0) return ALL_KEYS;
+    let acc: DeliveryKey[] | null = null;
+    for (const id of ids) {
+      const list = (productDeliv[id]?.length ? productDeliv[id] : ALL_KEYS);
+      acc = acc === null ? [...list] : acc.filter((k) => list.includes(k));
+    }
+    const result = acc ?? ALL_KEYS;
+    return result.length ? result : ALL_KEYS; // если пересечение пустое — показываем все
+  }, [items, productDeliv]);
+
+  // Если выбранный сервис стал недоступен — переключаемся на первый доступный.
+  useEffect(() => {
+    if (!availableKeys.includes(deliveryService)) {
+      setDeliveryService(availableKeys[0]);
+    }
+  }, [availableKeys]);
 
   const MILLIONS = ['новосибирск', 'екатеринбург', 'казань', 'нижний новгород', 'челябинск', 'самара', 'уфа', 'ростов', 'краснодар', 'омск', 'воронеж', 'пермь', 'волгоград', 'красноярск', 'саратов', 'тюмень', 'тольятти', 'ижевск', 'барнаул', 'ульяновск', 'иркутск', 'хабаровск', 'ярославль', 'владивосток', 'махачкала', 'томск'];
 
@@ -108,12 +125,29 @@ export default function CheckoutPage() {
     return 750;
   };
 
-  const getYandexPrice = (c: string): number => {
+  const getOzonPrice = (c: string): number => {
+    const v = c.toLowerCase().trim();
+    if (/москв/.test(v)) return 350;
+    if (/петербург|питер|ленинград/.test(v)) return 400;
+    if (MILLIONS.some(m => v.includes(m))) return 500;
+    return 700;
+  };
+
+  const getYandexPrice = (c: string): number | null => {
     const v = c.toLowerCase().trim();
     if (/москв/.test(v)) return 450;
     if (/петербург|питер|ленинград/.test(v)) return 500;
     if (MILLIONS.some(m => v.includes(m))) return 600;
-    return null as any; // Яндекс недоступен в малых городах
+    return null; // Яндекс недоступен в малых городах
+  };
+
+  // Цена по ключу сервиса. Возвращает null, если сервис недоступен для этого города.
+  const priceFor = (key: DeliveryKey, c: string): number | null => {
+    if (!c) return 0;
+    if (key === 'cdek') return getCdekPrice(c);
+    if (key === 'ozon') return getOzonPrice(c);
+    if (key === 'yandex') return getYandexPrice(c);
+    return 0;
   };
 
   useEffect(() => {
@@ -309,17 +343,17 @@ export default function CheckoutPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={{ fontSize: '14px', marginBottom: '5px', textTransform: 'lowercase' }}>служба доставки</label>
-                <input type="hidden" name="delivery" value={deliveryService} />
+                <input type="hidden" name="delivery" value={serviceLabel(deliveryService)} />
                 <div ref={dropdownRef} style={{ position: 'relative', width: '100%', userSelect: 'none' }}>
                   <div onClick={() => setIsDropdownOpen(!isDropdownOpen)} style={{ padding: '12px', border: '1px solid #ccc', fontFamily: 'inherit', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: 'white', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>{deliveryService}</span>
+                    <span>{serviceLabel(deliveryService)}</span>
                     <span style={{ fontSize: '12px', transform: isDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', lineHeight: 1 }}>▼</span>
                   </div>
                   {isDropdownOpen && (
                     <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #000', zIndex: 10, marginTop: '-1px' }}>
-                      {deliveryOptions.map((option, idx) => (
-                        <div key={option} onClick={() => { setDeliveryService(option); setIsDropdownOpen(false); }} style={{ padding: '12px', fontSize: '14px', cursor: 'pointer', borderBottom: idx < deliveryOptions.length - 1 ? '1px solid #eee' : 'none' }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}>
-                          {option}
+                      {availableKeys.map((key, idx) => (
+                        <div key={key} onClick={() => { setDeliveryService(key); setIsDropdownOpen(false); }} style={{ padding: '12px', fontSize: '14px', cursor: 'pointer', borderBottom: idx < availableKeys.length - 1 ? '1px solid #eee' : 'none' }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}>
+                          {serviceLabel(key)}
                         </div>
                       ))}
                     </div>
@@ -328,14 +362,12 @@ export default function CheckoutPage() {
               </div>
 
               <DeliveryAddressBlock
-                deliveryService={deliveryService}
+                serviceKey={deliveryService}
                 city={city}
                 address={address}
                 setAddress={setAddress}
-                deliveryCost={deliveryCost}
                 setDeliveryCost={setDeliveryCost}
-                getCdekPrice={getCdekPrice}
-                getYandexPrice={getYandexPrice}
+                priceFor={priceFor}
               />
 
 
