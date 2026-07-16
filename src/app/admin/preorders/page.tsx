@@ -30,9 +30,19 @@ export default function PreordersPage() {
   const del = async (id: string) => {
     if (!confirm('удалить этот предзаказ?')) return;
     setDeleting(id);
-    await adminFetch(`/api/admin/preorders/${id}`, { method: 'DELETE', headers: ah() });
-    setItems(cur => cur.filter(i => i.id !== id));
-    setDeleting(null);
+    try {
+      const res = await adminFetch(`/api/admin/preorders/${id}`, { method: 'DELETE', headers: ah() });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(`не удалось удалить: ${err.error ?? res.status}`);
+        return;
+      }
+      setItems(cur => cur.filter(i => i.id !== id));
+    } catch (e) {
+      alert('сетевая ошибка, попробуйте ещё раз');
+    } finally {
+      setDeleting(null);
+    }
   };
 
   if (loading) return <div style={{ fontWeight: 800 }}>загрузка...</div>;

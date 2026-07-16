@@ -30,9 +30,15 @@ export default function CollabPage() {
   const del = async (id: string) => {
     if (!confirm('удалить заявку?')) return;
     setBusy(id);
-    await adminFetch(`/api/admin/collab/${id}`, { method: 'DELETE', headers: ah() });
-    setItems(its => its.filter(i => i.id !== id));
-    setBusy(null);
+    try {
+      const res = await adminFetch(`/api/admin/collab/${id}`, { method: 'DELETE', headers: ah() });
+      if (!res.ok) { alert('не удалось удалить, попробуйте ещё раз'); return; }
+      setItems(its => its.filter(i => i.id !== id));
+    } catch {
+      alert('сетевая ошибка, попробуйте ещё раз');
+    } finally {
+      setBusy(null);
+    }
   };
 
   if (loading) return <div style={{ fontWeight: 800 }}>загрузка...</div>;
