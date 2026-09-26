@@ -43,8 +43,8 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_anonymous_client(self, password: str) -> "User":
-        return self._create(password=password, role=User.Role.CLIENT)
+    def create_anonymous_client(self, password: str, alias: str | None = None) -> "User":
+        return self._create(password=password, alias=alias, role=User.Role.CLIENT)
 
     def create_psychologist(self, email: str, password: str, **extra) -> "User":
         return self._create(password=password, email=email, role=User.Role.PSYCHOLOGIST, **extra)
@@ -71,6 +71,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     email_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
     # Публичный псевдоним и логин: `тихий-кит-4821`
     alias = models.CharField(max_length=40, unique=True)
+    # Когда клиент последний раз менял ник сам (ограничение: раз в сутки). Прежние ники не храним.
+    alias_changed_at = models.DateTimeField(null=True, blank=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.CLIENT)
     avatar_config = models.JSONField(null=True, blank=True, validators=[validate_avatar_config])
     # Хеш ключа восстановления (make_password); сам ключ показывается один раз

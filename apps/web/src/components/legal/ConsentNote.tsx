@@ -9,20 +9,20 @@ export function ConsentNote({ kind, action }: { kind: "signup" | "specialist" | 
   if (kind === "payment") {
     return (
       <p className={s.note}>
-        Нажимая «{action}», вы принимаете условия <Link href="/legal/offer">публичной оферты</Link> и{" "}
+        Нажимая «{action}», вы&nbsp;принимаете условия <Link href="/legal/offer">публичной оферты</Link> и{" "}
         <Link href="/legal/refunds">правила возврата</Link>.
       </p>
     );
   }
   return (
     <p className={s.note}>
-      Нажимая «{action}», вы принимаете <Link href="/legal/terms">пользовательское соглашение</Link>
+      Нажимая «{action}», вы&nbsp;принимаете <Link href="/legal/terms">пользовательское соглашение</Link>
       {kind === "specialist" && (
         <>
-          , <Link href="/legal/specialist-agreement">договор со специалистом</Link>
+          , <Link href="/legal/specialist-agreement">договор со&nbsp;специалистом</Link>
         </>
       )}{" "}
-      и даёте <Link href="/legal/personal-data">согласие на обработку персональных данных</Link> в соответствии с{" "}
+      и&nbsp;даёте <Link href="/legal/personal-data">согласие на&nbsp;обработку персональных данных</Link> в&nbsp;соответствии с{" "}
       <Link href="/legal/privacy">политикой конфиденциальности</Link>.
     </p>
   );

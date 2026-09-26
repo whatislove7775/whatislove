@@ -6,7 +6,7 @@ import s from "./business.module.css";
 
 /** A k-anonymous number: null → «менее k». */
 export function Hidden({ value, k, suffix = "" }: { value: number | null; k: number; suffix?: string }) {
-  if (value === null) return <span className={s.hidden} title={`Меньше ${k} человек — число скрыто`}>менее {k}</span>;
+  if (value === null) return <span className={s.hidden} title={`Меньше ${k} человек\u00a0— число скрыто`}>менее {k}</span>;
   return (
     <>
       {value.toLocaleString("ru-RU")}

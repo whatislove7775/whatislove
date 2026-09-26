@@ -33,11 +33,11 @@ function when(iso: string | null) {
 
 const PRIVACY: Record<MessengerMode, string> = {
   client:
-    "Переписка хранится в зашифрованном виде. Специалист видит только ваш псевдоним и аватар, а сотрудники платформы не имеют доступа к вашим чатам со специалистами.",
+    "Переписка хранится в\u00a0зашифрованном виде. Специалист видит только ваш псевдоним и\u00a0аватар, а\u00a0сотрудники платформы не\u00a0имеют доступа к\u00a0вашим чатам со\u00a0специалистами.",
   specialist:
-    "Клиент видит ваше имя из профиля, вы — только его псевдоним. Отправлять файлы в чатах можете вы и поддержка. Переписка хранится в зашифрованном виде.",
+    "Клиент видит ваше имя из\u00a0профиля, вы\u00a0— только его псевдоним. Отправлять файлы в\u00a0чатах можете вы\u00a0и\u00a0поддержка. Переписка хранится в\u00a0зашифрованном виде.",
   support:
-    "Здесь только обращения в поддержку. Личные чаты клиентов и специалистов сотрудникам недоступны. Клиента вы видите только по псевдониму.",
+    "Здесь только обращения в\u00a0поддержку. Личные чаты клиентов и\u00a0специалистов сотрудникам недоступны. Клиента вы\u00a0видите только по\u00a0псевдониму.",
 };
 
 interface Entry {
@@ -82,7 +82,7 @@ export function Messenger({ mode }: { mode: MessengerMode }) {
       if (st) setAi(st);
     } catch (e) {
       setConvs((c) => c ?? []);
-      toast(e instanceof ApiError ? e.message : "Не получилось загрузить чаты", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось загрузить чаты", { error: true });
     }
   }, [mode, toast]);
 
@@ -139,7 +139,7 @@ export function Messenger({ mode }: { mode: MessengerMode }) {
             setConvs((list) => [c, ...(list ?? []).filter((x) => x.id !== c.id)]);
             select(c.id);
           })
-          .catch((e) => toast(e instanceof ApiError ? e.message : "Не получилось открыть чат", { error: true }))
+          .catch((e) => toast(e instanceof ApiError ? e.message : "Не\u00a0получилось открыть чат", { error: true }))
           .finally(() => setOpening(false));
       }
     }
@@ -174,7 +174,7 @@ export function Messenger({ mode }: { mode: MessengerMode }) {
               key: AI_KEY,
               conv: null,
               name: "Тиша",
-              preview: ai?.enabled === false ? "ИИ-помощник скоро появится" : "ИИ-помощник для поддержки и практик",
+              preview: ai?.enabled === false ? "ИИ-помощник скоро появится" : "ИИ-помощник для\u00a0поддержки и\u00a0практик",
               time: null,
               unread: 0,
               pinned: true,
@@ -189,12 +189,12 @@ export function Messenger({ mode }: { mode: MessengerMode }) {
         : {
             key: SUPPORT_KEY,
             conv: null,
-            name: "Поддержка aprosop",
-            preview: "Вопросы по оплате, записи и работе сервиса",
+            name: "Поддержка Aprosop",
+            preview: "Вопросы по\u00a0оплате, записи и\u00a0работе сервиса",
             time: null,
             unread: 0,
             pinned: true,
-            who: { type: "support", name: "Поддержка aprosop", avatar_config: null },
+            who: { type: "support", name: "Поддержка Aprosop", avatar_config: null },
           },
     );
     convs.filter((c) => c.kind === "specialist").forEach((c) => out.push(toEntry(c)));
@@ -228,7 +228,7 @@ export function Messenger({ mode }: { mode: MessengerMode }) {
       setNewOpen(false);
       select(conv.id);
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось начать чат", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось начать чат", { error: true });
     }
   };
 
@@ -248,7 +248,7 @@ export function Messenger({ mode }: { mode: MessengerMode }) {
         {mode === "support" && (
           <label className={s.search}>
             <Search size={16} />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Найти по псевдониму или имени" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Найти по&nbsp;псевдониму или&nbsp;имени" />
           </label>
         )}
         <div className={s.list}>
@@ -265,7 +265,7 @@ export function Messenger({ mode }: { mode: MessengerMode }) {
           ) : entries.length === 0 ? (
             <EmptyState art={<EmptyArt scene="chats" />}
               title={mode === "support" ? "Обращений пока нет" : "Чатов пока нет"}
-              text={mode === "support" ? "Когда клиент или специалист напишет в поддержку, разговор появится здесь." : undefined}
+              text={mode === "support" ? "Когда клиент или\u00a0специалист напишет в\u00a0поддержку, разговор появится здесь." : undefined}
             />
           ) : (
             entries.map((e) => {
@@ -330,32 +330,32 @@ export function Messenger({ mode }: { mode: MessengerMode }) {
           <div className={s.placeholder}>
             {opening ? <Skeleton width={220} height={18} /> : (
               <EmptyState art={<EmptyArt scene="search" />}
-                title="Чат не найден"
-                text="Возможно, он был удалён или у вас нет к нему доступа."
-                action={<Button variant="secondary" onClick={() => select(null)}>К списку чатов</Button>}
+                title="Чат не&nbsp;найден"
+                text="Возможно, он&nbsp;был удалён или&nbsp;у&nbsp;вас нет к&nbsp;нему доступа."
+                action={<Button variant="secondary" onClick={() => select(null)}>К&nbsp;списку чатов</Button>}
               />
             )}
           </div>
         ) : (
           <div className={s.placeholder}>
             <ChatBubbles className={art.placeholderArt} />
-            <h2 className={s.placeholderTitle}>Спокойное место для разговора</h2>
-            <p className={s.placeholderText}>Выберите чат слева. Вот что защищает вашу переписку:</p>
+            <h2 className={s.placeholderTitle}>Спокойное место для&nbsp;разговора</h2>
+            <p className={s.placeholderText}>Выберите чат слева. Вот что&nbsp;защищает вашу переписку:</p>
             <ul className={s.features}>
               <li>
-                <Lock size={18} /> Сообщения и файлы хранятся на сервере в зашифрованном виде
+                <Lock size={18} /> Сообщения и&nbsp;файлы хранятся на&nbsp;сервере в&nbsp;зашифрованном виде
               </li>
               <li>
-                <PencilLine size={18} /> Любое своё сообщение можно изменить или удалить — у себя или у всех
+                <PencilLine size={18} /> Любое своё сообщение можно изменить или&nbsp;удалить&nbsp;— у&nbsp;себя или&nbsp;у&nbsp;всех
               </li>
               <li>
-                <Timer size={18} /> Исчезающие сообщения: новые исчезают сами через 1 час или 1 день
+                <Timer size={18} /> Исчезающие сообщения: новые исчезают сами через 1&nbsp;час или&nbsp;1&nbsp;день
               </li>
               <li>
-                <Mic size={18} /> Голосовые можно записать с маской голоса — она применяется ещё на устройстве
+                <Mic size={18} /> Голосовые можно записать с&nbsp;маской голоса&nbsp;— она применяется ещё на&nbsp;устройстве
               </li>
               <li>
-                <EyeOff size={18} /> {mode === "support" ? "Сотрудники видят только обращения в поддержку" : "Сотрудники платформы не читают ваши чаты со специалистами"}
+                <EyeOff size={18} /> {mode === "support" ? "Сотрудники видят только обращения в\u00a0поддержку" : "Сотрудники платформы не\u00a0читают ваши чаты со\u00a0специалистами"}
               </li>
             </ul>
           </div>
@@ -372,7 +372,7 @@ export function Messenger({ mode }: { mode: MessengerMode }) {
           <div className={s.modalText}>
             {mode === "client" ? (
               <>
-                <p>Написать специалисту можно после записи на созвон. Пока можно поговорить с Тишей или написать в поддержку.</p>
+                <p>Написать специалисту можно после записи на&nbsp;созвон. Пока можно поговорить с&nbsp;Тишей или&nbsp;написать в&nbsp;поддержку.</p>
                 <div className={s.modalActions}>
                   <SearchTrigger variant="primary">
                     Выбрать специалиста
@@ -380,7 +380,7 @@ export function Messenger({ mode }: { mode: MessengerMode }) {
                 </div>
               </>
             ) : (
-              <p>Когда клиент запишется к вам на созвон, здесь можно будет начать с ним чат.</p>
+              <p>Когда клиент запишется к&nbsp;вам на&nbsp;созвон, здесь можно будет начать с&nbsp;ним чат.</p>
             )}
           </div>
         ) : (

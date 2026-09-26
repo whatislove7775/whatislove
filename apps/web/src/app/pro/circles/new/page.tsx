@@ -12,7 +12,7 @@ export default function NewCirclePage() {
   const [saving, setSaving] = useState(false);
   return (
     <>
-      <PageHeader title="Новый круг" sub="Сначала сохраним черновик — отправить на проверку можно на следующем шаге." />
+      <PageHeader title="Новый круг" sub="Сначала сохраним черновик&nbsp;— отправить на&nbsp;проверку можно на&nbsp;следующем шаге." />
       <Card>
         <ProCircleForm
           saving={saving}

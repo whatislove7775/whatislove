@@ -22,7 +22,8 @@ export interface MatchAnswers {
   safety: SafetyKey;
   style: StyleKey | "";
   gender: "" | "female" | "male";
-  min_experience: 0 | 3 | 5 | 10;
+  /** years, 0 — doesn't matter (slider 0–20+) */
+  min_experience: number;
   budget: number | null;
   times: TimeKey[];
 }
@@ -44,13 +45,13 @@ export const TOPICS: { value: TopicKey; label: string }[] = [
   { value: "burnout", label: "Выгорание" },
   { value: "relationships", label: "Отношения" },
   { value: "self_esteem", label: "Самооценка" },
-  { value: "grief", label: "Горе и утрата" },
-  { value: "depression", label: "Апатия и депрессия" },
+  { value: "grief", label: "Горе и\u00a0утрата" },
+  { value: "depression", label: "Апатия и\u00a0депрессия" },
   { value: "panic", label: "Панические атаки" },
   { value: "sleep", label: "Сон" },
-  { value: "anger", label: "Гнев и раздражение" },
+  { value: "anger", label: "Гнев и\u00a0раздражение" },
   { value: "loneliness", label: "Одиночество" },
-  { value: "family", label: "Семья и дети" },
+  { value: "family", label: "Семья и\u00a0дети" },
   { value: "crisis", label: "Кризис, перемены" },
   { value: "addiction", label: "Зависимости" },
 ];
@@ -71,15 +72,15 @@ export const SAFETY: { value: SafetyKey; label: string }[] = [
   { value: "now", label: "Да, сейчас" },
 ];
 export const STYLES: { value: StyleKey; label: string; hint: string }[] = [
-  { value: "support", label: "Поддержка и разговор", hint: "Выговориться, почувствовать, что вас слышат и не оценивают" },
-  { value: "techniques", label: "Конкретные техники и задания", hint: "Понятные упражнения между встречами: КПТ, ACT и похожие подходы" },
-  { value: "depth", label: "Глубокая работа с причинами", hint: "Разобраться, откуда это берётся: прошлый опыт, повторяющиеся сценарии" },
+  { value: "support", label: "Поддержка и\u00a0разговор", hint: "Выговориться, почувствовать, что\u00a0вас слышат и\u00a0не\u00a0оценивают" },
+  { value: "techniques", label: "Конкретные техники и\u00a0задания", hint: "Понятные упражнения между встречами: КПТ, ACT и\u00a0похожие подходы" },
+  { value: "depth", label: "Глубокая работа с\u00a0причинами", hint: "Разобраться, откуда это\u00a0берётся: прошлый опыт, повторяющиеся сценарии" },
 ];
 export const TIMES: { value: TimeKey; label: string; hint: string }[] = [
   { value: "morning", label: "Утро", hint: "6–12" },
   { value: "day", label: "День", hint: "12–18" },
   { value: "evening", label: "Вечер", hint: "после 18" },
-  { value: "weekend", label: "Выходные", hint: "сб и вс" },
+  { value: "weekend", label: "Выходные", hint: "сб\u00a0и\u00a0вс" },
 ];
 export const BUDGETS = [2000, 3000, 4000, 5000];
 

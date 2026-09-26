@@ -20,6 +20,18 @@ def _clean_tags(value):
     return cleaned
 
 
+def _no_contacts(value):
+    """Тексты профиля специалиста публичны — контакты в них запрещены (R8)."""
+    from apps.chat.contacts import describe, find_contacts
+
+    hits = find_contacts(value or "")
+    if hits:
+        raise serializers.ValidationError(
+            f"Уберите из текста {describe(hits)} — контакты в профиле не публикуются, "
+            "клиенты связываются с вами через чат aprosop.")
+    return value
+
+
 class AvatarConfigField(serializers.JSONField):
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
@@ -77,6 +89,12 @@ class PsychologistPublicSerializer(serializers.ModelSerializer):
 
     def validate_languages(self, value):
         return _clean_tags(value)
+
+    def validate_bio(self, value):
+        return _no_contacts(value)
+
+    def validate_approach(self, value):
+        return _no_contacts(value)
 
     def get_avatar_config(self, obj):
         return obj.user.avatar_config
@@ -152,6 +170,18 @@ class UserSerializer(serializers.ModelSerializer):
 
 class AnonymousSignupSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, min_length=8, max_length=128)
+    # Свой ник (необязательно): иначе генерируется `тихий-кит-4821`
+    alias = serializers.CharField(max_length=60, required=False, allow_blank=True)
+
+    def validate_alias(self, value):
+        from .nicknames import check_alias
+
+        if not (value or "").strip():
+            return ""
+        result = check_alias(value)
+        if not result["available"]:
+            raise serializers.ValidationError(result["error"])
+        return result["alias"]
 
 
 class PsychologistRegisterSerializer(serializers.Serializer):
@@ -166,6 +196,9 @@ class PsychologistRegisterSerializer(serializers.Serializer):
     def validate_specializations(self, value):
         return _clean_tags(value)
 
+    def validate_bio(self, value):
+        return _no_contacts(value)
+
 
 class LoginSerializer(serializers.Serializer):
     login = serializers.CharField(max_length=254)
@@ -176,6 +209,10 @@ class RecoverSerializer(serializers.Serializer):
     alias = serializers.CharField(max_length=60)
     recovery_key = serializers.CharField(max_length=64)
     new_password = serializers.CharField(min_length=8, max_length=128)
+
+
+class ChangeAliasSerializer(serializers.Serializer):
+    alias = serializers.CharField(max_length=60)
 
 
 class ChangePasswordSerializer(serializers.Serializer):

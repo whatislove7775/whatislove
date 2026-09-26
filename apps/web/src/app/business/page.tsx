@@ -7,47 +7,48 @@ import { BizFaq } from "@/components/business/landing/BizFaq";
 import { LeadForm } from "@/components/business/landing/LeadForm";
 import { bizFaqLd } from "@/components/business/landing/content";
 import { Button } from "@/ui";
+import { HeartHands, PaperPlane } from "@/components/illustrations";
 import { abs, alternates, ORG_ID } from "@/lib/seo";
 import { ogMeta } from "@/lib/og/sections";
 import l from "@/components/landing/landing.module.css";
 import s from "@/components/business/landing/biz.module.css";
 
-const TITLE = "Психолог для сотрудников — анонимно";
+const TITLE = "Психолог для\u00a0сотрудников\u00a0— анонимно";
 const DESCRIPTION =
-  "Корпоративная программа психологической помощи: сотрудники получают анонимные созвоны с проверенными психологами, компания оплачивает их из предоплаченного бюджета и видит только общие цифры.";
+  "Корпоративная программа психологической помощи: сотрудники получают анонимные созвоны с\u00a0проверенными психологами, компания оплачивает их\u00a0из\u00a0предоплаченного бюджета и\u00a0видит только общие цифры.";
 
 export const metadata: Metadata = {
-  title: "Для компаний: психологическая помощь сотрудникам",
+  title: "Для\u00a0компаний: психологическая помощь сотрудникам",
   description: DESCRIPTION,
   alternates: alternates("/business"),
-  ...ogMeta("/business", TITLE, "Сотрудники анонимны, компания видит только общие цифры и платит по счёту."),
+  ...ogMeta("/business", TITLE, "Сотрудники анонимны, компания видит только общие цифры и\u00a0платит по\u00a0счёту."),
 };
 
 const serviceLd = {
   "@context": "https://schema.org",
   "@type": "Service",
-  name: "aprosop для компаний",
+  name: "Aprosop для\u00a0компаний",
   serviceType: "Корпоративная программа психологической поддержки сотрудников",
   description: DESCRIPTION,
   url: abs("/business"),
   provider: { "@id": ORG_ID },
   areaServed: "RU",
-  audience: { "@type": "BusinessAudience", name: "Компании и HR-отделы" },
+  audience: { "@type": "BusinessAudience", name: "Компании и\u00a0HR-отделы" },
 };
 
 const SEES = [
-  "Бюджет, пополнения и списания по месяцам",
+  "Бюджет, пополнения и\u00a0списания по\u00a0месяцам",
   "Сколько кодов выпущено",
-  "Сколько людей и созвонов за месяц — если их 5 и больше",
-  "Доли тем обращений и средняя оценка — тоже от 5 человек",
-  "Счета и акты с суммой за месяц",
+  "Сколько людей и\u00a0созвонов за\u00a0месяц\u00a0— если их\u00a05\u00a0и\u00a0больше",
+  "Доли тем обращений и\u00a0средняя оценка\u00a0— тоже от\u00a05\u00a0человек",
+  "Счета и\u00a0акты с\u00a0суммой за\u00a0месяц",
 ];
 const NEVER = [
-  "Кто активировал код и кто обращался",
+  "Кто активировал код и\u00a0кто обращался",
   "Псевдонимы, аватары, переписку, записи созвонов",
-  "Имена специалистов у конкретных сотрудников",
-  "Даты и время созвонов — только месяц целиком",
-  "Любые цифры, если за месяц было меньше 5 человек",
+  "Имена специалистов у\u00a0конкретных сотрудников",
+  "Даты и\u00a0время созвонов\u00a0— только месяц целиком",
+  "Любые цифры, если за\u00a0месяц было меньше 5\u00a0человек",
 ];
 
 export default function BusinessLanding() {
@@ -58,28 +59,27 @@ export default function BusinessLanding() {
         {/* 1. Hero */}
         <section className={`${l.wrap} ${s.hero}`} aria-labelledby="biz-title">
           <div className={s.heroText}>
-            <p className={l.kicker}>Для компаний</p>
+            <p className={l.kicker}>Для&nbsp;компаний</p>
             <h1 id="biz-title" className={s.title}>
-              Психолог для ваших сотрудников. <span className={s.titleAccent}>Полностью анонимно.</span>
+              Психолог для&nbsp;ваших сотрудников. <span className={s.titleAccent}>Полностью анонимно.</span>
             </h1>
             <p className={l.lead}>
-              Сотрудник получает код и общается с проверенным психологом из анонимного аккаунта — без почты, телефона и лица на
-              камере. Компания оплачивает созвоны из предоплаченного бюджета и видит только общие цифры.
+              Сотрудник получает код и&nbsp;общается с&nbsp;проверенным психологом из&nbsp;анонимного аккаунта&nbsp;— без&nbsp;почты, телефона и&nbsp;лица на&nbsp;камере. Компания оплачивает созвоны из&nbsp;предоплаченного бюджета и&nbsp;видит только общие цифры.
             </p>
             <div className={s.heroActions}>
               <Button href="#calc" variant="primary" size="lg">
-                Рассчитать для компании
+                Рассчитать для&nbsp;компании
               </Button>
               <Button href="#how" variant="soft" size="lg">
-                Как это работает
+                Как&nbsp;это&nbsp;работает
               </Button>
             </div>
             <ul className={s.heroPoints}>
               <li>
-                <Lock size={16} aria-hidden /> Работодатель не узнаёт, кто обратился
+                <Lock size={16} aria-hidden /> Работодатель не&nbsp;узнаёт, кто обратился
               </li>
               <li>
-                <FileText size={16} aria-hidden /> Счёт, договор и акты
+                <FileText size={16} aria-hidden /> Счёт, договор и&nbsp;акты
               </li>
             </ul>
           </div>
@@ -92,7 +92,7 @@ export default function BusinessLanding() {
               </div>
               <div className={s.mockGrid}>
                 <div className={s.mockKpi}>
-                  <span>Созвонов в сентябре</span>
+                  <span>Созвонов в&nbsp;сентябре</span>
                   <strong>38</strong>
                 </div>
                 <div className={s.mockKpi}>
@@ -107,7 +107,7 @@ export default function BusinessLanding() {
               <div className={s.mockRow}>
                 <span>Кто обращался</span>
                 <span className={s.mockLock}>
-                  <EyeOff size={14} /> не показываем
+                  <EyeOff size={14} /> не&nbsp;показываем
                 </span>
               </div>
               <div className={s.mockBars}>
@@ -124,17 +124,17 @@ export default function BusinessLanding() {
         <section id="privacy" className={`${l.wrap} ${l.section}`} aria-labelledby="biz-privacy">
           <div className={s.sectionHead}>
             <h2 id="biz-privacy" className={l.sectionTitle}>
-              Анонимность — это продукт, а не пункт в договоре
+              Анонимность&nbsp;— это&nbsp;продукт, а&nbsp;не&nbsp;пункт в&nbsp;договоре
             </h2>
             <p className={l.lead}>
-              Люди не пойдут к психологу, если руководитель может об этом узнать. Поэтому связь «сотрудник — аккаунт» не видна
-              компании технически: в нашей базе код не хранит, кто его активировал.
+              Люди не&nbsp;пойдут к&nbsp;психологу, если руководитель может об&nbsp;этом узнать. Поэтому связь «сотрудник&nbsp;— аккаунт» не&nbsp;видна
+              компании технически: в&nbsp;нашей базе код не&nbsp;хранит, кто его активировал.
             </p>
           </div>
           <div className={s.compare}>
             <div className={`${s.compareCol} ${s.compareSees}`}>
               <h3>
-                <BarChart3 size={20} aria-hidden /> Что видит компания
+                <BarChart3 size={20} aria-hidden /> Что&nbsp;видит компания
               </h3>
               <ul>
                 {SEES.map((x) => (
@@ -146,7 +146,7 @@ export default function BusinessLanding() {
             </div>
             <div className={`${s.compareCol} ${s.compareNever}`}>
               <h3>
-                <UserX size={20} aria-hidden /> Чего не видит никто в компании
+                <UserX size={20} aria-hidden /> Чего не&nbsp;видит никто в&nbsp;компании
               </h3>
               <ul>
                 {NEVER.map((x) => (
@@ -163,25 +163,24 @@ export default function BusinessLanding() {
         <section className={`${l.wrap} ${l.section}`} aria-labelledby="biz-why">
           <div className={s.sectionHead}>
             <h2 id="biz-why" className={l.sectionTitle}>
-              Зачем это компании
+              Зачем это&nbsp;компании
             </h2>
             <p className={l.lead}>
-              Мы не обещаем волшебных процентов. Считайте эффект на своих метриках — текучесть, больничные, вовлечённость — до и
-              после пилота.
+              Мы&nbsp;не&nbsp;обещаем волшебных процентов. Считайте эффект на&nbsp;своих метриках&nbsp;— текучесть, больничные, вовлечённость&nbsp;— до&nbsp;и&nbsp;после пилота.
             </p>
           </div>
           <div className={s.cards}>
             <div className={s.card}>
-              <h3>Помощь до выгорания</h3>
-              <p>Когда не нужно объяснять руководителю и платить из своего кармана, к специалисту обращаются раньше, а не в кризисе.</p>
+              <h3>Помощь до&nbsp;выгорания</h3>
+              <p>Когда не&nbsp;нужно объяснять руководителю и&nbsp;платить из&nbsp;своего кармана, к&nbsp;специалисту обращаются раньше, а&nbsp;не&nbsp;в&nbsp;кризисе.</p>
             </div>
             <div className={s.card}>
-              <h3>Без стигмы</h3>
-              <p>Ни почты, ни телефона, ни лица на камере: вместо него 3D-аватар. Сотрудник уверен, что об обращении не узнают.</p>
+              <h3>Без&nbsp;стигмы</h3>
+              <p>Ни&nbsp;почты, ни&nbsp;телефона, ни&nbsp;лица на&nbsp;камере: вместо него 3D-аватар. Сотрудник уверен, что&nbsp;об&nbsp;обращении не&nbsp;узнают.</p>
             </div>
             <div className={s.card}>
               <h3>Предсказуемый бюджет</h3>
-              <p>Лимит на человека за месяц, квартал или год. Списываются только состоявшиеся созвоны, отмены возвращаются.</p>
+              <p>Лимит на&nbsp;человека за&nbsp;месяц, квартал или&nbsp;год. Списываются только состоявшиеся созвоны, отмены возвращаются.</p>
             </div>
           </div>
         </section>
@@ -190,24 +189,24 @@ export default function BusinessLanding() {
         <section id="how" className={`${l.wrap} ${l.section}`} aria-labelledby="biz-how">
           <div className={s.sectionHead}>
             <h2 id="biz-how" className={l.sectionTitle}>
-              Как это работает
+              Как&nbsp;это&nbsp;работает
             </h2>
           </div>
           <ol className={l.steps}>
             <li className={l.step}>
               <span className={l.stepNum} aria-hidden>1</span>
               <h3>Компания пополняет бюджет</h3>
-              <p>Подписываем договор, выставляем счёт. Вы задаёте лимит на сотрудника и что оплачивает программа.</p>
+              <p>Подписываем договор, выставляем счёт. Вы&nbsp;задаёте лимит на&nbsp;сотрудника и&nbsp;что&nbsp;оплачивает программа.</p>
             </li>
             <li className={l.step}>
               <span className={l.stepNum} aria-hidden>2</span>
               <h3>HR раздаёт одноразовые коды</h3>
-              <p>Выпускаете коды в кабинете и выгружаете в CSV. Раздаёте как удобно: в письме, в чате, на бумаге.</p>
+              <p>Выпускаете коды в&nbsp;кабинете и&nbsp;выгружаете в&nbsp;CSV. Раздаёте как&nbsp;удобно: в&nbsp;письме, в&nbsp;чате, на&nbsp;бумаге.</p>
             </li>
             <li className={l.step}>
               <span className={l.stepNum} aria-hidden>3</span>
               <h3>Сотрудник записывается анонимно</h3>
-              <p>Вводит код в анонимном аккаунте, выбирает психолога — созвоны оплачиваются из программы, дальше при желании сам.</p>
+              <p>Вводит код в&nbsp;анонимном аккаунте, выбирает психолога&nbsp;— созвоны оплачиваются из&nbsp;программы, дальше при&nbsp;желании сам.</p>
             </li>
           </ol>
         </section>
@@ -220,20 +219,21 @@ export default function BusinessLanding() {
                 Рассчитать стоимость
               </h2>
               <p className={l.lead}>
-                Цена зависит от числа сотрудников и лимита на человека. Можно начать с пилота на один отдел. Оставьте контакты — пришлём
-                расчёт и договор.
+                Цена зависит от&nbsp;числа сотрудников и&nbsp;лимита на&nbsp;человека. Можно начать с&nbsp;пилота на&nbsp;один отдел. Оставьте контакты&nbsp;— пришлём
+                расчёт и&nbsp;договор.
               </p>
               <ul className={s.calcList}>
                 <li>
-                  <Check size={18} aria-hidden /> Предоплаченный бюджет, без абонентской платы за «мёртвые души»
+                  <Check size={18} aria-hidden /> Предоплаченный бюджет, без&nbsp;абонентской платы за&nbsp;«мёртвые души»
                 </li>
                 <li>
-                  <Check size={18} aria-hidden /> Лимит в рублях, в созвонах или и то и другое
+                  <Check size={18} aria-hidden /> Лимит в&nbsp;рублях, в&nbsp;созвонах или&nbsp;и&nbsp;то&nbsp;и&nbsp;другое
                 </li>
                 <li>
-                  <Check size={18} aria-hidden /> Счета и ежемесячные акты для бухгалтерии
+                  <Check size={18} aria-hidden /> Счета и&nbsp;ежемесячные акты для&nbsp;бухгалтерии
                 </li>
               </ul>
+              <PaperPlane className={s.calcArt} />
             </div>
             <div className={s.calcForm}>
               <LeadForm />
@@ -246,10 +246,10 @@ export default function BusinessLanding() {
           <div className={l.faq}>
             <div className={l.faqIntro}>
               <h2 id="biz-faq" className={l.sectionTitle}>
-                Вопросы HR и руководителей
+                Вопросы HR и&nbsp;руководителей
               </h2>
               <p className={l.lead}>
-                Не нашли ответ? Напишите на <a href="mailto:b2b@aprosop.ru">b2b@aprosop.ru</a>.
+                Не&nbsp;нашли ответ? Напишите на <a href="mailto:b2b@aprosop.ru">b2b@aprosop.ru</a>.
               </p>
             </div>
             <BizFaq />
@@ -258,19 +258,20 @@ export default function BusinessLanding() {
 
         {/* 7. CTA */}
         <section className={`${l.wrap} ${l.closing}`} aria-labelledby="biz-closing">
-          <div>
-            <h2 id="biz-closing">Забота, о которой не нужно докладывать</h2>
-            <p>Запустим пилот за неделю: договор, счёт, коды для первого отдела.</p>
-          </div>
-          <div>
+          <div className={l.plaque}>
+            <div className={l.closingText}>
+              <h2 id="biz-closing">Забота, о&nbsp;которой не&nbsp;нужно докладывать</h2>
+              <p>Запустим пилот за&nbsp;неделю: договор, счёт, коды для&nbsp;первого отдела.</p>
+            </div>
             <div className={l.closingActions}>
               <Button href="#calc" variant="primary" size="lg">
-                Рассчитать для компании
+                Рассчитать для&nbsp;компании
               </Button>
               <Button href="/login" variant="ghost" size="lg">
-                Вход для HR
+                Вход для&nbsp;HR
               </Button>
             </div>
+            <HeartHands className={l.closingArt} />
           </div>
         </section>
       </main>

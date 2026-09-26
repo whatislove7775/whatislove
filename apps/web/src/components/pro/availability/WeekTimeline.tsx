@@ -139,7 +139,7 @@ export function WeekTimeline({
 
   return (
     <div className={c.tl}>
-      <div className={c.tlHint}>Проведите по дню, чтобы добавить часы. Блок можно двигать и растягивать за края</div>
+      <div className={c.tlHint}>Проведите по&nbsp;дню, чтобы добавить часы. Блок можно двигать и&nbsp;растягивать за&nbsp;края</div>
       <div className={c.tlGrid}>
         {week.map((d, day) => {
           const ranges = d.on ? d.ranges : [];

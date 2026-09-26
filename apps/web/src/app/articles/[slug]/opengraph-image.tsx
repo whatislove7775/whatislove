@@ -16,6 +16,6 @@ export default async function Image({ params }: { params: { slug: string } }) {
     ...OG.article,
     kicker: a.topic_label ? `Статья · ${a.topic_label}` : OG.article.kicker,
     title: a.title,
-    subtitle: [minutes, "со ссылками на исследования"].filter(Boolean).join(", "),
+    subtitle: [minutes, "со\u00a0ссылками на\u00a0исследования"].filter(Boolean).join(", "),
   });
 }

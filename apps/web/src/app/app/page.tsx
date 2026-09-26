@@ -19,7 +19,7 @@ import { ConvAvatar } from "@/components/chat/ConvAvatar";
 import { TopicArt } from "@/components/illustrations/topics";
 import { topicClass } from "@/components/circles/bits";
 import { SearchTrigger } from "@/components/search/SpecialistSearch";
-import { Skeleton } from "@/ui";
+import { ScrollRow, Skeleton } from "@/ui";
 import c from "@/components/content/content.module.css";
 import s from "./home.module.css";
 
@@ -75,7 +75,7 @@ export default function ClientHome() {
         </SearchTrigger>
         {!dialogs.loading && !hasAny && (
           <Chip href="/app/match" icon={<ListChecks size={16} strokeWidth={1.8} />}>
-            Подбор по анкете
+            Подбор по&nbsp;анкете
           </Chip>
         )}
         {!user?.avatar_config && (
@@ -118,7 +118,7 @@ export default function ClientHome() {
         {specialists.error ? (
           <ErrorBlock message={specialists.error} onRetry={specialists.reload} />
         ) : (
-          <div className={s.scroller} role="list">
+          <ScrollRow trackClassName={s.scroller}>
             {specialists.loading && !specialists.data
               ? [0, 1, 2, 3].map((i) => (
                   <div role="listitem" key={i} className={s.specItem}>
@@ -130,7 +130,7 @@ export default function ClientHome() {
                     <SpecialistMini p={p} compact />
                   </div>
                 ))}
-          </div>
+          </ScrollRow>
         )}
       </Section>
 
@@ -138,31 +138,31 @@ export default function ClientHome() {
         <Link href="/app/circles" className={s.entry}>
           <Users size={18} strokeWidth={1.8} aria-hidden />
           <span>
-            <strong>Круги</strong> · группы поддержки с психологом
+            <strong>Круги</strong> · группы поддержки с&nbsp;психологом
           </span>
           <ChevronRight size={16} strokeWidth={2} aria-hidden />
         </Link>
       )}
       {circleRow.length > 0 && (
         <Section title="Круги" href="/app/circles">
-          <div className={s.scroller} role="list">
+          <ScrollRow trackClassName={s.scroller}>
             {circleRow.map((x) => {
               const next = "next_meeting" in x ? x.next_meeting?.starts_at : x.next_meeting_at ?? x.first_meeting_at;
               const mine = "me" in x;
               return (
                 <Link role="listitem" key={x.id} href={`/app/circles/${x.id}`} className={`${s.circle} ${topicClass(x.topic)}`}>
-                  <span className={s.circleTopic}>{mine ? "Вы в круге" : x.topic_label}</span>
+                  <span className={s.circleTopic}>{mine ? "Вы\u00a0в\u00a0круге" : x.topic_label}</span>
                   <strong className={s.circleTitle}>{x.title}</strong>
                   <span className={s.circleMeta}>{next ? `${dayLabel(next)}, ${time(next)}` : "Скоро"}</span>
                 </Link>
               );
             })}
-          </div>
+          </ScrollRow>
         </Section>
       )}
 
       <Section title="Полезное" href="/app/articles">
-        <div className={s.scroller} role="list">
+        <ScrollRow trackClassName={s.scroller}>
           {articles.loading && !articles.data
             ? [0, 1, 2].map((i) => <Skeleton key={i} width={260} height={72} radius={16} />)
             : (articles.data ?? []).map((a) => (
@@ -176,7 +176,7 @@ export default function ClientHome() {
                   </span>
                 </Link>
               ))}
-        </div>
+        </ScrollRow>
         {(practices.data ?? []).length > 0 && (
           <div className={s.chips}>
             {(practices.data ?? []).map((p) => (

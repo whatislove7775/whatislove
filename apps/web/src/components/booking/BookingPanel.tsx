@@ -119,7 +119,7 @@ export function BookingPanel({ psy }: { psy: PsychologistPublic }) {
       }
       toast(
         r.status === "awaiting_payment"
-          ? "Время за вами — осталось оплатить созвон"
+          ? "Время за\u00a0вами\u00a0— осталось оплатить созвон"
           : isIntro
             ? "Знакомство назначено"
             : "Созвон назначен",
@@ -146,7 +146,7 @@ export function BookingPanel({ psy }: { psy: PsychologistPublic }) {
           Назначить созвон
         </h2>
         <p className={s.sub}>
-          Время по вашему часовому поясу, {offsetLabel()}{TZ_LOCAL && TZ_LOCAL.includes("/") ? ` (${TZ_LOCAL.split("/").pop()?.replace(/_/g, " ")})` : ""}
+          Время по&nbsp;вашему часовому поясу, {offsetLabel()}{TZ_LOCAL && TZ_LOCAL.includes("/") ? ` (${TZ_LOCAL.split("/").pop()?.replace(/_/g, " ")})` : ""}
         </p>
       </div>
 
@@ -183,8 +183,8 @@ export function BookingPanel({ psy }: { psy: PsychologistPublic }) {
           >
             <Handshake size={16} strokeWidth={1.8} aria-hidden />
             <span>
-              Сначала познакомиться — {INTRO_MINUTES} мин{" "}
-              {intro!.price_rub ? `за ${rub(intro!.price_rub)}` : "бесплатно"}
+              Сначала познакомиться&nbsp;— {INTRO_MINUTES} мин{" "}
+              {intro!.price_rub ? `за\u00a0${rub(intro!.price_rub)}` : "бесплатно"}
             </span>
           </button>
         )}
@@ -222,8 +222,8 @@ export function BookingPanel({ psy }: { psy: PsychologistPublic }) {
           <strong>Нет свободного времени</strong>
           <span>
             {options.length > 1 && minutes !== options[0].minutes
-              ? `Для ${durationLabel(minutes)} окон не нашлось. Попробуйте созвон короче или другого специалиста.`
-              : "Загляните через пару дней или выберите другого специалиста."}
+              ? `Для\u00a0${durationLabel(minutes)} окон не\u00a0нашлось. Попробуйте созвон короче или\u00a0другого специалиста.`
+              : "Загляните через пару дней или\u00a0выберите другого специалиста."}
           </span>
           <Button size="sm" variant="secondary" href="/app/specialists">
             Другие специалисты
@@ -288,7 +288,7 @@ export function BookingPanel({ psy }: { psy: PsychologistPublic }) {
         <div className={s.total}>
           <span>
             {chosen
-              ? `${dayLabel(chosen.start)} в ${time(chosen.start)}`
+              ? `${dayLabel(chosen.start)} в\u00a0${time(chosen.start)}`
               : "Выберите время"}
           </span>
           <strong>{rub(price)}</strong>
@@ -316,7 +316,7 @@ export function BookingPanel({ psy }: { psy: PsychologistPublic }) {
               <SpecialistPhoto url={psy.photo_url} name={psy.display_name} size={56} />
               <div>
                 <strong>{psy.display_name}</strong>
-                <span>{isIntro ? "Знакомство, 15 минут" : "Видеосозвон с аватаром"}</span>
+                <span>{isIntro ? "Знакомство, 15\u00a0минут" : "Видеосозвон с\u00a0аватаром"}</span>
               </div>
             </div>
             <dl className={s.summary}>
@@ -352,7 +352,7 @@ export function BookingPanel({ psy }: { psy: PsychologistPublic }) {
               </div>
             </dl>
             <p className={s.note}>
-              {isIntro ? "Знакомство бывает одно на специалиста. " : ""}Отменить или перенести бесплатно можно за 24 часа.
+              {isIntro ? "Знакомство бывает одно на\u00a0специалиста. " : ""}Отменить или&nbsp;перенести бесплатно можно за&nbsp;24&nbsp;часа.
             </p>
             <HelpLine />
             <div className={s.actions}>
@@ -364,7 +364,7 @@ export function BookingPanel({ psy }: { psy: PsychologistPublic }) {
                 Изменить
               </Button>
               <Button variant="primary" onClick={book} loading={busy}>
-                {price ? `Назначить за ${rub(price)}` : "Назначить бесплатно"}
+                {price ? `Назначить за\u00a0${rub(price)}` : "Назначить бесплатно"}
               </Button>
             </div>
           </div>

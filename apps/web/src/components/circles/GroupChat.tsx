@@ -43,7 +43,7 @@ export function GroupChat({ circleId, hostPhoto, compact }: { circleId: string; 
         setData(d);
         setError(null);
       })
-      .catch((e) => setError(e instanceof ApiError ? e.message : "Не получилось загрузить чат."));
+      .catch((e) => setError(e instanceof ApiError ? e.message : "Не\u00a0получилось загрузить чат."));
   }, [circleId]);
 
   useEffect(() => {
@@ -93,7 +93,7 @@ export function GroupChat({ circleId, hostPhoto, compact }: { circleId: string; 
       setData((d) => (d && !d.results.some((m) => m.id === msg.id) ? { ...d, results: [...d.results, { ...msg, mine: true }] } : d));
       setText("");
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось отправить.", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось отправить.", { error: true });
     } finally {
       setBusy(false);
     }
@@ -104,7 +104,7 @@ export function GroupChat({ circleId, hostPhoto, compact }: { circleId: string; 
       await circlesApi.deleteMessage(circleId, id);
       setData((d) => d && { ...d, results: d.results.map((m) => (m.id === id ? { ...m, deleted: true, text: "" } : m)) });
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось удалить.", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось удалить.", { error: true });
     }
   };
 
@@ -118,7 +118,7 @@ export function GroupChat({ circleId, hostPhoto, compact }: { circleId: string; 
       <p className={s.chatNote}>
         {data.retention === "forever" ? <ShieldCheck size={14} /> : <Hourglass size={14} />}
         {RETENTION_NOTE[data.retention]}
-        {data.me ? `. Вы пишете как ${data.me.name}` : ""}
+        {data.me ? `. Вы\u00a0пишете как\u00a0${data.me.name}` : ""}
       </p>
       <div
         className={s.chatScroll}
@@ -174,8 +174,8 @@ export function GroupChat({ circleId, hostPhoto, compact }: { circleId: string; 
             value={text}
             rows={1}
             maxLength={2000}
-            placeholder={isHost ? "Написать участникам" : "Написать в круг"}
-            aria-label="Сообщение в чат круга"
+            placeholder={isHost ? "Написать участникам" : "Написать в\u00a0круг"}
+            aria-label="Сообщение в&nbsp;чат круга"
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -188,7 +188,7 @@ export function GroupChat({ circleId, hostPhoto, compact }: { circleId: string; 
         </div>
       ) : (
         <p className={s.fine}>
-          {data.me?.chat_muted ? "Ведущий временно выключил вам сообщения. Читать чат можно." : "Круг закрыт, чат доступен только для чтения."}
+          {data.me?.chat_muted ? "Ведущий временно выключил вам сообщения. Читать чат можно." : "Круг закрыт, чат доступен только для\u00a0чтения."}
         </p>
       )}
     </div>

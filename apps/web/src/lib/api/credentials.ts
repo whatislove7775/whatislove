@@ -14,13 +14,13 @@ export type CredentialKind =
 export type CredentialStatus = "pending" | "approved" | "rejected" | "needs_info";
 
 export const KIND_LABEL: Record<CredentialKind, string> = {
-  diploma: "Диплом о высшем образовании",
+  diploma: "Диплом о\u00a0высшем образовании",
   retraining: "Переподготовка, ДПО",
   method: "Сертификат метода",
   supervision: "Супервизия",
-  membership: "Членство в ассоциации",
+  membership: "Членство в\u00a0ассоциации",
   publication: "Публикация",
-  course: "Курс или тренинг",
+  course: "Курс или\u00a0тренинг",
   other: "Другое",
 };
 
@@ -36,7 +36,7 @@ export const KIND_ORDER: CredentialKind[] = [
 ];
 
 export const STATUS_LABEL: Record<CredentialStatus, string> = {
-  pending: "На проверке",
+  pending: "На\u00a0проверке",
   approved: "Подтверждено",
   rejected: "Отклонено",
   needs_info: "Нужно уточнить",
@@ -172,7 +172,7 @@ export async function fetchPrivateFile(path: string): Promise<string> {
   const res = await fetch(apiUrl(path), {
     headers: tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {},
   });
-  if (!res.ok) throw new Error(res.status === 404 ? "Файл не найден или нет доступа." : "Не получилось открыть файл.");
+  if (!res.ok) throw new Error(res.status === 404 ? "Файл не\u00a0найден или\u00a0нет доступа." : "Не\u00a0получилось открыть файл.");
   return URL.createObjectURL(await res.blob());
 }
 

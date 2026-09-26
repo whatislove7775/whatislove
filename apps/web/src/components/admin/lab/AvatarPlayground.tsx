@@ -24,7 +24,7 @@ const GROUPS: [string, string[]][] = [
       "eyeLookOutLeft", "eyeLookOutRight",
     ],
   ],
-  ["Щёки и нос", ["cheekPuff", "cheekSquintLeft", "cheekSquintRight", "noseSneerLeft", "noseSneerRight"]],
+  ["Щёки и\u00a0нос", ["cheekPuff", "cheekSquintLeft", "cheekSquintRight", "noseSneerLeft", "noseSneerRight"]],
   ["Челюсть", ["jawOpen", "jawForward", "jawLeft", "jawRight"]],
   [
     "Рот",
@@ -42,9 +42,9 @@ const FRAMINGS: { value: Framing; label: string }[] = [
   { value: "face", label: "Крупно" },
 ];
 const CALIB: { value: string; label: string }[] = [
-  { value: "1", label: "1 с" },
-  { value: "1.5", label: "1,5 с" },
-  { value: "3", label: "3 с" },
+  { value: "1", label: "1\u00a0с" },
+  { value: "1.5", label: "1,5\u00a0с" },
+  { value: "3", label: "3\u00a0с" },
 ];
 
 function seeds(n: number) {
@@ -185,13 +185,13 @@ export function AvatarPlayground() {
       setJsonError(null);
       toast("Аватар применён");
     } catch {
-      setJsonError("Это не JSON. Проверьте скобки и кавычки.");
+      setJsonError("Это\u00a0не\u00a0JSON. Проверьте скобки и\u00a0кавычки.");
     }
   };
 
   const useInCalls = () => {
     saveLabAvatar(config);
-    toast("Этот аватар будет у клиента в новых тестовых комнатах");
+    toast("Этот аватар будет у\u00a0клиента в\u00a0новых тестовых комнатах");
   };
 
   const pose = hud.pose;
@@ -201,7 +201,7 @@ export function AvatarPlayground() {
       ["Распознавание кадра", cam.tracking ? `${hud.detectMs.toFixed(1)} мс` : "—"],
       ["Движок", hud.delegate || "—"],
       ["Камера", hud.videoWidth ? `${hud.videoWidth}×${hud.videoHeight}` : "—"],
-      ["Лицо", !cam.tracking ? "—" : hud.faceVisible ? "видно" : "не найдено"],
+      ["Лицо", !cam.tracking ? "—" : hud.faceVisible ? "видно" : "не\u00a0найдено"],
       ["Поворот головы", pose ? `${Math.round(pose.yaw)}°, ${Math.round(pose.pitch)}°, ${Math.round(pose.roll)}°` : "—"],
     ],
     [cam.tracking, cam.state, hud, pose],
@@ -213,8 +213,8 @@ export function AvatarPlayground() {
         <Card as="section">
           <CardHead
             icon={<ScanFace size={20} />}
-            title="Камера и аватар"
-            sub="Ваша камера управляет аватаром так же, как у клиента в звонке. Исходное видео скрыто, пока вы его не включите."
+            title="Камера и&nbsp;аватар"
+            sub="Ваша камера управляет аватаром так&nbsp;же, как&nbsp;у&nbsp;клиента в&nbsp;звонке. Исходное видео скрыто, пока вы&nbsp;его не&nbsp;включите."
             action={
               running ? (
                 <Button variant="secondary" icon={<Square size={16} />} onClick={cam.stop}>
@@ -241,11 +241,11 @@ export function AvatarPlayground() {
                 {cam.state === "ready" && (
                   <div className={s.hud}>
                     <span className={s.hudDot} data-ok={hud.faceVisible || undefined} />
-                    {!cam.tracking ? "Загружаем распознавание" : cam.calibrating ? "Калибровка: смотрите в камеру спокойно" : `${hud.trackFps} кадр/с`}
+                    {!cam.tracking ? "Загружаем распознавание" : cam.calibrating ? "Калибровка: смотрите в\u00a0камеру спокойно" : `${hud.trackFps} кадр/с`}
                   </div>
                 )}
               </div>
-              <figcaption>Аватар (это уходит собеседнику)</figcaption>
+              <figcaption>Аватар (это&nbsp;уходит собеседнику)</figcaption>
             </figure>
             <figure className={s.loopTile}>
               <div className={s.tileStage} data-dark>
@@ -253,7 +253,7 @@ export function AvatarPlayground() {
                 {showPoints && <canvas ref={pointsRef} className={s.points} aria-hidden />}
                 {cam.state !== "ready" && <div className={s.tilePlaceholder}>Точки лица появятся после включения камеры</div>}
               </div>
-              <figcaption>Маска трекинга: 478 точек{showRaw ? " поверх видео" : ""}</figcaption>
+              <figcaption>Маска трекинга: 478&nbsp;точек{showRaw ? " поверх видео" : ""}</figcaption>
             </figure>
           </div>
           <div className={s.controlsRow}>
@@ -261,8 +261,8 @@ export function AvatarPlayground() {
             <Switch
               checked={showRaw}
               onChange={setShowRaw}
-              label="Показать исходное видео (только в лаборатории)"
-              hint="Видно только вам на этом экране. В звонках исходное видео клиента не показывается нигде."
+              label="Показать исходное видео (только в&nbsp;лаборатории)"
+              hint="Видно только вам на&nbsp;этом экране. В&nbsp;звонках исходное видео клиента не&nbsp;показывается нигде."
             />
           </div>
           <StatGrid items={statItems} />
@@ -271,15 +271,15 @@ export function AvatarPlayground() {
         <Card as="section">
           <CardHead
             icon={<Gauge size={20} />}
-            title="Мимика: 52 коэффициента ARKit"
-            sub="Сырые значения модели и значения после калибровки и сглаживания, которые получает аватар."
+            title="Мимика: 52&nbsp;коэффициента ARKit"
+            sub="Сырые значения модели и&nbsp;значения после калибровки и&nbsp;сглаживания, которые получает аватар."
           />
           <div className={s.bsMode}>
               <Segmented
                 value={bsMode}
                 onChange={setBsMode}
                 options={[
-                  { value: "processed", label: "Для аватара" },
+                  { value: "processed", label: "Для\u00a0аватара" },
                   { value: "raw", label: "Сырые" },
                 ]}
                 ariaLabel="Какие значения показать"
@@ -312,12 +312,12 @@ export function AvatarPlayground() {
 
       <div className={s.pgSide}>
         <Card as="section">
-          <CardHead icon={<RefreshCw size={20} />} title="Калибровка и кадр" />
+          <CardHead icon={<RefreshCw size={20} />} title="Калибровка и&nbsp;кадр" />
           <div className={s.stackSm}>
             <Button variant="soft" icon={<RefreshCw size={16} />} disabled={!cam.tracking || cam.calibrating} onClick={cam.recalibrate}>
               {cam.calibrating ? "Калибруем" : "Откалибровать заново"}
             </Button>
-            {cam.calibrating && cam.tracking && <Badge tone="warning">Расслабьте лицо и смотрите в камеру</Badge>}
+            {cam.calibrating && cam.tracking && <Badge tone="warning">Расслабьте лицо и&nbsp;смотрите в&nbsp;камеру</Badge>}
             <div>
               <div className={s.label}>Длительность калибровки</div>
               <Segmented value={calib} onChange={setCalib} options={CALIB} ariaLabel="Длительность калибровки" />
@@ -326,7 +326,7 @@ export function AvatarPlayground() {
               <div className={s.label}>Кадрирование</div>
               <Segmented value={framing} onChange={setFraming} options={FRAMINGS} ariaLabel="Кадрирование" />
             </div>
-            <Switch checked={idle} onChange={setIdle} label="Живая анимация без лица" hint="Моргание и дыхание, пока лицо не найдено." />
+            <Switch checked={idle} onChange={setIdle} label="Живая анимация без&nbsp;лица" hint="Моргание и&nbsp;дыхание, пока лицо не&nbsp;найдено." />
             {cams.length > 1 && (
               <div className={s.selectLabel}>
                 <Select
@@ -334,7 +334,7 @@ export function AvatarPlayground() {
                   value={deviceId}
                   onChange={setDeviceId}
                   options={[
-                    { value: "", label: "По умолчанию (фронтальная)" },
+                    { value: "", label: "По\u00a0умолчанию (фронтальная)" },
                     ...cams.map((c, i) => ({ value: c.deviceId, label: c.label || `Камера ${i + 1}` })),
                   ]}
                 />
@@ -359,7 +359,7 @@ export function AvatarPlayground() {
               </Button>
             )}
             <Button variant="soft" size="sm" icon={<Check size={16} />} onClick={useInCalls}>
-              Использовать в тестовом звонке
+              Использовать в&nbsp;тестовом звонке
             </Button>
           </div>
           <div className={s.galleryHead}>
@@ -381,7 +381,7 @@ export function AvatarPlayground() {
         </Card>
 
         <Card as="section">
-          <CardHead icon={<Eye size={20} />} title="Настройки аватара в JSON" sub="Можно вставить JSON из другого браузера или из базы и применить." />
+          <CardHead icon={<Eye size={20} />} title="Настройки аватара в&nbsp;JSON" sub="Можно вставить JSON из&nbsp;другого браузера или&nbsp;из&nbsp;базы и&nbsp;применить." />
           <Textarea
             aria-label="JSON аватара"
             className={s.json}
@@ -399,7 +399,7 @@ export function AvatarPlayground() {
               variant="ghost"
               size="sm"
               icon={<Copy size={16} />}
-              onClick={async () => toast((await copyText(json)) ? "JSON скопирован" : "Не получилось скопировать")}
+              onClick={async () => toast((await copyText(json)) ? "JSON скопирован" : "Не\u00a0получилось скопировать")}
             >
               Скопировать
             </Button>

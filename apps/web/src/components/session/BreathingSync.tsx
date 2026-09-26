@@ -60,7 +60,7 @@ export function BreathingSync() {
       <div style={{ textAlign: "center" }} aria-live="polite">
         <div style={{ fontSize: "var(--t-24)", fontWeight: 650 }}>{active ? CYCLE[phase].label : "Дыхательная пауза"}</div>
         <div style={{ fontSize: "var(--t-13)", color: "var(--c-muted)", marginTop: 4 }}>
-          Вдох на 4 счёта, задержка на 4, выдох на 6. Помогает снизить тревогу.
+          Вдох на&nbsp;4&nbsp;счёта, задержка на&nbsp;4, выдох на&nbsp;6. Помогает снизить тревогу.
         </div>
       </div>
       <Button variant={active ? "secondary" : "primary"} onClick={() => setActive((a) => !a)}>

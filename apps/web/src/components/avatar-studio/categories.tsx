@@ -101,7 +101,7 @@ function Skin(p: CategoryProps) {
   return (
     <>
       <Section title="Тон кожи">
-        <ColorControl label="Тон кожи" palette={SKIN_TONES} mode="skin" sliderLabel="Тон кожи: темнее и теплее или светлее" {...color(p, "skin", "tone")} />
+        <ColorControl label="Тон кожи" palette={SKIN_TONES} mode="skin" sliderLabel="Тон кожи: темнее и&nbsp;теплее или&nbsp;светлее" {...color(p, "skin", "tone")} />
       </Section>
       <Section title="Румянец">
         <RangeField label="Насколько заметен" min="Нет" max="Ярко" {...unit(p, "skin", "blush")} />
@@ -145,7 +145,7 @@ function Hair(p: CategoryProps) {
         <OptionGrid ariaLabel="Причёска" options={HAIR_STYLES} labels={RU.HAIR_RU} render={THREE_Q} {...tiles(p, "hair", "style")} />
       </Section>
       <Section title="Мелирование">
-        <ColorControl label="Мелирование" palette={HAIR_COLORS} allowNone noneLabel="Без мелирования" {...color(p, "hair", "highlight")} />
+        <ColorControl label="Мелирование" palette={HAIR_COLORS} allowNone noneLabel="Без&nbsp;мелирования" {...color(p, "hair", "highlight")} />
       </Section>
     </>
   );
@@ -184,8 +184,8 @@ function Eyes(p: CategoryProps) {
       <Section title="Ресницы">
         <OptionGrid ariaLabel="Ресницы" options={LASH_STYLES} labels={RU.LASH_RU} render={EYES_ZOOM} {...tiles(p, "eyes", "lashes")} />
       </Section>
-      <Section title="Тени для век">
-        <ColorControl label="Тени для век" palette={SHADOW_COLORS} allowNone noneLabel="Без теней" {...color(p, "eyes", "shadow")} />
+      <Section title="Тени для&nbsp;век">
+        <ColorControl label="Тени для&nbsp;век" palette={SHADOW_COLORS} allowNone noneLabel="Без&nbsp;теней" {...color(p, "eyes", "shadow")} />
       </Section>
     </>
   );
@@ -246,11 +246,11 @@ function FacialHairCat(p: CategoryProps) {
     <>
       {p.cfg.facialHair.style !== "none" && (
         <Section title="Цвет">
-          <ColorControl label="Цвет бороды и усов" palette={HAIR_COLORS} {...color(p, "facialHair", "color")} />
+          <ColorControl label="Цвет бороды и&nbsp;усов" palette={HAIR_COLORS} {...color(p, "facialHair", "color")} />
         </Section>
       )}
       <Section title="Стиль">
-        <OptionGrid ariaLabel="Борода и усы" options={FACIAL_HAIR} labels={RU.FACIAL_HAIR_RU} {...tiles(p, "facialHair", "style")} />
+        <OptionGrid ariaLabel="Борода и&nbsp;усы" options={FACIAL_HAIR} labels={RU.FACIAL_HAIR_RU} {...tiles(p, "facialHair", "style")} />
       </Section>
     </>
   );
@@ -266,7 +266,7 @@ function EyewearCat(p: CategoryProps) {
           title={part === "frame" ? "Цвет оправы" : "Цвет линз"}
           aside={
             <Segmented
-              ariaLabel="Что красим"
+              ariaLabel="Что&nbsp;красим"
               value={part}
               onChange={setPart}
               options={[
@@ -314,14 +314,14 @@ function MakeupCat(p: CategoryProps) {
       <Section title="Помада">
         <ColorControl label="Цвет губ" palette={LIP_COLORS} {...color(p, "mouth", "lipColor")} />
       </Section>
-      <Section title="Тени для век">
-        <ColorControl label="Тени для век" palette={SHADOW_COLORS} allowNone noneLabel="Без теней" {...color(p, "eyes", "shadow")} />
+      <Section title="Тени для&nbsp;век">
+        <ColorControl label="Тени для&nbsp;век" palette={SHADOW_COLORS} allowNone noneLabel="Без&nbsp;теней" {...color(p, "eyes", "shadow")} />
       </Section>
       <Section title="Румяна">
         <RangeField label="Румяна" min="Нет" max="Ярко" {...unit(p, "skin", "blush")} />
       </Section>
-      <Section title="Ресницы и подводка">
-        <OptionGrid ariaLabel="Ресницы и подводка" options={LASH_STYLES} labels={RU.LASH_RU} render={EYES_ZOOM} {...tiles(p, "eyes", "lashes")} />
+      <Section title="Ресницы и&nbsp;подводка">
+        <OptionGrid ariaLabel="Ресницы и&nbsp;подводка" options={LASH_STYLES} labels={RU.LASH_RU} render={EYES_ZOOM} {...tiles(p, "eyes", "lashes")} />
       </Section>
     </>
   );
@@ -336,7 +336,7 @@ export const CATEGORIES: { id: string; label: string; Panel: (p: CategoryProps) 
   { id: "nose", label: "Нос", Panel: Nose },
   { id: "mouth", label: "Рот", Panel: Mouth },
   { id: "ears", label: "Уши", Panel: Ears },
-  { id: "facial-hair", label: "Борода и усы", Panel: FacialHairCat },
+  { id: "facial-hair", label: "Борода и\u00a0усы", Panel: FacialHairCat },
   { id: "eyewear", label: "Очки", Panel: EyewearCat },
   { id: "headwear", label: "Головной убор", Panel: HeadwearCat },
   { id: "makeup", label: "Макияж", Panel: MakeupCat },

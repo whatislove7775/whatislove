@@ -16,14 +16,14 @@ function left(iso: string, now: number) {
   if (min <= 0) return "время вышло";
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return h ? `ещё ${h} ч ${m} мин` : `ещё ${m} мин`;
+  return h ? `ещё ${h} ч\u00a0${m} мин` : `ещё ${m} мин`;
 }
 
 const clock = (iso: string) => new Date(iso).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 
 const SIDES: { role: LabRole; title: string; text: string; icon: typeof Smile }[] = [
-  { role: "client", title: "Как клиент", text: "Аватар вместо камеры и фильтр голоса. Так звонок видит специалист.", icon: Smile },
-  { role: "psychologist", title: "Как специалист", text: "Настоящая камера и звук. Так звонок видит клиент.", icon: Video },
+  { role: "client", title: "Как\u00a0клиент", text: "Аватар вместо камеры и\u00a0фильтр голоса. Так звонок видит специалист.", icon: Smile },
+  { role: "psychologist", title: "Как\u00a0специалист", text: "Настоящая камера и\u00a0звук. Так звонок видит клиент.", icon: Video },
 ];
 
 export function TestCallPanel() {
@@ -64,9 +64,9 @@ export function TestCallPanel() {
       });
       setRooms((prev) => [room, ...(prev ?? [])].slice(0, 5));
       setLabel("");
-      toast("Комната готова. Откройте ссылки на двух устройствах.");
+      toast("Комната готова. Откройте ссылки на\u00a0двух устройствах.");
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось создать комнату.");
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось создать комнату.");
     } finally {
       setBusy(false);
     }
@@ -76,14 +76,14 @@ export function TestCallPanel() {
     try {
       await labApi.close(room.id);
       setRooms((prev) => (prev ?? []).filter((r) => r.id !== room.id));
-      toast("Комната закрыта, ссылки больше не работают.");
+      toast("Комната закрыта, ссылки больше не\u00a0работают.");
     } catch (e) {
       toast((e as Error).message);
     }
   };
 
   const copy = async (room: TestRoom, role: LabRole) => {
-    toast((await copyText(labLink(room, role, origin))) ? "Ссылка скопирована" : "Не получилось скопировать, выделите ссылку вручную");
+    toast((await copyText(labLink(room, role, origin))) ? "Ссылка скопирована" : "Не\u00a0получилось скопировать, выделите ссылку вручную");
   };
 
   const local = /^https?:\/\/(localhost|127\.|0\.0\.0\.0)/.test(origin);
@@ -94,13 +94,13 @@ export function TestCallPanel() {
       <Card as="section">
         <CardHead
           icon={<PhoneCall size={20} />}
-          title="Тестовый звонок на двух устройствах"
-          sub="Без записи на созвон и без оплаты. Комната живёт 2 часа, в статистику и выплаты не попадает."
+          title="Тестовый звонок на&nbsp;двух устройствах"
+          sub="Без&nbsp;записи на&nbsp;созвон и&nbsp;без&nbsp;оплаты. Комната живёт 2&nbsp;часа, в&nbsp;статистику и&nbsp;выплаты не&nbsp;попадает."
         />
         <div className={s.createRow}>
           <Input
             label="Название (необязательно)"
-            placeholder="Например, ноутбук и айфон"
+            placeholder="Например, ноутбук и&nbsp;айфон"
             value={label}
             maxLength={80}
             onChange={(e) => setLabel(e.target.value)}
@@ -114,14 +114,14 @@ export function TestCallPanel() {
             checked={useLabAvatar && !!labAvatar}
             disabled={!labAvatar}
             onChange={setUseLabAvatar}
-            label="Аватар клиента из песочницы"
-            hint={labAvatar ? "Сторона клиента войдёт с аватаром, выбранным во вкладке «Аватар и маска»." : "Выберите аватар во вкладке «Аватар и маска» и нажмите «Использовать в тестовом звонке»."}
+            label="Аватар клиента из&nbsp;песочницы"
+            hint={labAvatar ? "Сторона клиента войдёт с\u00a0аватаром, выбранным во\u00a0вкладке «Аватар и\u00a0маска»." : "Выберите аватар во\u00a0вкладке «Аватар и\u00a0маска» и\u00a0нажмите «Использовать в\u00a0тестовом звонке»."}
           />
           {!!labAvatar && useLabAvatar && <AvatarThumb config={normalizeAvatar(labAvatar)} size={44} />}
         </div>
         {local && (
           <p className={s.notice}>
-            Страница открыта на {origin}. Телефон не увидит этот адрес: для проверки на двух устройствах откройте лабораторию на aprosop.ru.
+            Страница открыта на {origin}. Телефон не&nbsp;увидит этот адрес: для&nbsp;проверки на&nbsp;двух устройствах откройте лабораторию на&nbsp;aprosop.ru.
           </p>
         )}
       </Card>
@@ -134,7 +134,7 @@ export function TestCallPanel() {
           <EmptyState
             icon={<PhoneCall size={22} />}
             title="Активных комнат нет"
-            text="Создайте комнату: вы получите две ссылки, для клиента и для специалиста. Одну откройте на компьютере, вторую отсканируйте телефоном."
+            text="Создайте комнату: вы&nbsp;получите две ссылки, для&nbsp;клиента и&nbsp;для&nbsp;специалиста. Одну откройте на&nbsp;компьютере, вторую отсканируйте телефоном."
           />
         </Card>
       ) : (
@@ -142,7 +142,7 @@ export function TestCallPanel() {
           <Card as="section" key={room.id} className={s.roomCard}>
             <div className={s.roomHead}>
               <div style={{ minWidth: 0 }}>
-                <div className={s.roomTitle}>{room.label || `Комната от ${clock(room.created_at)}`}</div>
+                <div className={s.roomTitle}>{room.label || `Комната от\u00a0${clock(room.created_at)}`}</div>
                 <div className={s.muted}>
                   Действует до {clock(room.expires_at)}, {left(room.expires_at, now)}
                 </div>
@@ -169,7 +169,7 @@ export function TestCallPanel() {
                       <p className={s.muted}>{text}</p>
                       <div className={s.sideActions}>
                         <Button variant="secondary" size="sm" icon={<ExternalLink size={16} />} onClick={() => window.open(href, "_blank", "noopener")}>
-                          Открыть в новой вкладке
+                          Открыть в&nbsp;новой вкладке
                         </Button>
                         <Button variant="ghost" size="sm" icon={<Copy size={16} />} onClick={() => copy(room, role)}>
                           Скопировать ссылку

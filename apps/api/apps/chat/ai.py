@@ -1,16 +1,17 @@
 """
 «Тиша» — ИИ-помощник для поддержки и самопомощи (не психолог и не врач).
 
-Запросы к Anthropic Claude API идут только с сервера. В модель уходит только
+Запросы к ИИ-провайдеру (AI_PROVIDER: anthropic / gigachat / openai_compatible,
+см. ai_providers.py и docs/AI.md) идут только с сервера. В модель уходит только
 текст переписки с Тишей (без псевдонима, id и прочих данных пользователя);
 email и телефоны, если человек их напишет, заменяются на «[скрыто]».
 """
 import re
 from collections.abc import AsyncIterator
 
-from . import conf
+from .ai_providers import AIRefusal, get_provider  # noqa: F401 — AIRefusal реэкспортируется
 
-SYSTEM_PROMPT = """Ты — Тиша, ИИ-помощник анонимного сервиса психологической поддержки aprosop. \
+SYSTEM_PROMPT = """Ты — Тиша, ИИ-помощник анонимного сервиса психологической поддержки Aprosop. \
 Ты мягкое, спокойное существо-талисман сервиса. Ты говоришь по-русски, обращаешься на «ты», \
 если человек сам не перешёл на «вы» — тогда тоже на «вы».
 
@@ -86,10 +87,6 @@ HISTORY_LIMIT = 40
 MAX_TOKENS = 4096
 
 
-class AIRefusal(Exception):
-    pass
-
-
 def scrub(text: str) -> str:
     """Убирает email и телефоны перед отправкой провайдеру."""
     return _PHONE.sub("[скрыто]", _EMAIL.sub("[скрыто]", text))
@@ -117,21 +114,15 @@ def build_history(pairs: list[tuple[str, str]]) -> list[dict]:
     return out
 
 
-async def stream_reply(history: list[dict]) -> AsyncIterator[str]:
-    """Стримит ответ модели по кусочкам текста. Бросает AIRefusal при отказе."""
-    import anthropic
+def enabled() -> bool:
+    provider = get_provider()
+    return bool(provider and provider.configured())
 
-    async with anthropic.AsyncAnthropic(api_key=conf.ai_api_key(), timeout=90.0, max_retries=2) as client:
-        async with client.messages.stream(
-            model=conf.ai_model(),
-            max_tokens=MAX_TOKENS,
-            system=SYSTEM_PROMPT,
-            messages=history,
-            output_config={"effort": conf.ai_effort()},
-            cache_control={"type": "ephemeral"},
-        ) as stream:
-            async for text in stream.text_stream:
-                yield text
-            final = await stream.get_final_message()
-            if final.stop_reason == "refusal":
-                raise AIRefusal()
+
+async def stream_reply(history: list[dict]) -> AsyncIterator[str]:
+    """Стримит ответ выбранного провайдера по кусочкам текста. Бросает AIRefusal при отказе."""
+    provider = get_provider()
+    if provider is None or not provider.configured():
+        raise RuntimeError("AI provider is not configured")
+    async for text in provider.stream(SYSTEM_PROMPT, history, MAX_TOKENS):
+        yield text

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Badge, Button, useToast } from "@/ui";
 import { attachmentUrl } from "@/lib/api/chat";
+import { AttachmentViewer, viewKind } from "@/components/chat/AttachmentViewer";
 import { dialogsApi, type CallInfo, type DialogDetail, type DialogItem } from "@/lib/api/dialogs";
 import { durationLabel } from "@/lib/api/availability";
 import { plural, rub } from "@/lib/format";
@@ -78,16 +79,16 @@ export function DialogSummary({ item, detail }: { item: DialogItem; detail: Dial
   let main: string;
   if (call) {
     kicker = live ? "Созвон идёт" : call.status === "awaiting_payment" ? "Созвон ждёт оплаты" : "Ближайший созвон";
-    if (call.is_intro) kicker = live ? "Знакомство идёт" : call.status === "awaiting_payment" ? "Знакомство ждёт оплаты" : "Знакомство, 15 минут";
+    if (call.is_intro) kicker = live ? "Знакомство идёт" : call.status === "awaiting_payment" ? "Знакомство ждёт оплаты" : "Знакомство, 15\u00a0минут";
     main = live
       ? range(call.scheduled_at, call.duration_minutes)
       : `${weekdayDay(call.scheduled_at)}, ${range(call.scheduled_at, call.duration_minutes)}`;
   } else if (pending.length) {
-    kicker = role === "client" ? "Специалист предлагает время" : "Вы предложили время";
+    kicker = role === "client" ? "Специалист предлагает время" : "Вы\u00a0предложили время";
     main = `${weekdayDay(pending[0].scheduled_at)}, ${range(pending[0].scheduled_at, pending[0].duration_minutes)}`;
   } else {
-    kicker = "Созвон не назначен";
-    main = role === "client" ? "Выберите время из расписания специалиста" : "Предложите клиенту время из расписания";
+    kicker = "Созвон не\u00a0назначен";
+    main = role === "client" ? "Выберите время из\u00a0расписания специалиста" : "Предложите клиенту время из\u00a0расписания";
   }
 
   let action: React.ReactNode = null;
@@ -137,7 +138,7 @@ export function DialogSummary({ item, detail }: { item: DialogItem; detail: Dial
       className={s.sum}
       data-tone={live ? "live" : call ? "call" : "empty"}
       data-open={open && expandable ? "" : undefined}
-      aria-label="Созвоны в диалоге"
+      aria-label="Созвоны в&nbsp;диалоге"
     >
       <div className={s.sumRow}>
         <span className={s.sumIcon} aria-hidden>
@@ -157,7 +158,7 @@ export function DialogSummary({ item, detail }: { item: DialogItem; detail: Dial
             className={s.sumToggle}
             onClick={toggle}
             aria-expanded={open}
-            aria-label={open ? "Свернуть" : "Подробнее о созвоне"}
+            aria-label={open ? "Свернуть" : "Подробнее о\u00a0созвоне"}
           >
             <ChevronDown size={18} strokeWidth={2} />
           </button>
@@ -172,7 +173,7 @@ export function DialogSummary({ item, detail }: { item: DialogItem; detail: Dial
                 <div className={s.sumMeta}>
                   {durationLabel(call.duration_minutes)}, {rub(call.amount_rub)}
                   {CALL_STATUS[call.status] && !live ? ` · ${CALL_STATUS[call.status].label.toLowerCase()}` : ""}
-                  {!live && !call.can_join && call.status !== "awaiting_payment" ? " · вход откроется за 10 минут до начала" : ""}
+                  {!live && !call.can_join && call.status !== "awaiting_payment" ? " · вход откроется за\u00a010\u00a0минут до\u00a0начала" : ""}
                 </div>
                 {call.status === "awaiting_payment" && role === "client" && !ctx && (
                   <PayCall sessionId={call.id} amountRub={call.amount_rub} paymentUrl={call.payment_url} onPaid={() => undefined} />
@@ -222,7 +223,7 @@ export function DialogSummary({ item, detail }: { item: DialogItem; detail: Dial
               </div>
             )}
             {role === "client" && call && !live && (
-              <div className={s.sumRule}>Бесплатно отменить или перенести можно за {detail.rules.free_cancel_hours} ч до начала.</div>
+              <div className={s.sumRule}>Бесплатно отменить или&nbsp;перенести можно за {detail.rules.free_cancel_hours} ч&nbsp;до&nbsp;начала.</div>
             )}
           </div>
         </div>
@@ -315,7 +316,7 @@ function History({ detail }: { detail: DialogDetail }) {
     <section className={s.section}>
       <div className={s.sectionTitle}>История созвонов</div>
       {past.length === 0 ? (
-        <p className={s.muted}>Здесь появятся прошедшие и отменённые созвоны.</p>
+        <p className={s.muted}>Здесь появятся прошедшие и&nbsp;отменённые созвоны.</p>
       ) : (
         <div className={s.rows}>
           {past.slice(0, 12).map((c) => {
@@ -331,7 +332,7 @@ function History({ detail }: { detail: DialogDetail }) {
                     {weekdayDay(c.scheduled_at)}, {hm(c.scheduled_at)}
                   </span>
                   <span className={s.rowSub}>
-                    {c.status === "completed" && c.actual_minutes ? `${c.actual_minutes} мин из ${c.duration_minutes}` : durationLabel(c.duration_minutes)}
+                    {c.status === "completed" && c.actual_minutes ? `${c.actual_minutes} мин из\u00a0${c.duration_minutes}` : durationLabel(c.duration_minutes)}
                   </span>
                 </span>
                 {st && <Badge tone={st.tone}>{st.label}</Badge>}
@@ -347,6 +348,7 @@ function History({ detail }: { detail: DialogDetail }) {
 function Files({ detail }: { detail: DialogDetail }) {
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<DialogDetail["files"][number] | null>(null);
   const download = async (id: string, name: string) => {
     setBusy(id);
     try {
@@ -358,7 +360,7 @@ function Files({ detail }: { detail: DialogDetail }) {
       a.click();
       a.remove();
     } catch {
-      toast("Не получилось скачать файл", { error: true });
+      toast("Не\u00a0получилось скачать файл", { error: true });
     } finally {
       setBusy(null);
     }
@@ -369,13 +371,18 @@ function Files({ detail }: { detail: DialogDetail }) {
       {detail.files.length === 0 ? (
         <p className={s.muted}>
           {detail.my_role === "specialist"
-            ? "Материалы, которые вы отправите клиенту в диалоге, соберутся здесь."
-            : "Материалы от специалиста соберутся здесь."}
+            ? "Материалы, которые вы\u00a0отправите клиенту в\u00a0диалоге, соберутся здесь."
+            : "Материалы от\u00a0специалиста соберутся здесь."}
         </p>
       ) : (
         <div className={s.rows}>
           {detail.files.map((f) => (
-            <button key={f.message_id} type="button" className={s.row} onClick={() => download(f.message_id, f.name)}>
+            <button
+              key={f.message_id}
+              type="button"
+              className={s.row}
+              onClick={() => (viewKind(f.mime, f.name) ? setViewing(f) : download(f.message_id, f.name))}
+            >
               <span className={s.rowIcon} aria-hidden>
                 {busy === f.message_id ? <Clock3 size={16} /> : <FileText size={16} strokeWidth={1.8} />}
               </span>
@@ -391,6 +398,9 @@ function Files({ detail }: { detail: DialogDetail }) {
             </button>
           ))}
         </div>
+      )}
+      {viewing && (
+        <AttachmentViewer msgId={viewing.message_id} name={viewing.name} mime={viewing.mime} onClose={() => setViewing(null)} />
       )}
     </section>
   );
@@ -439,9 +449,9 @@ function Notes({ id }: { id: string }) {
   return (
     <section className={s.section}>
       <div className={s.sectionTitle}>
-        <span>Заметки о клиенте</span>
+        <span>Заметки о&nbsp;клиенте</span>
         <span className={s.noteMeta}>
-          {state === "saving" ? "Сохраняем…" : state === "saved" ? "Сохранено" : state === "error" ? "Не сохранилось" : ""}
+          {state === "saving" ? "Сохраняем…" : state === "saved" ? "Сохранено" : state === "error" ? "Не\u00a0сохранилось" : ""}
         </span>
       </div>
       <textarea
@@ -449,8 +459,8 @@ function Notes({ id }: { id: string }) {
         value={text}
         disabled={!loaded}
         maxLength={10000}
-        placeholder="С чем пришёл клиент, о чём договорились, что обсудить в следующий раз"
-        aria-label="Заметки о клиенте"
+        placeholder="С&nbsp;чем&nbsp;пришёл клиент, о&nbsp;чём договорились, что&nbsp;обсудить в&nbsp;следующий раз"
+        aria-label="Заметки о&nbsp;клиенте"
         onChange={(e) => {
           const v = e.target.value;
           setText(v);
@@ -471,8 +481,7 @@ function Notes({ id }: { id: string }) {
         }}
       />
       <span className={s.noteMeta}>
-        <Lock size={12} strokeWidth={2} aria-hidden style={{ verticalAlign: -1 }} /> Видны только вам, хранятся в
-        зашифрованном виде
+        <Lock size={12} strokeWidth={2} aria-hidden style={{ verticalAlign: -1 }} /> Видны только вам, хранятся в&nbsp;зашифрованном виде
       </span>
     </section>
   );
@@ -484,10 +493,10 @@ function Privacy({ item }: { item: DialogItem | DialogDetail }) {
       <div className={s.sectionTitle}>Приватность</div>
       <p className={s.muted}>
         <Timer size={14} strokeWidth={1.8} aria-hidden style={{ verticalAlign: -2 }} />{" "}
-        {item.retention === "1h" ? "Исчезающие сообщения: новые исчезают через 1 час." : item.retention === "24h" ? "Исчезающие сообщения: новые исчезают через 1 день." : "Исчезающие сообщения выключены: переписка хранится, пока её не удалят."}{" "}
-        {item.my_role === "client" ? "Режим меняется кнопкой над перепиской." : "Режим выбирает клиент."}
+        {item.retention === "1h" ? "Исчезающие сообщения: новые исчезают через 1\u00a0час." : item.retention === "24h" ? "Исчезающие сообщения: новые исчезают через 1\u00a0день." : "Исчезающие сообщения выключены: переписка хранится, пока её\u00a0не\u00a0удалят."}{" "}
+        {item.my_role === "client" ? "Режим меняется кнопкой над\u00a0перепиской." : "Режим выбирает клиент."}
       </p>
-      <p className={s.muted}>Переписка зашифрована. Сотрудники платформы не имеют доступа к диалогам клиентов и специалистов.</p>
+      <p className={s.muted}>Переписка зашифрована. Сотрудники платформы не&nbsp;имеют доступа к&nbsp;диалогам клиентов и&nbsp;специалистов.</p>
     </section>
   );
 }
@@ -506,13 +515,13 @@ function PinnedInfo({ item }: { item: DialogItem }) {
         )}
         <div className={s.personBody}>
           <div className={s.personName}>{item.counterpart.name}</div>
-          <div className={s.personSub}>{isAI ? "ИИ-помощник, не психолог" : "Отвечаем в течение нескольких часов"}</div>
+          <div className={s.personSub}>{isAI ? "ИИ-помощник, не\u00a0психолог" : "Отвечаем в\u00a0течение нескольких часов"}</div>
         </div>
       </div>
       <p className={s.muted}>
         {isAI
-          ? "Поможет разобраться в чувствах, подскажет практику или подготовиться к созвону."
-          : "Оплата, созвоны, работа сервиса. Поддержка не видит ваши диалоги со специалистами."}
+          ? "Поможет разобраться в\u00a0чувствах, подскажет практику или\u00a0подготовиться к\u00a0созвону."
+          : "Оплата, созвоны, работа сервиса. Поддержка не\u00a0видит ваши диалоги со\u00a0специалистами."}
       </p>
       <Privacy item={item} />
       {!isAI && (

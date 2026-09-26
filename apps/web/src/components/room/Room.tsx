@@ -94,7 +94,7 @@ function clock(iso: string) {
 function minutesText(sec: number) {
   const m = Math.max(1, Math.round(sec / 60));
   if (m < 60) return `${m} мин`;
-  return `${Math.floor(m / 60)} ч ${m % 60} мин`;
+  return `${Math.floor(m / 60)} ч\u00a0${m % 60} мин`;
 }
 
 function browserName() {
@@ -151,7 +151,7 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
         setLabJoin(res);
         setSession(labSession(res));
       })
-      .catch((e) => setLoadError(e instanceof ApiError ? e.message : "Не получилось открыть тестовую комнату."));
+      .catch((e) => setLoadError(e instanceof ApiError ? e.message : "Не\u00a0получилось открыть тестовую комнату."));
   }, [labToken]);
 
   useEffect(() => {
@@ -159,7 +159,7 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
     sessionsApi
       .get(sessionId)
       .then(setSession)
-      .catch((e) => setLoadError(e instanceof ApiError ? e.message : "Не получилось загрузить звонок."));
+      .catch((e) => setLoadError(e instanceof ApiError ? e.message : "Не\u00a0получилось загрузить звонок."));
   }, [authStatus, sessionId, isLab]);
 
   // Clients are only ever seen as their avatar; specialists use their real camera.
@@ -269,7 +269,7 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
     if (prevRemoteFace.current === call.remoteFace) return;
     prevRemoteFace.current = call.remoteFace;
     if (!isPro) return;
-    setFaceNote(call.remoteFace === "real" ? "Клиент включил настоящую камеру" : "Клиент вернулся к аватару");
+    setFaceNote(call.remoteFace === "real" ? "Клиент включил настоящую камеру" : "Клиент вернулся к\u00a0аватару");
     const t = setTimeout(() => setFaceNote(null), 5000);
     return () => clearTimeout(t);
   }, [call.remoteFace, isPro]);
@@ -320,7 +320,7 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
       setJoin(res);
       setPhase("call");
     } catch (e) {
-      setJoinError(e instanceof ApiError ? e.message : "Не получилось войти. Попробуйте ещё раз.");
+      setJoinError(e instanceof ApiError ? e.message : "Не\u00a0получилось войти. Попробуйте ещё раз.");
     } finally {
       setJoining(false);
     }
@@ -351,10 +351,10 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
       const v = remoteEl.current as (HTMLVideoElement & { setSinkId?: (id: string) => Promise<void> }) | null;
       v?.setSinkId?.(id)
         .then(() => setSink(id))
-        .catch(() => toast("Не получилось переключить динамик.", { error: true }));
+        .catch(() => toast("Не\u00a0получилось переключить динамик.", { error: true }));
       return;
     }
-    cam.switchDevice(kind, id).catch(() => toast("Не получилось переключить устройство. Возможно, оно занято другой программой.", { error: true }));
+    cam.switchDevice(kind, id).catch(() => toast("Не\u00a0получилось переключить устройство. Возможно, оно занято другой программой.", { error: true }));
   };
   useEffect(() => {
     const on = () => setFullscreen(!!document.fullscreenElement);
@@ -438,7 +438,7 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
             <h2 className={s.h2}>Звонок недоступен</h2>
             <p className={s.note}>{loadError}</p>
             <Button variant="primary" href={isLab ? "/admin/lab" : homeFor(user?.role)}>
-              {isLab ? "В лабораторию" : "На главную"}
+              {isLab ? "В\u00a0лабораторию" : "На\u00a0главную"}
             </Button>
           </div>
         </div>
@@ -484,30 +484,30 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
     const canJoin = session.can_join;
     const camReady = camState === "ready";
     const statusLine = isLab
-      ? `Тестовый звонок, ссылка действует до ${clock(labJoin?.test_room.expires_at ?? session.scheduled_at)}`
+      ? `Тестовый звонок, ссылка действует до\u00a0${clock(labJoin?.test_room.expires_at ?? session.scheduled_at)}`
       : `${when(session.scheduled_at)}, ${session.duration_minutes} мин`;
     const tag = !camReady
       ? null
       : isPro
         ? "Так вас увидит клиент"
         : avatarCam.faceLost
-          ? "Лицо не видно. Сядьте ближе к свету"
+          ? "Лицо не\u00a0видно. Сядьте ближе к\u00a0свету"
           : !avatarCam.tracking
             ? "Подключаем распознавание мимики"
             : showingFace
               ? "Специалист увидит ваше настоящее лицо"
               : avatarCam.calibrating
-                ? "Запоминаем спокойное лицо. Расслабьтесь и смотрите в камеру"
+                ? "Запоминаем спокойное лицо. Расслабьтесь и\u00a0смотрите в\u00a0камеру"
                 : "Так вас увидит специалист";
     return (
       <div className={s.room} ref={rootRef}>
         <PanicButton />
         <header className={s.lobbyHead}>
           <Button variant="ghost" size="sm" href={dialogueHref} icon={<ArrowLeft size={18} />}>
-            {isLab ? "В лабораторию" : "К диалогу"}
+            {isLab ? "В\u00a0лабораторию" : "К\u00a0диалогу"}
           </Button>
           <span className={s.secure}>
-            <Lock size={14} /> Зашифровано, без записи
+            <Lock size={14} /> Зашифровано, без&nbsp;записи
           </span>
         </header>
         <div className={s.lobby}>
@@ -536,8 +536,8 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
                 ) : (
                   <p className={s.previewText}>
                     {isPro
-                      ? "Клиент увидит ваше настоящее видео. Проверьте свет и кадр перед входом."
-                      : "Камера нужна, чтобы аватар повторял вашу мимику. Собеседник видит только аватар, картинка с камеры остаётся на этом устройстве."}
+                      ? "Клиент увидит ваше настоящее видео. Проверьте свет и\u00a0кадр перед входом."
+                      : "Камера нужна, чтобы аватар повторял вашу мимику. Собеседник видит только аватар, картинка с\u00a0камеры остаётся на\u00a0этом устройстве."}
                   </p>
                 )}
                 {camError && <p className={s.errorText}>{camError}</p>}
@@ -573,24 +573,24 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
             {!isLab && (
               <div className={`${s.presence} ${peerHere ? s.presenceOn : ""}`} aria-live="polite">
                 <span className={s.presenceDot} />
-                {peerHere ? `${peerWord} уже в звонке и ждёт вас` : `${peerWord} ещё не подключился`}
+                {peerHere ? `${peerWord} уже в\u00a0звонке и\u00a0ждёт вас` : `${peerWord} ещё не\u00a0подключился`}
               </div>
             )}
 
             {!isPro && (
               <section className={s.block}>
-                <div className={s.label}>Как вас увидит специалист</div>
+                <div className={s.label}>Как&nbsp;вас увидит специалист</div>
                 <FaceChoice real={realFace} onAsk={() => setFaceAsk(true)} onAvatar={backToAvatar} />
                 <p className={s.note}>
                   {realFace
-                    ? "Специалист увидит ваше лицо с камеры. Вернуться к аватару можно в любой момент."
-                    : "По умолчанию только аватар. Лицо можно показать, если захотите."}
+                    ? "Специалист увидит ваше лицо с\u00a0камеры. Вернуться к\u00a0аватару можно в\u00a0любой момент."
+                    : "По\u00a0умолчанию только аватар. Лицо можно показать, если захотите."}
                 </p>
               </section>
             )}
             {!isPro && (
               <section className={s.block}>
-                <div className={s.label}>Фон за аватаром</div>
+                <div className={s.label}>Фон за&nbsp;аватаром</div>
                 <BackdropPicker value={backdrop} onChange={setBackdrop} size="sm" />
               </section>
             )}
@@ -598,7 +598,7 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
               <section className={s.block}>
                 <div className={s.label}>Голос</div>
                 <VoicePicker value={voice} onChange={setVoice} compact />
-                <p className={s.note}>{VOICE_PRESETS.find((p) => p.value === voice)?.hint}. Можно поменять во время звонка.</p>
+                <p className={s.note}>{VOICE_PRESETS.find((p) => p.value === voice)?.hint}. Можно поменять во&nbsp;время звонка.</p>
               </section>
             )}
             {!isPro && avatarCam.tracking && (
@@ -608,16 +608,16 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
             )}
 
             <Button variant="primary" size="lg" block disabled={!canJoin || !camReady} loading={joining} onClick={enter}>
-              {peerHere ? "Присоединиться" : "Войти в звонок"}
+              {peerHere ? "Присоединиться" : "Войти в\u00a0звонок"}
             </Button>
-            {!canJoin && <p className={s.note}>Вход откроется за 10 минут до начала.</p>}
-            {canJoin && !camReady && camState !== "starting" && <p className={s.note}>Сначала включите камеру: без неё {isPro ? "клиент вас не увидит" : "аватар не оживёт"}.</p>}
+            {!canJoin && <p className={s.note}>Вход откроется за&nbsp;10&nbsp;минут до&nbsp;начала.</p>}
+            {canJoin && !camReady && camState !== "starting" && <p className={s.note}>Сначала включите камеру: без&nbsp;неё {isPro ? "клиент вас не\u00a0увидит" : "аватар не\u00a0оживёт"}.</p>}
             {joinError && <p className={s.errorText}>{joinError}</p>}
             {isLab && (
               <p className={s.note} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
                 <FlaskConical size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-                Тестовая комната из лаборатории: без записи, оплаты и статистики. Вы входите как{" "}
-                {isPro ? "специалист (настоящая камера)" : "клиент (аватар и фильтр голоса)"}.
+                Тестовая комната из&nbsp;лаборатории: без&nbsp;записи, оплаты и&nbsp;статистики. Вы&nbsp;входите как{" "}
+                {isPro ? "специалист (настоящая камера)" : "клиент (аватар и\u00a0фильтр голоса)"}.
               </p>
             )}
           </div>
@@ -662,7 +662,7 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
               {isPro ? <div className={s.waitingPic}>{peerPic(132)}</div> : <TeaWait className={art.waitArt} />}
               <h3 className={s.h3}>{call.status === "connecting" ? "Подключаемся" : `Ждём, когда ${isPro ? "клиент" : "специалист"} войдёт`}</h3>
               <p className={s.note}>
-                {isPro ? "Как только клиент подключится, вы увидите его аватар." : "Специалист скоро подключится. Можно пока сделать пару спокойных вдохов."}
+                {isPro ? "Как\u00a0только клиент подключится, вы\u00a0увидите его аватар." : "Специалист скоро подключится. Можно пока сделать пару спокойных вдохов."}
               </p>
             </div>
           )}
@@ -680,7 +680,7 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
                   <WifiOff size={28} />
                 </span>
                 <h3 className={s.h3}>Связь прервалась</h3>
-                <p className={s.note}>Проверьте интернет. Мы попробуем соединиться заново, как только вы нажмёте кнопку.</p>
+                <p className={s.note}>Проверьте интернет. Мы&nbsp;попробуем соединиться заново, как&nbsp;только вы&nbsp;нажмёте кнопку.</p>
                 <div className={s.row}>
                   <Button variant="primary" onClick={call.retryNow} icon={<RefreshCw size={18} />}>
                     Переподключиться
@@ -730,7 +730,7 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
                   <span className={s.pillText}>{call.quality === "poor" ? "Слабая связь" : call.quality === "fair" ? "Средняя связь" : "Связь"}</span>
                 </span>
               )}
-              <span className={s.pill} title="Звук и видео идут напрямую и зашифрованы, ничего не записывается">
+              <span className={s.pill} title="Звук и&nbsp;видео идут напрямую и&nbsp;зашифрованы, ничего не&nbsp;записывается">
                 <Lock size={14} />
                 <span className={s.pillText}>Зашифровано</span>
               </span>
@@ -738,8 +738,8 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
           </header>
 
           {!isPro && showingFace && <FaceBadge className={s.callFace} onBack={backToAvatar} />}
-          {!isPro && avatarCam.faceLost && !videoOff && !showingFace && <div className={s.toast}>Лицо не видно, аватар замер. Сядьте ближе к свету</div>}
-          {remaining && remaining.left === 5 && connected && <div className={`${s.toast} ${showingFace ? s.toastLow : ""}`}>До конца звонка 5 минут</div>}
+          {!isPro && avatarCam.faceLost && !videoOff && !showingFace && <div className={s.toast}>Лицо не&nbsp;видно, аватар замер. Сядьте ближе к&nbsp;свету</div>}
+          {remaining && remaining.left === 5 && connected && <div className={`${s.toast} ${showingFace ? s.toastLow : ""}`}>До&nbsp;конца звонка 5&nbsp;минут</div>}
           {isPro && faceNote && (
             <div className={s.toast} role="status">
               {faceNote}
@@ -815,13 +815,13 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
                 ) : (
                   <div className={s.panelEmpty}>
                     <Users size={28} />
-                    <p className={s.note}>{isLab ? "В тестовой комнате нет чата диалога." : "Чат диалога появится здесь, как только загрузится."}</p>
+                    <p className={s.note}>{isLab ? "В\u00a0тестовой комнате нет чата диалога." : "Чат диалога появится здесь, как\u00a0только загрузится."}</p>
                   </div>
                 ))}
               {panel === "voice" && (
                 <>
                   <VoicePicker value={voice} onChange={setVoice} />
-                  <p className={s.note}>Специалист услышит новый голос сразу после переключения. Фильтр работает на вашем устройстве.</p>
+                  <p className={s.note}>Специалист услышит новый голос сразу после переключения. Фильтр работает на&nbsp;вашем устройстве.</p>
                 </>
               )}
               {panel === "more" && (
@@ -853,8 +853,8 @@ export function Room({ sessionId, labToken }: { sessionId: string; labToken?: st
       <Modal open={confirmEnd} onClose={() => setConfirmEnd(false)} title="Завершить звонок?" width={420}>
         <p className={s.note}>
           {remaining && remaining.left > 0
-            ? `До конца забронированного времени ${remaining.text.replace("ещё ", "")}. Вернуться можно, пока оно не закончилось.`
-            : "Звонок закончится для вас. Собеседник увидит, что вы вышли."}
+            ? `До\u00a0конца забронированного времени ${remaining.text.replace("ещё ", "")}. Вернуться можно, пока оно не\u00a0закончилось.`
+            : "Звонок закончится для\u00a0вас. Собеседник увидит, что\u00a0вы\u00a0вышли."}
         </p>
         <div className={s.modalActions}>
           <Button variant="ghost" onClick={() => setConfirmEnd(false)}>
@@ -1022,7 +1022,7 @@ function EndScreen({
       await callsApi.feedback(sessionId, { kind: "rating", rating, issues, tech: techRef.current });
       setSent(true);
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось отправить оценку.", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось отправить оценку.", { error: true });
     } finally {
       setBusy(false);
     }
@@ -1056,7 +1056,7 @@ function EndScreen({
 
         {!sent ? (
           <section className={s.rate}>
-            <div className={s.label}>Как прошла связь?</div>
+            <div className={s.label}>Как&nbsp;прошла связь?</div>
             <div className={s.stars} role="radiogroup" aria-label="Оценка связи" onMouseLeave={() => setHover(0)}>
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
@@ -1084,7 +1084,7 @@ function EndScreen({
           </section>
         ) : (
           <p className={s.thanks}>
-            <Check size={18} /> Спасибо за оценку
+            <Check size={18} /> Спасибо за&nbsp;оценку
           </p>
         )}
 
@@ -1092,11 +1092,11 @@ function EndScreen({
 
         <div className={s.endActions}>
           <Button variant="primary" block href={dialogueHref}>
-            {isLab ? "В лабораторию" : "Вернуться в диалог"}
+            {isLab ? "В\u00a0лабораторию" : "Вернуться в\u00a0диалог"}
           </Button>
           {canRejoin && (
             <Button variant="ghost" block onClick={onRejoin} icon={<RefreshCw size={18} />}>
-              Вернуться в звонок
+              Вернуться в&nbsp;звонок
             </Button>
           )}
           {isPro && !isLab && !completed && (
@@ -1106,7 +1106,7 @@ function EndScreen({
           )}
           {completed && <p className={s.thanks}>Звонок отмечен проведённым</p>}
         </div>
-        <p className={s.note}>Видео и звук не записывались.</p>
+        <p className={s.note}>Видео и&nbsp;звук не&nbsp;записывались.</p>
         {!isPro && !isLab && <HelpLine />}
       </div>
     </div>

@@ -52,7 +52,7 @@ export function DocFrame({ file, title }: { file: CredentialFileInfo; title: str
     return (
       <div className={s.frameState}>
         <FileText size={28} strokeWidth={1.6} aria-hidden />
-        <p>{error ?? "Не получилось открыть документ."}</p>
+        <p>{error ?? "Не\u00a0получилось открыть документ."}</p>
       </div>
     );
   }
@@ -61,7 +61,7 @@ export function DocFrame({ file, title }: { file: CredentialFileInfo; title: str
       <div className={s.pdfWrap}>
         <iframe className={s.pdf} src={url} title={title} />
         <a className={s.pdfFallback} href={url} target="_blank" rel="noopener noreferrer">
-          <ExternalLink size={16} aria-hidden /> Открыть PDF в новой вкладке
+          <ExternalLink size={16} aria-hidden /> Открыть PDF в&nbsp;новой вкладке
         </a>
       </div>
     );
@@ -127,7 +127,7 @@ export function DocViewer({
           {caption && <strong>{caption}</strong>}
           <span>
             {name}
-            {files.length > 1 ? `, ${Math.min(i, files.length - 1) + 1} из ${files.length}` : ""}
+            {files.length > 1 ? `, ${Math.min(i, files.length - 1) + 1} из\u00a0${files.length}` : ""}
           </span>
         </div>
         {url && (

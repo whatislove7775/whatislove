@@ -41,8 +41,8 @@ export function ReviewPrompt({ psychologistId, name }: { psychologistId: number;
   if (!show || done) return null;
   return (
     <div className={s.prompt}>
-      <strong>Как вам специалист?</strong>
-      <p>Анонимный отзыв поможет другим людям решиться на первый созвон</p>
+      <strong>Как&nbsp;вам специалист?</strong>
+      <p>Анонимный отзыв поможет другим людям решиться на&nbsp;первый созвон</p>
       <Button variant="primary" size="sm" icon={<PenLine size={16} />} onClick={() => setOpen(true)}>
         Оставить отзыв
       </Button>

@@ -10,7 +10,7 @@ import { Button } from "@/ui";
 import s from "./landing.module.css";
 
 const LINKS = [
-  { href: "/#how", label: "Как это работает" },
+  { href: "/#how", label: "Как\u00a0это\u00a0работает" },
   { href: "/#specialists", label: "Специалисты" },
   { href: "/#circles", label: "Круги" },
   { href: "/articles", label: "Полезное" },
@@ -18,9 +18,9 @@ const LINKS = [
 
 export function Brand() {
   return (
-    <Link href="/" className={s.brand} aria-label="aprosop, на главную">
+    <Link href="/" className={s.brand} aria-label="Aprosop, на&nbsp;главную">
       <LogoMark className={s.brandMark} size={32} />
-      aprosop
+      Aprosop
     </Link>
   );
 }

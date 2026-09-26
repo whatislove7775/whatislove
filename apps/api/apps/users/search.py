@@ -40,9 +40,17 @@ WHEN = {
 }
 EVENING_FROM_HOUR = 18
 WHEN_WINDOW_DAYS = 14  # «вечером» и «выходные» — в ближайшие две недели
+MAX_WINDOW_DAYS = 60  # диапазон дат (date_from/date_to) — не дальше двух месяцев
+
+# Время суток (по поясу клиента): ключ → (с какого часа, до какого, подпись)
+TIMES: dict[str, tuple[int, int, str]] = {
+    "morning": (6, 12, "Утро"),
+    "day": (12, 18, "День"),
+    "evening": (18, 24, "Вечер"),
+}
 
 GENDERS = ("female", "male")
-SORTS = ("relevance", "soon", "price", "experience")
+SORTS = ("relevance", "soon", "price", "rating", "experience")
 
 # Если человек забыл переключить раскладку: «nhtdjuf» → «тревога»
 _EN = "`qwertyuiop[]asdfghjkl;'zxcvbnm,."
@@ -88,9 +96,14 @@ class BadQuery(ValueError):
 class Query:
     q: str = ""
     topics: list[str] = field(default_factory=list)
-    approach: str = ""
+    approaches: list[str] = field(default_factory=list)  # любой из подходов
+    min_rate: int | None = None
     max_rate: int | None = None
-    when: str = ""
+    when: str = ""  # быстрые пресеты: today, 3days, evening, weekend
+    days: set[int] = field(default_factory=set)  # дни недели, 0 = понедельник
+    times: set[str] = field(default_factory=set)  # morning / day / evening
+    date_from: date | None = None
+    date_to: date | None = None
     duration: int | None = None
     min_experience: int | None = None
     gender: str = ""
@@ -100,13 +113,37 @@ class Query:
     tz: ZoneInfo | None = None
 
     @property
+    def approach(self) -> str:
+        return self.approaches[0] if self.approaches else ""
+
+    @property
     def needs_starts(self) -> bool:
-        return bool(self.when)
+        return bool(self.when or self.days or self.times or self.date_from or self.date_to)
 
     @property
     def is_empty(self) -> bool:
-        return not (self.q or self.topics or self.approach or self.max_rate or self.when or self.duration
-                    or self.min_experience or self.gender or self.language or self.intro)
+        return not (self.q or self.topics or self.approaches or self.min_rate or self.max_rate or self.duration
+                    or self.min_experience or self.gender or self.language or self.intro or self.needs_starts)
+
+
+def _list(params, name) -> list[str]:
+    out: list[str] = []
+    for raw in params.getlist(name) if hasattr(params, "getlist") else [params.get(name) or ""]:
+        for part in str(raw).split(","):
+            part = part.strip()
+            if part and part not in out:
+                out.append(part)
+    return out
+
+
+def _date(params, name) -> date | None:
+    raw = (params.get(name) or "").strip()
+    if not raw:
+        return None
+    try:
+        return date.fromisoformat(raw[:10])
+    except ValueError:
+        raise BadQuery(f"{name}: дата в формате ГГГГ-ММ-ДД.")
 
 
 def _int(params, name, lo=0, hi=1_000_000) -> int | None:
@@ -131,12 +168,26 @@ def parse(params) -> Query:
             part = part.strip()[:60]
             if part and fold(part) not in {fold(t) for t in topics}:
                 topics.append(part)
-    approach = (params.get("approach") or "").strip()
-    if approach and approach not in APPROACHES:
+    approaches = _list(params, "approach")
+    if any(a not in APPROACHES for a in approaches):
         raise BadQuery("Неизвестный подход.")
     when = (params.get("when") or "").strip()
     if when and when not in WHEN:
         raise BadQuery("when: today, 3days, evening или weekend.")
+    days: set[int] = set()
+    for d in _list(params, "days"):
+        if not (d.isdigit() and 0 <= int(d) <= 6):
+            raise BadQuery("days: числа 0–6 (0 — понедельник).")
+        days.add(int(d))
+    times = set(_list(params, "times"))
+    if times - TIMES.keys():
+        raise BadQuery("times: morning, day или evening.")
+    date_from, date_to = _date(params, "date_from"), _date(params, "date_to")
+    if date_from and date_to and date_to < date_from:
+        raise BadQuery("date_to раньше date_from.")
+    min_rate, max_rate = _int(params, "min_rate"), _int(params, "max_rate")
+    if min_rate is not None and max_rate is not None and max_rate < min_rate:
+        raise BadQuery("max_rate меньше min_rate.")
     duration = _int(params, "duration")
     if duration is not None and duration not in DURATION_OPTIONS:
         raise BadQuery("Такой длительности созвона нет.")
@@ -145,7 +196,7 @@ def parse(params) -> Query:
         raise BadQuery("gender: female или male.")
     sort = (params.get("sort") or "relevance").strip()
     if sort not in SORTS:
-        raise BadQuery("sort: relevance, soon, price или experience.")
+        raise BadQuery("sort: relevance, soon, price, rating или experience.")
     tz = None
     raw_tz = (params.get("tz") or "").strip()
     if raw_tz:
@@ -156,9 +207,14 @@ def parse(params) -> Query:
     return Query(
         q=(params.get("q") or "").strip()[:120],
         topics=topics[:10],
-        approach=approach,
-        max_rate=_int(params, "max_rate"),
+        approaches=approaches[:len(APPROACHES)],
+        min_rate=min_rate,
+        max_rate=max_rate,
         when=when,
+        days=days,
+        times=times,
+        date_from=date_from,
+        date_to=date_to,
         duration=duration,
         min_experience=_int(params, "min_experience", 0, 80),
         gender=gender,
@@ -229,6 +285,30 @@ def when_matches(when: str, starts: list[datetime], tz: ZoneInfo, now: datetime)
     return False
 
 
+def slot_matches(query: Query, start: datetime, tz: ZoneInfo, now: datetime) -> bool:
+    """Подходит ли начало созвона под все временные фильтры сразу (день недели, время суток, даты, пресет)."""
+    local = start.astimezone(tz)
+    if query.days and local.weekday() not in query.days:
+        return False
+    if query.times and not any(lo <= local.hour < hi for lo, hi, _ in (TIMES[t] for t in query.times)):
+        return False
+    if query.date_from and local.date() < query.date_from:
+        return False
+    if query.date_to and local.date() > query.date_to:
+        return False
+    if query.when and not when_matches(query.when, [start], tz, now):
+        return False
+    return True
+
+
+def scan_days(query: Query, tz: ZoneInfo, now: datetime) -> int:
+    """Сколько дней вперёд смотреть расписание: две недели или до конца выбранного диапазона дат."""
+    if not query.date_to:
+        return WHEN_WINDOW_DAYS
+    ahead = (query.date_to - now.astimezone(tz).date()).days + 1
+    return max(WHEN_WINDOW_DAYS, min(ahead, MAX_WINDOW_DAYS))
+
+
 def search(profiles, query: Query, now: datetime | None = None) -> list[Hit]:
     """Фильтрует и сортирует уже загруженные профили; ближайшее время — пакетно."""
     from apps.availability import bulk, engine
@@ -247,7 +327,7 @@ def search(profiles, query: Query, now: datetime | None = None) -> list[Hit]:
             continue
         if language and not any(fold(x) == language for x in p.languages or []):
             continue
-        if query.approach and query.approach not in approach_keys(p.approach):
+        if query.approaches and not set(query.approaches) & approach_keys(p.approach):
             continue
         score = 0.0
         if topics:
@@ -274,12 +354,19 @@ def search(profiles, query: Query, now: datetime | None = None) -> list[Hit]:
         h.price = engine.round_price(plan.settings.hourly_rate_rub, query.duration or plan.durations[0])
         if query.max_rate is not None and h.price > query.max_rate:
             continue
-        today = plan.today(now)
-        scanned_until = today + timedelta(days=WHEN_WINDOW_DAYS)
-        known = plan.starts(query.duration, today, scanned_until, now)
-        if query.when and not when_matches(query.when, known, tz, now):
+        if query.min_rate is not None and h.price < query.min_rate:
             continue
-        h.next_start = plan.next_start(query.duration, now, scanned_until, known)
+        today = plan.today(now)
+        scanned_until = today + timedelta(days=scan_days(query, tz, now))
+        known = plan.starts(query.duration, today, scanned_until, now)
+        if query.needs_starts:
+            # ближайшее окно — первое, что подходит под выбранное время
+            match = next((st for st in sorted(known) if slot_matches(query, st, tz, now)), None)
+            if match is None:
+                continue
+            h.next_start = match
+        else:
+            h.next_start = plan.next_start(query.duration, now, scanned_until, known)
         kept.append(h)
 
     far = now + timedelta(days=3650)
@@ -287,6 +374,12 @@ def search(profiles, query: Query, now: datetime | None = None) -> list[Hit]:
         kept.sort(key=lambda h: (h.next_start or far, -h.score))
     elif query.sort == "price":
         kept.sort(key=lambda h: (h.price, h.next_start or far))
+    elif query.sort == "rating":
+        def rating_key(h):
+            avg = getattr(h.profile, "rating_avg", None)
+            total = getattr(h.profile, "reviews_total", 0) or 0
+            return (avg is None, -(avg or 0), -total, h.next_start or far)
+        kept.sort(key=rating_key)
     elif query.sort == "experience":
         kept.sort(key=lambda h: (-(h.profile.experience_years or 0), h.next_start or far))
     elif words or topics:
@@ -351,6 +444,7 @@ def facets(profiles) -> dict:
         "genders": [{"value": g, "count": genders[g]} for g in GENDERS if genders[g]],
         "price": {"min": min(rates, default=0), "max": max(rates, default=0)},
         "when": [{"value": k, "label": v} for k, v in WHEN.items()],
+        "times": [{"value": k, "label": v[2], "from": v[0], "to": v[1]} for k, v in TIMES.items()],
         "intro": intro,  # сколько специалистов проводят «Знакомство, 15 минут»
     }
 

@@ -74,19 +74,18 @@ export function NextSessionCard({
           </h2>
         </div>
         <p className={s.lead}>
-          Выберите специалиста и удобное время. Сессия пройдёт по видео, но
-          вместо лица специалист увидит ваш аватар.
+          Выберите специалиста и&nbsp;удобное время. Сессия пройдёт по&nbsp;видео, но&nbsp;вместо лица специалист увидит ваш аватар.
         </p>
         <div className={s.rows}>
           <Row
             icon={<CalendarDays size={18} strokeWidth={1.8} />}
-            title="От 50 минут до 3 часов"
-            sub="Длительность выбираете при записи, цена зависит от неё"
+            title="От&nbsp;50&nbsp;минут до&nbsp;3&nbsp;часов"
+            sub="Длительность выбираете при&nbsp;записи, цена зависит от&nbsp;неё"
           />
           <Row
             icon={<ShieldCheck size={18} strokeWidth={1.8} />}
             title="Оплата после подтверждения"
-            sub="Отменить можно до начала созвона"
+            sub="Отменить можно до&nbsp;начала созвона"
           />
         </div>
         <SearchTrigger variant="white" size="lg" block>
@@ -123,7 +122,7 @@ export function NextSessionCard({
       <div className={s.rows}>
         <Row
           icon={<CalendarDays size={18} strokeWidth={1.8} />}
-          title={`${dayLabel(starts)} в ${time(starts)}`}
+          title={`${dayLabel(starts)} в\u00a0${time(starts)}`}
           sub={
             untilLabel(starts) === "уже началась"
               ? "Сессия уже идёт"
@@ -133,13 +132,13 @@ export function NextSessionCard({
         {session.can_join ? (
           <Row
             icon={<ShieldCheck size={18} strokeWidth={1.8} />}
-            title="Вы будете аватаром"
-            sub="Ваше лицо не передаётся, звонок зашифрован"
+            title="Вы&nbsp;будете аватаром"
+            sub="Ваше лицо не&nbsp;передаётся, звонок зашифрован"
           />
         ) : (
           <details className={s.tips}>
             <summary>
-              <strong>Как подготовиться</strong>
+              <strong>Как&nbsp;подготовиться</strong>
               <ChevronDown size={16} strokeWidth={2} aria-hidden className={s.tipsChevron} />
             </summary>
             <ul>
@@ -149,11 +148,11 @@ export function NextSessionCard({
               </li>
               <li>
                 <Headphones size={16} strokeWidth={1.8} aria-hidden /> Наушники
-                и место, где вас не услышат
+                и&nbsp;место, где вас не&nbsp;услышат
               </li>
               <li>
                 <Sparkles size={16} strokeWidth={1.8} aria-hidden /> Пара мыслей
-                о том, с чем хотите прийти
+                о&nbsp;том, с&nbsp;чем&nbsp;хотите прийти
               </li>
             </ul>
           </details>

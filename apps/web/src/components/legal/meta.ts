@@ -13,4 +13,4 @@ export function legalMetadata(slug: string): Metadata {
   };
 }
 
-export const DRAFT_UPDATED = "Редакция от [будет заполнено]";
+export const DRAFT_UPDATED = "Редакция от\u00a0[будет заполнено]";

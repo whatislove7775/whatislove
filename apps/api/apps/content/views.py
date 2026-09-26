@@ -1,10 +1,11 @@
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Article, Practice, Topic
+from .models import Article, Moderation, Practice, Topic
 from .permissions import IsContentStaff
 from .serializers import (
     ArticleDetailSerializer,
@@ -14,6 +15,26 @@ from .serializers import (
     PracticeListSerializer,
     PracticeManageSerializer,
 )
+
+
+def public_articles():
+    """Опубликованные статьи. Статьи специалистов — только пока профиль автора подтверждён."""
+    from apps.users.models import PsychologistProfile
+
+    return (
+        Article.objects.filter(is_published=True)
+        .exclude(specialist__isnull=False, moderation__in=[Moderation.DRAFT, Moderation.PENDING, Moderation.REJECTED])
+        .exclude(specialist__isnull=False,
+                 specialist__verification_status__in=[s for s in PsychologistProfile.VerificationStatus.values
+                                                      if s != PsychologistProfile.VerificationStatus.APPROVED])
+        .select_related("cover_image", "specialist", "specialist__photo")
+    )
+
+
+def _top_score(a, now) -> float:
+    """«В топе»: прочтения с поправкой на свежесть (старые статьи постепенно опускаются)."""
+    age_days = max(0.0, (now - (a.published_at or a.created_at)).total_seconds() / 86400)
+    return (a.reads + 5) / ((age_days + 2) ** 1.2)
 
 
 def _limit(request, default=None):
@@ -29,10 +50,10 @@ class TopicListView(APIView):
     authentication_classes = []
 
     def get(self, request):
-        used = set(Article.objects.filter(is_published=True).values_list("topic", flat=True))
+        topics = list(public_articles().values_list("topic", flat=True))
         return Response([
-            {"value": t.value, "label": t.label, "count": Article.objects.filter(is_published=True, topic=t.value).count()}
-            for t in Topic if t.value in used
+            {"value": t.value, "label": t.label, "count": topics.count(t.value)}
+            for t in Topic if t.value in topics
         ])
 
 
@@ -44,7 +65,12 @@ class ArticleListView(generics.ListAPIView):
     serializer_class = ArticleListSerializer
 
     def get_queryset(self):
-        qs = Article.objects.filter(is_published=True)
+        qs = public_articles()
+        source = self.request.query_params.get("source")
+        if source == "specialists":
+            qs = qs.filter(specialist__isnull=False)
+        elif source == "editorial":
+            qs = qs.filter(specialist__isnull=True)
         topic = self.request.query_params.get("topic")
         if topic:
             qs = qs.filter(topic=topic)
@@ -61,11 +87,18 @@ class ArticleListView(generics.ListAPIView):
             # Python-side match: SQLite's LIKE doesn't case-fold Cyrillic; the catalogue is small
             words = q.split()
             ids = [
-                a.id for a in qs.only("id", "title", "summary", "tags")
+                a.id for a in qs.select_related(None).only("id", "title", "summary", "tags")
                 if all(w in f"{a.title} {a.summary} {' '.join(a.tags or [])}".casefold() for w in words)
             ]
             qs = qs.filter(id__in=ids)
         limit = _limit(self.request)
+        if self.request.query_params.get("sort") == "top":
+            # Закреплённые сотрудником — первыми, дальше по прочтениям и свежести
+            now = timezone.now()
+            items = sorted(qs, key=lambda a: (not a.is_featured, -_top_score(a, now)))
+            return items[:limit] if limit else items
+        # Закреплённые «В топе» — первыми, остальные по дате публикации
+        qs = qs.order_by("-is_featured", "-published_at", "-created_at")
         return qs[:limit] if limit else qs
 
 
@@ -74,7 +107,9 @@ class ArticleDetailView(generics.RetrieveAPIView):
     authentication_classes = []
     serializer_class = ArticleDetailSerializer
     lookup_field = "slug"
-    queryset = Article.objects.filter(is_published=True)
+
+    def get_queryset(self):
+        return public_articles()
 
 
 class PracticeListView(generics.ListAPIView):
@@ -101,18 +136,38 @@ class PracticeDetailView(generics.RetrieveAPIView):
 
 # ── Staff CMS API ──────────────────────────────────────────────────────────
 
+def _staff_articles():
+    # Черновики специалистов сотрудникам не видны, пока автор не отправит статью на модерацию
+    return (Article.objects.exclude(specialist__isnull=False, moderation=Moderation.DRAFT)
+            .select_related("cover_image", "specialist", "specialist__photo"))
+
+
 class ManageArticleListView(generics.ListCreateAPIView):
+    """?source=specialists — очередь «От специалистов» (сначала ждущие решения), editorial — только редакция."""
+
     permission_classes = [IsContentStaff]
     serializer_class = ArticleManageSerializer
 
     def get_queryset(self):
-        return Article.objects.order_by("-updated_at")
+        qs = _staff_articles()
+        source = self.request.query_params.get("source")
+        if source == "specialists":
+            from django.db.models import Case, IntegerField, Value, When
+
+            pending_first = Case(When(moderation=Moderation.PENDING, then=Value(0)), default=Value(1),
+                                 output_field=IntegerField())
+            return qs.filter(specialist__isnull=False).order_by(pending_first, "submitted_at", "-updated_at")
+        if source == "editorial":
+            qs = qs.filter(specialist__isnull=True)
+        return qs.order_by("-updated_at")
 
 
 class ManageArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsContentStaff]
     serializer_class = ArticleManageSerializer
-    queryset = Article.objects.all()
+
+    def get_queryset(self):
+        return _staff_articles()
 
 
 class ManagePracticeListView(generics.ListCreateAPIView):

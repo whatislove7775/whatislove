@@ -175,7 +175,7 @@ export function DraggablePip({ children, label, wide }: { children: ReactNode; l
       onKeyDown={onKey}
       tabIndex={0}
       role="group"
-      aria-label={`${label}. Стрелками можно передвинуть в другой угол`}
+      aria-label={`${label}. Стрелками можно передвинуть в\u00a0другой угол`}
     >
       {children}
     </div>
@@ -202,7 +202,7 @@ export function useRemaining(start: string | null, minutes: number | null) {
     left,
     text:
       left > 60
-        ? `ещё ${Math.floor(left / 60)} ч ${left % 60} мин`
+        ? `ещё ${Math.floor(left / 60)} ч\u00a0${left % 60} мин`
         : left > 0
           ? `ещё ${left} мин`
           : left === 0

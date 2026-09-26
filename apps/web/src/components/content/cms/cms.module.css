@@ -264,6 +264,19 @@
   gap: var(--s-2);
   margin-top: var(--s-4);
 }
+/* «Редактор» + «Дата публикации»: two stacked fields with air between them */
+.byline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+/* native date field: match the dark/light scheme of the calendar popup and icon */
+.byline input[type="date"] {
+  color-scheme: dark;
+}
+:global([data-theme="light"]) .byline input[type="date"] {
+  color-scheme: light;
+}
 .cardPreview {
   display: flex;
   flex-direction: column;

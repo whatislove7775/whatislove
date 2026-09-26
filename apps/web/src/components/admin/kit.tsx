@@ -177,7 +177,7 @@ export function ReasonModal({
       {children}
       <Textarea
         label={reasonLabel}
-        hint={reasonHint ?? (requireReason ? "Попадёт в журнал действий. Минимум 3 символа." : "Необязательно. Попадёт в журнал действий.")}
+        hint={reasonHint ?? (requireReason ? "Попадёт в\u00a0журнал действий. Минимум 3\u00a0символа." : "Необязательно. Попадёт в\u00a0журнал действий.")}
         value={reason}
         onChange={(e) => setReason(e.target.value)}
         rows={3}
@@ -185,7 +185,7 @@ export function ReasonModal({
       />
       <div className={s.modalActions}>
         <Button variant="ghost" onClick={onClose} disabled={busy}>
-          Не менять
+          Не&nbsp;менять
         </Button>
         <Button variant={variant} loading={busy} disabled={!ok} onClick={() => onConfirm(reason.trim())}>
           {confirm}
@@ -212,12 +212,12 @@ export const ACTION_LABEL: Record<string, string> = {
   "specialist.approve": "Одобрил специалиста",
   "specialist.reject": "Отклонил заявку",
   "specialist.suspend": "Приостановил специалиста",
-  "specialist.reinstate": "Вернул специалиста в каталог",
+  "specialist.reinstate": "Вернул специалиста в\u00a0каталог",
   "specialist.edit": "Изменил профиль специалиста",
   "specialist.verify_legacy": "Сменил статус специалиста",
   "session.cancel": "Отменил созвон",
   "session.refund": "Оформил возврат",
-  "report.assign": "Взял жалобу в работу",
+  "report.assign": "Взял жалобу в\u00a0работу",
   "report.resolved": "Решил жалобу",
   "report.dismissed": "Отклонил жалобу",
   "staff.create": "Добавил сотрудника",
@@ -229,8 +229,8 @@ export const ACTION_LABEL: Record<string, string> = {
   "staff.me.password_changed": "Сменил свой пароль",
   "staff.me.totp_enabled": "Включил 2FA",
   "staff.me.totp_disabled": "Выключил 2FA",
-  "auth.staff_login": "Вошёл в консоль",
-  "auth.staff_login_failed": "Неверный код 2FA при входе",
+  "auth.staff_login": "Вошёл в\u00a0консоль",
+  "auth.staff_login_failed": "Неверный код 2FA при\u00a0входе",
   "lab.room.create": "Создал тестовую комнату",
   "lab.room.close": "Закрыл тестовую комнату",
   "business.company.create": "Добавил компанию",

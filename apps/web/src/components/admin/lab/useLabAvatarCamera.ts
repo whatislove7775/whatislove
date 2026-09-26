@@ -142,7 +142,7 @@ export function useLabAvatarCamera(config: AvatarConfig, options: LabCameraOptio
       } catch (e) {
         if (cancelled) return;
         setState("error");
-        setError(`Камера не включилась: ${(e as DOMException)?.name || "ошибка"}. Разрешите доступ к камере и микрофону.`);
+        setError(`Камера не\u00a0включилась: ${(e as DOMException)?.name || "ошибка"}. Разрешите доступ к\u00a0камере и\u00a0микрофону.`);
         return;
       }
       if (cancelled) {

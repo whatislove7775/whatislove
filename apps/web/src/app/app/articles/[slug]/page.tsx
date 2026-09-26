@@ -8,15 +8,15 @@ import { WithRail } from "@/components/shell/AppShell";
 import { contentApi } from "@/lib/api/content";
 import { useLoad } from "@/components/client/useLoad";
 import { ErrorBlock } from "@/components/client/ClientBits";
-import { ArticleCard } from "@/components/content/Cards";
+import { ArticleByline, ArticleCard } from "@/components/content/Cards";
+import { ArticleBanner } from "@/components/content/ArticleBanner";
+import { AuthorCard, ReadCounter } from "@/components/content/AuthorCard";
 import { Markdown } from "@/components/content/Markdown";
 import { EvidenceBadge, KeyFacts, SeekHelp, Sources } from "@/components/content/Evidence";
-import c from "@/components/content/content.module.css";
 import s from "../articles.module.css";
 import { EmptyArt } from "@/components/illustrations";
-import { TopicArt } from "@/components/illustrations/topics";
-import art from "@/components/content/art.module.css";
 import { SearchTrigger } from "@/components/search/SpecialistSearch";
+import { typo } from "@/lib/typography";
 
 export default function ArticlePage() {
   const params = useParams<{ slug: string }>();
@@ -41,8 +41,8 @@ export default function ArticlePage() {
         {/не найден|not found|No .* matches/i.test(article.error) ? (
           <EmptyState art={<EmptyArt scene="lost" />}
             icon={<BookOpen size={28} strokeWidth={1.8} />}
-            title="Статья не найдена"
-            text="Возможно, её убрали или ссылка неполная."
+            title="Статья не&nbsp;найдена"
+            text="Возможно, её&nbsp;убрали или&nbsp;ссылка неполная."
             action={<Button href="/app/articles">Все статьи</Button>}
           />
         ) : (
@@ -61,11 +61,11 @@ export default function ArticlePage() {
         rail={
           <>
             <SearchTrigger variant="soft" block>
-              Обсудить со специалистом
+              Обсудить со&nbsp;специалистом
             </SearchTrigger>
             {related.data && related.data.length > 0 && (
-              <section className={s.related} aria-label="Ещё по теме">
-                <div className={s.railTitle}>Ещё по теме</div>
+              <section className={s.related} aria-label="Ещё по&nbsp;теме">
+                <div className={s.railTitle}>Ещё по&nbsp;теме</div>
                 {related.data.map((r) => (
                   <ArticleCard key={r.id} a={r} compact />
                 ))}
@@ -87,9 +87,7 @@ export default function ArticlePage() {
           ) : (
             <>
               <header className={s.head}>
-                <div className={`${s.banner} ${c.tone}`} data-tone={a.cover} aria-hidden>
-                  <TopicArt topic={a.topic} className={art.bannerArt} />
-                </div>
+                <ArticleBanner a={a} className={s.banner} />
                 <div className={s.kicker}>
                   <Link href={`/app/articles?topic=${a.topic}`}>{a.topic_label}</Link>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -98,14 +96,16 @@ export default function ArticlePage() {
                   </span>
                   <EvidenceBadge level={a.evidence_level} />
                 </div>
-                <h1 className={s.title}>{a.title}</h1>
-                {a.summary && <p className={s.lead}>{a.summary}</p>}
+                <h1 className={s.title}>{typo(a.title)}</h1>
+                {a.summary && <p className={s.lead}>{typo(a.summary)}</p>}
               </header>
               <KeyFacts facts={a.key_facts} />
               <Markdown source={a.body} />
               <SeekHelp text={a.when_to_seek_help} />
               <Sources sources={a.sources} level={a.evidence_level} reviewedAt={a.reviewed_at} />
-              {a.author_name && <p className={s.foot}>{a.author_name}</p>}
+              <ArticleByline a={a} />
+              {a.specialist && <AuthorCard specialist={a.specialist} />}
+              <ReadCounter slug={a.slug} />
             </>
           )}
         </Card>

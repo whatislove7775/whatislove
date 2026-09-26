@@ -55,7 +55,7 @@ function CompanyAdmin({ id }: { id: string }) {
       data.reload();
       return true;
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось.", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось.", { error: true });
       return false;
     }
   };
@@ -70,7 +70,7 @@ function CompanyAdmin({ id }: { id: string }) {
     <>
       <PageHeader
         title={c.name}
-        sub={`${c.plan_label}, ${c.status_label.toLowerCase()}. Клиент с ${dateRu(c.created_at, { day: "numeric", month: "long", year: "numeric" }).replace(/ г\.$/, "")}.`}
+        sub={`${c.plan_label}, ${c.status_label.toLowerCase()}. Клиент с\u00a0${dateRu(c.created_at, { day: "numeric", month: "long", year: "numeric" }).replace(/ г\.$/, "")}.`}
         action={
           <Button variant="ghost" href="/admin/business" icon={<ArrowLeft size={18} />}>
             Все компании
@@ -81,7 +81,7 @@ function CompanyAdmin({ id }: { id: string }) {
         rail={
           <>
             <Card as="section">
-              <CardHead title="Бюджет" icon={<Wallet size={18} />} sub="Живой остаток видят только сотрудники aprosop" />
+              <CardHead title="Бюджет" icon={<Wallet size={18} />} sub="Живой остаток видят только сотрудники Aprosop" />
               <div className={s.kpiValue} style={{ marginBottom: 12 }}>
                 {rubK(d.budget_kopecks)}
               </div>
@@ -110,10 +110,10 @@ function CompanyAdmin({ id }: { id: string }) {
               />
               <KV
                 items={[
-                  ["Юрлицо", c.legal_name || "не указано"],
-                  ["ИНН", c.inn || "не указан"],
-                  ["Договор", c.contract_number || "не указан"],
-                  ["Контакт", [c.contact_name, c.contact_email, c.contact_phone].filter(Boolean).join(", ") || "не указан"],
+                  ["Юрлицо", c.legal_name || "не\u00a0указано"],
+                  ["ИНН", c.inn || "не\u00a0указан"],
+                  ["Договор", c.contract_number || "не\u00a0указан"],
+                  ["Контакт", [c.contact_name, c.contact_email, c.contact_phone].filter(Boolean).join(", ") || "не\u00a0указан"],
                 ]}
               />
               {c.note && <p className={s.muted} style={{ marginTop: 10 }}>{c.note}</p>}
@@ -131,7 +131,7 @@ function CompanyAdmin({ id }: { id: string }) {
                 }
               />
               {d.admins.length === 0 ? (
-                <p className={s.muted}>Пока нет. Пригласите HR — он получит логин и одноразовый пароль.</p>
+                <p className={s.muted}>Пока нет. Пригласите HR&nbsp;— он&nbsp;получит логин и&nbsp;одноразовый пароль.</p>
               ) : (
                 <div className={s.list}>
                   {d.admins.map((a) => (
@@ -140,7 +140,7 @@ function CompanyAdmin({ id }: { id: string }) {
                         <span className={s.itemTitle}>
                           {a.login} {!a.is_active && <Badge tone="neutral">отключён</Badge>}
                         </span>
-                        <span className={s.itemSub}>{a.full_name || "без имени"}{a.must_change_password ? ", ещё не сменил пароль" : ""}</span>
+                        <span className={s.itemSub}>{a.full_name || "без\u00a0имени"}{a.must_change_password ? ", ещё не\u00a0сменил пароль" : ""}</span>
                       </span>
                       {manage && (
                         <span className={s.row} style={{ flexBasis: "100%", gap: 4 }}>
@@ -153,7 +153,7 @@ function CompanyAdmin({ id }: { id: string }) {
                                 if (r.one_time_password) setSecret({ login: a.login, password: r.one_time_password });
                                 data.reload();
                               } catch (e) {
-                                toast(e instanceof ApiError ? e.message : "Не получилось.", { error: true });
+                                toast(e instanceof ApiError ? e.message : "Не\u00a0получилось.", { error: true });
                               }
                             }}
                           >
@@ -176,7 +176,7 @@ function CompanyAdmin({ id }: { id: string }) {
           <div className={s.kpi}>
             <span className={s.kpiLabel}>Потрачено</span>
             <span className={s.kpiValue}>{rubK(d.stats.totals.spent_kopecks)}</span>
-            <span className={s.kpiSub}>за закрытые месяцы</span>
+            <span className={s.kpiSub}>за&nbsp;закрытые месяцы</span>
           </div>
           <div className={s.kpi}>
             <span className={s.kpiLabel}>Кодов выпущено</span>
@@ -222,7 +222,7 @@ function CompanyAdmin({ id }: { id: string }) {
               <p className={s.muted}>{current.name}</p>
             )
           ) : (
-            <p className={s.muted}>Программы нет — без неё коды не выпустить.</p>
+            <p className={s.muted}>Программы нет&nbsp;— без&nbsp;неё коды не&nbsp;выпустить.</p>
           )}
         </Card>
 
@@ -246,14 +246,14 @@ function CompanyAdmin({ id }: { id: string }) {
                 <div key={b.id} className={s.item}>
                   <span className={s.itemMain}>
                     <span className={s.itemTitle}>
-                      {b.label || "Без подписи"} {b.revoked && <Badge tone="neutral">отозвана</Badge>}
+                      {b.label || "Без\u00a0подписи"} {b.revoked && <Badge tone="neutral">отозвана</Badge>}
                     </span>
                     <span className={s.itemSub}>
                       {b.count} {plural(b.count, "код", "кода", "кодов")}, {monthRu(b.created_month).toLowerCase()}
                     </span>
                   </span>
                   {manage && (
-                    <Button size="sm" variant="ghost" icon={<Download size={16} />} onClick={() => businessApi.staff.exportBatch(b.id).catch(() => toast("Не получилось скачать.", { error: true }))}>
+                    <Button size="sm" variant="ghost" icon={<Download size={16} />} onClick={() => businessApi.staff.exportBatch(b.id).catch(() => toast("Не\u00a0получилось скачать.", { error: true }))}>
                       CSV
                     </Button>
                   )}
@@ -296,8 +296,8 @@ function CompanyAdmin({ id }: { id: string }) {
         </Card>
 
         <Card as="section">
-          <CardHead title="Использование" icon={<BarChart3 size={18} />} sub={`Как видит компания: при меньше чем ${d.stats.k_min} людях — скрыто`} />
-          {d.stats.monthly.length === 0 ? <p className={s.muted}>Закрытых месяцев с расходами пока нет.</p> : <MonthlyTable rows={d.stats.monthly} k={d.stats.k_min} />}
+          <CardHead title="Использование" icon={<BarChart3 size={18} />} sub={`Как\u00a0видит компания: при\u00a0меньше чем\u00a0${d.stats.k_min} людях\u00a0— скрыто`} />
+          {d.stats.monthly.length === 0 ? <p className={s.muted}>Закрытых месяцев с&nbsp;расходами пока нет.</p> : <MonthlyTable rows={d.stats.monthly} k={d.stats.k_min} />}
         </Card>
       </WithRail>
 
@@ -315,7 +315,7 @@ function CompanyAdmin({ id }: { id: string }) {
       <AmountModal
         open={modal === "invoice"}
         title="Выставить счёт"
-        text="После оплаты по безналу нажмите «Оплачен» — бюджет пополнится."
+        text="После оплаты по&nbsp;безналу нажмите «Оплачен»&nbsp;— бюджет пополнится."
         withReason={false}
         onClose={() => setModal(null)}
         onSubmit={async (rub) => {
@@ -328,7 +328,7 @@ function CompanyAdmin({ id }: { id: string }) {
       <AmountModal
         open={modal === "adjust"}
         title="Корректировка бюджета"
-        text="Отрицательная сумма — списать (например, вернуть остаток компании). Попадёт в журнал."
+        text="Отрицательная сумма&nbsp;— списать (например, вернуть остаток компании). Попадёт в&nbsp;журнал."
         withReason
         onClose={() => setModal(null)}
         onSubmit={async (rub, reason) => {
@@ -360,10 +360,10 @@ function CompanyAdmin({ id }: { id: string }) {
           }}
         />
       </Modal>
-      <Modal open={!!secret} onClose={() => setSecret(null)} title="Доступ для HR" width={460}>
+      <Modal open={!!secret} onClose={() => setSecret(null)} title="Доступ для&nbsp;HR" width={460}>
         {secret && (
           <div className={s.form}>
-            <p className={s.muted}>Передайте логин и одноразовый пароль HR лично или по защищённому каналу. Пароль больше не покажем.</p>
+            <p className={s.muted}>Передайте логин и&nbsp;одноразовый пароль HR лично или&nbsp;по&nbsp;защищённому каналу. Пароль больше не&nbsp;покажем.</p>
             <div className={s.codes}>
               <div>Логин: {secret.login}</div>
               <div>Пароль: {secret.password}</div>
@@ -420,7 +420,7 @@ function EditCompany({ open, d, onClose, onSaved }: { open: boolean; d: StaffCom
       onClose();
       onSaved();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось сохранить.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось сохранить.");
     }
   };
   return (
@@ -484,7 +484,7 @@ function Invite({ open, onClose, onInvite }: { open: boolean; onClose: () => voi
       setLogin("");
       setName("");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось.");
     } finally {
       setBusy(false);
     }
@@ -493,8 +493,8 @@ function Invite({ open, onClose, onInvite }: { open: boolean; onClose: () => voi
     <Modal open={open} onClose={onClose} title="Пригласить HR" width={460}>
       <form className={s.form} onSubmit={submit}>
         <Input label="Логин" placeholder="hr-romashka" value={login} onChange={(e) => setLogin(e.target.value.toLowerCase())} error={error ?? undefined} />
-        <Input label="Имя (для нас)" value={name} onChange={(e) => setName(e.target.value)} />
-        <p className={s.muted}>HR увидит только агрегаты своей компании. При первом входе попросим сменить пароль.</p>
+        <Input label="Имя (для&nbsp;нас)" value={name} onChange={(e) => setName(e.target.value)} />
+        <p className={s.muted}>HR увидит только агрегаты своей компании. При&nbsp;первом входе попросим сменить пароль.</p>
         <Button type="submit" variant="primary" loading={busy} disabled={login.length < 3}>
           Создать доступ
         </Button>
@@ -531,7 +531,7 @@ function AmountModal({
       setAmount("");
       setReason("");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось.");
     } finally {
       setBusy(false);
     }
@@ -562,7 +562,7 @@ function GenerateCodes({ onGenerate }: { onGenerate: (n: number, label: string) 
     try {
       await onGenerate(Number(count), label);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось.");
     } finally {
       setBusy(false);
     }

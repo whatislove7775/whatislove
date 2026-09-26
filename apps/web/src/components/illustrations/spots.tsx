@@ -245,7 +245,7 @@ function Draw({ name, u }: { name: SpotName; u: U }) {
   }
 }
 
-export function Spot({ name, size = 56, title, className, bg = true }: { name: SpotName; size?: number; title?: string; className?: string; bg?: boolean }) {
+export function Spot({ name, size = 56, title, className, bg = false }: { name: SpotName; size?: number; title?: string; className?: string; bg?: boolean }) {
   return (
     <Svg viewBox="0 0 64 64" title={title} className={className} style={{ width: size, height: size, flex: "none" }}>
       {(u) => (

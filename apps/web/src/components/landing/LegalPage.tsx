@@ -64,7 +64,7 @@ export function LegalPage({
           {draft && (
             <p className={l.draftNote} role="note">
               <FileClock size={16} strokeWidth={2} aria-hidden />
-              <span>Черновик: разделы с пометкой «[будет заполнено]» готовятся вместе с юристом.</span>
+              <span>Черновик: разделы с&nbsp;пометкой «[будет заполнено]» готовятся вместе с&nbsp;юристом.</span>
             </p>
           )}
           <div className={l.summary}>{summary}</div>

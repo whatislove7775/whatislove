@@ -15,11 +15,11 @@ import { plural } from "@/lib/format";
 import s from "./circles.module.css";
 
 const DEFAULT_RULES = [
-  "Всё, что звучит в круге, остаётся в круге.",
-  "Говорим о себе, не даём советов, если о них не просили.",
-  "Не пытаемся узнать, кто есть кто, и не делимся контактами.",
-  "Можно просто слушать — говорить не обязательно.",
-  "Не записываем встречи и не делаем скриншоты.",
+  "Всё, что\u00a0звучит в\u00a0круге, остаётся в\u00a0круге.",
+  "Говорим о\u00a0себе, не\u00a0даём советов, если о\u00a0них не\u00a0просили.",
+  "Не\u00a0пытаемся узнать, кто есть кто, и\u00a0не\u00a0делимся контактами.",
+  "Можно просто слушать\u00a0— говорить не\u00a0обязательно.",
+  "Не\u00a0записываем встречи и\u00a0не\u00a0делаем скриншоты.",
 ].join("\n");
 
 function localInput(iso: string | null | undefined): string {
@@ -77,13 +77,13 @@ export function ProCircleForm({
       if (e instanceof ApiError) {
         setErrors(e.fields);
         setFormError(e.message);
-      } else setFormError("Не получилось сохранить. Проверьте интернет.");
+      } else setFormError("Не\u00a0получилось сохранить. Проверьте интернет.");
     }
   };
 
   return (
     <div className={s.form}>
-      {live && <p className={s.note}>Круг опубликован: тему, расписание, места и цену изменить нельзя — на них уже записываются люди.</p>}
+      {live && <p className={s.note}>Круг опубликован: тему, расписание, места и&nbsp;цену изменить нельзя&nbsp;— на&nbsp;них уже записываются люди.</p>}
       <div className={s.formRow}>
         <Select<CircleTopic>
           label="Тема"
@@ -92,16 +92,16 @@ export function ProCircleForm({
           disabled={live}
           options={(Object.keys(TOPIC_LABEL) as CircleTopic[]).map((t) => ({ value: t, label: TOPIC_LABEL[t] }))}
         />
-        <Input label="Название" value={f.title} maxLength={120} disabled={live} onChange={(e) => set("title", e.target.value)} error={err("title")} placeholder="Например, «Тревога без стыда»" />
+        <Input label="Название" value={f.title} maxLength={120} disabled={live} onChange={(e) => set("title", e.target.value)} error={err("title")} placeholder="Например, «Тревога без&nbsp;стыда»" />
       </div>
       <Textarea
-        label="О чём круг"
+        label="О&nbsp;чём круг"
         rows={5}
         value={f.description}
         maxLength={3000}
         onChange={(e) => set("description", e.target.value)}
         error={err("description")}
-        hint="Для кого круг, о чём будете говорить, чем он поможет. Простыми словами, от 40 символов."
+        hint="Для&nbsp;кого круг, о&nbsp;чём будете говорить, чем&nbsp;он&nbsp;поможет. Простыми словами, от&nbsp;40&nbsp;символов."
       />
       <Textarea
         label="Правила круга"
@@ -110,7 +110,7 @@ export function ProCircleForm({
         maxLength={2000}
         onChange={(e) => set("rules", e.target.value)}
         error={err("rules")}
-        hint="Каждое правило — с новой строки. Участники видят их до записи."
+        hint="Каждое правило&nbsp;— с&nbsp;новой строки. Участники видят их&nbsp;до&nbsp;записи."
       />
       <div className={s.formRow}>
         <div>
@@ -133,19 +133,19 @@ export function ProCircleForm({
             value={f.meetings_count}
             disabled={live}
             onChange={(v) => set("meetings_count", v)}
-            options={Array.from({ length: 11 }, (_, i) => i + 2).map((n) => ({ value: n, label: `${n} ${plural(n, "встреча", "встречи", "встреч")}, раз в неделю` }))}
+            options={Array.from({ length: 11 }, (_, i) => i + 2).map((n) => ({ value: n, label: `${n} ${plural(n, "встреча", "встречи", "встреч")}, раз в\u00a0неделю` }))}
           />
         )}
       </div>
       <div className={s.formRow}>
         <Input
-          label={f.format === "series" ? "Первая встреча" : "Дата и время"}
+          label={f.format === "series" ? "Первая встреча" : "Дата и\u00a0время"}
           type="datetime-local"
           value={f.first_meeting_at}
           disabled={live}
           onChange={(e) => set("first_meeting_at", e.target.value)}
           error={err("first_meeting_at")}
-          hint="Не раньше чем через сутки: круг сначала проверяет команда aprosop"
+          hint="Не&nbsp;раньше чем&nbsp;через сутки: круг сначала проверяет команда Aprosop"
         />
         <Select<number>
           label="Длительность встречи"
@@ -155,12 +155,12 @@ export function ProCircleForm({
           options={[60, 75, 90, 120].map((m) => ({ value: m, label: `${m} минут` }))}
         />
         <Select<number>
-          label="Мест в круге"
+          label="Мест в&nbsp;круге"
           value={f.capacity}
           disabled={live}
           onChange={(v) => set("capacity", v)}
           options={[5, 6, 7, 8].map((n) => ({ value: n, label: `${n} участников` }))}
-          hint="Плюс вы. Больше 8 — уже не круг"
+          hint="Плюс вы. Больше 8&nbsp;— уже не&nbsp;круг"
         />
       </div>
       <div className={s.formRow}>
@@ -170,18 +170,18 @@ export function ProCircleForm({
               Оплата
             </div>
             <Segmented
-              ariaLabel="Как платят участники"
+              ariaLabel="Как&nbsp;платят участники"
               value={f.billing}
               onChange={(v) => !live && set("billing", v)}
               options={[
-                { value: "per_meeting", label: "За встречу" },
-                { value: "series", label: "За весь цикл" },
+                { value: "per_meeting", label: "За\u00a0встречу" },
+                { value: "series", label: "За\u00a0весь цикл" },
               ]}
             />
           </div>
         )}
         <Input
-          label={f.billing === "series" && f.format === "series" ? "Цена за цикл, ₽" : "Цена за встречу, ₽"}
+          label={f.billing === "series" && f.format === "series" ? "Цена за\u00a0цикл, ₽" : "Цена за\u00a0встречу, ₽"}
           type="number"
           min={300}
           max={60000}
@@ -190,12 +190,12 @@ export function ProCircleForm({
           disabled={live}
           onChange={(e) => set("price_rub", Number(e.target.value))}
           error={err("price_rub")}
-          hint={`Участник заплатит ${total.toLocaleString("ru-RU")} ₽ за ${f.format === "single" ? "встречу" : "весь круг"}`}
+          hint={`Участник заплатит ${total.toLocaleString("ru-RU")} ₽ за\u00a0${f.format === "single" ? "встречу" : "весь круг"}`}
         />
       </div>
       <div className={s.formRow}>
         <Select<CircleRetention>
-          label="Сообщения в чате круга"
+          label="Сообщения в&nbsp;чате круга"
           value={f.chat_retention}
           onChange={(v) => set("chat_retention", v)}
           options={[
@@ -208,7 +208,7 @@ export function ProCircleForm({
           <input type="checkbox" checked={f.allow_real_faces} onChange={(e) => set("allow_real_faces", e.target.checked)} />
           <span>
             Разрешить участникам показывать лицо
-            <small>По умолчанию все — только в аватарах. Если включить, каждый сам решает, показывать ли камеру.</small>
+            <small>По&nbsp;умолчанию все&nbsp;— только в&nbsp;аватарах. Если включить, каждый сам решает, показывать&nbsp;ли камеру.</small>
           </span>
         </label>
       </div>

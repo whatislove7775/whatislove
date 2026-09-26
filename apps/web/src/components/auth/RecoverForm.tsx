@@ -6,11 +6,10 @@ import { ApiError } from "@/lib/api/client";
 import { authApi } from "@/lib/api/endpoints";
 import type { AuthResponse } from "@/lib/api/types";
 import { homeFor, useAuth } from "@/lib/auth/store";
-import { Button, Input } from "@/ui";
+import { Button, Input, PasswordInput } from "@/ui";
 import { KeyFriend } from "@/components/illustrations";
 import { AuthCard, AuthLinks, AuthShell } from "./AuthShell";
 import { FormError } from "./FormError";
-import { PasswordInput } from "./PasswordInput";
 import { RecoveryKeyReveal } from "./RecoveryKeyReveal";
 import s from "./auth.module.css";
 
@@ -30,9 +29,9 @@ export function RecoverForm() {
     e.preventDefault();
     setError(null);
     const errs: Errors = {};
-    if (!alias.trim()) errs.alias = "Введите имя, которое вам выдали при регистрации.";
-    if (key.replace(/[^a-z2-7]/gi, "").length < 20) errs.recovery_key = "В ключе 20 символов: четыре группы по пять.";
-    if (password.length < 8) errs.new_password = "Пароль должен быть не короче 8 символов.";
+    if (!alias.trim()) errs.alias = "Введите имя, которое вам выдали при\u00a0регистрации.";
+    if (key.replace(/[^a-z2-7]/gi, "").length < 20) errs.recovery_key = "В\u00a0ключе 20\u00a0символов: четыре группы по\u00a0пять.";
+    if (password.length < 8) errs.new_password = "Пароль должен быть не\u00a0короче 8\u00a0символов.";
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setBusy(true);
@@ -51,7 +50,7 @@ export function RecoverForm() {
         };
         setErrors(fe);
         if (!fe.alias && !fe.recovery_key && !fe.new_password) setError(err.message);
-      } else setError("Не получилось восстановить доступ. Попробуйте ещё раз.");
+      } else setError("Не\u00a0получилось восстановить доступ. Попробуйте ещё раз.");
     } finally {
       setBusy(false);
     }
@@ -62,7 +61,7 @@ export function RecoverForm() {
       <AuthShell art={<KeyFriend />}>
         <RecoveryKeyReveal
           title="Пароль изменён. Сохраните новый ключ"
-          intro="Старый ключ больше не работает. Новый понадобится, если вы снова забудете пароль. Показать его ещё раз мы не сможем."
+          intro="Старый ключ больше не&nbsp;работает. Новый понадобится, если вы&nbsp;снова забудете пароль. Показать его ещё раз мы&nbsp;не&nbsp;сможем."
           alias={result.user.alias}
           recoveryKey={result.recovery_key ?? ""}
           avatar={result.user.avatar_config}
@@ -79,7 +78,7 @@ export function RecoverForm() {
     <AuthShell art={<KeyFriend />}>
       <AuthCard
         title="Восстановить доступ"
-        sub="Введите имя и ключ восстановления, который вы сохранили при регистрации, и придумайте новый пароль."
+        sub="Введите имя и&nbsp;ключ восстановления, который вы&nbsp;сохранили при&nbsp;регистрации, и&nbsp;придумайте новый пароль."
       >
         <form className={s.form} onSubmit={submit} noValidate>
           <Input
@@ -106,7 +105,7 @@ export function RecoverForm() {
               setErrors((x) => ({ ...x, recovery_key: undefined }));
             }}
             error={errors.recovery_key}
-            hint="Регистр и дефисы не важны."
+            hint="Регистр и&nbsp;дефисы не&nbsp;важны."
             autoComplete="off"
             autoCapitalize="characters"
             autoCorrect="off"
@@ -115,7 +114,7 @@ export function RecoverForm() {
           />
           <PasswordInput
             label="Новый пароль"
-            hint="Не короче 8 символов."
+            hint="Не&nbsp;короче 8&nbsp;символов."
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
@@ -126,7 +125,7 @@ export function RecoverForm() {
           />
           <FormError>{error}</FormError>
           <Button type="submit" variant="primary" size="lg" block loading={busy}>
-            Сменить пароль и войти
+            Сменить пароль и&nbsp;войти
           </Button>
         </form>
       </AuthCard>

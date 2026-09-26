@@ -1,0 +1,83 @@
+/* Live verification selfie (L1): specialist step + staff review. */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.done {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--c-success);
+  font-size: var(--t-15);
+  font-weight: 550;
+}
+.todo {
+  color: var(--c-muted);
+  font-size: var(--t-15);
+}
+.quiet {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--c-faint);
+  font-size: var(--t-13);
+}
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.frames {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.frames img,
+.frames figure img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--c-raised);
+  display: block;
+}
+.frames figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--c-muted);
+  font-size: var(--t-12);
+}
+.note {
+  margin: 0;
+  color: var(--c-muted);
+  font-size: var(--t-13);
+  line-height: 1.45;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.staff {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 360px;
+}
+.staffLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: var(--t-13);
+  color: var(--c-muted);
+}
+.missing {
+  color: var(--c-danger);
+}

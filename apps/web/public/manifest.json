@@ -1,6 +1,6 @@
 {
-  "name": "aprosop — Анонимные консультации",
-  "short_name": "aprosop",
+  "name": "Aprosop — Анонимные консультации",
+  "short_name": "Aprosop",
   "description": "Анонимные видеосессии с психологом: без почты и телефона, вместо лица — ваш 3D-аватар.",
   "start_url": "/",
   "display": "standalone",

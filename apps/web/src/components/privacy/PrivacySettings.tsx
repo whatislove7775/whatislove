@@ -25,12 +25,12 @@ export function PrivacySettings() {
       <Card as="section">
         <CardHead
           title="Незаметный режим"
-          sub="Нейтральная вкладка и быстрый выход по двойному Esc"
+          sub="Нейтральная вкладка и&nbsp;быстрый выход по&nbsp;двойному Esc"
           icon={<EyeOff size={20} />}
           action={<Switch checked={st.enabled} onChange={(v) => setStealth({ enabled: v })} label="Незаметный режим" />}
         />
         <details className={s.more}>
-          <summary>Как это работает</summary>
+          <summary>Как&nbsp;это&nbsp;работает</summary>
         <ul className={s.how}>
           <li>
             <span className={s.howIcon}>
@@ -38,7 +38,7 @@ export function PrivacySettings() {
             </span>
             <span>
               <strong>Нейтральная вкладка.</strong>{" "}
-              <span>Вкладка браузера называется «{preset.title}» и получает обычный значок — по ней не понять, что это за сайт.</span>
+              <span>Вкладка браузера называется «{preset.title}» и&nbsp;получает обычный значок&nbsp;— по&nbsp;ней не&nbsp;понять, что&nbsp;это&nbsp;за&nbsp;сайт.</span>
             </span>
           </li>
           <li>
@@ -50,8 +50,8 @@ export function PrivacySettings() {
                 Быстрый выход: дважды <kbd className={s.kbd}>Esc</kbd>.
               </strong>{" "}
               <span>
-                Страница мгновенно сменяется нейтральным сайтом ({EXIT_TARGETS[st.exit].label.toLowerCase()}). Работает в кабинете и во время
-                звонка — звонок при этом завершится.
+                Страница мгновенно сменяется нейтральным сайтом ({EXIT_TARGETS[st.exit].label.toLowerCase()}). Работает в&nbsp;кабинете и&nbsp;во&nbsp;время
+                звонка&nbsp;— звонок при&nbsp;этом завершится.
               </span>
             </span>
           </li>
@@ -60,8 +60,8 @@ export function PrivacySettings() {
               <Smartphone size={17} />
             </span>
             <span>
-              <strong>На телефоне — кнопка с перечёркнутым глазом</strong>{" "}
-              <span>рядом с нижним меню, в открытой переписке и в звонке. Одно касание — и вы на другом сайте.</span>
+              <strong>На&nbsp;телефоне&nbsp;— кнопка с&nbsp;перечёркнутым глазом</strong>{" "}
+              <span>рядом с&nbsp;нижним меню, в&nbsp;открытой переписке и&nbsp;в&nbsp;звонке. Одно касание&nbsp;— и&nbsp;вы&nbsp;на&nbsp;другом сайте.</span>
             </span>
           </li>
           <li>
@@ -70,18 +70,18 @@ export function PrivacySettings() {
             </span>
             <span>
               <strong>Никаких уведомлений.</strong>{" "}
-              <span>Мы не присылаем писем, СМС и пуш-уведомлений и не издаём звуков — на экране блокировки ничего не появится.</span>
+              <span>Мы&nbsp;не&nbsp;присылаем писем, СМС и&nbsp;пуш-уведомлений и&nbsp;не&nbsp;издаём звуков&nbsp;— на&nbsp;экране блокировки ничего не&nbsp;появится.</span>
             </span>
           </li>
         </ul>
-          <p className={s.honestLine}>Адрес сайта останется в истории браузера — надёжнее открывать aprosop в режиме инкогнито.</p>
+          <p className={s.honestLine}>Адрес сайта останется в&nbsp;истории браузера&nbsp;— надёжнее открывать Aprosop в&nbsp;режиме инкогнито.</p>
         </details>
 
         {st.enabled && (
           <div style={{ marginTop: 16 }}>
             <div className={s.block}>
-              <span className={s.blockTitle}>Как называется вкладка</span>
-              <div className={s.presets} role="radiogroup" aria-label="Название и значок вкладки">
+              <span className={s.blockTitle}>Как&nbsp;называется вкладка</span>
+              <div className={s.presets} role="radiogroup" aria-label="Название и&nbsp;значок вкладки">
                 {(Object.keys(STEALTH_PRESETS) as StealthPreset[]).map((k) => (
                   <button
                     key={k}
@@ -98,7 +98,7 @@ export function PrivacySettings() {
               </div>
             </div>
             <div className={s.block}>
-              <span className={s.blockTitle}>Куда уходить при быстром выходе</span>
+              <span className={s.blockTitle}>Куда уходить при&nbsp;быстром выходе</span>
               <Segmented<ExitTarget>
                 ariaLabel="Нейтральный сайт"
                 value={st.exit}
@@ -109,17 +109,17 @@ export function PrivacySettings() {
             <div className={s.rows} style={{ borderTop: "1px solid var(--c-line)", paddingTop: 14 }}>
               <div className={s.row}>
                 <span className={s.rowText}>
-                  <strong>При выходе — выйти из аккаунта</strong>
-                  <span>Стираем вход и данные сайта в этом браузере.</span>
+                  <strong>При&nbsp;выходе&nbsp;— выйти из&nbsp;аккаунта</strong>
+                  <span>Стираем вход и&nbsp;данные сайта в&nbsp;этом браузере.</span>
                 </span>
-                <Switch checked={st.wipe} onChange={(v) => setStealth({ wipe: v })} label="Выйти из аккаунта при быстром выходе" />
+                <Switch checked={st.wipe} onChange={(v) => setStealth({ wipe: v })} label="Выйти из&nbsp;аккаунта при&nbsp;быстром выходе" />
               </div>
               <div className={s.row}>
                 <span className={s.rowText}>
-                  <strong>Запомнить в аккаунте</strong>
-                  <span>Режим включится и на других устройствах.</span>
+                  <strong>Запомнить в&nbsp;аккаунте</strong>
+                  <span>Режим включится и&nbsp;на&nbsp;других устройствах.</span>
                 </span>
-                <Switch checked={prefs.sync} onChange={(v) => update((p) => ({ ...p, sync: v }))} label="Запомнить настройку в аккаунте" />
+                <Switch checked={prefs.sync} onChange={(v) => update((p) => ({ ...p, sync: v }))} label="Запомнить настройку в&nbsp;аккаунте" />
               </div>
               <div className={s.row}>
                 <span className={s.rowText}>
@@ -138,26 +138,26 @@ export function PrivacySettings() {
 
       <Card as="section">
         <CardHead
-          title="Защита от скриншотов"
-          sub="Размытие и запрет копирования в переписках"
+          title="Защита от&nbsp;скриншотов"
+          sub="Размытие и&nbsp;запрет копирования в&nbsp;переписках"
           icon={<ScanEye size={20} />}
           action={
             <Switch
               checked={prefs.screen_protect}
               onChange={(v) => update((p) => ({ ...p, screen_protect: v }))}
-              label="Защита от скриншотов"
+              label="Защита от&nbsp;скриншотов"
             />
           }
         />
         <details className={s.more}>
-          <summary>Как это работает</summary>
+          <summary>Как&nbsp;это&nbsp;работает</summary>
         <ul className={s.how}>
           <li>
             <span className={s.howIcon}>
               <EyeOff size={17} />
             </span>
             <span>
-              <strong>Размываем переписку,</strong> <span>когда окно или вкладка не активны: в списке приложений и при переключении окон её не видно.</span>
+              <strong>Размываем переписку,</strong> <span>когда окно или&nbsp;вкладка не&nbsp;активны: в&nbsp;списке приложений и&nbsp;при&nbsp;переключении окон её&nbsp;не&nbsp;видно.</span>
             </span>
           </li>
           <li>
@@ -165,12 +165,12 @@ export function PrivacySettings() {
               <ScanEye size={17} />
             </span>
             <span>
-              <strong>Отключаем выделение, копирование и печать</strong>{" "}
-              <span>сообщений и добавляем едва заметный водяной знак с вашим псевдонимом.</span>
+              <strong>Отключаем выделение, копирование и&nbsp;печать</strong>{" "}
+              <span>сообщений и&nbsp;добавляем едва заметный водяной знак с&nbsp;вашим псевдонимом.</span>
             </span>
           </li>
         </ul>
-          <p className={s.honestLine}>Системный скриншот или фото экрана браузер запретить не может. Для обеих сторон диалога — в меню «⋮».</p>
+          <p className={s.honestLine}>Системный скриншот или&nbsp;фото экрана браузер запретить не&nbsp;может. Для&nbsp;обеих сторон диалога&nbsp;— в&nbsp;меню «⋮».</p>
         </details>
       </Card>
     </>

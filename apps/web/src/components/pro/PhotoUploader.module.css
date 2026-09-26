@@ -91,3 +91,8 @@
     align-items: flex-start;
   }
 }
+.hint {
+  margin: -4px 0 0;
+  color: var(--c-faint);
+  font-size: var(--t-12);
+}

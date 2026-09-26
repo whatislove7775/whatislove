@@ -78,7 +78,7 @@ export default function AdminDashboard() {
 
         <div className={s.dashGrid}>
         <Card as="section">
-          <CardHead title="Созвоны за 14 дней" />
+          <CardHead title="Созвоны за&nbsp;14&nbsp;дней" />
           {data ? <SessionsChart series={data.series} /> : <Skeleton height={160} />}
         </Card>
 
@@ -99,7 +99,7 @@ export default function AdminDashboard() {
               <HealthDot ok={data.system.channels.status === "ok"} label="Видеосигналинг" />
               <HealthDot
                 ok={data.system.errors_24h === 0}
-                label={`${data.system.errors_24h} ${plural(data.system.errors_24h, "ошибка", "ошибки", "ошибок")} за сутки`}
+                label={`${data.system.errors_24h} ${plural(data.system.errors_24h, "ошибка", "ошибки", "ошибок")} за\u00a0сутки`}
               />
             </div>
           </Card>
@@ -168,10 +168,10 @@ function AttentionCard({ data, can }: { data: Dashboard; can: ReturnType<typeof 
 function SessionsChart({ series }: { series: Dashboard["series"] }) {
   const max = Math.max(1, ...series.map((d) => d.sessions));
   const total = series.reduce((a, d) => a + d.sessions, 0);
-  if (!total) return <p className={s.muted}>Созвонов не было</p>;
+  if (!total) return <p className={s.muted}>Созвонов не&nbsp;было</p>;
   const label = (iso: string) => new Date(iso + "T12:00:00").toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
   return (
-    <figure className={s.chart} aria-label={`Созвоны по дням, всего ${total}`}>
+    <figure className={s.chart} aria-label={`Созвоны по\u00a0дням, всего ${total}`}>
       <div className={s.bars}>
         {series.map((d) => (
           <div key={d.date} className={s.barCol} tabIndex={0} aria-label={`${label(d.date)}: ${d.sessions}`}>
@@ -185,7 +185,7 @@ function SessionsChart({ series }: { series: Dashboard["series"] }) {
       <figcaption className={s.axis}>
         <span>{label(series[0].date)}</span>
         <span>
-          Максимум {max} в день, всего {total}
+          Максимум {max} в&nbsp;день, всего {total}
         </span>
         <span>{label(series[series.length - 1].date)}</span>
       </figcaption>

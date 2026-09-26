@@ -80,7 +80,7 @@ const QUICK: { label: string; make: () => DayPlan[] }[] = [
     make: () => Array.from({ length: 7 }, (_, i) => ({ on: i < 5, ranges: i < 5 ? [{ from: "10:00", to: "19:00" }] : [] })),
   },
   {
-    label: "Будни 10–14 и 16–20",
+    label: "Будни 10–14\u00a0и\u00a016–20",
     make: () =>
       Array.from({ length: 7 }, (_, i) => ({
         on: i < 5,
@@ -100,8 +100,8 @@ const fmtDate = (iso: string) => {
 function templateLabel(t: TemplateDraft): string {
   if (!t.valid_from && !t.valid_until) return "Постоянное";
   if (t.valid_from && t.valid_until) return `${fmtDate(t.valid_from)} – ${fmtDate(t.valid_until)}`;
-  if (t.valid_from) return `С ${fmtDate(t.valid_from)}`;
-  return `До ${fmtDate(t.valid_until!)}`;
+  if (t.valid_from) return `С\u00a0${fmtDate(t.valid_from)}`;
+  return `До\u00a0${fmtDate(t.valid_until!)}`;
 }
 function nextMonday(): string {
   const d = new Date();
@@ -165,10 +165,10 @@ export default function SchedulePage() {
       ? "Дата окончания раньше даты начала"
       : null;
   const priceError =
-    draft && (draft.rules.hourly_rate_rub < 500 || draft.rules.hourly_rate_rub > 200000) ? "От 500 до 200 000 ₽ за час" : null;
+    draft && (draft.rules.hourly_rate_rub < 500 || draft.rules.hourly_rate_rub > 200000) ? "От\u00a0500\u00a0до\u00a0200\u00a0000\u00a0₽ за\u00a0час" : null;
   const introMax = server?.intro_max_price_rub ?? 3000;
   const introError =
-    draft && draft.rules.intro_enabled && draft.rules.intro_price_rub > introMax ? `Не больше ${introMax} ₽` : null;
+    draft && draft.rules.intro_enabled && draft.rules.intro_price_rub > introMax ? `Не\u00a0больше ${introMax} ₽` : null;
   const hasErrors =
     allErrors ||
     !!priceError ||
@@ -212,7 +212,7 @@ export default function SchedulePage() {
       setReloadKey((k) => k + 1);
       toast("Расписание сохранено");
     } catch (e) {
-      toast(`${(e as Error).message} Изменения не потеряны, попробуйте сохранить ещё раз.`, { error: true });
+      toast(`${(e as Error).message} Изменения не\u00a0потеряны, попробуйте сохранить ещё раз.`, { error: true });
     } finally {
       setSaving(false);
     }
@@ -259,7 +259,7 @@ export default function SchedulePage() {
             options={[
               { value: "week", label: "Неделя" },
               { value: "days", label: "Календарь" },
-              { value: "rules", label: "Длительность и цена" },
+              { value: "rules", label: "Тарифы" },
             ]}
           />
         </div>
@@ -268,7 +268,7 @@ export default function SchedulePage() {
           <Card as="section">
             <CardHead
               title="Недельное расписание"
-              sub="Повторяется каждую неделю. Уже оплаченные созвоны остаются в силе"
+              sub="Повторяется каждую неделю. Уже оплаченные созвоны остаются в&nbsp;силе"
             />
             {!draft || !week || !template ? (
               <div className={c.days}>
@@ -278,7 +278,7 @@ export default function SchedulePage() {
               </div>
             ) : (
               <>
-                <div className={c.periods} role="group" aria-label="Расписания по периодам">
+                <div className={c.periods} role="group" aria-label="Расписания по&nbsp;периодам">
                   {draft.templates.map((t, i) => (
                     <button
                       key={i}
@@ -303,7 +303,7 @@ export default function SchedulePage() {
                       }}
                     >
                       <Plus size={15} aria-hidden />
-                      Расписание на период
+                      Расписание на&nbsp;период
                     </button>
                   )}
                 </div>
@@ -315,7 +315,7 @@ export default function SchedulePage() {
                       label="Действует с"
                       value={template.valid_from ?? ""}
                       onChange={(e) => edit((d) => (d.templates[active].valid_from = e.target.value || null))}
-                      hint="Пусто — без начала"
+                      hint="Пусто&nbsp;— без&nbsp;начала"
                     />
                     <Input
                       type="date"
@@ -324,7 +324,7 @@ export default function SchedulePage() {
                       min={template.valid_from ?? undefined}
                       onChange={(e) => edit((d) => (d.templates[active].valid_until = e.target.value || null))}
                       error={periodError ?? undefined}
-                      hint="Пусто — бессрочно"
+                      hint="Пусто&nbsp;— бессрочно"
                     />
                     {draft.templates.length > 1 && (
                       <Button
@@ -339,14 +339,14 @@ export default function SchedulePage() {
                       </Button>
                     )}
                     <p className={c.periodNote}>
-                      Если периоды пересекаются, действует расписание, которое начинается позже. Так летнее расписание с 1 июня
+                      Если периоды пересекаются, действует расписание, которое начинается позже. Так летнее расписание с&nbsp;1&nbsp;июня
                       временно заменит постоянное
                     </p>
                   </div>
                 )}
 
                 <div className={c.templates}>
-                  <span className={c.templatesLabel}>Заполнить по шаблону</span>
+                  <span className={c.templatesLabel}>Заполнить по&nbsp;шаблону</span>
                   {QUICK.map((t) => (
                     <Button key={t.label} size="sm" variant="secondary" onClick={() => setWeek(t.make())}>
                       {t.label}
@@ -383,7 +383,7 @@ export default function SchedulePage() {
                             <span className={c.short}>{WEEKDAYS_SHORT[i]}</span>
                             <span className={c.daySlots}>
                               {d.on
-                                ? `${hoursLabel(mins)}, до ${n} ${plural(n, "созвона", "созвонов", "созвонов")}`
+                                ? `${hoursLabel(mins)}, до\u00a0${n} ${plural(n, "созвона", "созвонов", "созвонов")}`
                                 : "Выходной"}
                             </span>
                           </div>
@@ -435,7 +435,7 @@ export default function SchedulePage() {
       </WithRail>
       {(dirty || saving) && (
         <div className={c.sticky} role="region" aria-label="Несохранённые изменения">
-          <span>{hasErrors ? "Есть ошибки" : "Не сохранено"}</span>
+          <span>{hasErrors ? "Есть ошибки" : "Не\u00a0сохранено"}</span>
           {saveButton("primary")}
         </div>
       )}
@@ -476,15 +476,15 @@ function WeekRail({
   const offered = r.durations.filter((d) => d >= r.min_duration && d <= r.max_duration);
   return (
     <section className={s.accent} aria-label="Итог недели">
-      <div className={s.accentKicker}>Часов приёма в неделю</div>
+      <div className={s.accentKicker}>Часов приёма в&nbsp;неделю</div>
       <div>
         <div className={s.accentBig}>{hoursLabel(minutes).split(" ")[0]}</div>
         <div className={s.accentText} style={{ marginTop: 6 }}>
           {minutes
-            ? `До ${sessions} ${plural(sessions, "созвона", "созвонов", "созвонов")} по ${durationLabel(minDuration)}${
-                r.buffer_minutes ? ` с перерывом ${r.buffer_minutes} мин` : ""
+            ? `До\u00a0${sessions} ${plural(sessions, "созвона", "созвонов", "созвонов")} по\u00a0${durationLabel(minDuration)}${
+                r.buffer_minutes ? ` с\u00a0перерывом ${r.buffer_minutes} мин` : ""
               }, если всё займут`
-            : "Клиенты не смогут записаться, пока в неделе нет ни одного рабочего часа"}
+            : "Клиенты не\u00a0смогут записаться, пока в\u00a0неделе нет ни\u00a0одного рабочего часа"}
         </div>
       </div>
       {!minutes && <CalendarSparkle className={illSize.sm} />}

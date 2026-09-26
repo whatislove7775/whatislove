@@ -75,9 +75,9 @@
   gap: 6px;
   min-height: 40px;
   padding: 0 16px;
-  border: 1px solid var(--c-line-strong);
+  border: 0;
   border-radius: var(--r-pill);
-  background: none;
+  background: var(--c-raised);
   color: var(--c-text);
   font: inherit;
   font-size: var(--t-15);
@@ -86,15 +86,14 @@
   transition: background var(--dur), border-color var(--dur), transform var(--dur) var(--ease-bounce);
 }
 .chip:hover {
-  background: var(--c-raised);
+  background: var(--c-raised-2);
 }
 .chip:active {
   transform: scale(0.97);
 }
 .chip[aria-pressed="true"] {
-  background: var(--c-primary-soft);
-  border-color: var(--c-primary);
-  color: var(--c-primary-ink);
+  background: var(--c-primary);
+  color: var(--c-on-primary);
 }
 .chip:focus-visible,
 .style:focus-visible,
@@ -582,4 +581,78 @@
   .phone {
     transition: none;
   }
+}
+
+/* Sliders (experience, budget) */
+.range {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rangeHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rangeHead strong {
+  font-size: var(--t-17);
+  font-variant-numeric: tabular-nums;
+}
+.rangeInput {
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+.rangeInput::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--c-primary) var(--p), var(--c-raised-2) var(--p));
+}
+.rangeInput::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--c-raised-2);
+}
+.rangeInput::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--c-primary);
+}
+.rangeInput::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  margin-top: -10px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--c-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.rangeInput::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--c-primary);
+}
+.rangeInput:focus {
+  outline: none;
+}
+.rangeInput:focus-visible::-webkit-slider-thumb {
+  box-shadow: var(--focus);
+}
+.rangeMarks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.rangeMarks .chip {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: var(--t-13);
 }

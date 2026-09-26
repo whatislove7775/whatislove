@@ -11,15 +11,16 @@ import { SiteHeader } from "@/components/landing/SiteHeader";
 import { Specialists } from "@/components/landing/Specialists";
 import { CirclesTeaser } from "@/components/landing/CirclesTeaser";
 import { Button } from "@/ui";
+import { MaskFriend } from "@/components/illustrations";
 import s from "@/components/landing/landing.module.css";
 import { ogMeta } from "@/lib/og/sections";
 
 export const metadata: Metadata = {
-  title: { absolute: "aprosop — анонимный психолог онлайн, вместо лица 3D-аватар" },
+  title: { absolute: "Aprosop\u00a0— анонимный психолог онлайн, вместо лица 3D-аватар" },
   description:
-    "Диалоги и видеосозвоны с проверенными психологами без почты и телефона. Вместо лица 3D-аватар, который повторяет мимику; видео идёт напрямую и не записывается.",
+    "Диалоги и\u00a0видеосозвоны с\u00a0проверенными психологами без\u00a0почты и\u00a0телефона. Вместо лица 3D-аватар, который повторяет мимику; видео идёт напрямую и\u00a0не\u00a0записывается.",
   alternates: alternates("/"),
-  ...ogMeta("/", "Анонимный психолог онлайн", "Без почты и телефона. Вместо лица — 3D-аватар, видео не записывается."),
+  ...ogMeta("/", "Психолог онлайн, и\u00a0никто не\u00a0узнает, кто вы", "Без\u00a0почты и\u00a0телефона. Вместо лица\u00a0— 3D-аватар, видео не\u00a0записывается."),
 };
 
 // Featured articles come from the 5-minute content cache; render per request so a deploy never
@@ -38,11 +39,18 @@ export default function LandingPage() {
         <FeaturedContent />
         <Faq />
         <section className={`${s.wrap} ${s.closing}`} aria-labelledby="closing-title">
-          <h2 id="closing-title">Начать можно за минуту</h2>
-          <p>Нужен только пароль.</p>
-          <Button href="/start" variant="primary" size="lg">
-            Начать анонимно
-          </Button>
+          <div className={s.plaque}>
+            <div className={s.closingText}>
+              <h2 id="closing-title">Начать можно за&nbsp;минуту</h2>
+              <p>Нужен только пароль.</p>
+            </div>
+            <div className={s.closingActions}>
+              <Button href="/start" variant="primary" size="lg">
+                Начать анонимно
+              </Button>
+            </div>
+            <MaskFriend className={s.closingArt} />
+          </div>
         </section>
       </main>
       <SiteFooter />

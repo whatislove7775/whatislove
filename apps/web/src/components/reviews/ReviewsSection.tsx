@@ -62,7 +62,7 @@ export function ReviewItem({ r, onReport, children }: { r: Review; onReport?: (r
             size="sm"
             iconOnly
             className={s.more}
-            aria-label="Пожаловаться на отзыв"
+            aria-label="Пожаловаться на&nbsp;отзыв"
             icon={<Flag size={15} />}
             onClick={() => onReport(r)}
           />
@@ -185,15 +185,15 @@ export function ReportReviewModal({ review, onClose }: { review: Review | null; 
     }
   }, [review]);
   return (
-    <Modal open={!!review} onClose={() => !busy && onClose()} title="Пожаловаться на отзыв">
+    <Modal open={!!review} onClose={() => !busy && onClose()} title="Пожаловаться на&nbsp;отзыв">
       <div className={s.form}>
         <Select<ReportReason>
-          label="Что не так"
+          label="Что&nbsp;не&nbsp;так"
           value={reason}
           onChange={setReason}
           options={REPORT_REASONS.filter((r) => ["abuse", "harassment", "spam", "fraud", "inappropriate", "other"].includes(r.value))}
         />
-        <Textarea label="Комментарий для модератора" rows={3} maxLength={1000} value={comment} onChange={(e) => setComment(e.target.value)} hint="Необязательно" />
+        <Textarea label="Комментарий для&nbsp;модератора" rows={3} maxLength={1000} value={comment} onChange={(e) => setComment(e.target.value)} hint="Необязательно" />
         <div className={s.actions}>
           <Button variant="ghost" onClick={onClose} disabled={busy}>
             Отмена

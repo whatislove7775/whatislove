@@ -43,7 +43,7 @@ export default function PayCallPage() {
     <div style={{ maxWidth: 560, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
       <div>
         <Button variant="ghost" size="sm" href="/app/dialogs" icon={<ArrowLeft size={16} />}>
-          К диалогам
+          К&nbsp;диалогам
         </Button>
       </div>
       <PageHeader title={paid || c?.paid ? "Созвон оплачен" : "Оплата созвона"} />
@@ -56,7 +56,7 @@ export default function PayCallPage() {
           <CardHead
             icon={<SpecialistPhoto url={c.specialist.photo_url} name={c.specialist.name} size={44} alt="" />}
             title={c.specialist.name}
-            sub="Видеосозвон с аватаром"
+            sub="Видеосозвон с&nbsp;аватаром"
           />
           <div className={s.stack}>
             <div className={s.methods}>
@@ -70,7 +70,7 @@ export default function PayCallPage() {
             <PayForCall key={key} sessionId={id} amountRub={c.amount_kopecks / 100} onPaid={() => setPaid(true)} />
             {(paid || c.paid) && (
               <Button variant="secondary" block href="/app/dialogs" icon={<MessagesSquare size={18} />}>
-                Вернуться в диалог
+                Вернуться в&nbsp;диалог
               </Button>
             )}
           </div>

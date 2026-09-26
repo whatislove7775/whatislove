@@ -121,7 +121,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     } catch (e) {
       setMeError(
         e instanceof ApiError && e.status === 403
-          ? "Этот аккаунт не входит в команду сервиса или доступ отключён."
+          ? "Этот аккаунт не\u00a0входит в\u00a0команду сервиса или\u00a0доступ отключён."
           : `${(e as Error).message} Обновите страницу.`,
       );
     }
@@ -154,8 +154,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <div className={sh.guard}>
         <EmptyState art={<EmptyArt scene="shield" />}
           icon={<ShieldAlert size={22} />}
-          title="Это вход для команды сервиса"
-          text={`Сейчас вы вошли как ${user.role === "psychologist" ? "специалист" : "клиент"}. Чтобы открыть админку, войдите под аккаунтом сотрудника (например, admin).`}
+          title="Это&nbsp;вход для&nbsp;команды сервиса"
+          text={`Сейчас вы\u00a0вошли как\u00a0${user.role === "psychologist" ? "специалист" : "клиент"}. Чтобы открыть админку, войдите под\u00a0аккаунтом сотрудника (например, admin).`}
           action={
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
               <Button
@@ -165,10 +165,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 }}
                 icon={<LogOut size={18} />}
               >
-                Выйти и войти как сотрудник
+                Выйти и&nbsp;войти как&nbsp;сотрудник
               </Button>
               <Button variant="secondary" onClick={() => router.replace(homeFor(user.role))}>
-                Вернуться в кабинет
+                Вернуться в&nbsp;кабинет
               </Button>
             </div>
           }
@@ -190,7 +190,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <div className={sh.guard}>
         <EmptyState art={<EmptyArt scene="shield" />}
           icon={<ShieldAlert size={22} />}
-          title="Нет доступа к консоли"
+          title="Нет доступа к&nbsp;консоли"
           text={meError}
           action={
             <Button variant="secondary" onClick={onLogout} icon={<LogOut size={18} />}>
@@ -240,15 +240,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <div className={sh.brandRow}>
             <Link href="/" className={sh.brand}>
               <LogoMark className={sh.brandMark} />
-              aprosop
+              Aprosop
             </Link>
-            <span style={{ display: "flex", gap: 2 }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 2 }}>
               <ThemeToggle />
               <Button variant="ghost" size="md" iconOnly aria-label="Выйти" title="Выйти" onClick={onLogout} icon={<LogOut size={20} />} />
             </span>
           </div>
 
-          <Link href="/admin/account" className={sh.profile} title="Мой доступ и двухфакторная защита">
+          <Link href="/admin/account" className={sh.profile} title="Мой доступ и&nbsp;двухфакторная защита">
             <span className={sh.profileAvatar}>
               <AvatarThumb config={user.avatar_config} seed={user.id} size={48} />
             </span>
@@ -268,9 +268,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <header className={sh.mobileTop}>
           <Link href="/admin" className={sh.brand}>
             <LogoMark className={sh.brandMark} />
-            aprosop
+            Aprosop
           </Link>
-          <div style={{ display: "flex", gap: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <ThemeToggle />
             <Button variant="ghost" size="md" iconOnly aria-label="Выйти" onClick={onLogout} icon={<LogOut size={20} />} />
           </div>
@@ -339,11 +339,11 @@ export function RequirePerm({ perm, children }: { perm: StaffPermission; childre
   return (
     <EmptyState art={<EmptyArt scene="shield" />}
       icon={<ShieldAlert size={22} />}
-      title="Раздел недоступен для вашей роли"
-      text={`Ваша роль: ${me.role_label.toLowerCase()}. Если доступ нужен для работы, попросите владельца или администратора изменить роль.`}
+      title="Раздел недоступен для&nbsp;вашей роли"
+      text={`Ваша роль: ${me.role_label.toLowerCase()}. Если доступ нужен для\u00a0работы, попросите владельца или\u00a0администратора изменить роль.`}
       action={
         <Button variant="secondary" href="/admin">
-          На сводку
+          На&nbsp;сводку
         </Button>
       }
     />

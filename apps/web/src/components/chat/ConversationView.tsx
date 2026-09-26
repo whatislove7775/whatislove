@@ -15,6 +15,7 @@ import {
   type Retention,
 } from "@/lib/api/chat";
 import { chatSocket } from "@/lib/chat/socket";
+import { findContacts } from "@/lib/chat/contacts";
 import { Composer } from "./Composer";
 import { ConvAvatar } from "./ConvAvatar";
 import { MessageItem, type MessageActions } from "./MessageItem";
@@ -29,8 +30,8 @@ import s from "./chat.module.css";
 const ROLE_SUB: Record<string, string> = {
   specialist: "Специалист",
   client: "Клиент",
-  support: "Обычно отвечаем в течение нескольких часов",
-  ai: "ИИ-помощник, не психолог",
+  support: "Обычно отвечаем в\u00a0течение нескольких часов",
+  ai: "ИИ-помощник, не\u00a0психолог",
 };
 
 function dayLabel(iso: string) {
@@ -48,7 +49,7 @@ function dayLabel(iso: string) {
 }
 
 /** «Исчезающие сообщения»: short label of the mode for chips and toasts. */
-export const RETENTION_LABEL: Record<Retention, string> = { forever: "выкл", "24h": "1 день", "1h": "1 час" };
+export const RETENTION_LABEL: Record<Retention, string> = { forever: "выкл", "24h": "1\u00a0день", "1h": "1\u00a0час" };
 
 function upsert(list: ChatMessage[], msg: ChatMessage): ChatMessage[] {
   const i = list.findIndex((m) => m.id === msg.id);
@@ -99,6 +100,7 @@ export function ConversationView({
   onTitleClick?: () => void;
 }) {
   const toast = useToast();
+  const [blockedMsg, setBlockedMsg] = useState<string | null>(null);
   const isAI = conv.kind === "ai";
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -168,7 +170,7 @@ export function ConversationView({
         setHasMore(page.has_more);
         markRead();
       })
-      .catch((e) => alive && toast(e instanceof ApiError ? e.message : "Не получилось загрузить сообщения", { error: true }))
+      .catch((e) => alive && toast(e instanceof ApiError ? e.message : "Не\u00a0получилось загрузить сообщения", { error: true }))
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
@@ -245,7 +247,7 @@ export function ConversationView({
       setMessages((xs) => [...page.results.filter((m) => !xs.some((x) => x.id === m.id)), ...xs]);
       setHasMore(page.has_more);
     } catch {
-      toast("Не получилось загрузить более ранние сообщения", { error: true });
+      toast("Не\u00a0получилось загрузить более ранние сообщения", { error: true });
     } finally {
       setLoadingOlder(false);
     }
@@ -307,7 +309,7 @@ export function ConversationView({
       return true;
     } catch (e) {
       setMessages((xs) => xs.filter((m) => m.id !== tempId && m.id !== streamId));
-      toast(e instanceof ApiError ? e.message : "Тиша сейчас не может ответить", { error: true });
+      toast(e instanceof ApiError ? e.message : "Тиша сейчас не\u00a0может ответить", { error: true });
       return false;
     } finally {
       setAiBusy(false);
@@ -322,7 +324,8 @@ export function ConversationView({
         setEditing(null);
         return true;
       } catch (e) {
-        toast(e instanceof ApiError ? e.message : "Не получилось изменить", { error: true });
+        if (e instanceof ApiError && e.status === 422) setBlockedMsg(e.message);
+        else toast(e instanceof ApiError ? e.message : "Не\u00a0получилось изменить", { error: true });
         return false;
       }
     }
@@ -341,7 +344,9 @@ export function ConversationView({
       return true;
     } catch (e) {
       setMessages((xs) => xs.filter((m) => m.id !== tempId));
-      toast(e instanceof ApiError ? e.message : "Не получилось отправить", { error: true });
+      // 422 — в тексте контакты (до первого созвона): показываем под полем ввода, текст остаётся
+      if (e instanceof ApiError && e.status === 422) setBlockedMsg(e.message);
+      else toast(e instanceof ApiError ? e.message : "Не\u00a0получилось отправить", { error: true });
       return false;
     }
   };
@@ -355,14 +360,18 @@ export function ConversationView({
       setMessages((xs) => upsert(xs, { ...msg, mine: true }));
       return true;
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось отправить голосовое", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось отправить голосовое", { error: true });
       return false;
     }
   };
 
   const sendFile = async (file: File) => {
     if (file.size > 20 * 1024 * 1024) {
-      toast("Файл больше 20 МБ", { error: true });
+      toast("Файл больше 20\u00a0МБ", { error: true });
+      return;
+    }
+    if (conv.contacts_locked && findContacts(file.name.replace(/\.[^.]+$/, "")).length) {
+      toast("Название файла похоже на\u00a0контакт\u00a0— переименуйте файл.", { error: true });
       return;
     }
     setSending(true);
@@ -371,7 +380,7 @@ export function ConversationView({
       stickBottom.current = true;
       setMessages((xs) => upsert(xs, { ...msg, mine: true }));
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось отправить файл", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось отправить файл", { error: true });
     } finally {
       setSending(false);
     }
@@ -403,7 +412,7 @@ export function ConversationView({
       else if (res) setMessages((xs) => upsert(xs, { ...res, mine: true }));
       if (editing?.id === m.id) setEditing(null);
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось удалить", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось удалить", { error: true });
     }
   };
 
@@ -416,10 +425,10 @@ export function ConversationView({
       toast(
         r === "forever"
           ? "Исчезающие сообщения выключены"
-          : `Исчезающие сообщения: ${RETENTION_LABEL[r]}. Новые сообщения исчезнут у обоих`,
+          : `Исчезающие сообщения: ${RETENTION_LABEL[r]}. Новые сообщения исчезнут у\u00a0обоих`,
       );
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось изменить режим", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось изменить режим", { error: true });
     }
   };
 
@@ -428,9 +437,9 @@ export function ConversationView({
     try {
       const updated = await chatApi.setScreenProtect(conv.id, next);
       onChange(updated);
-      toast(next ? "Защита от скриншотов включена для обеих сторон" : "Защита от скриншотов выключена");
+      toast(next ? "Защита от\u00a0скриншотов включена для\u00a0обеих сторон" : "Защита от\u00a0скриншотов выключена");
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось изменить настройку", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось изменить настройку", { error: true });
     }
   };
 
@@ -442,9 +451,9 @@ export function ConversationView({
       setMessages([]);
       setHasMore(false);
       onChange(updated);
-      toast("Чат очищен у вас");
+      toast("Чат очищен у\u00a0вас");
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось очистить чат", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось очистить чат", { error: true });
     }
   };
 
@@ -454,7 +463,7 @@ export function ConversationView({
       const st = await chatApi.aiRevoke();
       onAIStatus?.(st);
     } catch {
-      toast("Не получилось отозвать согласие", { error: true });
+      toast("Не\u00a0получилось отозвать согласие", { error: true });
     }
   };
 
@@ -476,12 +485,12 @@ export function ConversationView({
       {!compact && (
       <header className={s.viewHead}>
         {onBack && (
-          <button type="button" className={`${s.iconBtn} ${s.backBtn}`} onClick={onBack} aria-label="Назад к списку диалогов" data-back="">
+          <button type="button" className={`${s.iconBtn} ${s.backBtn}`} onClick={onBack} aria-label="Назад к&nbsp;списку диалогов" data-back="">
             <ArrowLeft size={20} />
           </button>
         )}
         {onTitleClick ? (
-          <button type="button" className={s.viewTitleBtn} onClick={onTitleClick} aria-label={`${conv.counterpart.name}: о диалоге`}>
+          <button type="button" className={s.viewTitleBtn} onClick={onTitleClick} aria-label={`${conv.counterpart.name}: о\u00a0диалоге`}>
             <ConvAvatar who={conv.counterpart} size={42} />
             <span className={s.viewTitle}>
               <span className={s.viewName} style={{ display: "block" }}>{conv.counterpart.name}</span>
@@ -521,11 +530,11 @@ export function ConversationView({
               </button>
               {conv.can_change_retention && !isAI && (
                 <button type="button" role="menuitemcheckbox" aria-checked={!!conv.screen_protect} onClick={() => { setHeadMenu(false); void toggleScreenProtect(); }}>
-                  <ScanEye size={16} /> {conv.screen_protect ? "Выключить защиту от скриншотов" : "Защита от скриншотов"}
+                  <ScanEye size={16} /> {conv.screen_protect ? "Выключить защиту от\u00a0скриншотов" : "Защита от\u00a0скриншотов"}
                 </button>
               )}
               <button type="button" role="menuitem" onClick={() => { setHeadMenu(false); setClearOpen(true); }}>
-                <Eraser size={16} /> Очистить чат у себя
+                <Eraser size={16} /> Очистить чат у&nbsp;себя
               </button>
               {isAI && (
                 <button type="button" role="menuitem" className={s.menuDanger} onClick={revokeAI}>
@@ -544,11 +553,11 @@ export function ConversationView({
           <span className={s.retentionText}>
             {conv.retention !== "forever"
               ? `Исчезают через ${RETENTION_LABEL[conv.retention]}`
-              : "Сообщения хранятся, пока вы их не удалите"}
+              : "Сообщения хранятся, пока вы\u00a0их\u00a0не\u00a0удалите"}
           </span>
           {shielded && (
-            <span className={s.retentionShield} title="Защита от скриншотов включена">
-              <ScanEye size={14} aria-label="Защита от скриншотов включена" />
+            <span className={s.retentionShield} title="Защита от&nbsp;скриншотов включена">
+              <ScanEye size={14} aria-label="Защита от&nbsp;скриншотов включена" />
             </span>
           )}
         </button>
@@ -560,7 +569,7 @@ export function ConversationView({
         <div className={s.aiNotice}>
           <LifeBuoy size={16} />
           <span>
-            Тиша — ИИ, а не психолог. Если очень тяжело: <a href="tel:88003334434" title="8-800-333-44-34">телефон доверия</a> или{" "}
+            Тиша&nbsp;— ИИ, а&nbsp;не&nbsp;психолог. Если очень тяжело: <a href="tel:88003334434" title="8-800-333-44-34">телефон доверия</a> или{" "}
             <a href="tel:112">112</a>.
           </span>
         </div>
@@ -583,7 +592,7 @@ export function ConversationView({
             )}
             {messages.length === 0 && !isAI && (
               <div className={s.emptyConv}>
-                <p>Здесь пока пусто. Напишите первое сообщение или запишите голосовое.</p>
+                <p>Здесь пока пусто. Напишите первое сообщение или&nbsp;запишите голосовое.</p>
               </div>
             )}
             {messages.map((m, i) => {
@@ -644,7 +653,7 @@ export function ConversationView({
         <div className={s.aiLimit}>
           {ai.remaining_today > 0
             ? `Сегодня можно отправить Тише ещё ${ai.remaining_today}`
-            : "Лимит сообщений Тише на сегодня исчерпан — завтра можно продолжить"}
+            : "Лимит сообщений Тише на\u00a0сегодня исчерпан\u00a0— завтра можно продолжить"}
         </div>
       )}
       {composerNotice}
@@ -655,6 +664,10 @@ export function ConversationView({
         onTyping={sendTyping}
         allowVoice={!isAI}
         allowFiles={conv.can_send_files}
+        filesHint={conv.files_hint}
+        guardContacts={!!conv.contacts_locked}
+        blockedMessage={blockedMsg}
+        onBlockedClear={() => setBlockedMsg(null)}
         placeholder={isAI ? "Напишите Тише" : "Сообщение"}
         editing={editing}
         onCancelEdit={() => setEditing(null)}
@@ -672,12 +685,12 @@ export function ConversationView({
         }}
       />
 
-      <Modal open={clearOpen} onClose={() => setClearOpen(false)} title="Очистить чат у себя?" width={440}>
+      <Modal open={clearOpen} onClose={() => setClearOpen(false)} title="Очистить чат у&nbsp;себя?" width={440}>
         <p className={s.modalText}>
-          Сообщения исчезнут только у вас.{" "}
+          Сообщения исчезнут только у&nbsp;вас.{" "}
           {isAI
-            ? "Тиша тоже перестанет их учитывать в разговоре."
-            : "У собеседника переписка останется — чтобы убрать сообщение у всех, удалите его через меню сообщения."}
+            ? "Тиша тоже перестанет их\u00a0учитывать в\u00a0разговоре."
+            : "У\u00a0собеседника переписка останется\u00a0— чтобы убрать сообщение у\u00a0всех, удалите его через меню сообщения."}
         </p>
         <div className={s.modalActions}>
           <Button variant="ghost" onClick={() => setClearOpen(false)}>
@@ -692,17 +705,17 @@ export function ConversationView({
       <Modal open={!!deleting} onClose={() => setDeleting(null)} title="Удалить сообщение?" width={440}>
         <p className={s.modalText}>
           {deleting?.mine
-            ? "«Удалить у всех» уберёт сообщение и у собеседника — останется только отметка, что оно было удалено."
-            : "Сообщение исчезнет только у вас."}
+            ? "«Удалить у\u00a0всех» уберёт сообщение и\u00a0у\u00a0собеседника\u00a0— останется только отметка, что\u00a0оно было удалено."
+            : "Сообщение исчезнет только у\u00a0вас."}
         </p>
         <div className={s.modalActionsCol}>
           {deleting && deleting.mine && (
             <Button variant="danger" block onClick={() => doDelete("all")}>
-              Удалить у всех
+              Удалить у&nbsp;всех
             </Button>
           )}
           <Button variant="secondary" block onClick={() => doDelete("me")}>
-            Удалить у меня
+            Удалить у&nbsp;меня
           </Button>
           <Button variant="ghost" block onClick={() => setDeleting(null)}>
             Отмена

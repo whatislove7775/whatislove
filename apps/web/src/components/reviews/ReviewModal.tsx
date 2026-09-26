@@ -62,7 +62,7 @@ export function ReviewModal({
       onSaved?.(r);
       onClose();
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось сохранить отзыв", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось сохранить отзыв", { error: true });
     } finally {
       setBusy(false);
     }
@@ -84,7 +84,7 @@ export function ReviewModal({
   };
 
   const shown = hover || rating;
-  const title = state.review ? "Ваш отзыв" : name ? `Отзыв о специалисте: ${name}` : "Отзыв о специалисте";
+  const title = state.review ? "Ваш отзыв" : name ? `Отзыв о\u00a0специалисте: ${name}` : "Отзыв о\u00a0специалисте";
 
   return (
     <Modal open={open} onClose={() => !busy && onClose()} title={title} width={560}>
@@ -96,7 +96,7 @@ export function ReviewModal({
         <div className={s.form}>
           <p className={s.headNote}>
             {state.error ??
-              "Отзыв можно оставить после созвона, который состоялся. Если созвон только что закончился, специалист отметит его проведённым, и здесь появится форма."}
+              "Отзыв можно оставить после созвона, который состоялся. Если созвон только что\u00a0закончился, специалист отметит его проведённым, и\u00a0здесь появится форма."}
           </p>
           <div className={s.actions}>
             <Button variant="primary" onClick={onClose}>
@@ -108,7 +108,7 @@ export function ReviewModal({
         <div className={s.form}>
           {state.review?.status === "hidden" && (
             <p className={s.status}>
-              Модератор скрыл этот отзыв{state.review.hidden_reason ? `: ${state.review.hidden_reason}` : ""}. Исправьте его — или напишите в поддержку.
+              Модератор скрыл этот отзыв{state.review.hidden_reason ? `: ${state.review.hidden_reason}` : ""}. Исправьте его&nbsp;— или&nbsp;напишите в&nbsp;поддержку.
             </p>
           )}
           <div className={s.pick}>
@@ -133,7 +133,7 @@ export function ReviewModal({
           </div>
 
           <div>
-            <div className={s.label}>Что запомнилось</div>
+            <div className={s.label}>Что&nbsp;запомнилось</div>
             <div className={s.chips}>
               {REVIEW_TAGS.map((t) => {
                 const on = tags.includes(t.key);
@@ -153,20 +153,20 @@ export function ReviewModal({
           </div>
 
           <Textarea
-            label="Пара слов для других клиентов"
+            label="Пара слов для&nbsp;других клиентов"
             rows={4}
             maxLength={2000}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Что изменилось после созвонов, каково было говорить со специалистом. Не пишите личных подробностей"
-            hint={`Необязательно. ${text.length} из 2000`}
+            placeholder="Что&nbsp;изменилось после созвонов, каково было говорить со&nbsp;специалистом. Не&nbsp;пишите личных подробностей"
+            hint={`Необязательно. ${text.length} из\u00a02000`}
           />
 
           <div className={s.anon}>
             <EyeOff size={18} aria-hidden />
             <span>
               Отзыв анонимный. Вместо псевдонима будет написано «Клиент, {state.calls}{" "}
-              {plural(state.calls, "созвон", "созвона", "созвонов")}», дата — только месяц.
+              {plural(state.calls, "созвон", "созвона", "созвонов")}», дата&nbsp;— только месяц.
             </span>
           </div>
 

@@ -7,12 +7,12 @@ export const COVERS: Cover[] = ["peach", "butter", "lime", "mint", "lilac", "sky
 export const TOPICS: { value: string; label: string }[] = [
   { value: "anxiety", label: "Тревога" },
   { value: "mood", label: "Настроение" },
-  { value: "stress", label: "Стресс и выгорание" },
+  { value: "stress", label: "Стресс и\u00a0выгорание" },
   { value: "sleep", label: "Сон" },
   { value: "relationships", label: "Отношения" },
   { value: "self", label: "Самооценка" },
-  { value: "loss", label: "Горе и утрата" },
-  { value: "therapy", label: "О терапии" },
+  { value: "loss", label: "Горе и\u00a0утрата" },
+  { value: "therapy", label: "О\u00a0терапии" },
 ];
 
 export const PRACTICE_KINDS: { value: PracticeKind; label: string }[] = [
@@ -30,19 +30,19 @@ export const EVIDENCE_LEVELS: { value: Exclude<EvidenceLevel, "">; label: string
     value: "strong",
     label: "Сильная доказательная база",
     short: "Сильные доказательства",
-    hint: "Клинические руководства, метаанализы и обзоры многих исследований.",
+    hint: "Клинические руководства, метаанализы и\u00a0обзоры многих исследований.",
   },
   {
     value: "moderate",
     label: "Умеренная доказательная база",
     short: "Умеренные доказательства",
-    hint: "Есть обзоры и хорошие исследования, но данных меньше или они неоднородны.",
+    hint: "Есть обзоры и\u00a0хорошие исследования, но\u00a0данных меньше или\u00a0они неоднородны.",
   },
   {
     value: "limited",
     label: "Ограниченные данные",
     short: "Данных пока мало",
-    hint: "Отдельные исследования или небольшие эффекты. Относитесь как к мягкой поддержке.",
+    hint: "Отдельные исследования или\u00a0небольшие эффекты. Относитесь как\u00a0к\u00a0мягкой поддержке.",
   },
   {
     value: "practice",
@@ -83,6 +83,18 @@ export interface ArticleCard {
   published_at: string | null;
   updated_at?: string;
   evidence_level?: EvidenceLevel;
+  /** Own cover picture (16:9 WebP); null → topic illustration on the `cover` tone. */
+  cover_image?: { id: string; url: string; md: string; sm: string; width: number; height: number } | null;
+  /** Set when a specialist wrote the article («От специалиста»). Detail adds bio etc. */
+  specialist?: {
+    id: number;
+    name: string;
+    photo_url: string | null;
+    bio?: string;
+    specializations?: string[];
+    experience_years?: number;
+  } | null;
+  is_featured?: boolean;
 }
 
 export interface Article extends ArticleCard {
@@ -97,6 +109,13 @@ export interface ArticleDraft extends Article {
   is_published: boolean;
   created_at: string;
   updated_at: string;
+  /** write-only on save: uploaded cover id, or null to remove */
+  cover_image_id?: string | null;
+  moderation?: "" | "draft" | "pending" | "approved" | "rejected";
+  moderation_comment?: string;
+  submitted_at?: string | null;
+  moderated_at?: string | null;
+  reads?: number;
 }
 
 export type PracticeKind = "breathing" | "grounding" | "body" | "journaling" | "mindfulness";
@@ -153,7 +172,7 @@ export interface TopicCount {
 
 export const contentApi = {
   topics: () => api<TopicCount[]>("/content/topics/", { auth: false }),
-  articles: (q: { topic?: string; limit?: number; exclude?: string; q?: string } = {}) =>
+  articles: (q: { topic?: string; limit?: number; exclude?: string; q?: string; source?: "specialists" | "editorial"; sort?: "top" } = {}) =>
     api<ArticleCard[]>("/content/articles/", { query: { ...q }, auth: false }),
   article: (slug: string) => api<Article>(`/content/articles/${encodeURIComponent(slug)}/`, { auth: false }),
   practices: (q: { kind?: string; limit?: number } = {}) =>

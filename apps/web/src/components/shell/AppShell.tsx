@@ -79,6 +79,7 @@ export const NAV: Record<Role, { items: NavItem[]; cta: { label: string; href: s
       { href: "/pro/dialogs", label: "Диалоги", icon: MessagesSquare, tab: true, unread: true },
       { href: "/pro/schedule", label: "Расписание", icon: CalendarClock, tab: true },
       { href: "/pro/circles", label: "Круги", icon: CirclesIcon },
+      { href: "/pro/articles", label: "Мои статьи", icon: BookOpen },
       { href: "/pro/profile", label: "Профиль", icon: UserRound, tab: true, group: "Кабинет" },
       { href: "/pro/earnings", label: "Доходы", icon: Banknote, group: "Кабинет" },
       { href: "/pro/check", label: "Проверка камеры", icon: Camera, tab: true, tabLabel: "Камера", group: "Кабинет" },
@@ -243,7 +244,7 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
         <div className={s.brandRow}>
           <Link href="/" className={s.brand} data-tip="На главную сайта">
             <LogoMark className={s.brandMark} />
-            <span className={s.label}>aprosop</span>
+            <span className={s.label}>Aprosop</span>
           </Link>
           <ThemeToggle className={s.topToggle} />
         </div>
@@ -328,7 +329,7 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
       <header className={s.mobileTop}>
         <Link href={root} className={s.brand}>
           <LogoMark className={s.brandMark} />
-          aprosop
+          Aprosop
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           {role === "client" && <BalanceChip compact />}

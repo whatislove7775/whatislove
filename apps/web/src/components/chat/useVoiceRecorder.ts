@@ -107,7 +107,7 @@ export function useVoiceRecorder() {
       setMic(stream);
       setPhase("ready");
     } catch {
-      setError("Нет доступа к микрофону. Разрешите его в настройках браузера.");
+      setError("Нет доступа к\u00a0микрофону. Разрешите его в\u00a0настройках браузера.");
       setPhase("error");
     }
   }, []);
@@ -115,7 +115,7 @@ export function useVoiceRecorder() {
   const start = useCallback(() => {
     const stream = transformedStream;
     if (!stream || typeof MediaRecorder === "undefined") {
-      setError("Запись голоса не поддерживается в этом браузере.");
+      setError("Запись голоса не\u00a0поддерживается в\u00a0этом браузере.");
       setPhase("error");
       return;
     }
@@ -124,7 +124,7 @@ export function useVoiceRecorder() {
     try {
       rec = mime ? new MediaRecorder(stream, { mimeType: mime, audioBitsPerSecond: 48000 }) : new MediaRecorder(stream);
     } catch {
-      setError("Не получилось начать запись.");
+      setError("Не\u00a0получилось начать запись.");
       setPhase("error");
       return;
     }

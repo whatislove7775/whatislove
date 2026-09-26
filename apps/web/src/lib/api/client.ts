@@ -90,8 +90,8 @@ function messageFrom(data: unknown, status: number): { message: string; fields: 
     if (first) return { message: first, fields };
   }
   if (status >= 500) return { message: "Сервер временно недоступен. Попробуйте через минуту.", fields: {} };
-  if (status === 0) return { message: "Нет соединения с сервером. Проверьте интернет.", fields: {} };
-  return { message: "Не получилось выполнить запрос.", fields: {} };
+  if (status === 0) return { message: "Нет соединения с\u00a0сервером. Проверьте интернет.", fields: {} };
+  return { message: "Не\u00a0получилось выполнить запрос.", fields: {} };
 }
 
 export interface RequestOptions {

@@ -261,9 +261,9 @@ a.pill:focus-visible {
 }
 .chip {
   padding: 7px 12px;
-  border: 1px solid var(--c-line-strong);
+  border: 0;
   border-radius: var(--r-pill);
-  background: transparent;
+  background: var(--c-raised);
   color: var(--c-text);
   font: inherit;
   font-size: var(--t-13);
@@ -271,9 +271,8 @@ a.pill:focus-visible {
   transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 .chip[aria-pressed="true"] {
-  background: var(--c-primary-soft);
-  border-color: var(--c-primary);
-  color: var(--c-primary-ink);
+  background: var(--c-primary);
+  color: var(--c-on-primary);
 }
 .chip:focus-visible {
   outline: none;

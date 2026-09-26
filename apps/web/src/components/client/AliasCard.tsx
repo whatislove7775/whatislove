@@ -18,7 +18,7 @@ export function AliasCard({ user }: { user: User }) {
           background="rgba(255,255,255,0.18)"
         />
         <div className={s.personText}>
-          <span>Вы здесь под именем</span>
+          <span>Вы&nbsp;здесь под&nbsp;именем</span>
           <strong>{user.alias}</strong>
         </div>
       </div>
@@ -28,8 +28,8 @@ export function AliasCard({ user }: { user: User }) {
             <UserRound size={18} strokeWidth={1.8} />
           </span>
           <span className={s.rowText}>
-            <strong>Вход по псевдониму и паролю</strong>
-            <span>Почта и телефон не нужны</span>
+            <strong>Вход по&nbsp;псевдониму и&nbsp;паролю</strong>
+            <span>Почта и&nbsp;телефон не&nbsp;нужны</span>
           </span>
         </div>
         <div className={s.row}>
@@ -39,8 +39,7 @@ export function AliasCard({ user }: { user: User }) {
           <span className={s.rowText}>
             <strong>Ключ восстановления</strong>
             <span>
-              Единственный способ вернуть доступ, если забудете пароль. Мы не
-              сможем помочь без него
+              Единственный способ вернуть доступ, если забудете пароль. Мы&nbsp;не&nbsp;сможем помочь без&nbsp;него
             </span>
           </span>
         </div>

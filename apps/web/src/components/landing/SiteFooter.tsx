@@ -5,9 +5,9 @@ import s from "./landing.module.css";
 const LINKS = [
   { href: "/articles", label: "Статьи" },
   { href: "/practices", label: "Практики" },
-  { href: "/match", label: "Подбор по анкете" },
+  { href: "/match", label: "Подбор по\u00a0анкете" },
   { href: "/join", label: "Специалистам" },
-  { href: "/business", label: "Для компаний" },
+  { href: "/business", label: "Для\u00a0компаний" },
   { href: "/recover", label: "Восстановить доступ" },
   { href: "/legal", label: "Документы" },
 ];
@@ -29,8 +29,8 @@ export function SiteFooter() {
           </nav>
         </div>
         <div className={s.footerBottom}>
-          <span>© {new Date().getFullYear()} aprosop</span>
-          <span>Не заменяет экстренную помощь. Если вам угрожает опасность, звоните 112.</span>
+          <span>© {new Date().getFullYear()} Aprosop</span>
+          <span>Не&nbsp;заменяет экстренную помощь. Если вам угрожает опасность, звоните 112.</span>
         </div>
       </div>
     </footer>

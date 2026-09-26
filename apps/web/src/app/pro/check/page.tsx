@@ -11,14 +11,14 @@ type State = "idle" | "asking" | "ok" | "error";
 function explain(e: unknown): string {
   const name = (e as DOMException)?.name;
   if (name === "NotAllowedError" || name === "SecurityError")
-    return "Браузер запретил доступ. Нажмите на значок замка в адресной строке, разрешите камеру и микрофон, затем нажмите «Проверить снова».";
+    return "Браузер запретил доступ. Нажмите на\u00a0значок замка в\u00a0адресной строке, разрешите камеру и\u00a0микрофон, затем нажмите «Проверить снова».";
   if (name === "NotFoundError" || name === "OverconstrainedError")
-    return "Камера или микрофон не найдены. Подключите устройство и нажмите «Проверить снова».";
+    return "Камера или\u00a0микрофон не\u00a0найдены. Подключите устройство и\u00a0нажмите «Проверить снова».";
   if (name === "NotReadableError" || name === "AbortError")
-    return "Камера занята другой программой. Закройте Zoom, Teams или другую вкладку со звонком и нажмите «Проверить снова».";
+    return "Камера занята другой программой. Закройте Zoom, Teams или\u00a0другую вкладку со\u00a0звонком и\u00a0нажмите «Проверить снова».";
   if (typeof navigator !== "undefined" && !navigator.mediaDevices)
-    return "Этот браузер не даёт доступ к камере. Откройте страницу в свежей версии Chrome, Safari или Firefox.";
-  return "Не получилось включить камеру и микрофон. Нажмите «Проверить снова» или перезапустите браузер.";
+    return "Этот браузер не\u00a0даёт доступ к\u00a0камере. Откройте страницу в\u00a0свежей версии Chrome, Safari или\u00a0Firefox.";
+  return "Не\u00a0получилось включить камеру и\u00a0микрофон. Нажмите «Проверить снова» или\u00a0перезапустите браузер.";
 }
 
 const BARS = 24;
@@ -116,7 +116,7 @@ export default function CheckPage() {
   return (
     <>
       <PageHeader
-        title="Проверка камеры и микрофона"
+        title="Проверка камеры и&nbsp;микрофона"
         sub="Клиент видит ваше настоящее видео"
         action={
           <Button variant="primary" icon={<RotateCw size={18} />} onClick={start} loading={state === "asking"}>
@@ -131,7 +131,7 @@ export default function CheckPage() {
             {state !== "ok" && (
               <div className={c.placeholder}>
                 {state === "error" ? <CameraOff size={32} strokeWidth={1.6} /> : <Camera size={32} strokeWidth={1.6} />}
-                <p>{state === "error" ? error : "Разрешите браузеру доступ к камере и микрофону"}</p>
+                <p>{state === "error" ? error : "Разрешите браузеру доступ к\u00a0камере и\u00a0микрофону"}</p>
               </div>
             )}
             <span className={c.private}>Так вас увидит клиент</span>
@@ -144,7 +144,7 @@ export default function CheckPage() {
               </span>
               <div className={c.checkText}>
                 <strong>Камера</strong>
-                <span>{state === "ok" && hasVideo ? labels.cam || "Работает" : state === "asking" ? "Ждём разрешения" : "Не подключена"}</span>
+                <span>{state === "ok" && hasVideo ? labels.cam || "Работает" : state === "asking" ? "Ждём разрешения" : "Не\u00a0подключена"}</span>
               </div>
               <Badge tone={state === "ok" && hasVideo ? "success" : state === "error" ? "danger" : "neutral"}>
                 {state === "ok" && hasVideo ? "Работает" : state === "error" ? "Нет доступа" : "Проверяем"}
@@ -163,7 +163,7 @@ export default function CheckPage() {
                       : "Скажите что-нибудь, полоска должна ожить"
                     : state === "asking"
                       ? "Ждём разрешения"
-                      : "Не подключён"}
+                      : "Не\u00a0подключён"}
                 </span>
               </div>
               <Badge tone={micHeard ? "success" : state === "error" ? "danger" : "warning"}>
@@ -184,10 +184,10 @@ export default function CheckPage() {
 
 function Tips() {
   const tips = [
-    { icon: <Lamp size={20} />, title: "Свет спереди", text: "Окно или лампа за камерой, а не за спиной. Клиенту важно видеть ваше лицо и мимику." },
-    { icon: <Camera size={20} />, title: "Кадр и фон", text: "Камера на уровне глаз, лицо и плечи в кадре. Спокойный фон без личных вещей и документов." },
-    { icon: <Headphones size={20} />, title: "Наушники", text: "Так клиент не услышит эхо своего голоса, а разговор не будет слышен рядом с вами." },
-    { icon: <Wifi size={20} />, title: "Стабильная сеть", text: "Видео идёт напрямую между вами и клиентом. Если связь слабая, закройте загрузки и другие звонки." },
+    { icon: <Lamp size={20} />, title: "Свет спереди", text: "Окно или\u00a0лампа за\u00a0камерой, а\u00a0не\u00a0за\u00a0спиной. Клиенту важно видеть ваше лицо и\u00a0мимику." },
+    { icon: <Camera size={20} />, title: "Кадр и\u00a0фон", text: "Камера на\u00a0уровне глаз, лицо и\u00a0плечи в\u00a0кадре. Спокойный фон без\u00a0личных вещей и\u00a0документов." },
+    { icon: <Headphones size={20} />, title: "Наушники", text: "Так клиент не\u00a0услышит эхо своего голоса, а\u00a0разговор не\u00a0будет слышен рядом с\u00a0вами." },
+    { icon: <Wifi size={20} />, title: "Стабильная сеть", text: "Видео идёт напрямую между вами и\u00a0клиентом. Если связь слабая, закройте загрузки и\u00a0другие звонки." },
   ];
   return (
     <Card as="section">

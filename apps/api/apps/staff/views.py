@@ -527,6 +527,11 @@ def apply_specialist_decision(request, profile, decision: str, reason: str) -> R
         return _bad("У вашей роли нет права на это решение.", status.HTTP_403_FORBIDDEN)
     if profile.verification_status not in sources:
         return _bad("Для текущего статуса специалиста это действие недоступно.")
+    if decision == "approve":
+        from apps.verification.services import has_selfie, selfie_required
+
+        if selfie_required() and not has_selfie(profile):
+            return _bad("Специалист ещё не сделал селфи для проверки. Одобрить можно после него.")
     before = profile.verification_status
     profile.verification_status = result
     profile.rejection_reason = reason if decision in ("reject", "suspend") else ""

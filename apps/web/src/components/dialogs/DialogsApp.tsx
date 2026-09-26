@@ -60,7 +60,7 @@ export function DialogsApp({ mode }: { mode: Mode }) {
       if (st) setAi(st);
     } catch (e) {
       setItems((x) => x ?? []);
-      toast(e instanceof ApiError ? e.message : "Не получилось загрузить диалоги", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось загрузить диалоги", { error: true });
     }
   }, [mode, toast]);
 
@@ -87,7 +87,7 @@ export function DialogsApp({ mode }: { mode: Mode }) {
       setDetailError(null);
       setItems((list) => (list ? list.map((x) => (x.id === d.id ? { ...x, ...pickItem(d) } : x)) : list));
     } catch (e) {
-      setDetailError(e instanceof ApiError ? e.message : "Не получилось загрузить диалог");
+      setDetailError(e instanceof ApiError ? e.message : "Не\u00a0получилось загрузить диалог");
     }
   }, [selected, isSpecialistDialog]);
 
@@ -156,7 +156,7 @@ export function DialogsApp({ mode }: { mode: Mode }) {
           await loadList();
           select(conv.id);
         })
-        .catch((e) => toast(e instanceof ApiError ? e.message : "Не получилось открыть поддержку", { error: true }))
+        .catch((e) => toast(e instanceof ApiError ? e.message : "Не\u00a0получилось открыть поддержку", { error: true }))
         .finally(() => setOpening(false));
     } else if (sel && sel.conversation_id && sel.id !== sel.conversation_id) {
       select(sel.conversation_id);
@@ -193,7 +193,7 @@ export function DialogsApp({ mode }: { mode: Mode }) {
       size="md"
       iconOnly
       className={s.infoBtn}
-      aria-label="О диалоге"
+      aria-label="О&nbsp;диалоге"
       aria-expanded={!!details}
       onClick={() => setDetails((v) => (v ? null : "top"))}
       icon={<Info size={20} strokeWidth={1.8} />}
@@ -237,11 +237,11 @@ export function DialogsApp({ mode }: { mode: Mode }) {
       <div className={c.placeholder}>
         <EmptyState
           art={<EmptyArt scene="search" />}
-          title="Диалог не найден"
-          text="Возможно, у вас нет к нему доступа или ссылка устарела."
+          title="Диалог не&nbsp;найден"
+          text="Возможно, у&nbsp;вас нет к&nbsp;нему доступа или&nbsp;ссылка устарела."
           action={
             <Button variant="secondary" onClick={() => select(null)}>
-              К списку диалогов
+              К&nbsp;списку диалогов
             </Button>
           }
         />
@@ -276,7 +276,7 @@ export function DialogsApp({ mode }: { mode: Mode }) {
           text={detailError}
           action={
             <Button variant="secondary" onClick={() => select(null)}>
-              К списку диалогов
+              К&nbsp;списку диалогов
             </Button>
           }
         />
@@ -290,10 +290,10 @@ export function DialogsApp({ mode }: { mode: Mode }) {
         onChange={updateConv}
         onTitleClick={() => setDetails("top")}
         menuItems={[
-          { key: "info", icon: <Info size={16} />, label: "О диалоге", onClick: () => setDetails("top") },
-          { key: "history", icon: <History size={16} />, label: "Созвоны и файлы", onClick: () => setDetails("history") },
+          { key: "info", icon: <Info size={16} />, label: "О\u00a0диалоге", onClick: () => setDetails("top") },
+          { key: "history", icon: <History size={16} />, label: "Созвоны и\u00a0файлы", onClick: () => setDetails("history") },
           ...(role === "specialist"
-            ? [{ key: "notes", icon: <NotebookPen size={16} />, label: "Заметки о клиенте", onClick: () => setDetails("notes") }]
+            ? [{ key: "notes", icon: <NotebookPen size={16} />, label: "Заметки о\u00a0клиенте", onClick: () => setDetails("notes") }]
             : []),
         ]}
         subtitle={role === "client" ? "Психолог" : "Анонимный клиент"}
@@ -305,8 +305,8 @@ export function DialogsApp({ mode }: { mode: Mode }) {
               <AlertCircle size={16} strokeWidth={1.8} aria-hidden />
               <span>
                 {left > 0
-                  ? `Пока специалист не ответил, можно отправить ещё ${left} ${left === 1 ? "сообщение" : left < 5 ? "сообщения" : "сообщений"}. Опишите коротко, с чем хотите прийти.`
-                  : "Вы отправили несколько сообщений — дождитесь ответа специалиста или назначьте созвон."}
+                  ? `Пока специалист не\u00a0ответил, можно отправить ещё ${left} ${left === 1 ? "сообщение" : left < 5 ? "сообщения" : "сообщений"}. Опишите коротко, с\u00a0чем\u00a0хотите прийти.`
+                  : "Вы\u00a0отправили несколько сообщений\u00a0— дождитесь ответа специалиста или\u00a0назначьте созвон."}
               </span>
             </div>
           ) : null
@@ -351,9 +351,9 @@ export function DialogsApp({ mode }: { mode: Mode }) {
                 tabIndex={-1}
                 onClick={() => setDetails(null)}
               />
-              <aside className={s.sheet} data-open={sheetOpen ? "" : undefined} aria-label="О диалоге" aria-hidden={!sheetOpen}>
+              <aside className={s.sheet} data-open={sheetOpen ? "" : undefined} aria-label="О&nbsp;диалоге" aria-hidden={!sheetOpen}>
                 <div className={s.sheetHead}>
-                  <span className={s.sheetTitle}>О диалоге</span>
+                  <span className={s.sheetTitle}>О&nbsp;диалоге</span>
                   <Button ref={sheetClose} variant="ghost" size="md" iconOnly aria-label="Закрыть" onClick={() => setDetails(null)} icon={<X size={20} />} />
                 </div>
                 <div className={s.sheetBody}>
@@ -373,7 +373,7 @@ export function DialogsApp({ mode }: { mode: Mode }) {
             <Skeleton height={52} />
           </div>
         ) : contacts.length === 0 ? (
-          <p className={s.modalText}>Когда клиент назначит с вами созвон, здесь можно будет начать с ним диалог.</p>
+          <p className={s.modalText}>Когда клиент назначит с&nbsp;вами созвон, здесь можно будет начать с&nbsp;ним диалог.</p>
         ) : (
           <div className={c.contacts}>
             {contacts.map((x) => (
@@ -388,7 +388,7 @@ export function DialogsApp({ mode }: { mode: Mode }) {
                     await loadList();
                     select(d.id);
                   } catch (e) {
-                    toast(e instanceof ApiError ? e.message : "Не получилось начать диалог", { error: true });
+                    toast(e instanceof ApiError ? e.message : "Не\u00a0получилось начать диалог", { error: true });
                   }
                 }}
               >
@@ -422,31 +422,31 @@ function Placeholder({ mode }: { mode: Mode }) {
   return (
     <div className={c.placeholder}>
       <ChatBubbles className={art.placeholderArt} />
-      <h2 className={c.placeholderTitle}>Переписка и созвоны в одном месте</h2>
+      <h2 className={c.placeholderTitle}>Переписка и&nbsp;созвоны в&nbsp;одном месте</h2>
       <p className={c.placeholderText}>
         {mode === "client"
-          ? "Выберите диалог слева. С каждым специалистом у вас один диалог:"
-          : "Выберите диалог слева. С каждым клиентом у вас один диалог:"}
+          ? "Выберите диалог слева. С\u00a0каждым специалистом у\u00a0вас один диалог:"
+          : "Выберите диалог слева. С\u00a0каждым клиентом у\u00a0вас один диалог:"}
       </p>
       <ul className={c.features}>
         <li>
           <CalendarPlus size={18} />{" "}
-          {mode === "client" ? "Созвоны назначаются прямо в диалоге по расписанию специалиста" : "Предлагайте клиенту время созвона прямо в диалоге"}
+          {mode === "client" ? "Созвоны назначаются прямо в\u00a0диалоге по\u00a0расписанию специалиста" : "Предлагайте клиенту время созвона прямо в\u00a0диалоге"}
         </li>
         <li>
-          <Video size={18} /> Когда созвон начнётся, в диалоге появится кнопка «Присоединиться»
+          <Video size={18} /> Когда созвон начнётся, в&nbsp;диалоге появится кнопка «Присоединиться»
         </li>
         <li>
-          <Lock size={18} /> Сообщения и файлы хранятся в зашифрованном виде
+          <Lock size={18} /> Сообщения и&nbsp;файлы хранятся в&nbsp;зашифрованном виде
         </li>
         <li>
-          <Timer size={18} /> Исчезающие сообщения: новые исчезают сами через 1 час или 1 день
+          <Timer size={18} /> Исчезающие сообщения: новые исчезают сами через 1&nbsp;час или&nbsp;1&nbsp;день
         </li>
         <li>
-          <Mic size={18} /> Голосовые можно записать с маской голоса
+          <Mic size={18} /> Голосовые можно записать с&nbsp;маской голоса
         </li>
         <li>
-          <EyeOff size={18} /> Сотрудники платформы не читают диалоги клиентов и специалистов
+          <EyeOff size={18} /> Сотрудники платформы не&nbsp;читают диалоги клиентов и&nbsp;специалистов
         </li>
       </ul>
     </div>

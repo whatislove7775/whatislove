@@ -14,7 +14,7 @@ export const REVIEW_TAGS: ReviewTag[] = [
   { key: "progress", label: "Есть результат" },
   { key: "punctual", label: "Пунктуальный" },
   { key: "clear", label: "Понятно объясняет" },
-  { key: "safe", label: "С ним спокойно" },
+  { key: "safe", label: "С\u00a0ним спокойно" },
 ];
 
 export interface Review {

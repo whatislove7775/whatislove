@@ -45,7 +45,7 @@ export function PayForCall({
         setCall(c);
         setSummary(sm);
       })
-      .catch((e) => setError(e instanceof ApiError ? e.message : "Не получилось загрузить баланс."));
+      .catch((e) => setError(e instanceof ApiError ? e.message : "Не\u00a0получилось загрузить баланс."));
   }, [sessionId]);
   useEffect(load, [load]);
 
@@ -68,7 +68,7 @@ export function PayForCall({
       if (isInsufficient(e)) {
         load();
         setTopup(true);
-      } else setError(e instanceof ApiError ? e.message : "Не получилось оплатить. Попробуйте ещё раз.");
+      } else setError(e instanceof ApiError ? e.message : "Не\u00a0получилось оплатить. Попробуйте ещё раз.");
     } finally {
       setBusy(false);
     }
@@ -94,7 +94,7 @@ export function PayForCall({
     return (
       <div className={s.paidState}>
         <CheckCircle2 size={22} aria-hidden />
-        <span>Оплачено с баланса: {rubK(call.hold?.amount_kopecks ?? amount)}</span>
+        <span>Оплачено с&nbsp;баланса: {rubK(call.hold?.amount_kopecks ?? amount)}</span>
       </div>
     );
   }
@@ -103,7 +103,7 @@ export function PayForCall({
     return (
       <div className={s.error} role="status">
         <AlertCircle size={16} aria-hidden />
-        <span>Эту запись уже нельзя оплатить: время освободилось или созвон отменён. Выберите время заново.</span>
+        <span>Эту запись уже нельзя оплатить: время освободилось или&nbsp;созвон отменён. Выберите время заново.</span>
       </div>
     );
   }
@@ -123,12 +123,12 @@ export function PayForCall({
           </div>
         )}
         <div>
-          <dt>На балансе</dt>
+          <dt>На&nbsp;балансе</dt>
           <dd>{rubK(balance)}</dd>
         </div>
         {shortfall > 0 ? (
           <div className={s.short}>
-            <dt>Не хватает</dt>
+            <dt>Не&nbsp;хватает</dt>
             <dd>{rubK(shortfall)}</dd>
           </div>
         ) : (
@@ -155,17 +155,17 @@ export function PayForCall({
         )
       ) : (
         <Button variant="primary" size="lg" block loading={busy} icon={<Wallet size={18} />} onClick={pay}>
-          {personal <= 0 ? "Оплатить по программе компании" : "Оплатить с баланса"}
+          {personal <= 0 ? "Оплатить по\u00a0программе компании" : "Оплатить с\u00a0баланса"}
         </Button>
       )}
 
       <div className={s.hint}>
-        Деньги замораживаются на балансе и уходят специалисту только после созвона. Отмена не позже чем за{" "}
-        {rules.free_cancel_hours} ч — полный возврат на баланс
+        Деньги замораживаются на&nbsp;балансе и&nbsp;уходят специалисту только после созвона. Отмена не&nbsp;позже чем&nbsp;за{" "}
+        {rules.free_cancel_hours} ч&nbsp;— полный возврат на&nbsp;баланс
         {rules.late_cancel_penalty_percent
-          ? `, позже — возвращается ${100 - rules.late_cancel_penalty_percent}%.`
+          ? `, позже\u00a0— возвращается ${100 - rules.late_cancel_penalty_percent}%.`
           : "."}{" "}
-        Если специалист не пришёл — вернём всё.
+        Если специалист не&nbsp;пришёл&nbsp;— вернём всё.
       </div>
     </div>
   );

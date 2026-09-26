@@ -219,7 +219,7 @@ class PortalView(APIView):
         return self.admin.company
 
 
-SUPPORT = {"email": "b2b@aprosop.ru", "hours": "Пн–Пт, 10:00–19:00 по Москве", "manager": "Персональный менеджер aprosop"}
+SUPPORT = {"email": "b2b@aprosop.ru", "hours": "Пн–Пт, 10:00–19:00 по Москве", "manager": "Персональный менеджер Aprosop"}
 
 
 class PortalMeView(PortalView):
@@ -275,7 +275,7 @@ class PortalCodesView(PortalView):
     def post(self, request):
         program = svc.current_program(self.company)
         if program is None:
-            return err("Сначала менеджер aprosop настроит программу.")
+            return err("Сначала менеджер Aprosop настроит программу.")
         try:
             batch, codes = svc.generate_codes(self.company, program, count=request.data.get("count"),
                                               label=str(request.data.get("label") or ""), by=request.user)

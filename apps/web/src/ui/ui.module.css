@@ -281,6 +281,41 @@ textarea.input {
   line-height: 1.5;
 }
 
+/* Password with show/hide toggle */
+.pwWrap {
+  position: relative;
+}
+.pwInput {
+  padding-right: 52px;
+}
+.pwToggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--r-control);
+  display: grid;
+  place-items: center;
+  background: none;
+  color: var(--c-muted);
+  cursor: pointer;
+  transition: color var(--dur), background var(--dur);
+}
+.pwToggle:hover {
+  color: var(--c-text);
+  background: var(--c-raised-2);
+}
+.pwToggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.pwToggle[aria-pressed="true"] {
+  color: var(--c-primary);
+}
+
 /* ── Segmented ──────────────────────────────────────────────────────────── */
 .segmented {
   display: inline-flex;
@@ -307,6 +342,15 @@ textarea.input {
   background: var(--c-panel);
   color: var(--c-text);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+@media (max-width: 480px) {
+  .segmented {
+    scrollbar-width: none;
+  }
+  .segment {
+    padding: 0 12px;
+    flex: 1 0 auto;
+  }
 }
 
 /* ── Badge ──────────────────────────────────────────────────────────────── */
@@ -452,14 +496,13 @@ textarea.input {
   color: var(--c-muted);
 }
 .emptyIcon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
   display: grid;
   place-items: center;
-  background: var(--c-primary-soft);
   color: var(--c-primary-ink);
-  box-shadow: 0 0 0 8px color-mix(in srgb, var(--c-primary-soft) 45%, transparent);
+}
+.emptyIcon svg {
+  width: 32px;
+  height: 32px;
 }
 .emptyArt {
   width: min(200px, 56vw);
@@ -592,5 +635,97 @@ textarea.input {
   }
   .cardTitle {
     font-size: var(--t-17);
+  }
+}
+
+/* ── ScrollRow: horizontal scroller with edge fades, desktop arrows, touch progress ── */
+.scrollRow {
+  --fl: 0px;
+  --fr: 0px;
+  position: relative;
+  min-width: 0;
+}
+.scrollRow[data-over]:not([data-start]) {
+  --fl: 32px;
+}
+.scrollRow[data-over]:not([data-end]) {
+  --fr: 40px;
+}
+.srTrack {
+  display: flex;
+  gap: var(--s-3, 12px);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fl), #000 calc(100% - var(--fr)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--fl), #000 calc(100% - var(--fr)), transparent);
+}
+.srTrack::-webkit-scrollbar {
+  display: none;
+}
+.srTrack > * {
+  flex: none;
+  scroll-snap-align: start;
+}
+.srArrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  margin-top: -16px;
+  display: none;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--c-panel);
+  color: var(--c-text);
+  box-shadow: var(--shadow-float);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--dur), transform var(--dur);
+}
+.srPrev {
+  left: -6px;
+}
+.srNext {
+  right: -6px;
+}
+.srArrow:disabled {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+.srBar {
+  display: none;
+  height: 3px;
+  margin: 10px auto 0;
+  width: 48px;
+  border-radius: 2px;
+  background: var(--c-raised-2);
+  overflow: hidden;
+}
+.srBar > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--c-muted);
+  transition: transform 80ms linear;
+}
+@media (hover: hover) and (pointer: fine) {
+  .srArrow {
+    display: grid;
+  }
+  .scrollRow:hover .srArrow,
+  .srArrow:focus-visible {
+    opacity: 1;
+  }
+  .srArrow:hover {
+    transform: scale(1.06);
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .srBar {
+    display: block;
   }
 }

@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Copy, KeyRound, ShieldCheck, Smartphone } from "lucide-react";
-import { Button, Card, CardHead, Input, useToast } from "@/ui";
+import { Button, Card, CardHead, Input, PasswordInput, useToast } from "@/ui";
 import { PageHeader } from "@/components/shell/AppShell";
 import { staffApi, type StaffMe } from "@/lib/api/staff";
 import { useAuth } from "@/lib/auth/store";
@@ -15,7 +15,7 @@ export function StaffGate({ me, onDone }: { me: StaffMe; onDone: () => Promise<v
       <>
         <PageHeader
           title="Придумайте свой пароль"
-          sub="Вы вошли по одноразовому паролю от администратора. Замените его, чтобы открыть консоль."
+          sub="Вы&nbsp;вошли по&nbsp;одноразовому паролю от&nbsp;администратора. Замените его, чтобы открыть консоль."
         />
         <div className={s.narrow}>
           <PasswordCard onDone={onDone} firstTime />
@@ -27,7 +27,7 @@ export function StaffGate({ me, onDone }: { me: StaffMe; onDone: () => Promise<v
     <>
       <PageHeader
         title="Включите двухфакторную защиту"
-        sub={`Для роли «${me.role_label.toLowerCase()}» вход только с кодом из приложения на телефоне. Это займёт минуту.`}
+        sub={`Для\u00a0роли «${me.role_label.toLowerCase()}» вход только с\u00a0кодом из\u00a0приложения на\u00a0телефоне. Это\u00a0займёт минуту.`}
       />
       <div className={s.narrow}>
         <TotpCard enabled={false} required onDone={onDone} />
@@ -47,13 +47,13 @@ export function PasswordCard({ onDone, firstTime }: { onDone?: () => Promise<voi
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (next.length < 12) return setError("Новый пароль должен быть не короче 12 символов.");
-    if (next !== repeat) return setError("Пароли не совпадают. Введите новый пароль ещё раз.");
+    if (next.length < 12) return setError("Новый пароль должен быть не\u00a0короче 12\u00a0символов.");
+    if (next !== repeat) return setError("Пароли не\u00a0совпадают. Введите новый пароль ещё раз.");
     setBusy(true);
     try {
       const res = await staffApi.changePassword(oldPass, next);
       useAuth.getState().accept(res);
-      toast("Пароль изменён. Другие устройства вышли из аккаунта.");
+      toast("Пароль изменён. Другие устройства вышли из\u00a0аккаунта.");
       setOldPass("");
       setNext("");
       setRepeat("");
@@ -70,20 +70,18 @@ export function PasswordCard({ onDone, firstTime }: { onDone?: () => Promise<voi
       <CardHead
         icon={<KeyRound size={20} />}
         title={firstTime ? "Новый пароль" : "Сменить пароль"}
-        sub="Не короче 12 символов. После смены все остальные устройства выйдут из аккаунта."
+        sub="Не&nbsp;короче 12&nbsp;символов. После смены все остальные устройства выйдут из&nbsp;аккаунта."
       />
       <form className={s.form} onSubmit={submit} noValidate>
-        <Input
+        <PasswordInput
           label={firstTime ? "Одноразовый пароль" : "Текущий пароль"}
-          type="password"
           value={oldPass}
           onChange={(e) => setOldPass(e.target.value)}
           autoComplete="current-password"
         />
-        <Input label="Новый пароль" type="password" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
-        <Input
+        <PasswordInput label="Новый пароль" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
+        <PasswordInput
           label="Новый пароль ещё раз"
-          type="password"
           value={repeat}
           onChange={(e) => setRepeat(e.target.value)}
           autoComplete="new-password"
@@ -156,14 +154,14 @@ export function TotpCard({
       await navigator.clipboard.writeText(setup.secret);
       toast("Ключ скопирован");
     } catch {
-      toast("Не получилось скопировать. Выделите ключ вручную.", { error: true });
+      toast("Не\u00a0получилось скопировать. Выделите ключ вручную.", { error: true });
     }
   };
 
   const codeInput = (
     <form className={s.form} onSubmit={confirm} noValidate>
       <Input
-        label="Код из приложения"
+        label="Код из&nbsp;приложения"
         value={code}
         onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
         inputMode="numeric"
@@ -173,7 +171,7 @@ export function TotpCard({
       />
       <div className={s.row}>
         <Button type="submit" variant={disabling ? "danger" : "primary"} loading={busy} disabled={code.length !== 6}>
-          {disabling ? "Выключить защиту" : "Подтвердить и включить"}
+          {disabling ? "Выключить защиту" : "Подтвердить и\u00a0включить"}
         </Button>
         <Button
           type="button"
@@ -198,8 +196,8 @@ export function TotpCard({
         title="Двухфакторная защита"
         sub={
           enabled
-            ? "Включена. При входе нужен код из приложения-аутентификатора."
-            : "Вход по паролю и шестизначному коду из приложения: Яндекс Ключ, Google Authenticator, 1Password и другие."
+            ? "Включена. При\u00a0входе нужен код из\u00a0приложения-аутентификатора."
+            : "Вход по\u00a0паролю и\u00a0шестизначному коду из\u00a0приложения: Яндекс Ключ, Google Authenticator, 1Password и\u00a0другие."
         }
       />
       {enabled && !disabling && (
@@ -226,8 +224,8 @@ export function TotpCard({
       {!enabled && setup && (
         <div className={s.totpSteps}>
           <ol className={s.steps}>
-            <li>Откройте приложение-аутентификатор и выберите «Добавить вручную» или «Ввести ключ».</li>
-            <li>Введите ключ ниже. Тип: по времени, 6 цифр.</li>
+            <li>Откройте приложение-аутентификатор и&nbsp;выберите «Добавить вручную» или&nbsp;«Ввести ключ».</li>
+            <li>Введите ключ ниже. Тип: по&nbsp;времени, 6&nbsp;цифр.</li>
             <li>Введите код, который покажет приложение.</li>
           </ol>
           <div className={s.secret}>
@@ -235,7 +233,7 @@ export function TotpCard({
             <Button variant="ghost" size="sm" iconOnly aria-label="Скопировать ключ" icon={<Copy size={16} />} onClick={copy} />
           </div>
           <a className={s.link} href={setup.otpauth_url}>
-            Открыть в приложении на этом устройстве
+            Открыть в&nbsp;приложении на&nbsp;этом устройстве
           </a>
           {codeInput}
         </div>

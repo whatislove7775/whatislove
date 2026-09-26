@@ -138,6 +138,9 @@ class Attachment(models.Model):
     size = models.PositiveIntegerField()
     duration_ms = models.PositiveIntegerField(null=True, blank=True)
     peaks = models.JSONField(default=list, blank=True)
+    # Размеры изображения (для превью без «прыжков» ленты); EXIF к этому моменту уже удалён
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
     data_enc = models.BinaryField()
 
     class Meta:
@@ -163,3 +166,16 @@ class AIDailyUsage(models.Model):
     class Meta:
         db_table = "chat_ai_usage"
         unique_together = ("user", "day")
+
+
+class SpecialistChatSettings(models.Model):
+    """Настройки чатов специалиста. «Принимать файлы от клиентов» — по умолчанию выключено."""
+
+    specialist = models.OneToOneField(
+        "users.PsychologistProfile", on_delete=models.CASCADE, related_name="chat_settings",
+    )
+    accept_client_files = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "chat_specialist_settings"

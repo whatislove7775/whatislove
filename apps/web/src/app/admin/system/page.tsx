@@ -24,8 +24,8 @@ function uptime(sec: number) {
   const d = Math.floor(sec / 86400);
   const h = Math.floor((sec % 86400) / 3600);
   const m = Math.floor((sec % 3600) / 60);
-  if (d) return `${d} д ${h} ч`;
-  if (h) return `${h} ч ${m} мин`;
+  if (d) return `${d} д\u00a0${h} ч`;
+  if (h) return `${h} ч\u00a0${m} мин`;
   return `${m} мин`;
 }
 
@@ -67,23 +67,23 @@ function SystemPage() {
           <div className={pro.stats}>
             <Stat
               label="Общее состояние"
-              value={data.health.status === "ok" ? "В порядке" : "Есть сбои"}
+              value={data.health.status === "ok" ? "В\u00a0порядке" : "Есть сбои"}
               tone={data.health.status === "ok" ? "success" : "danger"}
               note={`Работает ${uptime(data.version.uptime_seconds)}`}
             />
             <Stat
-              label="Ошибок сервера за сутки"
+              label="Ошибок сервера за&nbsp;сутки"
               value={data.errors.total}
               tone={data.errors.total ? "warning" : "success"}
-              note="Ответы с кодом 5xx"
+              note="Ответы с&nbsp;кодом 5xx"
             />
             <Stat
               label="Миграции"
-              value={data.migrations.pending_count ? `${data.migrations.pending_count} не применено` : "Применены"}
+              value={data.migrations.pending_count ? `${data.migrations.pending_count} не\u00a0применено` : "Применены"}
               tone={data.migrations.pending_count ? "danger" : "success"}
-              note={data.migrations.applied_count ? `${data.migrations.applied_count} в базе` : undefined}
+              note={data.migrations.applied_count ? `${data.migrations.applied_count} в\u00a0базе` : undefined}
             />
-            <Stat label="Записей в журнале" value={data.counts.audit_entries} note={`${data.counts.users} аккаунтов, ${data.counts.sessions} созвонов`} />
+            <Stat label="Записей в&nbsp;журнале" value={data.counts.audit_entries} note={`${data.counts.users} аккаунтов, ${data.counts.sessions} созвонов`} />
           </div>
 
           <div className={s.grid2}>
@@ -102,7 +102,7 @@ function SystemPage() {
                   <span className={s.checkName}>
                     <ShieldCheck size={18} /> ЮKassa
                   </span>
-                  {data.integrations.yookassa ? <Badge tone="success">Подключена</Badge> : <Badge tone="warning">Не настроена, тестовый режим</Badge>}
+                  {data.integrations.yookassa ? <Badge tone="success">Подключена</Badge> : <Badge tone="warning">Не&nbsp;настроена, тестовый режим</Badge>}
                 </li>
               </ul>
             </Card>
@@ -111,11 +111,11 @@ function SystemPage() {
               <CardHead icon={<GitCommit size={20} />} title="Версия" />
               <KV
                 items={[
-                  ["Коммит", data.version.commit_short ? <code key="c" className={s.code} title={data.version.commit ?? ""}>{data.version.commit_short}</code> : "Не передан при сборке (GIT_COMMIT)"],
+                  ["Коммит", data.version.commit_short ? <code key="c" className={s.code} title={data.version.commit ?? ""}>{data.version.commit_short}</code> : "Не\u00a0передан при\u00a0сборке (GIT_COMMIT)"],
                   ...(data.version.version ? ([["Версия", data.version.version]] as [string, string][]) : []),
                   ...(data.version.built_at ? ([["Сборка", data.version.built_at]] as [string, string][]) : []),
                   ["Запущен", dateTime(data.version.started_at)],
-                  ["Python и Django", `${data.version.python}, Django ${data.version.django}`],
+                  ["Python и\u00a0Django", `${data.version.python}, Django ${data.version.django}`],
                   ["Режим", data.version.debug ? <Badge key="d" tone="warning">DEBUG включён</Badge> : "Продакшен"],
                 ]}
               />
@@ -127,7 +127,7 @@ function SystemPage() {
               <CardHead
                 icon={<TriangleAlert size={20} />}
                 title="Ошибки сервера"
-                sub={data.errors.total ? `${data.errors.total} ${plural(data.errors.total, "ошибка", "ошибки", "ошибок")} за 24 часа` : "За сутки ошибок не было"}
+                sub={data.errors.total ? `${data.errors.total} ${plural(data.errors.total, "ошибка", "ошибки", "ошибок")} за\u00a024\u00a0часа` : "За\u00a0сутки ошибок не\u00a0было"}
               />
               <ErrorBars hourly={data.errors.hourly} />
               {data.errors.recent.length > 0 && (
@@ -135,7 +135,7 @@ function SystemPage() {
                   {data.errors.recent.slice(0, 5).map((e, i) => (
                     <li key={i}>
                       <span>{dateTime(e.at)}</span>
-                      <code className={s.code}>{e.path || "без адреса"}</code>
+                      <code className={s.code}>{e.path || "без\u00a0адреса"}</code>
                       <span className={s.muted}>{e.error || e.status}</span>
                     </li>
                   ))}
@@ -147,7 +147,7 @@ function SystemPage() {
               <CardHead icon={<Database size={20} />} title="Миграции базы" />
               {data.migrations.pending_count ? (
                 <>
-                  <p className={s.errorText}>Не применены миграции. Выполните migrate при следующем деплое.</p>
+                  <p className={s.errorText}>Не&nbsp;применены миграции. Выполните migrate при&nbsp;следующем деплое.</p>
                   <ul className={s.miniList}>
                     {data.migrations.pending.map((m) => (
                       <li key={m}>
@@ -162,8 +162,8 @@ function SystemPage() {
               <h4 className={s.subhead}>Безопасность команды</h4>
               <KV
                 items={[
-                  ["2FA для владельца и админов", data.security.staff_2fa_required ? "Обязательна" : "По желанию (STAFF_REQUIRE_2FA выключен)"],
-                  ["Сотрудников без 2FA", data.security.staff_without_2fa],
+                  ["2FA для\u00a0владельца и\u00a0админов", data.security.staff_2fa_required ? "Обязательна" : "По\u00a0желанию (STAFF_REQUIRE_2FA выключен)"],
+                  ["Сотрудников без\u00a02FA", data.security.staff_without_2fa],
                 ]}
               />
             </Card>
@@ -195,7 +195,7 @@ function ErrorBars({ hourly }: { hourly: number[] }) {
   const max = Math.max(1, ...hourly);
   const now = new Date().getHours();
   return (
-    <figure className={s.chart} aria-label="Ошибки по часам за сутки">
+    <figure className={s.chart} aria-label="Ошибки по&nbsp;часам за&nbsp;сутки">
       <div className={`${s.bars} ${s.barsSmall}`}>
         {hourly.map((n, i) => {
           const hour = (now - (hourly.length - 1 - i) + 24) % 24;
@@ -210,7 +210,7 @@ function ErrorBars({ hourly }: { hourly: number[] }) {
         })}
       </div>
       <figcaption className={s.axis}>
-        <span>24 часа назад</span>
+        <span>24&nbsp;часа назад</span>
         <span>Сейчас</span>
       </figcaption>
     </figure>

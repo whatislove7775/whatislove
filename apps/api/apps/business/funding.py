@@ -166,6 +166,7 @@ def allowances_for(user) -> list[dict]:
     for enr in active_enrollments(user):
         p = enr.program
         al = allowance_of(enr, on)
+        budget = max(0, budget_balance(enr.company))
         ends = al.period_end
         expires = p.expires_on
         out.append({
@@ -181,7 +182,10 @@ def allowances_for(user) -> list[dict]:
             "renews_on": ends.isoformat() if not (expires and expires < ends) else None,
             "expires_on": expires.isoformat() if expires else None,
             "active": program_open(p, on, "calls") or any(program_open(p, on, s) for s in p.services or []),
-            "budget_ok": budget_balance(enr.company) > 0,
+            "budget_ok": budget > 0,
+            # Сколько реально покроет компания: личный остаток, но не больше бюджета компании.
+            # None — лимита в рублях нет. Сам бюджет компании сотруднику не показываем.
+            "available_kopecks": None if al.rub_left is None else min(al.rub_left, budget),
         })
     return out
 

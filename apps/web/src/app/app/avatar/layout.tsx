@@ -17,14 +17,14 @@ export default function AvatarLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "";
   return (
     <>
-      <nav className={s.tabs} aria-label="Аватар и приватность">
+      <nav className={s.tabs} aria-label="Аватар и&nbsp;приватность">
         {TABS.map((t) => {
           const Icon = t.icon;
           const active = pathname === t.href;
           return (
             <Link key={t.href} href={t.href} className={s.tab} aria-current={active ? "page" : undefined}>
               <Icon size={18} strokeWidth={1.8} aria-hidden />
-              {t.label}
+              <span className={s.label}>{t.label}</span>
             </Link>
           );
         })}

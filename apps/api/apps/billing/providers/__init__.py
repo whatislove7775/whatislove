@@ -150,7 +150,7 @@ class YooKassaProvider:
         body: dict = {
             "amount": {"value": rub(topup.amount_kopecks), "currency": "RUB"},
             "capture": True,
-            "description": "Пополнение баланса aprosop",
+            "description": "Пополнение баланса Aprosop",
             "metadata": {"topup_id": str(topup.id)},
         }
         if conf.confirmation_type() == "embedded":

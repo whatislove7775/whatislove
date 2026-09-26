@@ -15,7 +15,7 @@ import s from "./page.module.css";
 
 type Tab = "reported" | "hidden" | "all";
 const TABS: { value: Tab; label: string; empty: string }[] = [
-  { value: "reported", label: "С жалобами", empty: "Жалоб на отзывы нет." },
+  { value: "reported", label: "С\u00a0жалобами", empty: "Жалоб на\u00a0отзывы нет." },
   { value: "hidden", label: "Скрытые", empty: "Скрытых отзывов нет." },
   { value: "all", label: "Все", empty: "Отзывов пока нет." },
 ];
@@ -82,7 +82,7 @@ function ReviewsModeration() {
     <>
       <PageHeader
         title="Отзывы"
-        sub="Модерация по жалобам"
+        sub="Модерация по&nbsp;жалобам"
       />
       <div className={s.tabs}>
         <Segmented<Tab>
@@ -109,7 +109,7 @@ function ReviewsModeration() {
                 <div key={r.id} className={s.item} data-hidden={r.status === "hidden" || undefined}>
                   <div className={s.head}>
                     <span>
-                      О специалисте <a href={`/app/specialists/${r.specialist.id}`}>{r.specialist.display_name}</a>, автор {r.author.alias}
+                      О&nbsp;специалисте <a href={`/app/specialists/${r.specialist.id}`}>{r.specialist.display_name}</a>, автор {r.author.alias}
                     </span>
                     {r.status === "hidden" && <Badge tone="warning">Скрыт</Badge>}
                     <span className={s.date}>{dateTime(r.created_at)}</span>
@@ -121,7 +121,7 @@ function ReviewsModeration() {
                       {r.reports.map((rep) => (
                         <li key={rep.id} data-open={rep.status === "open" || rep.status === "in_review" || undefined}>
                           <Badge tone={rep.status === "open" || rep.status === "in_review" ? "danger" : "neutral"}>{rep.reason_label}</Badge>
-                          <span>{rep.comment || "Без комментария"}</span>
+                          <span>{rep.comment || "Без\u00a0комментария"}</span>
                           <small>{dateTime(rep.created_at)}</small>
                         </li>
                       ))}
@@ -159,15 +159,15 @@ function ReviewsModeration() {
         title={act?.action === "hide" ? "Скрыть отзыв?" : act?.action === "restore" ? "Вернуть отзыв?" : "Оставить отзыв?"}
         text={
           act?.action === "hide"
-            ? "Отзыв пропадёт со страницы специалиста и из рейтинга. Автор увидит причину, открытые жалобы закроются."
+            ? "Отзыв пропадёт со\u00a0страницы специалиста и\u00a0из\u00a0рейтинга. Автор увидит причину, открытые жалобы закроются."
             : act?.action === "restore"
-              ? "Отзыв снова появится на странице специалиста и в рейтинге."
+              ? "Отзыв снова появится на\u00a0странице специалиста и\u00a0в\u00a0рейтинге."
               : "Отзыв останется опубликованным, жалобы будут отклонены."
         }
         confirm={act?.action === "hide" ? "Скрыть" : act?.action === "restore" ? "Вернуть" : "Оставить"}
         variant={act?.action === "hide" ? "danger" : "primary"}
         requireReason={act?.action === "hide"}
-        reasonLabel={act?.action === "hide" ? "Причина для автора" : "Комментарий"}
+        reasonLabel={act?.action === "hide" ? "Причина для\u00a0автора" : "Комментарий"}
         busy={busy}
         onClose={() => setAct(null)}
         onConfirm={run}

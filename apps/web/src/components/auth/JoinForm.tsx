@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
 import { authApi } from "@/lib/api/endpoints";
 import { useAuth } from "@/lib/auth/store";
-import { Button, Input, Textarea } from "@/ui";
+import { Button, Input, PasswordInput, Textarea } from "@/ui";
 import { SpecialistFriend } from "@/components/illustrations";
 import { AuthCard, AuthLinks, AuthShell } from "./AuthShell";
 import { ChipsInput } from "./ChipsInput";
 import { FormError } from "./FormError";
-import { PasswordInput } from "./PasswordInput";
 import s from "./auth.module.css";
 import { ConsentNote } from "@/components/legal/ConsentNote";
 
@@ -21,7 +20,7 @@ const TOPICS = [
   "Отношения",
   "Самооценка",
   "Панические атаки",
-  "Горе и утрата",
+  "Горе и\u00a0утрата",
   "Кризисы",
   "Зависимости",
   "Подростки",
@@ -56,15 +55,15 @@ export function JoinForm() {
 
   const validate = (): Errors => {
     const e: Errors = {};
-    if (!name.trim()) e.display_name = "Напишите, как вас показывать клиентам.";
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) e.email = "Проверьте почту: похоже, в ней опечатка.";
-    if (password.length < 8) e.password = "Пароль должен быть не короче 8 символов.";
-    if (!topics.length) e.specializations = "Выберите хотя бы одну тему.";
+    if (!name.trim()) e.display_name = "Напишите, как\u00a0вас показывать клиентам.";
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) e.email = "Проверьте почту: похоже, в\u00a0ней опечатка.";
+    if (password.length < 8) e.password = "Пароль должен быть не\u00a0короче 8\u00a0символов.";
+    if (!topics.length) e.specializations = "Выберите хотя\u00a0бы одну тему.";
     const y = Number(years);
     if (years === "" || !Number.isInteger(y) || y < 0 || y > 80) e.experience_years = "Укажите опыт целым числом лет.";
     const r = Number(rate);
     if (rate === "" || !Number.isFinite(r) || r <= 0 || r > 1_000_000)
-      e.session_rate_rub = "Укажите стоимость созвона в рублях.";
+      e.session_rate_rub = "Укажите стоимость созвона в\u00a0рублях.";
     return e;
   };
 
@@ -96,7 +95,7 @@ export function JoinForm() {
         for (const k of Object.keys(err.fields) as Key[]) fe[k] = err.fields[k]?.[0];
         setErrors(fe);
         setError(err.message);
-      } else setError("Не получилось отправить анкету. Попробуйте ещё раз.");
+      } else setError("Не\u00a0получилось отправить анкету. Попробуйте ещё раз.");
       setBusy(false);
     }
   };
@@ -105,7 +104,7 @@ export function JoinForm() {
     <AuthShell wide art={<SpecialistFriend />}>
       <AuthCard
         title="Анкета специалиста"
-        sub="Клиенты приходят анонимно: вы увидите аватар и имя вроде «тихий-кит-4821». Профиль проверяем вручную, статус будет виден в кабинете."
+        sub="Клиенты приходят анонимно: вы&nbsp;увидите аватар и&nbsp;имя вроде «тихий-кит-4821». Профиль проверяем вручную, статус будет виден в&nbsp;кабинете."
       >
         <form className={s.form} onSubmit={submit} noValidate>
           <h2 className={s.sectionLabel}>Вход</h2>
@@ -119,7 +118,7 @@ export function JoinForm() {
                 touch("email");
               }}
               error={errors.email}
-              hint="Для входа. Храним только в зашифрованном виде."
+              hint="Для&nbsp;входа. Храним только в&nbsp;зашифрованном виде."
               autoComplete="email"
               autoFocus
             />
@@ -131,15 +130,15 @@ export function JoinForm() {
                 touch("password");
               }}
               error={errors.password}
-              hint="Не короче 8 символов."
+              hint="Не&nbsp;короче 8&nbsp;символов."
               autoComplete="new-password"
             />
           </div>
 
           <hr className={s.divider} />
-          <h2 className={s.sectionLabel}>Профиль в каталоге</h2>
+          <h2 className={s.sectionLabel}>Профиль в&nbsp;каталоге</h2>
           <Input
-            label="Имя в каталоге"
+            label="Имя в&nbsp;каталоге"
             value={name}
             onChange={(e) => {
               setName(e.target.value);
@@ -151,19 +150,19 @@ export function JoinForm() {
             autoComplete="name"
           />
           <Textarea
-            label="О себе"
+            label="О&nbsp;себе"
             value={bio}
             onChange={(e) => {
               setBio(e.target.value);
               touch("bio");
             }}
             error={errors.bio}
-            hint="С чем вы работаете и как проходят встречи. Несколько предложений простым языком."
+            hint="С&nbsp;чем&nbsp;вы&nbsp;работаете и&nbsp;как&nbsp;проходят встречи. Несколько предложений простым языком."
             maxLength={1200}
             rows={5}
           />
           <ChipsInput
-            label="Темы, с которыми работаете"
+            label="Темы, с&nbsp;которыми работаете"
             value={topics}
             onChange={(v) => {
               setTopics(v);
@@ -171,7 +170,7 @@ export function JoinForm() {
             }}
             suggestions={TOPICS}
             error={errors.specializations}
-            hint="Выберите из списка или напишите свою и нажмите Enter."
+            hint="Выберите из&nbsp;списка или&nbsp;напишите свою и&nbsp;нажмите Enter."
           />
           <div className={s.grid2}>
             <Input
@@ -199,7 +198,7 @@ export function JoinForm() {
                 touch("session_rate_rub");
               }}
               error={errors.session_rate_rub}
-              hint="За 50 минут."
+              hint="За&nbsp;50&nbsp;минут."
             />
           </div>
           <FormError>{error}</FormError>

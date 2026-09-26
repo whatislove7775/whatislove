@@ -176,6 +176,12 @@ function usable(el: HTMLElement | null): el is HTMLElement {
   return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
 }
 
+/** Morph (FLIP) only from real buttons; a small icon trigger (mobile top bar) gets a plain fade —
+ *  squeezing a full-screen sheet into a 40px icon looked broken. */
+function morphable(el: HTMLElement | null): el is HTMLElement {
+  return usable(el) && el.getBoundingClientRect().width >= 120;
+}
+
 /** Keyframes that take the panel from the trigger's box to its own (FLIP). */
 function morphFrames(origin: HTMLElement, panel: HTMLElement) {
   const o = origin.getBoundingClientRect();
@@ -229,7 +235,7 @@ function SearchPalette({
     prevFocus.current = document.activeElement;
   }, []);
 
-  // facets («Часто ищут», filter values)
+  // facets (filter values with counts)
   useEffect(() => {
     let alive = true;
     loadFacets()
@@ -277,7 +283,7 @@ function SearchPalette({
     input.current?.focus({ preventScroll: true });
 
     b.animate([{ opacity: 0 }, { opacity: 1 }], { duration: reduce ? 120 : 360, easing: "ease-out" });
-    if (reduce || !usable(origin)) {
+    if (reduce || !morphable(origin)) {
       p.animate(
         reduce
           ? [{ opacity: 0 }, { opacity: 1 }]
@@ -329,7 +335,7 @@ function SearchPalette({
         onClosed();
       };
       if (!p || !b) return done();
-      const morphBack = !reduce && !opts.navigating && usable(origin);
+      const morphBack = !reduce && !opts.navigating && morphable(origin);
       b.animate([{ opacity: 1 }, { opacity: 0 }], { duration: reduce ? 100 : CLOSE_MS, easing: "ease-in", fill: "forwards" });
       if (morphBack) {
         origin!.style.visibility = "hidden";
@@ -375,11 +381,6 @@ function SearchPalette({
     router.push("/app/match");
   };
 
-  const toggleTopic = (t: string) => {
-    const cur = query.topics ?? [];
-    const next = cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t];
-    setQuery({ ...query, q: text, topics: next.length ? next : undefined });
-  };
   const reset = () => {
     setText("");
     setQuery({});
@@ -440,10 +441,6 @@ function SearchPalette({
 
   if (!mounted) return null;
 
-  const popular = facets?.popular ?? [];
-  const selectedTopics = query.topics ?? [];
-  const chips = [...selectedTopics.filter((t) => !popular.some((p) => p.label === t)).map((label) => ({ label, count: 0 })), ...popular];
-
   return createPortal(
     <div ref={root} className={s.root} onKeyDown={onKeyDown}>
       <div ref={backdrop} className={s.backdrop} onMouseDown={() => close()} aria-hidden />
@@ -457,7 +454,7 @@ function SearchPalette({
               className={s.input}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Что вас беспокоит? Тревога, отношения, имя"
+              placeholder="Что&nbsp;вас беспокоит? Тревога, отношения, имя"
               aria-label="Поиск специалиста"
               role="combobox"
               aria-expanded={results.length > 0}
@@ -479,40 +476,21 @@ function SearchPalette({
           </div>
 
           <div className={s.scroll}>
-            {chips.length > 0 && (
-              <section className={s.section} aria-labelledby="sp-popular">
-                <h2 id="sp-popular" className={s.overline}>
-                  Часто ищут
-                </h2>
-                <div className={s.chips}>
-                  {chips.map((c) => {
-                    const on = selectedTopics.includes(c.label);
-                    return (
-                      <button
-                        key={c.label}
-                        type="button"
-                        className={s.chip}
-                        data-tone={topicTone(c.label)}
-                        aria-pressed={on}
-                        onClick={() => toggleTopic(c.label)}
-                      >
-                        {c.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-
             <button type="button" className={s.quizLink} onClick={openQuiz}>
               <ListChecks size={16} strokeWidth={1.8} aria-hidden />
               <span>
-                Не знаете, кого выбрать? <strong>Подобрать по анкете</strong>
+                Не&nbsp;знаете, кого выбрать? <strong>Подобрать по&nbsp;анкете</strong>
               </span>
               <ArrowRight size={14} strokeWidth={2} aria-hidden />
             </button>
 
-            <FilterBar value={{ ...query, q: text }} onChange={(q) => setQuery(q)} facets={facets} className={s.paletteFilters} />
+            <FilterBar
+              value={{ ...query, q: text }}
+              onChange={(q) => setQuery(q)}
+              facets={facets}
+              count={res ? count : null}
+              className={s.paletteFilters}
+            />
 
             <section className={s.section} aria-live="polite" aria-busy={loading}>
               <div className={s.resultsHead}>
@@ -521,13 +499,8 @@ function SearchPalette({
                     ? loading && !res
                       ? "Ищем"
                       : `Нашли ${count} ${plural(count, "специалиста", "специалиста", "специалистов")}`
-                    : "Можно записаться в ближайшее время"}
+                    : "Можно записаться в\u00a0ближайшее время"}
                 </h2>
-                {nFilters > 0 && (
-                  <button type="button" className={s.resetLink} onClick={reset}>
-                    Сбросить всё
-                  </button>
-                )}
               </div>
               {error ? (
                 <p className={s.empty}>{error}</p>
@@ -535,8 +508,8 @@ function SearchPalette({
                 <div className={s.empty}>
                   <SearchX size={22} strokeWidth={1.8} aria-hidden />
                   <div>
-                    <strong>Никого не нашли</strong>
-                    <span>Попробуйте другое слово или уберите один из фильтров.</span>
+                    <strong>Никого не&nbsp;нашли</strong>
+                    <span>Попробуйте другое слово или&nbsp;уберите один из&nbsp;фильтров.</span>
                   </div>
                   <Button size="sm" variant="soft" onClick={reset}>
                     Сбросить
@@ -585,7 +558,7 @@ function SearchPalette({
               <span className={s.keys} aria-hidden>
                 <kbd>Esc</kbd> закрыть
               </span>
-              <span className={s.touchHelp}>Выберите запрос или опишите своими словами</span>
+              <span className={s.touchHelp}>Выберите запрос или&nbsp;опишите своими словами</span>
             </p>
             <Button
               size="sm"
@@ -608,7 +581,7 @@ function SearchPalette({
 const SKELETON: (null)[] = [null, null, null];
 
 function slotLabel(iso: string) {
-  return `${dayLabel(iso)} в ${time(iso)}`;
+  return `${dayLabel(iso)} в\u00a0${time(iso)}`;
 }
 
 function ResultRow({

@@ -15,6 +15,6 @@ export default async function Image({ params }: { params: { slug: string } }) {
     ...OG.practice,
     kicker: p.kind_label ? `Практика · ${p.kind_label}` : OG.practice.kicker,
     title: p.title,
-    subtitle: p.duration_minutes ? `${p.duration_minutes} мин, простые шаги по порядку` : OG.practice.subtitle,
+    subtitle: p.duration_minutes ? `${p.duration_minutes} мин, простые шаги по\u00a0порядку` : OG.practice.subtitle,
   });
 }

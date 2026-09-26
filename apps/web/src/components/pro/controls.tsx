@@ -82,7 +82,7 @@ export function ChipsField({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={onKey}
-          placeholder={value.length >= max ? `Можно указать до ${max}` : placeholder}
+          placeholder={value.length >= max ? `Можно указать до\u00a0${max}` : placeholder}
           disabled={value.length >= max}
           maxLength={40}
         />

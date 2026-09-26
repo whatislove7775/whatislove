@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { Button, Card, CardHead, Field, Input, Select, Skeleton, Textarea, useToast } from "@/ui";
 import { PrivacySettings } from "@/components/privacy/PrivacySettings";
+import { ChatFilesSetting } from "@/components/chat/ChatFilesSetting";
+import { describeContacts, findContacts } from "@/lib/chat/contacts";
 import { CredentialsSection } from "@/components/credentials/CredentialsSection";
 import { ProReviews } from "@/components/reviews/ProReviews";
 import { PageHeader, WithRail } from "@/components/shell/AppShell";
 import { SpecialistPhoto } from "@/components/avatar/SpecialistPhoto";
 import { PhotoUploader } from "@/components/pro/PhotoUploader";
+import { SelfieStep } from "@/components/verification/SelfieStep";
 import { ChipsField, LoadError } from "@/components/pro/controls";
 import { ApiError } from "@/lib/api/client";
 import { cabinetApi } from "@/lib/api/endpoints";
@@ -25,7 +28,7 @@ const SPECS = [
   "Отношения",
   "Самооценка",
   "Панические атаки",
-  "Горе и утрата",
+  "Горе и\u00a0утрата",
   "Кризисы",
   "Зависимости",
   "Подростки",
@@ -60,12 +63,16 @@ const fromProfile = (p: PsychologistPrivate): Form => ({
 
 function validate(f: Form): Errors {
   const e: Errors = {};
-  if (!f.display_name.trim()) e.display_name = "Укажите имя, под которым вас увидят клиенты";
-  if (f.bio.trim().length < 40) e.bio = `Напишите хотя бы пару предложений: сейчас ${f.bio.trim().length} из 40 символов`;
-  if (!f.specializations.length) e.specializations = "Выберите хотя бы одну тему из подсказок или добавьте свою";
-  if (!f.languages.length) e.languages = "Добавьте язык, на котором проводите созвоны";
+  if (!f.display_name.trim()) e.display_name = "Укажите имя, под\u00a0которым вас увидят клиенты";
+  if (f.bio.trim().length < 40) e.bio = `Напишите хотя\u00a0бы пару предложений: сейчас ${f.bio.trim().length} из\u00a040\u00a0символов`;
+  for (const k of ["bio", "approach"] as const) {
+    const hits = findContacts(f[k]);
+    if (hits.length) e[k] = `Уберите ${describeContacts(hits)} — клиенты связываются с\u00a0вами через чат Aprosop`;
+  }
+  if (!f.specializations.length) e.specializations = "Выберите хотя\u00a0бы одну тему из\u00a0подсказок или\u00a0добавьте свою";
+  if (!f.languages.length) e.languages = "Добавьте язык, на\u00a0котором проводите созвоны";
   const exp = Number(f.experience_years);
-  if (f.experience_years === "" || !Number.isInteger(exp) || exp < 0 || exp > 70) e.experience_years = "Целое число лет, от 0 до 70";
+  if (f.experience_years === "" || !Number.isInteger(exp) || exp < 0 || exp > 70) e.experience_years = "Целое число лет, от\u00a00\u00a0до\u00a070";
   return e;
 }
 
@@ -153,7 +160,7 @@ export default function ProfilePage() {
         title="Профиль"
         sub={
           status === "approved"
-            ? "Так клиенты узнают вас в каталоге. Изменения видны сразу после сохранения."
+            ? "Так клиенты узнают вас в\u00a0каталоге. Изменения видны сразу после сохранения."
             : "Заполните профиль полностью: администратор смотрит именно его, когда проверяет заявку."
         }
       />
@@ -171,7 +178,7 @@ export default function ProfilePage() {
           <form onSubmit={submit} noValidate className={c.form}>
             <span id="photo" style={{ display: "block", scrollMarginTop: 16 }} />
             <Card as="section">
-              <CardHead title="Фото" sub="Специалисты на платформе не анонимны: клиенту важно видеть, с кем он говорит" />
+              <CardHead title="Фото" sub="Специалисты на&nbsp;платформе не&nbsp;анонимны: клиенту важно видеть, с&nbsp;кем он&nbsp;говорит" />
               <PhotoUploader
                 url={photo}
                 name={form.display_name}
@@ -181,12 +188,13 @@ export default function ProfilePage() {
                 }}
               />
             </Card>
+            {status && <SelfieStep approved={status === "approved"} />}
 
             <Card as="section">
-              <CardHead title="О вас" sub="Клиенты не видят вашу почту. Имя можно указать полностью или только имя и первую букву фамилии" />
+              <CardHead title="О&nbsp;вас" sub="Клиенты не&nbsp;видят вашу почту. Имя можно указать полностью или&nbsp;только имя и&nbsp;первую букву фамилии" />
               <div className={c.fields}>
                 <Input
-                  label="Имя в каталоге"
+                  label="Имя в&nbsp;каталоге"
                   value={form.display_name}
                   maxLength={80}
                   onChange={(e) => set("display_name", e.target.value)}
@@ -194,14 +202,14 @@ export default function ProfilePage() {
                   placeholder="Анна Соколова"
                 />
                 <Textarea
-                  label="Коротко о себе"
+                  label="Коротко о&nbsp;себе"
                   value={form.bio}
                   maxLength={1200}
                   rows={5}
                   onChange={(e) => set("bio", e.target.value)}
                   error={errors.bio}
-                  hint={`С чем помогаете и как проходит работа. ${form.bio.length} из 1200`}
-                  placeholder="Помогаю разобраться с тревогой и вернуть ощущение опоры…"
+                  hint={`С\u00a0чем\u00a0помогаете и\u00a0как\u00a0проходит работа. ${form.bio.length} из\u00a01200`}
+                  placeholder="Помогаю разобраться с&nbsp;тревогой и&nbsp;вернуть ощущение опоры…"
                 />
                 <Textarea
                   label="Подход"
@@ -210,14 +218,14 @@ export default function ProfilePage() {
                   rows={3}
                   onChange={(e) => set("approach", e.target.value)}
                   error={errors.approach}
-                  hint="Методы и школы, в которых вы работаете"
+                  hint="Методы и&nbsp;школы, в&nbsp;которых вы&nbsp;работаете"
                   placeholder="Когнитивно-поведенческая терапия, элементы ACT"
                 />
               </div>
             </Card>
 
             <Card as="section">
-              <CardHead title="С чем работаете" sub="По этим темам клиенты ищут специалиста" />
+              <CardHead title="С&nbsp;чем&nbsp;работаете" sub="По&nbsp;этим темам клиенты ищут специалиста" />
               <div className={c.fields}>
                 <Field label="Специализации" error={errors.specializations}>
                   <ChipsField
@@ -237,7 +245,7 @@ export default function ProfilePage() {
                   value={form.gender}
                   onChange={(v) => set("gender", v)}
                   options={[
-                    { value: "", label: "Не указывать" },
+                    { value: "", label: "Не\u00a0указывать" },
                     { value: "female", label: "Женщина" },
                     { value: "male", label: "Мужчина" },
                   ]}
@@ -246,7 +254,7 @@ export default function ProfilePage() {
             </Card>
 
             <Card as="section">
-              <CardHead title="Опыт и стоимость" />
+              <CardHead title="Опыт и&nbsp;стоимость" />
               <div className={c.pair}>
                 <Input
                   label="Опыт, лет"
@@ -274,8 +282,8 @@ export default function ProfilePage() {
                 ))}
               </div>
               <p className={c.note}>
-                Комиссия платформы 20%. Цена часа, длительность созвонов и перерывы настраиваются в расписании. Стоимость созвона
-                пропорциональна длительности и округляется до 10 ₽.
+                Комиссия платформы 20%. Цена часа, длительность созвонов и&nbsp;перерывы настраиваются в&nbsp;расписании. Стоимость созвона
+                пропорциональна длительности и&nbsp;округляется до&nbsp;10&nbsp;₽.
               </p>
             </Card>
 
@@ -291,6 +299,7 @@ export default function ProfilePage() {
         {form && <CredentialsSection />}
         {form && <ProReviews />}
         {/* Приватность специалиста: «Незаметный режим» и «Защита от скриншотов» (только это устройство / аккаунт) */}
+        {form && <ChatFilesSetting />}
         {form && <PrivacySettings />}
       </WithRail>
     </>
@@ -309,7 +318,7 @@ function Preview({ form, photo }: { form: Form | null; photo: string | null }) {
           <div style={{ minWidth: 0 }}>
             <div className={c.pName}>{form.display_name.trim() || "Ваше имя"}</div>
             <div className={c.pMeta}>
-              {exp ? `Опыт ${exp} ${plural(exp, "год", "года", "лет")}` : "Опыт не указан"}
+              {exp ? `Опыт ${exp} ${plural(exp, "год", "года", "лет")}` : "Опыт не\u00a0указан"}
               {form.languages.length ? `, ${form.languages.join(", ").toLowerCase()}` : ""}
             </div>
           </div>
@@ -322,7 +331,7 @@ function Preview({ form, photo }: { form: Form | null; photo: string | null }) {
             {form.specializations.length > 5 && <span>ещё {form.specializations.length - 5}</span>}
           </div>
         )}
-        <p className={c.pBio}>{form.bio.trim() || "Здесь будет текст о вас. Клиенты читают его первым, когда выбирают специалиста."}</p>
+        <p className={c.pBio}>{form.bio.trim() || "Здесь будет текст о\u00a0вас. Клиенты читают его первым, когда выбирают специалиста."}</p>
         {form.approach.trim() && <p className={c.pApproach}>{form.approach.trim()}</p>}
         <div className={c.pFoot}>
           <div>
@@ -334,7 +343,7 @@ function Preview({ form, photo }: { form: Form | null; photo: string | null }) {
           </Button>
         </div>
       </Card>
-      <p className={c.note}>Почта и документы клиентам не показываются. На созвоне клиент видит ваше видео с камеры.</p>
+      <p className={c.note}>Почта и&nbsp;документы клиентам не&nbsp;показываются. На&nbsp;созвоне клиент видит ваше видео с&nbsp;камеры.</p>
     </div>
   );
 }

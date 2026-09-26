@@ -26,13 +26,13 @@ export default function MockCheckoutPage() {
     const id = q.get("topup") || "";
     setParams({ id, back: back.startsWith("/app/") && !back.startsWith("//") ? back : "/app/balance" });
     if (!id) {
-      setError("Платёж не найден.");
+      setError("Платёж не\u00a0найден.");
       return;
     }
     billingApi
       .topUp(id)
       .then(setT)
-      .catch((e) => setError(e instanceof ApiError ? e.message : "Платёж не найден."));
+      .catch((e) => setError(e instanceof ApiError ? e.message : "Платёж не\u00a0найден."));
   }, []);
 
   const finish = async (outcome: "succeeded" | "canceled") => {
@@ -44,18 +44,18 @@ export default function MockCheckoutPage() {
       const sep = params.back.includes("?") ? "&" : "?";
       window.location.href = `${params.back}${sep}topup=${params.id}`;
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось завершить оплату.", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось завершить оплату.", { error: true });
       setBusy(null);
     }
   };
 
   return (
     <div className={s.checkoutWrap}>
-      <PageHeader title="Тестовая оплата" sub="Так будет выглядеть переход на страницу ЮKassa. Деньги не списываются." />
+      <PageHeader title="Тестовая оплата" sub="Так будет выглядеть переход на&nbsp;страницу ЮKassa. Деньги не&nbsp;списываются." />
       {error ? (
         <Card>
           <p>{error}</p>
-          <Button href="/app/balance">К балансу</Button>
+          <Button href="/app/balance">К&nbsp;балансу</Button>
         </Card>
       ) : !t ? (
         <Skeleton height={280} radius={22} />
@@ -63,7 +63,7 @@ export default function MockCheckoutPage() {
         <>
           <div className={s.fakeCard} aria-hidden>
             <div className={s.fakeRow}>
-              <span>aprosop test</span>
+              <span>Aprosop test</span>
               <span>МИР</span>
             </div>
             <div className={s.fakeChip} />
@@ -77,12 +77,12 @@ export default function MockCheckoutPage() {
             <div className={s.stack}>
               <dl className={s.sum}>
                 <div>
-                  <dt>К оплате</dt>
+                  <dt>К&nbsp;оплате</dt>
                   <dd>{rubK(t.amount_kopecks)}</dd>
                 </div>
                 <div>
                   <dt>Получатель</dt>
-                  <dd>aprosop</dd>
+                  <dd>Aprosop</dd>
                 </div>
               </dl>
               {t.status !== "pending" ? (
@@ -94,7 +94,7 @@ export default function MockCheckoutPage() {
                 <>
                   <div className={s.testNote}>
                     <FlaskConical size={16} aria-hidden />
-                    <span>Тестовая касса работает, пока не подключена ЮKassa. Выберите, чем закончится оплата.</span>
+                    <span>Тестовая касса работает, пока не&nbsp;подключена ЮKassa. Выберите, чем&nbsp;закончится оплата.</span>
                   </div>
                   <div className={s.actions}>
                     <Button variant="secondary" loading={busy === "canceled"} disabled={!!busy} onClick={() => finish("canceled")}>

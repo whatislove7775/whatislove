@@ -3,7 +3,7 @@ import { Room } from "@/components/room/Room";
 
 export const metadata: Metadata = {
   title: "Звонок",
-  description: "Защищённый видеозвонок aprosop без записи.",
+  description: "Защищённый видеозвонок Aprosop без\u00a0записи.",
   robots: { index: false, follow: false },
 };
 

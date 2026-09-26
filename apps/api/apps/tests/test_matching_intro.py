@@ -213,3 +213,11 @@ def test_price_for_intro_uses_own_price(db, psychologist):
     from apps.billing.services import quote_call
 
     assert int(quote_call(psychologist, 15)) == 700
+
+
+@pytest.mark.django_db
+def test_match_accepts_custom_experience_and_budget(api):
+    """Слайдеры квиза: любой опыт 0–40 лет и любой бюджет от 500 ₽."""
+    base = {"topics": [], "safety": "no"}
+    assert api.post(MATCH, {**base, "min_experience": 7, "budget": 3500}, format="json").status_code == 200
+    assert api.post(MATCH, {**base, "min_experience": 41}, format="json").status_code == 400

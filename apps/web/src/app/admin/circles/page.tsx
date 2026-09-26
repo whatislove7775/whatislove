@@ -17,10 +17,10 @@ import { dayShort, time } from "@/lib/format";
 import s from "@/components/circles/circles.module.css";
 
 const TABS: { value: CircleStatus; label: string }[] = [
-  { value: "pending", label: "На проверке" },
+  { value: "pending", label: "На\u00a0проверке" },
   { value: "recruiting", label: "Набор" },
   { value: "running", label: "Идут" },
-  { value: "rejected", label: "На доработке" },
+  { value: "rejected", label: "На\u00a0доработке" },
   { value: "cancelled", label: "Отменены" },
 ];
 
@@ -51,7 +51,7 @@ function CirclesQueue() {
       setOpenId(null);
       list.reload();
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось.", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось.", { error: true });
     } finally {
       setBusy(false);
     }
@@ -88,7 +88,7 @@ function CirclesQueue() {
                 <div>
                   <h3>{c.host.name}</h3>
                   <Badge tone={c.host.status === "approved" ? "success" : "warning"}>
-                    {c.host.status === "approved" ? "Проверенный специалист" : "Специалист не проверен"}
+                    {c.host.status === "approved" ? "Проверенный специалист" : "Специалист не\u00a0проверен"}
                   </Badge>
                 </div>
               </div>
@@ -96,9 +96,9 @@ function CirclesQueue() {
                 items={[
                   ["Статус", <Badge key="st" tone={STATUS_TONE[c.status]}>{STATUS_LABEL[c.status]}</Badge>],
                   ["Цена", priceLine(c)],
-                  ["С участника", rubK0(c.total_kopecks)],
-                  ["Мест", `${c.seats_taken} из ${c.capacity}`],
-                  ["Лицо в звонке", c.allow_real_faces ? "Можно показать" : "Только аватары"],
+                  ["С\u00a0участника", rubK0(c.total_kopecks)],
+                  ["Мест", `${c.seats_taken} из\u00a0${c.capacity}`],
+                  ["Лицо в\u00a0звонке", c.allow_real_faces ? "Можно показать" : "Только аватары"],
                   ["Отправлен", dateTime(c.submitted_at)],
                 ]}
               />
@@ -134,7 +134,7 @@ function CirclesQueue() {
                       Опубликовать
                     </Button>
                     <Button variant="secondary" icon={<X size={16} />} onClick={() => setModal("reject")}>
-                      Вернуть на доработку
+                      Вернуть на&nbsp;доработку
                     </Button>
                   </>
                 )}
@@ -152,7 +152,7 @@ function CirclesQueue() {
             </Card>
           ) : (
             <Card tone="minor">
-              <p className={s.note}>Выберите круг слева, чтобы увидеть описание, правила и расписание. Участников персонал не видит.</p>
+              <p className={s.note}>Выберите круг слева, чтобы увидеть описание, правила и&nbsp;расписание. Участников персонал не&nbsp;видит.</p>
             </Card>
           )
         }
@@ -161,7 +161,7 @@ function CirclesQueue() {
         {list.loading && !list.data && <Skeleton height={100} radius={22} />}
         {list.data && list.data.results.length === 0 && (
           <Card>
-            <EmptyState art={<EmptyArt scene="calendar" />} title="Здесь пусто" text={tab === "pending" ? "Все круги проверены. Новые заявки появятся здесь." : "Кругов в этом статусе нет."} />
+            <EmptyState art={<EmptyArt scene="calendar" />} title="Здесь пусто" text={tab === "pending" ? "Все круги проверены. Новые заявки появятся здесь." : "Кругов в\u00a0этом статусе нет."} />
           </Card>
         )}
         {list.data?.results.map((row) => (
@@ -190,10 +190,10 @@ function CirclesQueue() {
       </WithRail>
       <ReasonModal
         open={modal === "reject"}
-        title="Вернуть круг на доработку"
-        text="Специалист увидит комментарий и сможет исправить круг и отправить его снова."
+        title="Вернуть круг на&nbsp;доработку"
+        text="Специалист увидит комментарий и&nbsp;сможет исправить круг и&nbsp;отправить его снова."
         confirm="Вернуть"
-        reasonLabel="Что поправить"
+        reasonLabel="Что&nbsp;поправить"
         busy={busy}
         onClose={() => setModal(null)}
         onConfirm={(r) => decide("reject", r)}
@@ -201,7 +201,7 @@ function CirclesQueue() {
       <ReasonModal
         open={modal === "cancel"}
         title="Отменить круг?"
-        text="Всем участникам вернутся деньги за встречи, которые не состоялись. Круг исчезнет из каталога."
+        text="Всем участникам вернутся деньги за&nbsp;встречи, которые не&nbsp;состоялись. Круг исчезнет из&nbsp;каталога."
         confirm="Отменить круг"
         variant="danger"
         busy={busy}

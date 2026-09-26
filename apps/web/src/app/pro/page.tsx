@@ -52,7 +52,7 @@ export default function ProOverview() {
       slots = await psychologistsApi.slots(prof.id, isoDate(new Date()), 7).catch(() => null);
     }
     if ([stats, sessions, schedule, profile].every((r) => r.status === "rejected")) {
-      setError("Не получилось загрузить сводку. Проверьте соединение и попробуйте ещё раз.");
+      setError("Не\u00a0получилось загрузить сводку. Проверьте соединение и\u00a0попробуйте ещё раз.");
     }
     setData({
       stats: stats.status === "fulfilled" ? stats.value : null,
@@ -88,12 +88,12 @@ export default function ProOverview() {
     return [
       {
         label: "Заполнить профиль",
-        hint: "Описание, подход и хотя бы одна специализация",
+        hint: "Описание, подход и\u00a0хотя\u00a0бы одна специализация",
         done: !!(pr?.bio?.trim() && pr?.approach?.trim() && pr?.specializations?.length),
         href: "/pro/profile",
       },
-      { label: "Настроить расписание", hint: "Клиенты записываются только в эти часы", done: (data?.schedule.length ?? 0) > 0, href: "/pro/schedule" },
-      { label: "Загрузить фото", hint: "Настоящее фото в карточке специалиста и на созвоне", done: !!pr?.photo_url, href: "/pro/profile" },
+      { label: "Настроить расписание", hint: "Клиенты записываются только в\u00a0эти часы", done: (data?.schedule.length ?? 0) > 0, href: "/pro/schedule" },
+      { label: "Загрузить фото", hint: "Настоящее фото в\u00a0карточке специалиста и\u00a0на\u00a0созвоне", done: !!pr?.photo_url, href: "/pro/profile" },
       {
         label: "Пройти проверку",
         hint: "Администратор проверяет анкету вручную",
@@ -121,7 +121,7 @@ export default function ProOverview() {
       {status && status !== "approved" && <StatusCard status={status} />}
 
       {data && undone.length > 0 && (
-        <div className={h.actions} aria-label={`Первые шаги: готово ${doneCount} из ${steps.length}`}>
+        <div className={h.actions} aria-label={`Первые шаги: готово ${doneCount} из\u00a0${steps.length}`}>
           <span className={p.stepsLabel}>
             Первые шаги {doneCount}/{steps.length}
           </span>
@@ -159,7 +159,7 @@ export default function ProOverview() {
               <dd>{data.stats.clients_total}</dd>
             </div>
             <div>
-              <dt>Окон, 7 дней</dt>
+              <dt>Окон, 7&nbsp;дней</dt>
               <dd>
                 <Link href="/pro/schedule">{weekSlots}</Link>
               </dd>
@@ -195,7 +195,7 @@ export default function ProOverview() {
                 <span className={h.dialogText}>
                   <strong>{d.counterpart.name}</strong>
                   <span>
-                    {d.next_call ? `Созвон ${dayLabel(d.next_call.scheduled_at).toLowerCase()} в ${time(d.next_call.scheduled_at)}` : d.last_message?.text || "Нет сообщений"}
+                    {d.next_call ? `Созвон ${dayLabel(d.next_call.scheduled_at).toLowerCase()} в\u00a0${time(d.next_call.scheduled_at)}` : d.last_message?.text || "Нет сообщений"}
                   </span>
                 </span>
                 {d.unread > 0 && <span className={h.unread}>{d.unread}</span>}
@@ -262,20 +262,20 @@ function StatusCard({ status }: { status: "pending" | "rejected" | "suspended" }
     pending: {
       icon: <Hourglass size={22} strokeWidth={1.8} />,
       tone: p.statusPending,
-      title: "Профиль на проверке",
-      text: "Обычно до 2 рабочих дней.",
+      title: "Профиль на\u00a0проверке",
+      text: "Обычно до\u00a02\u00a0рабочих дней.",
     },
     rejected: {
       icon: <CircleAlert size={22} strokeWidth={1.8} />,
       tone: p.statusRejected,
-      title: "Проверка не пройдена",
-      text: "Дополните профиль и ответьте на письмо администратора.",
+      title: "Проверка не\u00a0пройдена",
+      text: "Дополните профиль и\u00a0ответьте на\u00a0письмо администратора.",
     },
     suspended: {
       icon: <PauseCircle size={22} strokeWidth={1.8} />,
       tone: p.statusRejected,
       title: "Профиль приостановлен",
-      text: "Новые клиенты не могут записаться. Ответьте на письмо администратора.",
+      text: "Новые клиенты не\u00a0могут записаться. Ответьте на\u00a0письмо администратора.",
     },
   }[status];
   return (

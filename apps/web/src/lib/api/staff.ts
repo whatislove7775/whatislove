@@ -190,13 +190,13 @@ export type ReportStatus = "open" | "in_review" | "resolved" | "dismissed";
 export type ReportAction = "none" | "warn" | "block_user" | "suspend_specialist" | "cancel_session";
 
 export const REPORT_REASONS: { value: ReportReason; label: string }[] = [
-  { value: "abuse", label: "Оскорбления или угрозы" },
+  { value: "abuse", label: "Оскорбления или\u00a0угрозы" },
   { value: "harassment", label: "Преследование" },
-  { value: "spam", label: "Спам или реклама" },
+  { value: "spam", label: "Спам или\u00a0реклама" },
   { value: "fraud", label: "Мошенничество" },
   { value: "unprofessional", label: "Непрофессиональное поведение" },
   { value: "inappropriate", label: "Недопустимый контент" },
-  { value: "safety", label: "Угроза жизни или безопасности" },
+  { value: "safety", label: "Угроза жизни или\u00a0безопасности" },
   { value: "other", label: "Другое" },
 ];
 
@@ -341,7 +341,7 @@ export async function loginWithOtp(login: string, password: string, otp?: string
       body: JSON.stringify(otp ? { login, password, otp } : { login, password }),
     });
   } catch {
-    throw new ApiError(0, "Нет соединения с сервером. Проверьте интернет.");
+    throw new ApiError(0, "Нет соединения с\u00a0сервером. Проверьте интернет.");
   }
   const data = await res.json().catch(() => null);
   if (res.ok) return data as AuthResponse;
@@ -350,5 +350,5 @@ export async function loginWithOtp(login: string, password: string, otp?: string
   if (res.status >= 500) throw new ApiError(res.status, "Сервер временно недоступен. Попробуйте через минуту.");
   const detail = data && typeof data.detail === "string" ? data.detail : null;
   const first = data && !detail ? Object.values(data as Record<string, unknown>).flat()[0] : null;
-  throw new ApiError(res.status, detail || (first ? String(first) : "Не получилось войти."));
+  throw new ApiError(res.status, detail || (first ? String(first) : "Не\u00a0получилось войти."));
 }

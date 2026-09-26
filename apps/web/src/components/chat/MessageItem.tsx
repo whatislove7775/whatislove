@@ -1,7 +1,11 @@
 "use client";
 
-import { Check, CheckCheck, Clock3, Copy, Download, FileText, MoreHorizontal, Pencil, Timer, Trash2 } from "lucide-react";
+import {
+  Check, CheckCheck, Clock3, Copy, Download, FileAudio, FileText, FileType2, Image as ImageIcon, ImageOff,
+  MoreHorizontal, Pencil, Timer, Trash2,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { AttachmentViewer, saveAttachment, viewKind } from "./AttachmentViewer";
 import { attachmentUrl, type ChatMessage } from "@/lib/api/chat";
 import { VoicePlayer } from "./VoicePlayer";
 import s from "./chat.module.css";
@@ -16,54 +20,116 @@ function fmtSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} МБ`;
 }
 
-function FileCard({ msg }: { msg: ChatMessage }) {
+/** Image: thumbnail from the authenticated endpoint (cached object URL) + compact file row; click → viewer. */
+function ImageCard({ msg }: { msg: ChatMessage }) {
   const att = msg.attachment!;
-  const [preview, setPreview] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const isImage = att.mime.startsWith("image/");
+  const [url, setUrl] = useState<string | null>(null);
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const [open, setOpen] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const w = att.width || 4;
+  const h = att.height || 3;
+  // Keep the thumbnail inside 280×300 with the real aspect ratio (no layout jumps while loading)
+  const scale = Math.min(1, 280 / w, 300 / h);
+  const width = att.width ? Math.max(120, Math.round(w * scale)) : 240;
 
   useEffect(() => {
-    if (!isImage) return;
     let alive = true;
+    setState("loading");
     attachmentUrl(msg.id)
-      .then((u) => alive && setPreview(u))
-      .catch(() => undefined);
+      .then((u) => alive && setUrl(u))
+      .catch(() => alive && setState("error"));
     return () => {
       alive = false;
     };
-  }, [isImage, msg.id]);
+  }, [msg.id, attempt]);
+
+  return (
+    <div className={s.fileWrap} style={{ width }}>
+      <button
+        type="button"
+        className={s.imageThumb}
+        data-state={state}
+        style={{ aspectRatio: att.width ? `${w} / ${h}` : "4 / 3" }}
+        onClick={() => (state === "error" ? setAttempt((n) => n + 1) : state === "ready" && setOpen(true))}
+        aria-label={state === "error" ? "Не\u00a0загрузилось\u00a0— повторить" : `Посмотреть ${att.name}`}
+      >
+        {url && state !== "error" && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={url} alt="" onLoad={() => setState("ready")} onError={() => setState("error")} />
+        )}
+        {state === "loading" && <span className={s.thumbSkeleton} aria-hidden />}
+        {state === "error" && (
+          <span className={s.thumbError}>
+            <ImageOff size={20} />
+            <span>Не&nbsp;загрузилось. Повторить</span>
+          </span>
+        )}
+      </button>
+      <FileRow msg={msg} onOpen={() => setOpen(true)} compact />
+      {open && <AttachmentViewer msgId={msg.id} name={att.name} mime={att.mime} onClose={() => setOpen(false)} />}
+    </div>
+  );
+}
+
+/** Compact row: type icon, name, size; «Открыть» for what the browser can show, and a download button. */
+function FileRow({ msg, onOpen, compact }: { msg: ChatMessage; onOpen: () => void; compact?: boolean }) {
+  const att = msg.attachment!;
+  const [busy, setBusy] = useState(false);
+  const kind = viewKind(att.mime, att.name);
+  const ext = att.name.split(".").pop()?.toUpperCase() ?? "";
+  const Icon = kind === "image" ? ImageIcon : kind === "pdf" ? FileType2 : att.mime.startsWith("audio/") ? FileAudio : FileText;
 
   const download = async () => {
     setBusy(true);
     try {
-      const url = await attachmentUrl(msg.id);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = att.name;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      await saveAttachment(msg.id, att.name);
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className={s.fileWrap}>
-      {isImage && preview && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={preview} alt={att.name} className={s.imagePreview} onClick={download} />
-      )}
-      <button type="button" className={s.fileCard} onClick={download} disabled={busy}>
-        <span className={s.fileIcon}>{busy ? <span className={s.miniSpin} /> : <FileText size={20} />}</span>
-        <span className={s.fileMeta}>
-          <span className={s.fileName}>{att.name}</span>
-          <span className={s.fileSize}>
-            {att.name.split(".").pop()?.toUpperCase()}, {fmtSize(att.size)}
-          </span>
+    <div className={`${s.fileCard} ${compact ? s.fileCardCompact : ""}`}>
+      {!compact && (
+        <span className={s.fileIcon} data-kind={kind ?? "file"}>
+          <Icon size={20} />
         </span>
-        <Download size={18} className={s.fileDl} />
+      )}
+      <span className={s.fileMeta}>
+        <span className={s.fileName} title={att.name}>
+          {att.name}
+        </span>
+        <span className={s.fileSize}>
+          {ext}, {fmtSize(att.size)}
+        </span>
+      </span>
+      {kind && !compact && (
+        <button type="button" className={s.fileOpen} onClick={onOpen}>
+          Открыть
+        </button>
+      )}
+      <button
+        type="button"
+        className={kind ? s.fileDlBtn : s.fileOpen}
+        onClick={download}
+        disabled={busy}
+        aria-label={`Скачать ${att.name}`}
+        title="Скачать"
+      >
+        {busy ? <span className={s.miniSpin} /> : kind ? <Download size={17} /> : "Скачать"}
       </button>
+    </div>
+  );
+}
+
+function FileCard({ msg }: { msg: ChatMessage }) {
+  const att = msg.attachment!;
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={s.fileWrap}>
+      <FileRow msg={msg} onOpen={() => setOpen(true)} />
+      {open && <AttachmentViewer msgId={msg.id} name={att.name} mime={att.mime} onClose={() => setOpen(false)} />}
     </div>
   );
 }
@@ -117,13 +183,14 @@ export function MessageItem({
 
   const canMenu = !msg.deleted && !msg.pending && !msg.streaming;
   const bubbleTone = own ? s.mine : msg.sender_role === "ai" ? s.ai : s.theirs;
+  const isImage = msg.kind === "file" && !msg.deleted && !!msg.attachment?.mime.startsWith("image/");
 
   return (
     <div className={`${s.row} ${own ? s.rowMine : ""}`} ref={ref}>
       <div
         className={`${s.bubble} ${bubbleTone} ${msg.deleted ? s.deleted : ""} ${showTail ? s.tail : ""} ${
           msg.kind === "voice" ? s.bubbleVoice : ""
-        }`}
+        } ${isImage ? s.bubbleImage : msg.kind === "file" && !msg.deleted ? s.bubbleFile : ""}`}
         onContextMenu={(e) => {
           if (!canMenu) return;
           e.preventDefault();
@@ -141,6 +208,8 @@ export function MessageItem({
             durationMs={msg.attachment.duration_ms ?? 0}
             tone={own ? "mine" : "theirs"}
           />
+        ) : isImage ? (
+          <ImageCard msg={msg} />
         ) : msg.kind === "file" && msg.attachment ? (
           <FileCard msg={msg} />
         ) : (
@@ -168,7 +237,7 @@ export function MessageItem({
         <button
           type="button"
           className={s.moreBtn}
-          aria-label="Действия с сообщением"
+          aria-label="Действия с&nbsp;сообщением"
           aria-expanded={menuOpen}
           onClick={() => onMenu(!menuOpen)}
         >
@@ -202,5 +271,5 @@ function expiryTitle(iso: string): string {
   if (!Number.isFinite(t)) return "Исчезающее сообщение";
   const d = new Date(t);
   const hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
-  return d.toDateString() === new Date().toDateString() ? `Исчезнет в ${hm}` : `Исчезнет завтра в ${hm}`;
+  return d.toDateString() === new Date().toDateString() ? `Исчезнет в\u00a0${hm}` : `Исчезнет завтра в\u00a0${hm}`;
 }

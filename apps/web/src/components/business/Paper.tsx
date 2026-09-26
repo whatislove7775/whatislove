@@ -11,10 +11,10 @@ export function Paper({ children }: { children: ReactNode }) {
     <>
       <div className={s.printBar}>
         <Button variant="ghost" href="/business/portal/documents" icon={<ArrowLeft size={18} />}>
-          К документам
+          К&nbsp;документам
         </Button>
         <Button variant="secondary" icon={<Printer size={18} />} onClick={() => window.print()}>
-          Печать или PDF
+          Печать или&nbsp;PDF
         </Button>
       </div>
       <article className={s.paper}>{children}</article>

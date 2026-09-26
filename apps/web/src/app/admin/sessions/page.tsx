@@ -74,14 +74,14 @@ function SessionsPage() {
         />
       </div>
       <Toolbar>
-        <SearchBox value={q} onChange={setQ} placeholder="Псевдоним клиента, специалист или ID" label="Поиск созвона" />
+        <SearchBox value={q} onChange={setQ} placeholder="Псевдоним клиента, специалист или&nbsp;ID" label="Поиск созвона" />
         <label className={s.dateField}>
           <span>С</span>
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="С даты" />
+          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="С&nbsp;даты" />
         </label>
         <label className={s.dateField}>
           <span>По</span>
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="По дату" />
+          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="По&nbsp;дату" />
         </label>
       </Toolbar>
       {error && <LoadError text={error} onRetry={load} />}
@@ -120,7 +120,7 @@ function SessionsPage() {
             <Pager page={data.page} pages={data.pages} count={data.count} onPage={setPage} noun={["созвон", "созвона", "созвонов"]} />
           </>
         ) : (
-          <EmptyState art={<EmptyArt scene="search" />} icon={<CalendarDays size={22} />} title="Созвонов не нашли" text="Измените фильтры или период." />
+          <EmptyState art={<EmptyArt scene="search" />} icon={<CalendarDays size={22} />} title="Созвонов не&nbsp;нашли" text="Измените фильтры или&nbsp;период." />
         )}
       </Card>
       <SessionModal id={openId} onClose={() => setOpenId(null)} onChanged={load} />
@@ -201,7 +201,7 @@ function SessionModal({ id, onClose, onChanged }: { id: string | null; onClose: 
                   "Оплата",
                   x.payment
                     ? `${PAYMENT_LABEL[x.payment.status] ?? x.payment.status}${x.payment.provider ? ", ЮKassa" : ""}${x.payment.refunded_at ? `, возврат ${dateTime(x.payment.refunded_at)}` : ""}`
-                    : "Без платёжного сервиса",
+                    : "Без\u00a0платёжного сервиса",
                 ],
                 ["Создана", dateTime(x.created_at)],
                 ["Жалобы", x.reports ? <Badge key="r" tone="warning">{x.reports}</Badge> : "Нет"],
@@ -230,12 +230,12 @@ function SessionModal({ id, onClose, onChanged }: { id: string | null; onClose: 
               <div className={s.modalActions}>
                 {cancellable && can("sessions.cancel") && (
                   <Button variant="secondary" icon={<CircleSlash size={18} />} onClick={() => setDialog("cancel")}>
-                    Отменить без возврата
+                    Отменить без&nbsp;возврата
                   </Button>
                 )}
                 {refundable && can("sessions.refund") && (
                   <Button variant="danger" icon={<Undo2 size={18} />} onClick={() => setDialog("refund")}>
-                    {cancellable ? "Отменить и вернуть деньги" : "Вернуть деньги"}
+                    {cancellable ? "Отменить и\u00a0вернуть деньги" : "Вернуть деньги"}
                   </Button>
                 )}
               </div>
@@ -245,8 +245,8 @@ function SessionModal({ id, onClose, onChanged }: { id: string | null; onClose: 
       </Modal>
       <ReasonModal
         open={dialog === "cancel"}
-        title="Отменить созвон без возврата?"
-        text="Слот освободится, клиент и специалист увидят отмену. Если созвон оплачен с баланса, деньги вернутся на баланс клиента; удержать часть можно в разделе «Финансы»."
+        title="Отменить созвон без&nbsp;возврата?"
+        text="Слот освободится, клиент и&nbsp;специалист увидят отмену. Если созвон оплачен с&nbsp;баланса, деньги вернутся на&nbsp;баланс клиента; удержать часть можно в&nbsp;разделе «Финансы»."
         confirm="Отменить созвон"
         variant="danger"
         busy={busy}
@@ -256,7 +256,7 @@ function SessionModal({ id, onClose, onChanged }: { id: string | null; onClose: 
       <ReasonModal
         open={dialog === "refund"}
         title="Вернуть деньги клиенту?"
-        text={`${x ? rub(x.amount_rub) : ""} ${x?.payment ? "вернутся на карту через ЮKassa, обычно в течение нескольких дней" : "вернутся на анонимный баланс клиента"}. Действие нельзя отменить.`}
+        text={`${x ? rub(x.amount_rub) : ""} ${x?.payment ? "вернутся на\u00a0карту через ЮKassa, обычно в\u00a0течение нескольких дней" : "вернутся на\u00a0анонимный баланс клиента"}. Действие нельзя отменить.`}
         confirm="Оформить возврат"
         variant="danger"
         busy={busy}

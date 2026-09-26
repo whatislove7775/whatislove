@@ -18,7 +18,7 @@ from .security import (
     check_recovery_key, email_hash_candidates, generate_recovery_key, hash_recovery_key,
 )
 from .serializers import (
-    AnonymousSignupSerializer, ChangePasswordSerializer, DeleteAccountSerializer,
+    AnonymousSignupSerializer, ChangeAliasSerializer, ChangePasswordSerializer, DeleteAccountSerializer,
     LoginSerializer, PsychologistPrivateSerializer, PsychologistPublicSerializer,
     PsychologistRegisterSerializer, RecoverSerializer, ScheduleRuleSerializer, UserSerializer,
     schedule_overlap_error,
@@ -51,14 +51,89 @@ class AnonymousSignupView(AuthThrottleMixin, APIView):
         serializer = AnonymousSignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         recovery_key = generate_recovery_key()
-        with transaction.atomic():
-            user = User.objects.create_anonymous_client(serializer.validated_data["password"])
-            user.recovery_key_hash = hash_recovery_key(recovery_key)
-            user.save(update_fields=["recovery_key_hash"])
+        try:
+            with transaction.atomic():
+                user = User.objects.create_anonymous_client(
+                    serializer.validated_data["password"], alias=serializer.validated_data.get("alias") or None,
+                )
+                user.recovery_key_hash = hash_recovery_key(recovery_key)
+                user.save(update_fields=["recovery_key_hash"])
+        except IntegrityError:
+            # Ник заняли между проверкой и созданием
+            return Response({"alias": ["Этот ник уже занят."]}, status=status.HTTP_400_BAD_REQUEST)
         return Response(
             auth_payload(user, request, recovery_key=recovery_key),
             status=status.HTTP_201_CREATED,
         )
+
+
+class AliasSuggestView(AuthThrottleMixin, APIView):
+    """GET → {alias}: свободный сгенерированный ник для «Придумать другое»."""
+
+    throttle_scope = "alias"
+
+    def get(self, request):
+        from .aliases import generate_unique_alias
+
+        return Response({"alias": generate_unique_alias()})
+
+
+class AliasCheckView(AuthThrottleMixin, APIView):
+    """GET ?alias= → {alias (нормализованный), available, error}. Живая проверка при вводе."""
+
+    throttle_scope = "alias"
+
+    def get(self, request):
+        from .nicknames import check_alias
+
+        value = (request.query_params.get("alias") or "")[:60]
+        user = request.user if request.user.is_authenticated else None
+        return Response(check_alias(value, user=user))
+
+
+class MyAliasView(APIView):
+    """GET → {alias, next_change_at}; POST {alias} → смена ника клиентом (раз в сутки).
+
+    Старый ник не сохраняется нигде: специалисты видят только текущий."""
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "alias"
+
+    def _payload(self, user):
+        from .nicknames import next_change_at
+
+        at = next_change_at(user)
+        return {"alias": user.alias, "next_change_at": at.isoformat() if at else None}
+
+    def get(self, request):
+        return Response(self._payload(request.user))
+
+    def post(self, request):
+        from .nicknames import check_alias, next_change_at
+
+        user = request.user
+        if user.role != User.Role.CLIENT:
+            return Response({"detail": "Ник меняют только клиенты."}, status=status.HTTP_403_FORBIDDEN)
+        serializer = ChangeAliasSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = check_alias(serializer.validated_data["alias"], user=user)
+        if result["alias"] == user.alias:
+            return Response(self._payload(user))
+        if next_change_at(user):
+            return Response(
+                {"detail": "Ник можно менять раз в сутки.", **self._payload(user)},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+        if not result["available"]:
+            return Response({"alias": [result["error"]]}, status=status.HTTP_400_BAD_REQUEST)
+        user.alias = result["alias"]
+        user.alias_changed_at = timezone.now()
+        try:
+            with transaction.atomic():
+                user.save(update_fields=["alias", "alias_changed_at"])
+        except IntegrityError:
+            return Response({"alias": ["Этот ник уже занят."]}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({**self._payload(user), "user": UserSerializer(user, context={"request": request}).data})
 
 
 class PsychologistRegisterView(AuthThrottleMixin, APIView):

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import s from "./content.module.css";
+import { typo } from "@/lib/typography";
 
 /**
  * Small, safe Markdown renderer for articles (no HTML passthrough, builds React nodes).
@@ -8,7 +9,7 @@ import s from "./content.module.css";
  * **bold**, *italic*, `code`, [links](https://… or /path), citations [1] / [1, 2] → links to #source-N.
  */
 export function Markdown({ source, className }: { source: string; className?: string }) {
-  return <div className={className ? `${s.prose} ${className}` : s.prose}>{renderBlocks(source)}</div>;
+  return <div className={className ? `${s.prose} ${className}` : s.prose}>{renderBlocks(typo(source))}</div>;
 }
 
 /** Superscript citation links: [1, 3] → ¹ ³ pointing to the sources list (#source-1). */

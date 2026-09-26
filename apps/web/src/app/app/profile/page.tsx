@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
-import { Camera, ChevronRight, ShieldCheck, Smile, Users, Wallet } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Camera, ChevronRight, PencilLine, Smile, Users, Wallet } from "lucide-react";
 import { Skeleton } from "@/ui";
 import { AvatarThumb } from "@/components/avatar/AvatarThumb";
 import { SpecialistPhoto } from "@/components/avatar/SpecialistPhoto";
@@ -12,10 +12,13 @@ import { dayLabel, plural, time } from "@/lib/format";
 import { useLoad } from "@/components/client/useLoad";
 import { splitSessions } from "@/components/client/sessions";
 import { ErrorBlock } from "@/components/client/ClientBits";
+import { ChangeNickname } from "@/components/client/ChangeNickname";
+import { PrivacyAndSecurity } from "@/components/client/PrivacyAndSecurity";
 import s from "./profile.module.css";
 
 export default function ClientProfile() {
   const user = useAuth((st) => st.user);
+  const [nickOpen, setNickOpen] = useState(false);
   const sessions = useLoad(() => sessionsApi.list());
   const list = useMemo(() => sessions.data ?? [], [sessions.data]);
   const { upcoming } = useMemo(() => splitSessions(list), [list]);
@@ -48,12 +51,21 @@ export default function ClientProfile() {
           <AvatarThumb config={user.avatar_config} seed={user.id} size={64} />
         </Link>
         <div className={s.who}>
-          <h1 className={s.alias}>{user.alias}</h1>
+          <h1 className={s.alias}>
+            {user.alias}
+            {user.role === "client" && (
+              <button type="button" className={s.editNick} onClick={() => setNickOpen(true)} aria-label="Сменить ник" title="Сменить ник">
+                <PencilLine size={16} strokeWidth={1.9} aria-hidden />
+              </button>
+            )}
+          </h1>
           <span className={s.since}>
             с {new Date(user.created_at).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }).replace(" г.", "")}
           </span>
         </div>
       </section>
+
+      <ChangeNickname open={nickOpen} onClose={() => setNickOpen(false)} />
 
       {sessions.error && <ErrorBlock message={sessions.error} onRetry={sessions.reload} />}
 
@@ -114,7 +126,6 @@ export default function ClientProfile() {
             { href: "/app/avatar/mirror", icon: Camera, title: "Проверка камеры" },
             { href: "/app/balance", icon: Wallet, title: "Баланс" },
             { href: "/app/circles", icon: Users, title: "Круги" },
-            { href: "/app/avatar/privacy", icon: ShieldCheck, title: "Приватность и безопасность" },
           ].map((row) => (
             <li key={row.href}>
               <Link href={row.href} className={s.row}>
@@ -129,6 +140,13 @@ export default function ClientProfile() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className={s.section} aria-labelledby="privacy-title">
+        <h2 id="privacy-title" className={s.sectionTitle}>
+          Приватность и&nbsp;безопасность
+        </h2>
+        <PrivacyAndSecurity />
       </section>
     </div>
   );

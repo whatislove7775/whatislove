@@ -29,7 +29,7 @@ export function DebugOverlay({ stats, status, avatar }: { stats: CallStats | nul
       ["модель", `${snap.detectMs} ms (p95 ${snap.detectP95})`],
       ["кадр → аватар", `${snap.latencyMs} ms (p95 ${snap.latencyP95})`],
       ["рендер", `${snap.renderFps} fps, ${snap.renderMs} ms`],
-      ["в звонок", `${snap.sendFps} fps`],
+      ["в\u00a0звонок", `${snap.sendFps} fps`],
       ["пропущено кадров", String(snap.dropped)],
     );
     if (decision) rows.push(["выбор", decision.replace(/^\S+ /, "")]);
@@ -37,8 +37,8 @@ export function DebugOverlay({ stats, status, avatar }: { stats: CallStats | nul
   rows.push(
     ["соединение", `${status}${stats?.relay ? " (TURN)" : ""}`],
     ["RTT", stats?.rttMs != null ? `${stats.rttMs} ms` : "—"],
-    ["потери вх / исх", `${pct(stats?.lossIn)} / ${pct(stats?.lossOut)}`],
-    ["битрейт вх / исх", stats ? `${stats.recvKbps} / ${stats.sendKbps} кбит/с` : "—"],
+    ["потери вх\u00a0/ исх", `${pct(stats?.lossIn)} / ${pct(stats?.lossOut)}`],
+    ["битрейт вх\u00a0/ исх", stats ? `${stats.recvKbps} / ${stats.sendKbps} кбит/с` : "—"],
     ["лимит видео", stats ? `${stats.capKbps} кбит/с` : "—"],
     ["кодек", stats?.codec ?? "—"],
     ["приём", stats ? `${stats.recvSize ?? "—"} ${stats.recvFps ?? "—"} fps` : "—"],

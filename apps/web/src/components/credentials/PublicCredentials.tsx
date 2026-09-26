@@ -11,13 +11,13 @@ import s from "./credentials.module.css";
 
 const GROUPS: { title: string; kinds: CredentialKind[] }[] = [
   { title: "Образование", kinds: ["diploma", "retraining"] },
-  { title: "Методы, курсы и тренинги", kinds: ["method", "course", "other"] },
+  { title: "Методы, курсы и\u00a0тренинги", kinds: ["method", "course", "other"] },
   { title: "Супервизия", kinds: ["supervision"] },
   { title: "Профессиональные сообщества", kinds: ["membership"] },
   { title: "Публикации", kinds: ["publication"] },
 ];
 
-/** «Проверено aprosop» — only when at least one document was verified by staff. */
+/** «Проверено Aprosop» — only when at least one document was verified by staff. */
 export function VerifiedBadge({ count }: { count: number }) {
   if (!count) return null;
   return (
@@ -25,7 +25,7 @@ export function VerifiedBadge({ count }: { count: number }) {
       <span className={s.verifiedIcon} aria-hidden>
         <BadgeCheck size={14} strokeWidth={2.2} />
       </span>
-      Проверено aprosop
+      Проверено Aprosop
       <small>
         {count} {plural(count, "документ", "документа", "документов")}
       </small>
@@ -55,8 +55,8 @@ export function PublicCredentials({ psychologistId }: { psychologistId: number }
     <Card as="section">
       <span id="credentials" style={{ display: "block", scrollMarginTop: 16 }} />
       <CardHead
-        title="Образование и квалификация"
-        sub="Каждый пункт сотрудник aprosop сверил с документом. Номера документов скрыты"
+        title="Образование и&nbsp;квалификация"
+        sub="Каждый пункт сотрудник Aprosop сверил с&nbsp;документом. Номера документов скрыты"
       />
       {!items ? (
         <div style={{ display: "grid", gap: 12 }}>
@@ -98,7 +98,7 @@ export function PublicCredentials({ psychologistId }: { psychologistId: number }
 }
 
 function Entry({ c, onOpen }: { c: PublicCredential; onOpen: (i: number) => void }) {
-  const period = periodLabel(c) || (c.year_end === null && c.year ? `с ${c.year}` : "");
+  const period = periodLabel(c) || (c.year_end === null && c.year ? `с\u00a0${c.year}` : "");
   const meta = [
     c.issuer,
     c.supervisor && `супервизор ${c.supervisor}`,

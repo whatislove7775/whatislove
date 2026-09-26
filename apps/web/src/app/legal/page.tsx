@@ -8,14 +8,14 @@ import s from "@/components/public/public.module.css";
 
 export const metadata = {
   title: "Документы",
-  description: "Правовые документы сервиса aprosop: политика конфиденциальности, соглашение, оферта, правила возврата и другие.",
+  description: "Правовые документы сервиса Aprosop: политика конфиденциальности, соглашение, оферта, правила возврата и\u00a0другие.",
   alternates: alternates("/legal"),
 };
 
 const GROUPS = [
-  { title: "Для всех", audience: "all" },
-  { title: "Для клиентов", audience: "clients" },
-  { title: "Для специалистов", audience: "specialists" },
+  { title: "Для\u00a0всех", audience: "all" },
+  { title: "Для\u00a0клиентов", audience: "clients" },
+  { title: "Для\u00a0специалистов", audience: "specialists" },
 ] as const;
 
 export default function LegalIndexPage() {
@@ -30,7 +30,7 @@ export default function LegalIndexPage() {
       <header className={s.intro}>
         <div>
           <h1>Документы</h1>
-          <p>Правила сервиса и то, как мы обращаемся с данными. Часть документов ещё готовится вместе с юристом.</p>
+          <p>Правила сервиса и&nbsp;то, как&nbsp;мы&nbsp;обращаемся с&nbsp;данными. Часть документов ещё готовится вместе с&nbsp;юристом.</p>
         </div>
       </header>
       {GROUPS.map((g) => (

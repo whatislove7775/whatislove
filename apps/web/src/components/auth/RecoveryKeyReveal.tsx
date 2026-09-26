@@ -47,17 +47,17 @@ export function RecoveryKeyReveal({
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      toast("Имя и ключ скопированы");
+      toast("Имя и\u00a0ключ скопированы");
       setTimeout(() => setCopied(false), 2400);
     } catch {
-      toast("Не получилось скопировать. Выделите ключ и скопируйте вручную.", { error: true });
+      toast("Не\u00a0получилось скопировать. Выделите ключ и\u00a0скопируйте вручную.", { error: true });
     }
   };
 
   const download = () => {
     const origin = typeof window !== "undefined" ? window.location.origin : "https://aprosop.ru";
     const text = [
-      "aprosop: данные для входа",
+      "Aprosop: данные для\u00a0входа",
       "",
       `Имя: ${alias}`,
       `Ключ восстановления: ${recoveryKey}`,
@@ -65,8 +65,8 @@ export function RecoveryKeyReveal({
       `Войти: ${origin}/login`,
       `Если забыли пароль: ${origin}/recover`,
       "",
-      "Ключ показывается один раз. Храните файл там, где его не увидят другие.",
-      "Пароль в этот файл не записан.",
+      "Ключ показывается один раз. Храните файл там, где его не\u00a0увидят другие.",
+      "Пароль в\u00a0этот файл не\u00a0записан.",
       "",
     ].join("\r\n");
     const blob = new Blob(["﻿" + text], { type: "text/plain;charset=utf-8" });
@@ -88,13 +88,13 @@ export function RecoveryKeyReveal({
       title={title}
       sub={
         intro ??
-        "Это единственный способ вернуть доступ, если вы забудете пароль. Мы храним ключ только в зашифрованном виде и показать его ещё раз не сможем."
+        "Это\u00a0единственный способ вернуть доступ, если вы\u00a0забудете пароль. Мы\u00a0храним ключ только в\u00a0зашифрованном виде и\u00a0показать его ещё раз не\u00a0сможем."
       }
     >
       <div className={s.identity}>
         <AvatarThumb config={avatar ?? null} seed={alias} size={52} />
         <div>
-          <small>Ваше имя на сервисе, по нему вы входите</small>
+          <small>Ваше имя на&nbsp;сервисе, по&nbsp;нему вы&nbsp;входите</small>
           <div className={s.alias}>{alias}</div>
         </div>
       </div>
@@ -121,14 +121,14 @@ export function RecoveryKeyReveal({
             {copied ? "Скопировано" : "Скопировать"}
           </Button>
           <Button variant="white" size="sm" onClick={download} icon={<Download size={16} strokeWidth={1.8} />}>
-            Скачать как файл
+            Скачать как&nbsp;файл
           </Button>
         </div>
       </div>
 
       <label className={s.check}>
         <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} />
-        <span>Я сохранил ключ</span>
+        <span>Я&nbsp;сохранил ключ</span>
       </label>
 
       <Button variant="primary" size="lg" block disabled={!saved} onClick={onContinue}>

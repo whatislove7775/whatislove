@@ -1,13 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Bold, Eye, Heading2, Italic, Link2, List, ListOrdered, Quote, Trash2 } from "lucide-react";
-import { Badge, Button, Card, Input, Segmented, Textarea, useToast } from "@/ui";
+import { useState } from "react";
+import { Eye, Trash2 } from "lucide-react";
+import { Badge, Button, Card, Input, Textarea, useToast } from "@/ui";
 import { ApiError } from "@/lib/api/client";
 import { contentAdminApi, slugify, TOPICS, type ArticleDraft, type Cover, type EvidenceLevel, type KeyFact, type Source } from "@/lib/api/content";
 import { cleanFacts, cleanSources, EvidenceFields } from "./EvidenceFields";
 import { ArticleCard } from "../Cards";
-import { Markdown } from "../Markdown";
+import { CoverUploader } from "@/components/media/CoverUploader";
+import type { CoverImage } from "@/lib/api/authoring";
+import { estimateMinutes, MarkdownBody } from "./MarkdownBody";
 import { CoverPicker, fieldError, Select, Switch } from "./fields";
 import s from "./cms.module.css";
 
@@ -19,9 +21,12 @@ type Form = {
   topic: string;
   tags: string;
   cover: Cover;
+  cover_image: CoverImage | null;
   emoji: string;
   reading_minutes: number;
   author_name: string;
+  /** YYYY-MM-DD in the editor's local time; "" = set on publish */
+  published_date: string;
   is_published: boolean;
   evidence_level: EvidenceLevel;
   when_to_seek_help: string;
@@ -38,9 +43,12 @@ function toForm(a: ArticleDraft | null): Form {
     topic: a?.topic ?? "therapy",
     tags: (a?.tags ?? []).join(", "),
     cover: a?.cover ?? "sky",
+    cover_image: a?.cover_image ?? null,
     emoji: a?.emoji ?? "",
     reading_minutes: a?.reading_minutes ?? 5,
-    author_name: a?.author_name ?? "Редакция aprosop",
+    // New article: empty → the API fills in the editor's name (or «Редакция Aprosop»).
+    author_name: a?.author_name ?? "",
+    published_date: localDate(a?.published_at ?? null),
     is_published: a?.is_published ?? false,
     evidence_level: a?.evidence_level ?? "",
     when_to_seek_help: a?.when_to_seek_help ?? "",
@@ -49,10 +57,15 @@ function toForm(a: ArticleDraft | null): Form {
   };
 }
 
-export function estimateMinutes(text: string) {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 160));
+function localDate(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
+
+export { estimateMinutes };
 
 export function ArticleEditor({
   article,
@@ -66,51 +79,15 @@ export function ArticleEditor({
   const toast = useToast();
   const [f, setF] = useState<Form>(() => toForm(article));
   const [slugTouched, setSlugTouched] = useState(!!article);
-  const [mode, setMode] = useState<"split" | "write" | "preview">("split");
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const dirty = JSON.stringify(f) !== JSON.stringify(toForm(article));
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((x) => ({ ...x, [k]: v }));
 
   const onTitle = (title: string) => {
     setF((x) => ({ ...x, title, slug: slugTouched ? x.slug : slugify(title) }));
-  };
-
-  /** Wrap the selection (or insert at the cursor) with Markdown syntax. */
-  const format = (kind: "h2" | "b" | "i" | "ul" | "ol" | "quote" | "link") => {
-    const el = bodyRef.current;
-    if (!el) return;
-    const { selectionStart: a, selectionEnd: b, value } = el;
-    const sel = value.slice(a, b);
-    const lineStart = value.lastIndexOf("\n", a - 1) + 1;
-    let next = value;
-    let cursor = b;
-    const prefixLines = (p: (i: number) => string) => {
-      const block = value.slice(lineStart, b) || "";
-      const lines = (block || "Текст").split("\n").map((l, i) => p(i) + l.replace(/^(#{1,3}\s|[-*]\s|\d+\.\s|>\s?)/, ""));
-      next = value.slice(0, lineStart) + lines.join("\n") + value.slice(b);
-      cursor = lineStart + lines.join("\n").length;
-    };
-    const wrap = (l: string, r: string, placeholder: string) => {
-      const inner = sel || placeholder;
-      next = value.slice(0, a) + l + inner + r + value.slice(b);
-      cursor = a + l.length + inner.length + r.length;
-    };
-    if (kind === "h2") prefixLines(() => "## ");
-    if (kind === "ul") prefixLines(() => "- ");
-    if (kind === "ol") prefixLines((i) => `${i + 1}. `);
-    if (kind === "quote") prefixLines(() => "> ");
-    if (kind === "b") wrap("**", "**", "важное");
-    if (kind === "i") wrap("*", "*", "акцент");
-    if (kind === "link") wrap("[", "](https://)", sel || "текст ссылки");
-    set("body", next);
-    requestAnimationFrame(() => {
-      el.focus();
-      el.setSelectionRange(cursor, cursor);
-    });
   };
 
   const save = async (publish?: boolean) => {
@@ -124,10 +101,16 @@ export function ArticleEditor({
       topic: f.topic,
       tags: f.tags.split(",").map((t) => t.trim()).filter(Boolean),
       cover: f.cover,
+      // Only send the cover when it changed (id, or null to remove)
+      ...((f.cover_image?.id ?? null) !== (article?.cover_image?.id ?? null) ? { cover_image_id: f.cover_image?.id ?? null } : {}),
       emoji: f.emoji.trim(),
       reading_minutes: Number(f.reading_minutes) || estimateMinutes(f.body),
       author_name: f.author_name.trim(),
       is_published: publish ?? f.is_published,
+      // Only send the date when the editor changed it, so the original publish time is kept.
+      ...(f.published_date !== localDate(article?.published_at ?? null)
+        ? { published_at: f.published_date ? new Date(`${f.published_date}T12:00:00`).toISOString() : null }
+        : {}),
       evidence_level: f.evidence_level,
       when_to_seek_help: f.when_to_seek_help,
       sources: cleanSources(f.sources),
@@ -138,13 +121,13 @@ export function ArticleEditor({
         ? await contentAdminApi.updateArticle(article.id, body)
         : await contentAdminApi.createArticle(body);
       setF(toForm(saved));
-      toast(publish === true ? "Статья опубликована" : publish === false ? "Статья снята с публикации" : "Изменения сохранены");
+      toast(publish === true ? "Статья опубликована" : publish === false ? "Статья снята с\u00a0публикации" : "Изменения сохранены");
       onSaved(saved);
     } catch (e) {
       if (e instanceof ApiError) {
         setErrors(e.fields);
         toast(e.message, { error: true });
-      } else toast("Не получилось сохранить. Попробуйте ещё раз.", { error: true });
+      } else toast("Не\u00a0получилось сохранить. Попробуйте ещё раз.", { error: true });
     } finally {
       setBusy(false);
     }
@@ -158,7 +141,7 @@ export function ArticleEditor({
       toast("Статья удалена");
       onDeleted();
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось удалить", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось удалить", { error: true });
       setBusy(false);
     }
   };
@@ -173,10 +156,11 @@ export function ArticleEditor({
     topic_label: TOPICS.find((t) => t.value === f.topic)?.label ?? "",
     tags: [],
     cover: f.cover,
+    cover_image: f.cover_image,
     emoji: f.emoji,
     reading_minutes: Number(f.reading_minutes) || 1,
     author_name: f.author_name,
-    published_at: null,
+    published_at: f.published_date ? new Date(`${f.published_date}T12:00:00`).toISOString() : null,
   };
 
   return (
@@ -184,7 +168,7 @@ export function ArticleEditor({
       <div className={s.main}>
         <Card as="section">
           <div className={s.grid}>
-            <Input label="Заголовок" value={f.title} onChange={(e) => onTitle(e.target.value)} error={err("title")} placeholder="Например: Как справиться с тревогой" />
+            <Input label="Заголовок" value={f.title} onChange={(e) => onTitle(e.target.value)} error={err("title")} placeholder="Например: Как&nbsp;справиться с&nbsp;тревогой" />
             <Input
               label="Адрес"
               value={f.slug}
@@ -203,12 +187,15 @@ export function ArticleEditor({
                 error={err("summary")}
                 rows={2}
                 maxLength={400}
-                hint="Показывается в карточке и под заголовком, до 400 знаков"
+                hint="Показывается в&nbsp;карточке и&nbsp;под&nbsp;заголовком, до&nbsp;400&nbsp;знаков"
               />
             </div>
             <Select label="Тема" value={f.topic} onChange={(v) => set("topic", v)} options={TOPICS} error={err("topic")} />
             <Input label="Теги" value={f.tags} onChange={(e) => set("tags", e.target.value)} error={err("tags")} hint="Через запятую" />
             <CoverPicker value={f.cover} onChange={(v) => set("cover", v)} error={err("cover")} />
+            <div className={s.full}>
+              <CoverUploader value={f.cover_image} onChange={(v) => set("cover_image", v)} error={err("cover_image_id")} />
+            </div>
             <div className={s.pair}>
               <Input label="Эмодзи" value={f.emoji} onChange={(e) => set("emoji", e.target.value)} maxLength={8} error={err("emoji")} />
               <Input
@@ -224,56 +211,19 @@ export function ArticleEditor({
           </div>
         </Card>
 
-        <Card as="section" className={s.bodyCard}>
-          <div className={s.toolbar}>
-            <div className={s.tools} role="toolbar" aria-label="Форматирование">
-              <ToolBtn label="Подзаголовок" onClick={() => format("h2")} icon={<Heading2 size={18} />} />
-              <ToolBtn label="Жирный" onClick={() => format("b")} icon={<Bold size={18} />} />
-              <ToolBtn label="Курсив" onClick={() => format("i")} icon={<Italic size={18} />} />
-              <ToolBtn label="Список" onClick={() => format("ul")} icon={<List size={18} />} />
-              <ToolBtn label="Нумерованный список" onClick={() => format("ol")} icon={<ListOrdered size={18} />} />
-              <ToolBtn label="Врезка" onClick={() => format("quote")} icon={<Quote size={18} />} />
-              <ToolBtn label="Ссылка" onClick={() => format("link")} icon={<Link2 size={18} />} />
-            </div>
-            <Segmented
-              value={mode}
-              onChange={setMode}
-              ariaLabel="Режим редактора"
-              options={[
-                { value: "write", label: "Текст" },
-                { value: "split", label: "Рядом" },
-                { value: "preview", label: "Просмотр" },
-              ]}
-            />
-          </div>
-          <div className={s.bodyPanes} data-mode={mode}>
-            {mode !== "preview" && (
-              <div className={s.pane}>
-                <textarea
-                  ref={bodyRef}
-                  className={s.bodyInput}
-                  value={f.body}
-                  onChange={(e) => set("body", e.target.value)}
-                  aria-label="Текст статьи в Markdown"
-                  placeholder={"Текст статьи.\n\n## Подзаголовок\n\n- пункт списка\n\n**жирный**, *курсив*, [ссылка](https://…)"}
-                  spellCheck
-                />
-                {err("body") && <div className={s.error}>{err("body")}</div>}
-              </div>
-            )}
-            {mode !== "write" && (
-              <div className={`${s.pane} ${s.preview}`} aria-label="Предпросмотр">
-                {f.body.trim() ? <Markdown source={f.body} /> : <p className={s.muted}>Здесь появится предпросмотр.</p>}
-              </div>
-            )}
-          </div>
-          <div className={s.bodyFoot}>
-            <span>Markdown: ## подзаголовок, - список, **жирный**, &gt; врезка</span>
-            <button type="button" className={s.linkBtn} onClick={() => set("reading_minutes", estimateMinutes(f.body))}>
-              Посчитать время чтения ({estimateMinutes(f.body)} мин)
-            </button>
-          </div>
-        </Card>
+        <MarkdownBody
+          value={f.body}
+          onChange={(v) => set("body", v)}
+          error={err("body")}
+          footer={
+            <>
+              <span>Markdown: ## подзаголовок, - список, **жирный**, &gt; врезка</span>
+              <button type="button" className={s.linkBtn} onClick={() => set("reading_minutes", estimateMinutes(f.body))}>
+                Посчитать время чтения ({estimateMinutes(f.body)} мин)
+              </button>
+            </>
+          }
+        />
         <EvidenceFields
           level={f.evidence_level}
           onLevel={(v) => set("evidence_level", v)}
@@ -289,7 +239,7 @@ export function ArticleEditor({
             onChange={(e) => set("when_to_seek_help", e.target.value)}
             error={err("when_to_seek_help")}
             rows={5}
-            hint="Markdown-список признаков. Строка про 112 добавляется автоматически."
+            hint="Markdown-список признаков. Строка про&nbsp;112&nbsp;добавляется автоматически."
           />
         </EvidenceFields>
       </div>
@@ -301,7 +251,24 @@ export function ArticleEditor({
             {article?.is_published ? <Badge tone="success">Опубликована</Badge> : <Badge>Черновик</Badge>}
             {dirty && <Badge tone="warning">Есть изменения</Badge>}
           </div>
-          <Input label="Автор" value={f.author_name} onChange={(e) => set("author_name", e.target.value)} error={err("author_name")} />
+          <div className={s.byline}>
+          <Input
+            label="Редактор"
+            value={f.author_name}
+            onChange={(e) => set("author_name", e.target.value)}
+            error={err("author_name")}
+            placeholder="Ваше имя"
+            hint={article ? undefined : "Пусто\u00a0— подставим ваше имя"}
+          />
+          <Input
+            label="Дата публикации"
+            type="date"
+            value={f.published_date}
+            onChange={(e) => set("published_date", e.target.value)}
+            error={err("published_at")}
+            hint={f.published_date ? undefined : "Поставим при\u00a0публикации"}
+          />
+          </div>
           <div className={s.actions}>
             {article?.is_published ? (
               <>
@@ -309,7 +276,7 @@ export function ArticleEditor({
                   Сохранить
                 </Button>
                 <Button variant="secondary" block disabled={busy} onClick={() => save(false)}>
-                  Снять с публикации
+                  Снять с&nbsp;публикации
                 </Button>
               </>
             ) : (
@@ -324,7 +291,7 @@ export function ArticleEditor({
             )}
             {article?.is_published && (
               <Button variant="ghost" block href={`/articles/${article.slug}`} icon={<Eye size={18} strokeWidth={1.8} />}>
-                Открыть на сайте
+                Открыть на&nbsp;сайте
               </Button>
             )}
           </div>
@@ -359,10 +326,4 @@ export function ArticleEditor({
   );
 }
 
-export function ToolBtn({ label, onClick, icon }: { label: string; onClick: () => void; icon: React.ReactNode }) {
-  return (
-    <button type="button" className={s.tool} aria-label={label} title={label} onClick={onClick}>
-      {icon}
-    </button>
-  );
-}
+export { ToolBtn } from "./MarkdownBody";

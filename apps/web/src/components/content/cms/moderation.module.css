@@ -1,0 +1,60 @@
+/* Staff review of specialist articles (L1). */
+.doc {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.banner {
+  position: relative;
+  overflow: hidden;
+  height: 140px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 6px;
+}
+.kicker {
+  color: var(--c-muted);
+  font-size: var(--t-13);
+  font-weight: 550;
+}
+.title {
+  margin: 0;
+  font-size: var(--t-24);
+  line-height: 1.2;
+}
+.lead {
+  margin: 0 0 8px;
+  color: var(--c-muted);
+  font-size: var(--t-17);
+  line-height: 1.5;
+}
+.author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.author span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.author a {
+  font-size: var(--t-13);
+  color: var(--c-primary-ink);
+}
+.muted {
+  margin: 0 0 8px;
+  color: var(--c-muted);
+  font-size: var(--t-13);
+}
+.comment {
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--c-danger-soft);
+  font-size: var(--t-13);
+  line-height: 1.45;
+}

@@ -52,7 +52,7 @@ export function zoneName(zone: string): string {
 }
 
 const noticeLabel = (m: number) =>
-  m % 1440 === 0 ? (m === 1440 ? "за сутки" : `за ${m / 1440} суток`) : `за ${m / 60} ${m / 60 === 1 ? "час" : m / 60 < 5 ? "часа" : "часов"}`;
+  m % 1440 === 0 ? (m === 1440 ? "за\u00a0сутки" : `за\u00a0${m / 1440} суток`) : `за\u00a0${m / 60} ${m / 60 === 1 ? "час" : m / 60 < 5 ? "часа" : "часов"}`;
 const horizonLabel = (d: number) => (d % 7 === 0 ? `${d / 7} ${d / 7 === 1 ? "неделю" : d / 7 < 5 ? "недели" : "недель"}` : `${d} дней`);
 
 /** Session length options, buffer, notice, horizon, start step, time zone. */
@@ -88,7 +88,7 @@ export function SessionRules({
 
   return (
     <Card as="section">
-      <CardHead title="Сессии и запись" sub="Клиент выбирает длительность при записи и видит только подходящее свободное время" />
+      <CardHead title="Сессии и&nbsp;запись" sub="Клиент выбирает длительность при&nbsp;записи и&nbsp;видит только подходящее свободное время" />
       <div className={c.rules}>
         <div className={c.rule}>
           <div className={c.ruleText}>
@@ -96,12 +96,12 @@ export function SessionRules({
             <span>
               {chosen.length === 1
                 ? `Только ${durationLabel(chosen[0])}`
-                : `От ${durationLabel(chosen[0])} до ${durationLabel(chosen[chosen.length - 1])}, ${chosen.length} ${plural(
+                : `От\u00a0${durationLabel(chosen[0])} до\u00a0${durationLabel(chosen[chosen.length - 1])}, ${chosen.length} ${plural(
                     chosen.length,
                     "вариант",
                     "варианта",
                     "вариантов",
-                  )} на выбор`}
+                  )} на\u00a0выбор`}
             </span>
           </div>
           <div className={c.durLimits}>
@@ -114,7 +114,7 @@ export function SessionRules({
               <Select aria-label="Самая длинная" className={c.selectBox} value={draft.max_duration} onChange={setMax} options={all.map((d) => ({ value: d, label: durationLabel(d) }))} />
             </div>
           </div>
-          <div className={c.durChips} role="group" aria-label="Варианты длительности для клиента">
+          <div className={c.durChips} role="group" aria-label="Варианты длительности для&nbsp;клиента">
             {all.map((d) => {
               const available = d >= draft.min_duration && d <= draft.max_duration;
               const on = available && draft.durations.includes(d);
@@ -138,24 +138,24 @@ export function SessionRules({
         <div className={c.rule}>
           <div className={c.ruleText}>
             <strong>Перерыв между созвонами</strong>
-            <span>Время на отдых и заметки. Следующую запись система поставит не раньше</span>
+            <span>Время на&nbsp;отдых и&nbsp;заметки. Следующую запись система поставит не&nbsp;раньше</span>
           </div>
           <Segmented<string>
             ariaLabel="Перерыв между созвонами"
             value={String(draft.buffer_minutes)}
             onChange={(v) => onChange({ buffer_minutes: Number(v) })}
-            options={buffers.map((b) => ({ value: String(b), label: b ? `${b} мин` : "Без перерыва" }))}
+            options={buffers.map((b) => ({ value: String(b), label: b ? `${b} мин` : "Без\u00a0перерыва" }))}
           />
         </div>
 
         <div className={c.ruleGrid}>
-          <Field label="Запись не позднее чем" htmlFor="rule-notice" hint="Чтобы не было неожиданных созвонов через полчаса">
+          <Field label="Запись не&nbsp;позднее чем" htmlFor="rule-notice" hint="Чтобы не&nbsp;было неожиданных созвонов через полчаса">
             <Select
               id="rule-notice"
               className={c.selectBox}
               value={draft.min_notice_minutes}
               onChange={(v) => onChange({ min_notice_minutes: v })}
-              options={uniq([...options.min_notice_minutes, draft.min_notice_minutes]).map((m) => ({ value: m, label: `${noticeLabel(m)} до начала` }))}
+              options={uniq([...options.min_notice_minutes, draft.min_notice_minutes]).map((m) => ({ value: m, label: `${noticeLabel(m)} до\u00a0начала` }))}
             />
           </Field>
           <Field label="Открывать запись на" htmlFor="rule-horizon" hint="Насколько вперёд клиенты видят свободное время">
@@ -167,7 +167,7 @@ export function SessionRules({
               options={uniq([...options.horizon_days, draft.horizon_days]).map((d) => ({ value: d, label: `${horizonLabel(d)} вперёд` }))}
             />
           </Field>
-          <Field label="Созвоны начинаются" htmlFor="rule-step" hint="А ещё сразу после другого созвона и перерыва">
+          <Field label="Созвоны начинаются" htmlFor="rule-step" hint="А&nbsp;ещё сразу после другого созвона и&nbsp;перерыва">
             <Select
               id="rule-step"
               className={c.selectBox}
@@ -175,11 +175,11 @@ export function SessionRules({
               onChange={(v) => onChange({ start_step_minutes: v })}
               options={options.start_step_minutes.map((m) => ({
                 value: m,
-                label: m === 60 ? "В начале каждого часа" : m === 30 ? "Каждые полчаса" : `Каждые ${m} минут`,
+                label: m === 60 ? "В\u00a0начале каждого часа" : m === 30 ? "Каждые полчаса" : `Каждые ${m} минут`,
               }))}
             />
           </Field>
-          <Field label="Ваш часовой пояс" htmlFor="rule-tz" hint="Расписание задаётся в нём, клиенты видят своё время">
+          <Field label="Ваш часовой пояс" htmlFor="rule-tz" hint="Расписание задаётся в&nbsp;нём, клиенты видят своё время">
             <Select
               id="rule-tz"
               className={c.selectBox}
@@ -212,7 +212,7 @@ export function PriceCard({
     <Card as="section">
       <CardHead
         title="Стоимость"
-        sub="Цена указывается за час. Сессия стоит пропорционально длительности, сумма округляется до 10 ₽"
+        sub="Цена указывается за&nbsp;час. Сессия стоит пропорционально длительности, сумма округляется до&nbsp;10&nbsp;₽"
       />
       <div className={c.price}>
         <div className={c.priceInput}>
@@ -225,7 +225,7 @@ export function PriceCard({
             hint={`Комиссия платформы ${feePercent}%`}
           />
         </div>
-        <ul className={c.priceList} aria-label="Цены для клиента">
+        <ul className={c.priceList} aria-label="Цены для&nbsp;клиента">
           {offered.map((d) => {
             const p = priceFor(draft.hourly_rate_rub || 0, d);
             return (
@@ -258,8 +258,8 @@ export function IntroCard({
   return (
     <Card as="section" tone="minor">
       <CardHead
-        title="Знакомство, 15 минут"
-        sub="Короткий первый созвон, чтобы клиент понял, комфортно ли ему с вами. Один раз на клиента"
+        title="Знакомство, 15&nbsp;минут"
+        sub="Короткий первый созвон, чтобы клиент понял, комфортно&nbsp;ли ему с&nbsp;вами. Один раз на&nbsp;клиента"
       />
       <div className={c.rules}>
         <Segmented<string>
@@ -275,7 +275,7 @@ export function IntroCard({
             )
           }
           options={[
-            { value: "off", label: "Не провожу" },
+            { value: "off", label: "Не\u00a0провожу" },
             { value: "free", label: "Бесплатно" },
             { value: "paid", label: "Платно" },
           ]}
@@ -288,7 +288,7 @@ export function IntroCard({
               value={draft.intro_price_rub ? String(draft.intro_price_rub) : ""}
               onChange={(e) => onChange({ intro_price_rub: Number(e.target.value.replace(/\D/g, "").slice(0, 5)) || 0 })}
               error={error ?? undefined}
-              hint={`До ${rub(maxPrice)}. Время берётся из вашего расписания`}
+              hint={`До\u00a0${rub(maxPrice)}. Время берётся из\u00a0вашего расписания`}
             />
           </div>
         )}

@@ -360,10 +360,35 @@
   color: var(--a-mint-ink);
   margin-top: 2px;
 }
+.calcIntro .calcArt {
+  width: min(200px, 60%);
+  height: auto;
+  margin: auto 0 -8px -8px;
+}
 .calcForm {
   padding: 24px;
   border-radius: var(--r-card);
   background: var(--c-page);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+}
+/* Fields sit on the page tone inside the plaque: give them the panel tone + a visible edge
+   so they don't dissolve into the card (both themes). */
+.calcForm {
+  --field-bg: var(--c-panel);
+}
+.calcForm input,
+.calcForm textarea {
+  background: var(--c-panel);
+  border-color: var(--c-line-strong);
+}
+.calcForm input:hover,
+.calcForm textarea:hover {
+  background: var(--c-panel);
+  border-color: color-mix(in srgb, var(--c-primary) 40%, var(--c-line-strong));
+}
+.calcForm input:focus,
+.calcForm textarea:focus {
+  border-color: var(--c-primary);
 }
 .form {
   display: flex;
@@ -421,6 +446,9 @@
   .hero,
   .calc {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .calcArt {
+    display: none;
   }
   .heroVisual {
     min-height: 0;

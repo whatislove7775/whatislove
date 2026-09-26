@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Ban, LogOut, ShieldCheck, Users } from "lucide-react";
+import { Ban, Copy, LogOut, ShieldCheck, Users } from "lucide-react";
 import { Badge, Button, Card, EmptyState, Modal, Skeleton, useToast } from "@/ui";
 import { PageHeader } from "@/components/shell/AppShell";
 import { AvatarThumb } from "@/components/avatar/AvatarThumb";
@@ -52,10 +52,10 @@ function UsersPage() {
     <>
       <PageHeader
         title="Пользователи"
-        sub="Только псевдонимы и статус аккаунта"
+        sub="Только псевдонимы и&nbsp;статус аккаунта"
       />
       <Toolbar>
-        <SearchBox value={q} onChange={setQ} placeholder="Псевдоним или ID аккаунта" label="Поиск пользователя" />
+        <SearchBox value={q} onChange={setQ} placeholder="Псевдоним или&nbsp;ID аккаунта" label="Поиск пользователя" />
         <SelectBox<RoleFilter>
           label="Тип аккаунта"
           value={role}
@@ -114,8 +114,8 @@ function UsersPage() {
         ) : (
           <EmptyState art={<EmptyArt scene="search" />}
             icon={<Users size={22} />}
-            title="Никого не нашли"
-            text="Проверьте псевдоним: он выглядит как «тихий-кит-4821». Можно искать и по полному ID аккаунта."
+            title="Никого не&nbsp;нашли"
+            text="Проверьте псевдоним: он&nbsp;выглядит как&nbsp;«тихий-кит-4821». Можно искать и&nbsp;по&nbsp;полному ID аккаунта."
           />
         )}
       </Card>
@@ -190,19 +190,19 @@ function UserModal({ id, onClose, onChanged }: { id: string | null; onClose: () 
               <div className={s.alert}>
                 <Ban size={18} />
                 <span>
-                  Заблокирован {dateTime(u.blocked_at)}. Причина: {u.block_reason || "не указана"}
+                  Заблокирован {dateTime(u.blocked_at)}. Причина: {u.block_reason || "не\u00a0указана"}
                 </span>
               </div>
             )}
             <KV
               items={[
-                ["ID аккаунта", <code key="id" className={s.code}>{u.id}</code>],
+                ["ID аккаунта", <AccountId key="id" id={u.id} />],
                 ["Зарегистрирован", dateOnly(u.date_joined)],
                 ["Последний вход", ago(u.last_login)],
-                ["Жалобы на аккаунт", u.reports_received],
-                ["Жалобы от аккаунта", u.reports_sent],
+                ["Жалобы на\u00a0аккаунт", u.reports_received],
+                ["Жалобы от\u00a0аккаунта", u.reports_sent],
                 ...(u.has_email !== undefined
-                  ? ([["Почта", u.has_email ? "Указана, хранится только хеш" : "Не указана"]] as [string, string][])
+                  ? ([["Почта", u.has_email ? "Указана, хранится только хеш" : "Не\u00a0указана"]] as [string, string][])
                   : []),
               ]}
             />
@@ -220,7 +220,7 @@ function UserModal({ id, onClose, onChanged }: { id: string | null; onClose: () 
                     ))}
                   </ul>
                 ) : (
-                  <p className={s.muted}>Созвонов не было.</p>
+                  <p className={s.muted}>Созвонов не&nbsp;было.</p>
                 )}
               </div>
             )}
@@ -263,7 +263,7 @@ function UserModal({ id, onClose, onChanged }: { id: string | null; onClose: () 
       <ReasonModal
         open={dialog === "block"}
         title={`Заблокировать ${u?.alias ?? ""}?`}
-        text="Человек сразу выйдет со всех устройств и не сможет войти. Оплаченные созвоны не отменяются автоматически."
+        text="Человек сразу выйдет со&nbsp;всех устройств и&nbsp;не&nbsp;сможет войти. Оплаченные созвоны не&nbsp;отменяются автоматически."
         confirm="Заблокировать"
         variant="danger"
         busy={busy}
@@ -273,7 +273,7 @@ function UserModal({ id, onClose, onChanged }: { id: string | null; onClose: () 
       <ReasonModal
         open={dialog === "unblock"}
         title={`Разблокировать ${u?.alias ?? ""}?`}
-        text="Аккаунт снова сможет входить и назначать созвоны."
+        text="Аккаунт снова сможет входить и&nbsp;назначать созвоны."
         confirm="Разблокировать"
         requireReason={false}
         busy={busy}
@@ -282,11 +282,11 @@ function UserModal({ id, onClose, onChanged }: { id: string | null; onClose: () 
       />
       <Modal open={dialog === "logout"} onClose={() => !busy && setDialog(null)} title="Завершить все сеансы?">
         <p className={s.modalText}>
-          {u?.alias} выйдет на всех устройствах и войдёт заново по паролю. Полезно, если есть подозрение, что аккаунтом пользуется кто-то чужой.
+          {u?.alias} выйдет на&nbsp;всех устройствах и&nbsp;войдёт заново по&nbsp;паролю. Полезно, если есть подозрение, что&nbsp;аккаунтом пользуется кто-то чужой.
         </p>
         <div className={s.modalActions}>
           <Button variant="ghost" onClick={() => setDialog(null)} disabled={busy}>
-            Не менять
+            Не&nbsp;менять
           </Button>
           <Button variant="primary" loading={busy} onClick={() => act("")}>
             Завершить сеансы
@@ -294,5 +294,32 @@ function UserModal({ id, onClose, onChanged }: { id: string | null; onClose: () 
         </div>
       </Modal>
     </>
+  );
+}
+
+/** Account id on one line: middle-truncated, full value in the title and on copy. */
+function AccountId({ id }: { id: string }) {
+  const toast = useToast();
+  const short = id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-6)}` : id;
+  return (
+    <span className={s.idLine}>
+      <code className={s.code} title={id}>
+        {short}
+      </code>
+      <button
+        type="button"
+        className={s.idCopy}
+        aria-label="Скопировать ID"
+        title="Скопировать ID"
+        onClick={() => {
+          navigator.clipboard?.writeText(id).then(
+            () => toast("ID скопирован"),
+            () => toast("Не\u00a0получилось скопировать", { error: true }),
+          );
+        }}
+      >
+        <Copy size={14} strokeWidth={2} />
+      </button>
+    </span>
   );
 }

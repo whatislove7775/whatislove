@@ -125,13 +125,13 @@ export function PracticeEditor({
         ? await contentAdminApi.updatePractice(practice.id, body)
         : await contentAdminApi.createPractice(body);
       setF(toForm(saved));
-      toast(publish === true ? "Практика опубликована" : publish === false ? "Практика сохранена как черновик" : "Изменения сохранены");
+      toast(publish === true ? "Практика опубликована" : publish === false ? "Практика сохранена как\u00a0черновик" : "Изменения сохранены");
       onSaved(saved);
     } catch (e) {
       if (e instanceof ApiError) {
         setErrors(e.fields);
         toast(e.message, { error: true });
-      } else toast("Не получилось сохранить. Попробуйте ещё раз.", { error: true });
+      } else toast("Не\u00a0получилось сохранить. Попробуйте ещё раз.", { error: true });
     } finally {
       setBusy(false);
     }
@@ -145,7 +145,7 @@ export function PracticeEditor({
       toast("Практика удалена");
       onDeleted();
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось удалить", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось удалить", { error: true });
       setBusy(false);
     }
   };
@@ -182,7 +182,7 @@ export function PracticeEditor({
             <Select label="Вид" value={f.kind} onChange={(v) => set("kind", v as PracticeKind)} options={PRACTICE_KINDS} error={err("kind")} />
             <div className={s.pair}>
               <Input label="Минут" type="number" min={1} max={120} value={f.duration_minutes} onChange={(e) => set("duration_minutes", Number(e.target.value))} error={err("duration_minutes")} />
-              <Input label="Порядок" type="number" min={0} value={f.order} onChange={(e) => set("order", Number(e.target.value))} hint="Меньше — выше" />
+              <Input label="Порядок" type="number" min={0} value={f.order} onChange={(e) => set("order", Number(e.target.value))} hint="Меньше&nbsp;— выше" />
             </div>
             <CoverPicker value={f.cover} onChange={(v) => set("cover", v)} error={err("cover")} />
             <Input label="Эмодзи" value={f.emoji} maxLength={8} onChange={(e) => set("emoji", e.target.value)} error={err("emoji")} />
@@ -215,7 +215,7 @@ export function PracticeEditor({
         </Card>
 
         <Card as="section">
-          <CardHead title="Шаги" sub="Коротко и по-человечески. Время необязательно: с ним у шага появится мягкий таймер." />
+          <CardHead title="Шаги" sub="Коротко и&nbsp;по-человечески. Время необязательно: с&nbsp;ним у&nbsp;шага появится мягкий таймер." />
           <ol className={s.steps}>
             {f.steps.map((st, i) => (
               <li key={st.key} className={s.stepRow}>
@@ -234,7 +234,7 @@ export function PracticeEditor({
                       onChange={(e) => setStep(i, { seconds: e.target.value ? Number(e.target.value) : undefined })}
                     />
                   </div>
-                  <Textarea aria-label={`Шаг ${i + 1}: текст`} placeholder="Что делать" rows={2} value={st.text} onChange={(e) => setStep(i, { text: e.target.value })} />
+                  <Textarea aria-label={`Шаг ${i + 1}: текст`} placeholder="Что&nbsp;делать" rows={2} value={st.text} onChange={(e) => setStep(i, { text: e.target.value })} />
                 </div>
                 <div className={s.stepBtns}>
                   <IconBtn label="Выше" onClick={() => moveStep(i, -1)} disabled={i === 0} icon={<ArrowUp size={16} />} />
@@ -258,15 +258,15 @@ export function PracticeEditor({
           errors={err}
         >
           <Textarea
-            label="Почему это может помочь"
+            label="Почему это&nbsp;может помочь"
             value={f.mechanism}
             onChange={(e) => set("mechanism", e.target.value)}
             error={err("mechanism")}
             rows={4}
-            hint="Механизм простыми словами, со ссылками [1] на источники"
+            hint="Механизм простыми словами, со&nbsp;ссылками [1] на&nbsp;источники"
           />
           <Textarea
-            label="Когда остановиться или пропустить"
+            label="Когда остановиться или&nbsp;пропустить"
             value={f.cautions}
             onChange={(e) => set("cautions", e.target.value)}
             error={err("cautions")}
@@ -290,10 +290,10 @@ export function PracticeEditor({
                   Сохранить
                 </Button>
                 <Button variant="secondary" block disabled={busy} onClick={() => save(false)}>
-                  Снять с публикации
+                  Снять с&nbsp;публикации
                 </Button>
                 <Button variant="ghost" block href={`/practices/${practice.slug}`} icon={<Eye size={18} strokeWidth={1.8} />}>
-                  Открыть на сайте
+                  Открыть на&nbsp;сайте
                 </Button>
               </>
             ) : (

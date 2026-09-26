@@ -195,3 +195,19 @@ def test_article_search(api):
     found = api.get("/api/v1/content/articles/?q=ВЫГОРАНИЕ").json()
     assert [a["slug"] for a in found] == ["vygoranie"]
     assert api.get("/api/v1/content/articles/?q=несуществующее слово").json() == []
+
+
+@pytest.mark.django_db
+def test_editor_and_publication_date_are_editable(admin_user, api):
+    a = auth_client(admin_user)
+    art = a.post("/api/v1/content/manage/articles/", {
+        "title": "Про редактора", "slug": "pro-redaktora", "body": "Текст", "author_name": "",
+    }, format="json").json()
+    assert art["author_name"] == "Редакция Aprosop"  # staff without a public profile → the desk's name
+
+    resp = a.patch(f"/api/v1/content/manage/articles/{art['id']}/", {
+        "author_name": "Анна Соколова", "published_at": "2026-09-25T12:00:00+03:00", "is_published": True,
+    }, format="json")
+    assert resp.status_code == 200, resp.content
+    public = api.get("/api/v1/content/articles/pro-redaktora/").json()
+    assert public["author_name"] == "Анна Соколова" and public["published_at"].startswith("2026-09-25")

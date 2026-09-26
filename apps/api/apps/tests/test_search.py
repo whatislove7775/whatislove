@@ -226,3 +226,75 @@ def test_specialist_can_set_gender(db, psychologist):
     assert c.patch("/api/v1/psychologist/profile/", {"gender": "female"}, format="json").json()["gender"] == "female"
     assert c.patch("/api/v1/psychologist/profile/", {"gender": "robot"}, format="json").status_code == 400
     assert c.patch("/api/v1/psychologist/profile/", {"gender": ""}, format="json").json()["gender"] == ""
+
+
+# ── Гибкие фильтры: несколько подходов, диапазон цены, дни недели, время суток, даты, рейтинг ──
+
+def test_multi_approach_and_price_range(api, team):
+    got = set(names(api.get(URL, {"approach": "gestalt,cbt"})))
+    assert got == {"Анна Соколова", "Марк Литвинов", "Вера Ким"}
+    assert names(api.get(URL + "?approach=gestalt&approach=emdr")) == ["Марк Литвинов"]
+    assert names(api.get(URL, {"min_rate": 3000, "max_rate": 4000})) == ["Анна Соколова"]
+    assert names(api.get(URL, {"min_rate": 4000})) == ["Марк Литвинов"]
+
+
+@pytest.mark.parametrize("params", [
+    {"days": "7"}, {"days": "mon"}, {"times": "night"}, {"date_from": "26.09.2026"},
+    {"date_from": "2026-10-10", "date_to": "2026-10-01"}, {"min_rate": 5000, "max_rate": 3000},
+])
+def test_bad_time_params_are_400(api, team, params):
+    resp = api.get(SEARCH, params)
+    assert resp.status_code == 400 and resp.json()["detail"]
+
+
+def test_weekday_time_and_date_filters(db):
+    sat = make("Субботняя", days=[5], start=19 * 60, end=22 * 60)
+    wk = make("Утренняя", days=[0, 1, 2, 3, 4], start=9 * 60, end=12 * 60)
+    monday = datetime(2026, 9, 21, 6, 0, tzinfo=MSK)
+
+    def run(**kw):
+        q = search.Query(tz=MSK, **kw)
+        return {h.profile.display_name: h.next_start.astimezone(MSK) for h in search.search([sat, wk], q, now=monday)}
+
+    assert set(run(days={5, 6})) == {"Субботняя"}
+    assert set(run(days={2})) == {"Утренняя"}
+    assert set(run(times={"morning"})) == {"Утренняя"}
+    assert set(run(times={"evening"})) == {"Субботняя"}
+    assert set(run(times={"day"})) == set()
+    # все условия сразу: среда + вечер — никого
+    assert run(days={2}, times={"evening"}) == {}
+    # ближайшее окно — первое подходящее, а не просто первое
+    hits = run(days={3})
+    assert hits["Утренняя"] == datetime(2026, 9, 24, 9, 0, tzinfo=MSK)
+    # диапазон дат (включительно)
+    d = datetime(2026, 9, 23).date()
+    assert set(run(date_from=d, date_to=d)) == {"Утренняя"}
+    sat_day = datetime(2026, 10, 3).date()
+    assert set(run(date_from=sat_day, date_to=sat_day)) == {"Субботняя"}
+    # дальше двух недель — расписание смотрим до конца диапазона
+    far = datetime(2026, 10, 10).date()  # суббота через 19 дней (в пределах горизонта записи)
+    assert run(date_from=far, date_to=far)["Субботняя"].date() == far
+
+
+def test_weekday_filter_via_api(api, team):
+    # у всей команды окна каждый день, поэтому фильтр по дням ничего не отсекает, а время — отсекает
+    assert len(names(api.get(URL, {"days": "5,6", "tz": "Europe/Moscow"}))) == 3
+    assert names(api.get(URL, {"times": "evening", "tz": "Europe/Moscow"})) == []
+    assert len(names(api.get(URL, {"times": "morning,day", "tz": "Europe/Moscow"}))) == 3
+
+
+def test_sort_by_rating(api, team, client_user):
+    from apps.reviews.models import Review
+
+    def review(profile, rating):
+        Review.objects.create(psychologist=profile, client=client_user, rating=rating, status=Review.Status.PUBLISHED)
+
+    review(team["vera"], 5)
+    review(team["mark"], 4)
+    got = names(api.get(URL, {"sort": "rating"}))
+    assert got == ["Вера Ким", "Марк Литвинов", "Анна Соколова"]
+
+
+def test_facets_include_time_windows(api, team):
+    data = api.get("/api/v1/psychologists/popular-requests/").json()
+    assert [x["value"] for x in data["times"]] == ["morning", "day", "evening"]

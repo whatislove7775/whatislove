@@ -10,13 +10,13 @@ export default function SupportPage() {
   const me = usePortal();
   return (
     <>
-      <PageHeader title="Поддержка" sub="Вопросы по договору, счетам, лимитам и запуску программы." />
+      <PageHeader title="Поддержка" sub="Вопросы по&nbsp;договору, счетам, лимитам и&nbsp;запуску программы." />
       <Stack>
         <Card as="section">
           <CardHead title="Менеджер компании" icon={<Headset size={18} />} sub={me.support.hours} />
           <div className={s.form}>
             <p className={s.muted}>
-              {me.support.manager}. Пишите по любому вопросу: подключить ещё отделы, поменять лимиты, получить закрывающие документы.
+              {me.support.manager}. Пишите по&nbsp;любому вопросу: подключить ещё отделы, поменять лимиты, получить закрывающие документы.
             </p>
             <div className={s.row}>
               <Button href={`mailto:${me.support.email}?subject=${encodeURIComponent(me.company.name)}`} variant="primary" icon={<Mail size={18} />}>
@@ -50,7 +50,7 @@ export default function SupportPage() {
             </div>
           </div>
           <p className={s.muted} style={{ marginTop: 12 }}>
-            Сотрудникам, которым нужна помощь прямо сейчас: support@aprosop.ru, анонимно. Если есть угроза жизни — 112.
+            Сотрудникам, которым нужна помощь прямо сейчас: support@aprosop.ru, анонимно. Если есть угроза жизни&nbsp;— 112.
           </p>
         </Card>
       </Stack>

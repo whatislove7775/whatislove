@@ -1,10 +1,6 @@
 /* «Полезное» on the landing: one row, all cards share the same top and height. */
-.row {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+/* track of <ScrollRow>: four equal cards on desktop, a scroller below 1100px (doubled class beats the ui track defaults) */
+.row.row {
   gap: 16px;
   align-items: stretch;
 }
@@ -12,6 +8,7 @@
 .item {
   display: flex;
   min-width: 0;
+  width: calc((100% - 3 * 16px) / 4);
 }
 
 .item > a {
@@ -59,34 +56,25 @@
 }
 
 @media (max-width: 1100px) {
-  .row {
-    grid-auto-flow: column;
-    grid-template-columns: none;
-    grid-auto-columns: calc((100% - 2 * 16px) / 3);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-  .row::-webkit-scrollbar {
-    display: none;
-  }
   .item {
-    scroll-snap-align: start;
-  }
-  .practices {
-    grid-row: 1;
+    width: calc((100% - 2 * 16px) / 3);
   }
 }
 
 @media (max-width: 760px) {
-  .row {
-    grid-auto-columns: 232px;
-    gap: 10px;
+  /* the row bleeds to the screen edges */
+  .bleed {
     margin-inline: -20px;
+  }
+  .row.row {
+    gap: 10px;
     padding-inline: 20px;
     scroll-padding-inline: 20px;
   }
+  .item {
+    width: 232px;
+  }
   .practices {
-    min-width: 272px;
+    width: 272px;
   }
 }

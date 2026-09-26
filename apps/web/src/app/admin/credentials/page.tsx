@@ -25,8 +25,8 @@ import cs from "@/components/credentials/credentials.module.css";
 import s from "./page.module.css";
 
 const TABS: { value: CredentialStatus; label: string; empty: string }[] = [
-  { value: "pending", label: "На проверке", empty: "Все документы проверены. Новые появятся здесь, как только специалист их отправит." },
-  { value: "needs_info", label: "Ждём ответа", empty: "Нет документов, по которым ждём уточнений от специалиста." },
+  { value: "pending", label: "На\u00a0проверке", empty: "Все документы проверены. Новые появятся здесь, как\u00a0только специалист их\u00a0отправит." },
+  { value: "needs_info", label: "Ждём ответа", empty: "Нет документов, по\u00a0которым ждём уточнений от\u00a0специалиста." },
   { value: "approved", label: "Подтверждены", empty: "Подтверждённых документов пока нет." },
   { value: "rejected", label: "Отклонены", empty: "Отклонённых документов нет." },
 ];
@@ -35,26 +35,26 @@ type Decision = "approve" | "reject" | "request_info";
 const DECISION: Record<Decision, { title: string; text: string; confirm: string; variant: "primary" | "danger"; label: string; done: string }> = {
   approve: {
     title: "Подтвердить документ?",
-    text: "Пункт появится на странице специалиста. Публично покажем только файлы, которые специалист отметил публичными.",
+    text: "Пункт появится на\u00a0странице специалиста. Публично покажем только файлы, которые специалист отметил публичными.",
     confirm: "Подтвердить",
     variant: "primary",
-    label: "Комментарий для специалиста",
+    label: "Комментарий для\u00a0специалиста",
     done: "Документ подтверждён",
   },
   request_info: {
     title: "Запросить уточнение",
-    text: "Специалист увидит вопрос в профиле и сможет ответить или приложить файл. После ответа пункт вернётся в очередь.",
+    text: "Специалист увидит вопрос в\u00a0профиле и\u00a0сможет ответить или\u00a0приложить файл. После ответа пункт вернётся в\u00a0очередь.",
     confirm: "Отправить вопрос",
     variant: "primary",
-    label: "Что нужно уточнить",
+    label: "Что\u00a0нужно уточнить",
     done: "Вопрос отправлен специалисту",
   },
   reject: {
     title: "Отклонить документ?",
-    text: "Специалист увидит причину. Если он исправит пункт, тот снова попадёт в очередь.",
+    text: "Специалист увидит причину. Если он\u00a0исправит пункт, тот снова попадёт в\u00a0очередь.",
     confirm: "Отклонить",
     variant: "danger",
-    label: "Причина для специалиста",
+    label: "Причина для\u00a0специалиста",
     done: "Документ отклонён",
   },
 };
@@ -117,7 +117,7 @@ function CredentialsQueue() {
       setOpenId(null);
       load();
     } catch (e) {
-      toast(`${(e as Error).message} Статус не изменился.`, { error: true });
+      toast(`${(e as Error).message} Статус не\u00a0изменился.`, { error: true });
     } finally {
       setBusy(false);
     }
@@ -159,7 +159,7 @@ function CredentialsQueue() {
         </div>
       ) : data.results.length === 0 ? (
         <Card>
-          <EmptyState art={<EmptyArt scene="shield" />} icon={<FileCheck2 size={22} />} title={tab === "pending" ? "Очередь пуста" : "Здесь пока пусто"} text={q ? "По этому запросу ничего нет." : tabInfo.empty} />
+          <EmptyState art={<EmptyArt scene="shield" />} icon={<FileCheck2 size={22} />} title={tab === "pending" ? "Очередь пуста" : "Здесь пока пусто"} text={q ? "По\u00a0этому запросу ничего нет." : tabInfo.empty} />
         </Card>
       ) : (
         <div className={s.layout}>
@@ -183,7 +183,7 @@ function CredentialsQueue() {
                     <span className={s.rowMeta}>
                       {tab === "pending" ? `ждёт ${ago(c.submitted_at).replace(" назад", "")}` : c.reviewed_at ? dateTime(c.reviewed_at) : ""}
                       {c.was_approved && tab === "pending" ? ", повторно" : ""}
-                      {c.files.length ? `, ${c.files.length} ${c.files.length === 1 ? "файл" : c.files.length < 5 ? "файла" : "файлов"}` : ", без файлов"}
+                      {c.files.length ? `, ${c.files.length} ${c.files.length === 1 ? "файл" : c.files.length < 5 ? "файла" : "файлов"}` : ", без\u00a0файлов"}
                     </span>
                   </span>
                 </button>
@@ -205,7 +205,7 @@ function CredentialsQueue() {
         variant={confirm ? DECISION[confirm].variant : "primary"}
         requireReason={confirm !== "approve"}
         reasonLabel={confirm ? DECISION[confirm].label : ""}
-        reasonHint={confirm && confirm !== "approve" ? "Специалист увидит текст в профиле. Пишите спокойно и по делу, без внутренних деталей." : undefined}
+        reasonHint={confirm && confirm !== "approve" ? "Специалист увидит текст в\u00a0профиле. Пишите спокойно и\u00a0по\u00a0делу, без\u00a0внутренних деталей." : undefined}
         busy={busy}
         onClose={() => setConfirm(null)}
         onConfirm={decide}
@@ -260,7 +260,7 @@ function Detail({ c, onDecide }: { c: StaffCredential; onDecide: (d: Decision) =
           ) : (
             <div className={cs.frameState}>
               <FileText size={28} strokeWidth={1.6} aria-hidden />
-              <p>Файлов нет. {c.kind === "publication" ? "Проверьте публикацию по ссылке или DOI." : "Запросите скан у специалиста."}</p>
+              <p>Файлов нет. {c.kind === "publication" ? "Проверьте публикацию по\u00a0ссылке или\u00a0DOI." : "Запросите скан у\u00a0специалиста."}</p>
             </div>
           )}
         </div>
@@ -270,7 +270,7 @@ function Detail({ c, onDecide }: { c: StaffCredential; onDecide: (d: Decision) =
               {file.name}, {fileSize(file.size)}
               {file.width ? `, ${file.width}×${file.height}` : ""}
             </span>
-            <Badge tone={file.is_public ? "mint" : "neutral"}>{file.is_public ? "Станет публичным" : "Только для проверки"}</Badge>
+            <Badge tone={file.is_public ? "mint" : "neutral"}>{file.is_public ? "Станет публичным" : "Только для\u00a0проверки"}</Badge>
           </div>
         )}
       </div>
@@ -311,7 +311,7 @@ function Detail({ c, onDecide }: { c: StaffCredential; onDecide: (d: Decision) =
           )}
           {c.status === "approved" && (
             <Button variant="secondary" icon={<RotateCcw size={18} />} onClick={() => onDecide("request_info")}>
-              Снять и уточнить
+              Снять и&nbsp;уточнить
             </Button>
           )}
           {c.status !== "approved" && (

@@ -25,14 +25,12 @@
   --ill-paper: #ffffff;
 }
 
-.blob {
-  fill: var(--ill-blob);
-}
-.blob2 {
-  fill: var(--ill-blob-2);
-}
+/* Decorative round plates behind scenes: dropped (owner: circles only where they mean something).
+   Kept as classes so scene code stays untouched. */
+.blob,
+.blob2,
 .blob3 {
-  fill: var(--ill-blob-3);
+  fill: none;
 }
 .ground {
   fill: var(--ill-ground);

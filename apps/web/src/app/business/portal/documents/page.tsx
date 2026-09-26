@@ -33,7 +33,7 @@ export default function DocumentsPage() {
       setOpen(false);
       docs.reload();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось выставить счёт.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось выставить счёт.");
     } finally {
       setBusy(false);
     }
@@ -44,7 +44,7 @@ export default function DocumentsPage() {
     <>
       <PageHeader
         title="Документы"
-        sub="Договор, счета на пополнение бюджета и акты по месяцам."
+        sub="Договор, счета на&nbsp;пополнение бюджета и&nbsp;акты по&nbsp;месяцам."
         action={
           <Button variant="primary" icon={<Wallet size={18} />} onClick={() => setOpen(true)}>
             Пополнить бюджет
@@ -64,7 +64,7 @@ export default function DocumentsPage() {
                 <div className={s.form}>
                   <p className={s.muted}>{d.contract.number ? `Договор № ${d.contract.number}. ` : ""}{d.contract.note}</p>
                   <p className={s.muted}>
-                    Оплата — по безналичному расчёту по счёту. Онлайн-оплата картой компании появится позже.
+                    Оплата&nbsp;— по&nbsp;безналичному расчёту по&nbsp;счёту. Онлайн-оплата картой компании появится позже.
                   </p>
                 </div>
               )}
@@ -76,7 +76,7 @@ export default function DocumentsPage() {
             {!d ? (
               <Skeleton height={120} radius={14} />
             ) : d.invoices.length === 0 ? (
-              <EmptyState art={<EmptyArt scene="sparkles" />} title="Счетов пока нет" text="Выставьте счёт на пополнение бюджета — после оплаты деньги появятся в сводке." />
+              <EmptyState art={<EmptyArt scene="sparkles" />} title="Счетов пока нет" text="Выставьте счёт на&nbsp;пополнение бюджета&nbsp;— после оплаты деньги появятся в&nbsp;сводке." />
             ) : (
               <div className={s.list}>
                 {d.invoices.map((i) => (
@@ -107,10 +107,10 @@ export default function DocumentsPage() {
             <CardHead
               title="Акты"
               icon={<FileText size={18} />}
-              sub="По закрытым месяцам"
+              sub="По&nbsp;закрытым месяцам"
               action={
                 d && d.acts.length > 0 ? (
-                  <Button variant="ghost" size="sm" icon={<Download size={16} />} onClick={() => businessApi.actsCsv().catch(() => toast("Не получилось скачать.", { error: true }))}>
+                  <Button variant="ghost" size="sm" icon={<Download size={16} />} onClick={() => businessApi.actsCsv().catch(() => toast("Не\u00a0получилось скачать.", { error: true }))}>
                     CSV
                   </Button>
                 ) : undefined
@@ -119,7 +119,7 @@ export default function DocumentsPage() {
             {!d ? (
               <Skeleton height={120} radius={14} />
             ) : d.acts.length === 0 ? (
-              <p className={s.muted}>Акт появится после первого месяца, в котором сотрудники воспользовались программой.</p>
+              <p className={s.muted}>Акт появится после первого месяца, в&nbsp;котором сотрудники воспользовались программой.</p>
             ) : (
               <div className={s.list}>
                 {d.acts.map((a) => (
@@ -147,13 +147,13 @@ export default function DocumentsPage() {
 
       <Modal open={open} onClose={() => setOpen(false)} title="Пополнить бюджет" width={460}>
         <form className={s.form} onSubmit={request}>
-          <p className={s.muted}>Выставим счёт на реквизиты компании. Когда оплата придёт, менеджер отметит её, и бюджет пополнится.</p>
+          <p className={s.muted}>Выставим счёт на&nbsp;реквизиты компании. Когда оплата придёт, менеджер отметит её, и&nbsp;бюджет пополнится.</p>
           <Input
             label="Сумма, ₽"
             inputMode="numeric"
             value={amount}
             onChange={(e) => setAmount(e.target.value.replace(/[^\d\s]/g, ""))}
-            hint="От 10 000 ₽"
+            hint="От&nbsp;10&nbsp;000&nbsp;₽"
             error={error ?? undefined}
           />
           <Button type="submit" variant="primary" loading={busy}>

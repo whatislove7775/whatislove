@@ -92,7 +92,7 @@ export function useDialogController(detail: DialogDetail | null, reload: () => P
                 const call = await dialogsApi.accept(id, p.id);
                 await afterBooked(call);
               } catch (e) {
-                toast(errText(e, "Не получилось принять предложение"), { error: true });
+                toast(errText(e, "Не\u00a0получилось принять предложение"), { error: true });
               } finally {
                 setBusy(null);
               }
@@ -103,7 +103,7 @@ export function useDialogController(detail: DialogDetail | null, reload: () => P
                 await dialogsApi.closeProposal(id, p.id);
                 await reload();
               } catch (e) {
-                toast(errText(e, "Не получилось"), { error: true });
+                toast(errText(e, "Не\u00a0получилось"), { error: true });
               } finally {
                 setBusy(null);
               }
@@ -129,7 +129,7 @@ export function useDialogController(detail: DialogDetail | null, reload: () => P
             : "Созвон отменён",
       );
     } catch (e) {
-      toast(errText(e, "Не получилось отменить"), { error: true });
+      toast(errText(e, "Не\u00a0получилось отменить"), { error: true });
     } finally {
       setBusy(null);
     }
@@ -154,14 +154,14 @@ export function useDialogController(detail: DialogDetail | null, reload: () => P
         fixedMinutes={picker?.mode === "reschedule" ? picker.call.duration_minutes : undefined}
         submitLabel={(price) =>
           picker?.mode === "propose" ? "Отправить предложение" : picker?.mode === "reschedule" ? "Перенести" : price
-                ? `Назначить за ${rub(price)}`
+                ? `Назначить за\u00a0${rub(price)}`
                 : "Назначить бесплатно"
         }
         note={
           picker?.mode === "propose"
-            ? "Клиент увидит карточку в диалоге и сможет принять время и оплатить его."
+            ? "Клиент увидит карточку в\u00a0диалоге и\u00a0сможет принять время и\u00a0оплатить его."
             : picker?.mode === "book" && rules
-              ? `Отменить или перенести бесплатно можно за ${rules.free_cancel_hours} ч до начала.`
+              ? `Отменить или\u00a0перенести бесплатно можно за\u00a0${rules.free_cancel_hours} ч\u00a0до\u00a0начала.`
               : undefined
         }
         onSubmit={async (start, minutes) => {
@@ -183,7 +183,7 @@ export function useDialogController(detail: DialogDetail | null, reload: () => P
             }
           } catch (e) {
             if (e instanceof ApiError && e.status === 400) return `${e.message} Свободное время обновлено.`;
-            return errText(e, "Не получилось, попробуйте ещё раз");
+            return errText(e, "Не\u00a0получилось, попробуйте ещё раз");
           }
         }}
       />
@@ -195,18 +195,18 @@ export function useDialogController(detail: DialogDetail | null, reload: () => P
               {weekdayDay(cancelInfo.scheduled_at)}, {hm(cancelInfo.scheduled_at)}.{" "}
               {role === "specialist"
                 ? paid
-                  ? "Клиенту вернутся все деньги за созвон. Мы сообщим ему в диалоге."
-                  : "Клиент увидит отмену в диалоге."
+                  ? "Клиенту вернутся все деньги за\u00a0созвон. Мы\u00a0сообщим ему в\u00a0диалоге."
+                  : "Клиент увидит отмену в\u00a0диалоге."
                 : !paid
-                  ? "Созвон ещё не оплачен, списаний не будет."
+                  ? "Созвон ещё не\u00a0оплачен, списаний не\u00a0будет."
                   : late
-                    ? `До начала меньше ${rules?.free_cancel_hours ?? 24} ч, поэтому ${
+                    ? `До\u00a0начала меньше ${rules?.free_cancel_hours ?? 24} ч, поэтому ${
                         rules?.late_penalty_percent != null
                           ? `вернётся ${100 - rules.late_penalty_percent}% стоимости`
-                          : "деньги могут не вернуться"
-                      }. Перенести созвон может только специалист — напишите ему.`
+                          : "деньги могут не\u00a0вернуться"
+                      }. Перенести созвон может только специалист\u00a0— напишите ему.`
                     : `Деньги (${rub(cancelInfo.amount_rub)}) вернутся полностью.`}{" "}
-              Время освободится для других.
+              Время освободится для&nbsp;других.
             </p>
             <div className={s.modalActions}>
               <Button variant="secondary" onClick={() => setCancelling(null)} disabled={!!busy}>
@@ -224,7 +224,7 @@ export function useDialogController(detail: DialogDetail | null, reload: () => P
         {paying && (
           <>
             <p className={s.modalText}>
-              {weekdayDay(paying.scheduled_at)}, {hm(paying.scheduled_at)}, {paying.duration_minutes} мин. Время за вами,
+              {weekdayDay(paying.scheduled_at)}, {hm(paying.scheduled_at)}, {paying.duration_minutes} мин. Время за&nbsp;вами,
               пока идёт оплата.
             </p>
             <div style={{ marginTop: 16 }}>

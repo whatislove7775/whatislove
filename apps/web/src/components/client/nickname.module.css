@@ -1,0 +1,21 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.note {
+  margin: 0;
+  font-size: var(--t-13);
+  line-height: 1.45;
+  color: var(--c-muted);
+}
+.error {
+  margin: 0;
+  font-size: var(--t-13);
+  color: var(--c-danger);
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

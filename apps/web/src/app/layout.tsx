@@ -6,23 +6,23 @@ import { STEALTH_SCRIPT } from "@/lib/privacy/stealth";
 import { ldJson, ORG_ID, organizationLd, websiteLd } from "@/lib/seo";
 
 const SITE_URL = "https://aprosop.ru";
-const SITE_NAME = "aprosop";
+const SITE_NAME = "Aprosop";
 const DESCRIPTION =
-  "Анонимные диалоги и видеозвонки с психологом: без почты и телефона, вместо лица — 3D-аватар. Видео идёт напрямую и не записывается.";
+  "Анонимные диалоги и\u00a0видеозвонки с\u00a0психологом: без\u00a0почты и\u00a0телефона, вместо лица\u00a0— 3D-аватар. Видео идёт напрямую и\u00a0не\u00a0записывается.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "aprosop — анонимная психологическая помощь онлайн",
-    template: "%s | aprosop",
+    default: "Aprosop\u00a0— анонимная психологическая помощь онлайн",
+    template: "%s | Aprosop",
   },
   description: DESCRIPTION,
   keywords: [
     "анонимный психолог",
     "психолог онлайн",
     "анонимная консультация психолога",
-    "психолог без регистрации",
-    "видеосозвон с психологом",
+    "психолог без\u00a0регистрации",
+    "видеосозвон с\u00a0психологом",
     "психологическая помощь онлайн",
     "конфиденциальная консультация",
   ],
@@ -37,13 +37,13 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: SITE_NAME,
     title: "Анонимный психолог онлайн",
-    description: "Без почты и телефона. Вместо лица — 3D-аватар, видео не записывается.",
+    description: "Без\u00a0почты и\u00a0телефона. Вместо лица\u00a0— 3D-аватар, видео не\u00a0записывается.",
     // images: file-based opengraph-image.tsx per section (lib/og)
   },
   twitter: {
     card: "summary_large_image",
     title: "Анонимный психолог онлайн",
-    description: "Без почты и телефона. Вместо лица — 3D-аватар, видео не записывается.",
+    description: "Без\u00a0почты и\u00a0телефона. Вместо лица\u00a0— 3D-аватар, видео не\u00a0записывается.",
   },
   icons: {
     icon: [

@@ -34,7 +34,7 @@ export function LeadForm() {
       });
       setSent(true);
     } catch (err) {
-      setError(err instanceof ApiError ? (err.status === 429 ? "Слишком много заявок подряд. Попробуйте позже." : err.message) : "Не получилось отправить.");
+      setError(err instanceof ApiError ? (err.status === 429 ? "Слишком много заявок подряд. Попробуйте позже." : err.message) : "Не\u00a0получилось отправить.");
     } finally {
       setBusy(false);
     }
@@ -45,8 +45,8 @@ export function LeadForm() {
       <div className={s.sent} role="status">
         <CheckCircle2 size={28} aria-hidden />
         <div>
-          <strong>Заявка у нас</strong>
-          <p>Менеджер свяжется в течение рабочего дня и пришлёт расчёт под размер вашей команды.</p>
+          <strong>Заявка у&nbsp;нас</strong>
+          <p>Менеджер свяжется в&nbsp;течение рабочего дня и&nbsp;пришлёт расчёт под&nbsp;размер вашей команды.</p>
         </div>
       </div>
     );
@@ -65,10 +65,10 @@ export function LeadForm() {
         />
       </div>
       <div className={s.formRow}>
-        <Input label="Как к вам обращаться" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={120} />
-        <Input label="Рабочий email или телефон" value={contact} onChange={(e) => setContact(e.target.value)} autoComplete="email" maxLength={160} required />
+        <Input label="Как&nbsp;к&nbsp;вам обращаться" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={120} />
+        <Input label="Рабочий email или&nbsp;телефон" value={contact} onChange={(e) => setContact(e.target.value)} autoComplete="email" maxLength={160} required />
       </div>
-      <Textarea label="Комментарий" value={message} onChange={(e) => setMessage(e.target.value)} rows={3} maxLength={2000} placeholder="Что важно: пилот на отдел, лимиты, сроки" />
+      <Textarea label="Комментарий" value={message} onChange={(e) => setMessage(e.target.value)} rows={3} maxLength={2000} placeholder="Что&nbsp;важно: пилот на&nbsp;отдел, лимиты, сроки" />
       <input className={s.trap} tabIndex={-1} autoComplete="off" aria-hidden value={trap} onChange={(e) => setTrap(e.target.value)} name="website" />
       {error && (
         <div className={s.error} role="alert">
@@ -79,7 +79,7 @@ export function LeadForm() {
         <Button type="submit" variant="primary" size="lg" icon={<Send size={18} />} loading={busy} disabled={!company.trim() || !contact.trim()}>
           Получить расчёт
         </Button>
-        <span className={s.formNote}>Контакты компании нужны только для договора. Данных сотрудников мы не просим.</span>
+        <span className={s.formNote}>Контакты компании нужны только для&nbsp;договора. Данных сотрудников мы&nbsp;не&nbsp;просим.</span>
       </div>
     </form>
   );

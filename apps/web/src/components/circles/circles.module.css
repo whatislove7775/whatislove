@@ -179,26 +179,28 @@
   height: 36px;
   padding: 0 14px;
   border-radius: var(--r-pill);
-  border: 1px solid var(--c-line);
-  background: var(--c-panel);
+  border: 0;
+  background: var(--c-raised);
   color: var(--c-text);
   font: inherit;
   font-size: var(--t-13);
   font-weight: 550;
   cursor: pointer;
-  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .chip:hover {
-  border-color: var(--c-line-strong);
+  background: var(--c-raised-2);
 }
 .chip:focus-visible {
   outline: none;
   box-shadow: var(--focus);
 }
 .chip[aria-pressed="true"] {
-  background: var(--tone-soft, var(--c-primary-soft));
-  border-color: transparent;
-  color: var(--tone-ink, var(--c-primary-ink));
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+.chip[aria-pressed="true"] .chipDot {
+  background: currentColor;
 }
 .chipDot {
   width: 8px;

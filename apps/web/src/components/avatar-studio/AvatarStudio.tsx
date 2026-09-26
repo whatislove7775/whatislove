@@ -31,8 +31,8 @@ const EXPRESSIONS: Record<string, number>[] = [
 ];
 
 const CAPTION = {
-  client: "Таким вас увидит специалист на созвоне",
-  pro: "Таким вас увидят клиенты в каталоге и на созвонах",
+  client: "Таким вас увидит специалист на\u00a0созвоне",
+  pro: "Таким вас увидят клиенты в\u00a0каталоге и\u00a0на\u00a0созвонах",
 };
 
 function useDebounced<T>(value: T, ms: number): T {
@@ -104,7 +104,7 @@ export function AvatarStudio({ initial, seed, onSave, saving = false, variant = 
       if (!a || a.target === "_blank") return;
       const url = new URL(a.href, location.href);
       if (url.origin !== location.origin || url.pathname === location.pathname) return;
-      if (!window.confirm("Аватар не сохранён. Уйти и потерять изменения?")) {
+      if (!window.confirm("Аватар не\u00a0сохранён. Уйти и\u00a0потерять изменения?")) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -223,7 +223,7 @@ export function AvatarStudio({ initial, seed, onSave, saving = false, variant = 
           <AvatarView ref={viewRef} config={cfg} framing="portrait" interactive className={s.view} />
           <p className={s.caption}>{CAPTION[variant]}</p>
         </div>
-        <div className={s.tools} role="toolbar" aria-label="Действия с аватаром">
+        <div className={s.tools} role="toolbar" aria-label="Действия с&nbsp;аватаром">
           <Button size="sm" variant="secondary" icon={<Shuffle size={16} />} onClick={shuffle}>
             Перемешать
           </Button>
@@ -258,7 +258,7 @@ export function AvatarStudio({ initial, seed, onSave, saving = false, variant = 
               <ChevronLeft size={18} />
             </button>
           )}
-          <div ref={stripRef} className={s.tabs} role="tablist" aria-label="Что настроить" onKeyDown={onTabKey}>
+          <div ref={stripRef} className={s.tabs} role="tablist" aria-label="Что&nbsp;настроить" onKeyDown={onTabKey}>
             {CATEGORIES.map((c) => (
               <button
                 key={c.id}
@@ -292,10 +292,10 @@ export function AvatarStudio({ initial, seed, onSave, saving = false, variant = 
         <div className={s.saveBar} data-idle={!canSave || undefined}>
           <span className={s.status} data-state={hasChanges ? "dirty" : savedKey ? "saved" : "new"} aria-live="polite">
             <span className={s.statusLong}>
-              {hasChanges ? "Есть несохранённые изменения" : savedKey ? "Все изменения сохранены" : "Аватар ещё не сохранён"}
+              {hasChanges ? "Есть несохранённые изменения" : savedKey ? "Все изменения сохранены" : "Аватар ещё не\u00a0сохранён"}
             </span>
             <span className={s.statusShort} aria-hidden>
-              {hasChanges ? "Не сохранено" : savedKey ? "Сохранено" : "Не сохранён"}
+              {hasChanges ? "Не\u00a0сохранено" : savedKey ? "Сохранено" : "Не\u00a0сохранён"}
             </span>
           </span>
           <Button variant="primary" size="md" onClick={save} loading={saving} disabled={!canSave}>

@@ -26,6 +26,8 @@ export interface OgCardProps {
   art: OgArt;
   /** small label above the title (section name), optional */
   kicker?: string;
+  /** Big headline instead of title + subtitle (the landing card): explicit lines, accent ones in brand lilac. */
+  lines?: { text: string; accent?: boolean }[];
 }
 
 const INK = "#1A2350";
@@ -251,7 +253,7 @@ function Art({ art }: { art: OgArt }) {
   );
 }
 
-export async function ogCard({ title, subtitle, art, kicker }: OgCardProps) {
+export async function ogCard({ title, subtitle, art, kicker, lines }: OgCardProps) {
   const titleSize = title.length > 40 ? 52 : title.length > 15 ? 64 : 78;
   return new ImageResponse(
     (
@@ -292,14 +294,29 @@ export async function ogCard({ title, subtitle, art, kicker }: OgCardProps) {
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "64px 0 60px 76px", width: 800 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
             <Mark size={64} />
-            <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: -0.5 }}>aprosop</span>
+            <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: -0.5 }}>Aprosop</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {kicker && (
               <span style={{ fontSize: 26, fontWeight: 500, color: "#9FB4FF", textTransform: "uppercase", letterSpacing: 2 }}>{kicker}</span>
             )}
-            <span style={{ fontSize: titleSize, fontWeight: 700, lineHeight: 1.06, letterSpacing: -1.5 }}>{title}</span>
-            <span style={{ fontSize: 28, fontWeight: 500, lineHeight: 1.3, color: "#C3CBEA" }}>{subtitle}</span>
+            {lines ? (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {lines.map((l) => (
+                  <span
+                    key={l.text}
+                    style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.04, letterSpacing: -2.5, color: l.accent ? "#B3A6FF" : "#F4F6FF" }}
+                  >
+                    {l.text}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <>
+                <span style={{ fontSize: titleSize, fontWeight: 700, lineHeight: 1.06, letterSpacing: -1.5 }}>{title}</span>
+                <span style={{ fontSize: 28, fontWeight: 500, lineHeight: 1.3, color: "#C3CBEA" }}>{subtitle}</span>
+              </>
+            )}
           </div>
           <span style={{ fontSize: 24, fontWeight: 500, color: "#8990B5" }}>aprosop.ru</span>
         </div>

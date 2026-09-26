@@ -97,11 +97,11 @@ export const GRADIENT_BACKDROPS: Backdrop[] = [
 ];
 
 export const PHOTO_BACKDROPS: Backdrop[] = [
-  photo("lake", "Озеро в горах", "#5f93c9", "#5d7a3a", "Peter Thomas, Unsplash"),
+  photo("lake", "Озеро в\u00a0горах", "#5f93c9", "#5d7a3a", "Peter Thomas, Unsplash"),
   photo("dunes", "Дюны", "#c9cfd6", "#a39a8c", "David Emrich, Unsplash"),
   photo("fern", "Папоротник", "#16261c", "#23452c", "Unsplash"),
   photo("sea", "Море", "#1f6f9c", "#c9d3da", "Nattu Adnan, Unsplash"),
-  photo("pier", "Закат у пирса", "#8a6f9e", "#3b4452", "Unsplash, CC0"),
+  photo("pier", "Закат у\u00a0пирса", "#8a6f9e", "#3b4452", "Unsplash, CC0"),
   photo("evening", "Горы вечером", "#1c2a3f", "#141a1d", "Pexels"),
 ];
 

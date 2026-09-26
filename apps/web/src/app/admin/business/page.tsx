@@ -61,14 +61,14 @@ function BusinessAdmin() {
       {tab === "companies" ? (
         <Card as="section">
           <Toolbar>
-            <SearchBox value={q} onChange={setQ} placeholder="Название или ИНН" label="Поиск компании" />
+            <SearchBox value={q} onChange={setQ} placeholder="Название или&nbsp;ИНН" label="Поиск компании" />
           </Toolbar>
           {list.error ? (
             <ErrorBlock message={list.error} onRetry={list.reload} />
           ) : !list.data ? (
             <Skeleton height={160} radius={14} />
           ) : list.data.results.length === 0 ? (
-            <EmptyState art={<EmptyArt scene="sparkles" />} title="Компаний пока нет" text="Добавьте компанию вручную или из заявки с лендинга." />
+            <EmptyState art={<EmptyArt scene="sparkles" />} title="Компаний пока нет" text="Добавьте компанию вручную или&nbsp;из&nbsp;заявки с&nbsp;лендинга." />
           ) : (
             <div className={s.list}>
               {list.data.results.map((c) => (
@@ -85,7 +85,7 @@ function BusinessAdmin() {
                   <span className={s.itemMain}>
                     <span className={s.itemTitle}>
                       {c.name} {c.status !== "active" && <Badge tone="neutral">{c.status_label}</Badge>}
-                      {c.open_invoices > 0 && <Badge tone="sun">счетов к оплате: {c.open_invoices}</Badge>}
+                      {c.open_invoices > 0 && <Badge tone="sun">счетов к&nbsp;оплате: {c.open_invoices}</Badge>}
                     </span>
                     <span className={s.itemSub}>
                       {c.plan_label}
@@ -123,13 +123,13 @@ function Leads({ onCreate }: { onCreate: (l: Lead) => void }) {
       await businessApi.staff.updateLead(l.id, st);
       leads.reload();
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось.", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось.", { error: true });
     }
   };
   if (leads.error) return <ErrorBlock message={leads.error} onRetry={leads.reload} />;
   if (!leads.data) return <Skeleton height={160} radius={14} />;
   if (leads.data.results.length === 0)
-    return <EmptyState art={<EmptyArt scene="sparkles" />} icon={<Inbox size={22} />} title="Заявок нет" text="Заявки с формы «Рассчитать для компании» появятся здесь." />;
+    return <EmptyState art={<EmptyArt scene="sparkles" />} icon={<Inbox size={22} />} title="Заявок нет" text="Заявки с&nbsp;формы «Рассчитать для&nbsp;компании» появятся здесь." />;
   return (
     <div className={s.list} style={{ gap: 12 }}>
       {leads.data.results.map((l) => (
@@ -147,7 +147,7 @@ function Leads({ onCreate }: { onCreate: (l: Lead) => void }) {
               <div className={s.row}>
                 {l.status === "new" && (
                   <Button size="sm" variant="ghost" onClick={() => setStatus(l, "in_progress")}>
-                    Взять в работу
+                    Взять в&nbsp;работу
                   </Button>
                 )}
                 {l.status !== "done" && (
@@ -215,7 +215,7 @@ function CreateCompany({
       setSeeded(null);
       onCreated(r.company.id);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось создать компанию.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось создать компанию.");
     } finally {
       setBusy(false);
     }
@@ -240,11 +240,11 @@ function CreateCompany({
         </div>
         <div className={s.form2}>
           <Input label="Контактное лицо" value={form.contact_name} onChange={set("contact_name")} />
-          <Input label="Email или телефон" value={form.contact_email} onChange={set("contact_email")} />
+          <Input label="Email или&nbsp;телефон" value={form.contact_email} onChange={set("contact_email")} />
         </div>
         <div className={s.form2}>
-          <Input label="Лимит в месяц, ₽" value={form.amount} onChange={set("amount")} inputMode="numeric" hint="На сотрудника" />
-          <Input label="Созвонов в месяц" value={form.calls} onChange={set("calls")} inputMode="numeric" hint="Необязательно" />
+          <Input label="Лимит в&nbsp;месяц, ₽" value={form.amount} onChange={set("amount")} inputMode="numeric" hint="На&nbsp;сотрудника" />
+          <Input label="Созвонов в&nbsp;месяц" value={form.calls} onChange={set("calls")} inputMode="numeric" hint="Необязательно" />
         </div>
         {error && (
           <div className={s.muted} role="alert" style={{ color: "var(--c-danger)" }}>

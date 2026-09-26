@@ -9,11 +9,11 @@ import { useEffect, useRef, useState } from "react";
 export type VoicePreset = "off" | "lower" | "higher" | "soft" | "neutral" | "robot";
 
 export const VOICE_PRESETS: { value: VoicePreset; label: string; hint: string }[] = [
-  { value: "off", label: "Без фильтра", hint: "Ваш настоящий голос" },
+  { value: "off", label: "Без\u00a0фильтра", hint: "Ваш настоящий голос" },
   { value: "lower", label: "Ниже", hint: "Голос ниже, тембр естественный" },
-  { value: "higher", label: "Выше", hint: "Голос выше, без «мультяшности»" },
-  { value: "soft", label: "Мягкий", hint: "Чуть выше и теплее, сглаженные верха" },
-  { value: "neutral", label: "Нейтральный", hint: "Средняя высота: не понять, мужской или женский" },
+  { value: "higher", label: "Выше", hint: "Голос выше, без\u00a0«мультяшности»" },
+  { value: "soft", label: "Мягкий", hint: "Чуть выше и\u00a0теплее, сглаженные верха" },
+  { value: "neutral", label: "Нейтральный", hint: "Средняя высота: не\u00a0понять, мужской или\u00a0женский" },
   { value: "robot", label: "Робот", hint: "Ровный механический голос, шутки ради" },
 ];
 

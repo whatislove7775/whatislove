@@ -14,19 +14,19 @@ import { ogMeta } from "@/lib/og/sections";
 // Rendered per request (topic filter and search), data comes from the 5-minute content cache.
 export const dynamic = "force-dynamic";
 
-type Props = { searchParams: { topic?: string; q?: string } };
+type Props = { searchParams: { topic?: string; q?: string; from?: string } };
 
-const TITLE = "Статьи о психологии: тревога, выгорание, сон, отношения";
+const TITLE = "Статьи о\u00a0психологии: тревога, выгорание, сон, отношения";
 const DESCRIPTION =
-  "Понятные статьи о психическом здоровье с проверенными источниками: тревога и паника, выгорание, сон, отношения, горе, самооценка и как устроена психотерапия.";
+  "Понятные статьи о\u00a0психическом здоровье с\u00a0проверенными источниками: тревога и\u00a0паника, выгорание, сон, отношения, горе, самооценка и\u00a0как\u00a0устроена психотерапия.";
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const filtered = Boolean(searchParams.topic || searchParams.q);
+  const filtered = Boolean(searchParams.topic || searchParams.q || searchParams.from);
   return {
     title: TITLE,
     description: DESCRIPTION,
     alternates: alternates("/articles"),
-    ...ogMeta("/articles", "Статьи о психике", DESCRIPTION),
+    ...ogMeta("/articles", "Статьи о\u00a0психике", DESCRIPTION),
     // Filtered and search views are thin duplicates of the main list
     robots: filtered ? { index: false, follow: true } : undefined,
   };
@@ -35,15 +35,18 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function ArticlesPage({ searchParams }: Props) {
   const topic = typeof searchParams.topic === "string" ? searchParams.topic.slice(0, 32) : "";
   const q = typeof searchParams.q === "string" ? searchParams.q.trim().slice(0, 100) : "";
+  const fromPros = searchParams.from === "specialists";
   const [all, topics] = await Promise.all([serverContent.articles(), serverContent.topics()]);
   const words = q.toLocaleLowerCase("ru").split(/\s+/).filter(Boolean);
   const articles = all.filter(
     (a) =>
       (!topic || a.topic === topic) &&
+      (!fromPros || Boolean(a.specialist)) &&
       (!words.length ||
         words.every((w) => `${a.title} ${a.summary} ${a.tags.join(" ")}`.toLocaleLowerCase("ru").includes(w))),
   );
   const topicLabel = topics.find((t) => t.value === topic)?.label;
+  const prosCount = all.filter((a) => a.specialist).length;
 
   return (
     <PublicShell>
@@ -75,15 +78,15 @@ export default async function ArticlesPage({ searchParams }: Props) {
         <div>
           <h1>Статьи</h1>
           <p>
-            Спокойно и по делу, с источниками. <Link href="/practices">Практики</Link> — отдельно.
+            Спокойно и&nbsp;по&nbsp;делу, с&nbsp;источниками. <Link href="/practices">Практики</Link> — отдельно.
           </p>
         </div>
         <form action="/articles" method="get" role="search" className={s.search}>
           <Search size={18} strokeWidth={1.9} aria-hidden />
           <label htmlFor="articles-q" className="visually-hidden">
-            Поиск по статьям
+            Поиск по&nbsp;статьям
           </label>
-          <input id="articles-q" name="q" type="search" defaultValue={q} placeholder="Поиск по статьям" autoComplete="off" />
+          <input id="articles-q" name="q" type="search" defaultValue={q} placeholder="Поиск по&nbsp;статьям" autoComplete="off" />
           {topic && <input type="hidden" name="topic" value={topic} />}
           <button type="submit">Найти</button>
         </form>
@@ -93,13 +96,21 @@ export default async function ArticlesPage({ searchParams }: Props) {
         <nav aria-label="Темы статей">
           <ul className={s.topics}>
             <li>
-              <Link href="/articles" className={s.topic} aria-current={!topic ? "page" : undefined}>
+              <Link href="/articles" className={s.topic} aria-current={!topic && !fromPros ? "page" : undefined}>
                 Все темы
               </Link>
             </li>
+            {prosCount > 0 && (
+              <li>
+                <Link href="/articles?from=specialists" className={s.topic} aria-current={fromPros ? "page" : undefined}>
+                  От&nbsp;специалистов
+                  <span>{prosCount}</span>
+                </Link>
+              </li>
+            )}
             {topics.map((t) => (
               <li key={t.value}>
-                <Link href={`/articles?topic=${t.value}`} className={s.topic} aria-current={topic === t.value ? "page" : undefined}>
+                <Link href={`/articles?topic=${t.value}`} className={s.topic} aria-current={topic === t.value && !fromPros ? "page" : undefined}>
                   {t.label}
                   <span>{t.count}</span>
                 </Link>
@@ -116,7 +127,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
       )}
       {articles.length === 0 ? (
         <p className={s.empty}>
-          {q ? `По запросу «${q}» ничего не нашлось. ` : "Статей на эту тему пока нет. "}
+          {q ? `По\u00a0запросу «${q}» ничего не\u00a0нашлось. ` : "Статей на\u00a0эту тему пока нет. "}
           <Link href="/articles">Все статьи</Link>
         </p>
       ) : (

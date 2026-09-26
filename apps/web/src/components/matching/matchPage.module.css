@@ -26,3 +26,25 @@
     font-size: var(--t-15);
   }
 }
+
+/* Header with a small illustration in the otherwise empty right part (desktop only). */
+.headWithArt {
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-5);
+}
+.headWithArt > .head {
+  margin: 0;
+}
+.headWithArt .headArt {
+  flex: none;
+  width: 124px;
+  height: auto;
+  margin-bottom: -10px;
+}
+@media (max-width: 760px) {
+  .headWithArt .headArt {
+    display: none;
+  }
+}

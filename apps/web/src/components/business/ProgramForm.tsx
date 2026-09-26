@@ -21,7 +21,7 @@ export function ProgramForm({
   submitLabel?: string;
   withStart?: boolean;
 }) {
-  const [name, setName] = useState(program?.name ?? "Забота о сотрудниках");
+  const [name, setName] = useState(program?.name ?? "Забота о\u00a0сотрудниках");
   const [amount, setAmount] = useState(program?.amount_kopecks ? String(program.amount_kopecks / 100) : "");
   const [calls, setCalls] = useState(program?.calls_limit ? String(program.calls_limit) : "");
   const [period, setPeriod] = useState<Period>(program?.period ?? "month");
@@ -49,7 +49,7 @@ export function ProgramForm({
       if (withStart) body.starts_on = starts || null;
       await onSave(body);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось сохранить.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось сохранить.");
     } finally {
       setBusy(false);
     }
@@ -75,16 +75,16 @@ export function ProgramForm({
       </div>
       <div className={s.form2}>
         <Input
-          label="Сумма на сотрудника, ₽"
-          hint="Пусто — без лимита по сумме"
+          label="Сумма на&nbsp;сотрудника, ₽"
+          hint="Пусто&nbsp;— без&nbsp;лимита по&nbsp;сумме"
           inputMode="numeric"
           value={amount}
           onChange={(e) => setAmount(e.target.value.replace(/[^\d\s]/g, ""))}
           placeholder="5 000"
         />
         <Input
-          label="Созвонов на сотрудника"
-          hint="Пусто — без лимита по количеству"
+          label="Созвонов на&nbsp;сотрудника"
+          hint="Пусто&nbsp;— без&nbsp;лимита по&nbsp;количеству"
           inputMode="numeric"
           value={calls}
           onChange={(e) => setCalls(e.target.value.replace(/\D/g, ""))}
@@ -93,7 +93,7 @@ export function ProgramForm({
       </div>
       <div>
         <div className={s.muted} style={{ marginBottom: 8, fontWeight: 600 }}>
-          Что оплачивает программа
+          Что&nbsp;оплачивает программа
         </div>
         <div className={s.chips}>
           {SERVICES.map((x) => (
@@ -106,7 +106,7 @@ export function ProgramForm({
       </div>
       <div className={s.form2}>
         {withStart && <Input label="Начало" type="date" value={starts} onChange={(e) => setStarts(e.target.value)} />}
-        <Input label="Действует до" hint="Пусто — бессрочно" type="date" value={expires} onChange={(e) => setExpires(e.target.value)} />
+        <Input label="Действует до" hint="Пусто&nbsp;— бессрочно" type="date" value={expires} onChange={(e) => setExpires(e.target.value)} />
       </div>
       {error && (
         <div className={s.muted} role="alert" style={{ color: "var(--c-danger)" }}>

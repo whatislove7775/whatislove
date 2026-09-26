@@ -16,6 +16,7 @@ import { ApiError } from "@/lib/api/client";
 import { STATUS_LABEL, STATUS_TONE, circlesApi, priceLine, rubK0, type CircleMember, type OwnerCircle } from "@/lib/api/circles";
 import { dayLabel, dayShort, time, untilLabel } from "@/lib/format";
 import s from "@/components/circles/circles.module.css";
+import { typo } from "@/lib/typography";
 
 export default function ProCirclePage() {
   const { id } = useParams<{ id: string }>();
@@ -39,7 +40,7 @@ export default function ProCirclePage() {
       res.setData(await fn());
       toast(done);
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось.", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось.", { error: true });
     } finally {
       setBusy(false);
     }
@@ -49,9 +50,9 @@ export default function ProCirclePage() {
     try {
       const r = await circlesApi.proModerate(c.id, m.handle, action);
       res.setData({ ...c, members: r.members, seats_taken: r.members.length, seats_left: c.capacity - r.members.length });
-      toast(action === "remove" ? `${m.name} больше не в круге` : action === "mute" ? `${m.name} не может писать в чат` : `${m.name} снова может писать`);
+      toast(action === "remove" ? `${m.name} больше не\u00a0в\u00a0круге` : action === "mute" ? `${m.name} не\u00a0может писать в\u00a0чат` : `${m.name} снова может писать`);
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось.", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось.", { error: true });
     }
   };
 
@@ -74,8 +75,8 @@ export default function ProCirclePage() {
         action={
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {c.editable && (
-              <Button variant="primary" loading={busy} icon={<Send size={16} />} onClick={() => act(() => circlesApi.proAction(c.id, "submit"), "Круг отправлен на проверку")}>
-                Отправить на проверку
+              <Button variant="primary" loading={busy} icon={<Send size={16} />} onClick={() => act(() => circlesApi.proAction(c.id, "submit"), "Круг отправлен на\u00a0проверку")}>
+                Отправить на&nbsp;проверку
               </Button>
             )}
             <Button variant="secondary" icon={<Pencil size={16} />} onClick={() => setEditing(true)} disabled={!c.editable && !published && c.status !== "pending"}>
@@ -94,8 +95,8 @@ export default function ProCirclePage() {
               </Button>
             ) : (
               (c.status === "recruiting" || c.status === "pending") && (
-                <Button variant="ghost" onClick={() => (c.status === "pending" ? act(() => circlesApi.proAction(c.id, "cancel"), "Круг снят с проверки") : setCancelOpen(true))}>
-                  {c.status === "pending" ? "Вернуть в черновик" : "Отменить круг"}
+                <Button variant="ghost" onClick={() => (c.status === "pending" ? act(() => circlesApi.proAction(c.id, "cancel"), "Круг снят с\u00a0проверки") : setCancelOpen(true))}>
+                  {c.status === "pending" ? "Вернуть в\u00a0черновик" : "Отменить круг"}
                 </Button>
               )
             )}
@@ -104,10 +105,10 @@ export default function ProCirclePage() {
       />
       {c.status === "rejected" && c.review_comment && (
         <div className={s.reviewNote}>
-          <b>Команда aprosop просит поправить:</b> {c.review_comment}
+          <b>Команда Aprosop просит поправить:</b> {c.review_comment}
         </div>
       )}
-      {c.status === "pending" && <p className={s.note}>Круг на проверке. Обычно это занимает до одного рабочего дня — после одобрения он появится в каталоге.</p>}
+      {c.status === "pending" && <p className={s.note}>Круг на&nbsp;проверке. Обычно это&nbsp;занимает до&nbsp;одного рабочего дня&nbsp;— после одобрения он&nbsp;появится в&nbsp;каталоге.</p>}
 
       <WithRail
         rail={
@@ -120,15 +121,15 @@ export default function ProCirclePage() {
                 <dd>{c.waitlist_count}</dd>
                 <dt>Цена</dt>
                 <dd>{priceLine(c)}</dd>
-                <dt>С одного участника</dt>
+                <dt>С&nbsp;одного участника</dt>
                 <dd>{rubK0(c.total_kopecks)}</dd>
               </dl>
             </Card>
             <Card tone="minor">
               <CardHead title="Анонимность участников" />
               <p className={s.note}>
-                Вы видите участников только под псевдонимами этого круга. Их аккаунты, лица и настоящие голоса скрыты — так же, как друг от друга.
-                {c.allow_real_faces ? " Вы разрешили показывать лицо: каждый решает сам." : ""}
+                Вы&nbsp;видите участников только под&nbsp;псевдонимами этого круга. Их&nbsp;аккаунты, лица и&nbsp;настоящие голоса скрыты&nbsp;— так&nbsp;же, как&nbsp;друг от&nbsp;друга.
+                {c.allow_real_faces ? " Вы\u00a0разрешили показывать лицо: каждый решает сам." : ""}
               </p>
             </Card>
           </>
@@ -162,7 +163,7 @@ export default function ProCirclePage() {
                 <h2 style={{ marginTop: 10 }}>
                   {dayLabel(next.starts_at)} в {time(next.starts_at)}
                 </h2>
-                <p>{openSoon ? "Комната открыта — участники могут входить" : `Начнётся ${untilLabel(next.starts_at)}. Комната откроется за 10 минут.`}</p>
+                <p>{openSoon ? "Комната открыта\u00a0— участники могут входить" : `Начнётся ${untilLabel(next.starts_at)}. Комната откроется за\u00a010\u00a0минут.`}</p>
               </div>
               <Button variant="white" size="lg" href={openSoon ? `/circle-room/${next.id}` : undefined} disabled={!openSoon} icon={<Video size={18} />}>
                 Начать встречу
@@ -181,7 +182,7 @@ export default function ProCirclePage() {
                     <AvatarThumb config={null} seed={m.handle} size={36} />
                     <span className="grow" style={{ flex: 1, minWidth: 0 }}>
                       {m.name}
-                      {m.chat_muted && <small>Не может писать в чат</small>}
+                      {m.chat_muted && <small>Не&nbsp;может писать в&nbsp;чат</small>}
                     </span>
                     <Button
                       size="sm"
@@ -196,14 +197,14 @@ export default function ProCirclePage() {
                 ))}
               </ul>
             ) : (
-              <p className={s.note}>Пока никто не записался. Как только появятся участники, они будут здесь.</p>
+              <p className={s.note}>Пока никто не&nbsp;записался. Как&nbsp;только появятся участники, они будут здесь.</p>
             )}
           </Card>
         )}
 
         {(published || c.status === "finished") && (
           <Card>
-            <CardHead title="Чат круга" icon={<MessagesSquare size={18} />} sub="Участники видят ваше имя, а друг друга — по псевдонимам" />
+            <CardHead title="Чат круга" icon={<MessagesSquare size={18} />} sub="Участники видят ваше имя, а&nbsp;друг друга&nbsp;— по&nbsp;псевдонимам" />
             <GroupChat circleId={c.id} hostPhoto={c.host.photo_url} />
           </Card>
         )}
@@ -216,7 +217,7 @@ export default function ProCirclePage() {
                 <span className={s.schedNum}>{m.index}</span>
                 <span className={s.schedWhen}>
                   {dayShort(m.starts_at)}, {time(m.starts_at)}–{time(m.ends_at)}
-                  {m.status === "missed" && <small>Не состоялась: участникам вернули деньги</small>}
+                  {m.status === "missed" && <small>Не&nbsp;состоялась: участникам вернули деньги</small>}
                 </span>
                 {m.status === "done" ? <Badge>Прошла</Badge> : m.status === "live" ? <Badge tone="success">Идёт</Badge> : null}
               </li>
@@ -226,8 +227,8 @@ export default function ProCirclePage() {
 
         {!editing && (
           <Card tone="minor">
-            <CardHead title="Описание и правила" />
-            <p className={s.heroLead}>{c.description}</p>
+            <CardHead title="Описание и&nbsp;правила" />
+            <p className={s.heroLead}>{typo(c.description)}</p>
             <ul className={s.rules} style={{ marginTop: 12 }}>
               {c.rules.map((r) => (
                 <li key={r}>• {r}</li>
@@ -239,11 +240,11 @@ export default function ProCirclePage() {
 
       <Modal open={cancelOpen} onClose={() => setCancelOpen(false)} title="Отменить круг?">
         <div className={s.joinBox}>
-          <p className={s.note}>Все участники получат полный возврат на баланс, а круг исчезнет из каталога. Отменить отмену нельзя.</p>
-          <Textarea label="Причина для участников" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
+          <p className={s.note}>Все участники получат полный возврат на&nbsp;баланс, а&nbsp;круг исчезнет из&nbsp;каталога. Отменить отмену нельзя.</p>
+          <Textarea label="Причина для&nbsp;участников" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
             <Button variant="ghost" onClick={() => setCancelOpen(false)}>
-              Не отменять
+              Не&nbsp;отменять
             </Button>
             <Button
               variant="danger"
@@ -258,10 +259,10 @@ export default function ProCirclePage() {
           </div>
         </div>
       </Modal>
-      <Modal open={!!removing} onClose={() => setRemoving(null)} title="Удалить участника из круга?">
+      <Modal open={!!removing} onClose={() => setRemoving(null)} title="Удалить участника из&nbsp;круга?">
         <div className={s.joinBox}>
           <p className={s.note}>
-            {removing?.name} больше не сможет заходить на встречи и писать в чат. Деньги за будущие встречи вернутся ему полностью. Используйте, если
+            {removing?.name} больше не&nbsp;сможет заходить на&nbsp;встречи и&nbsp;писать в&nbsp;чат. Деньги за&nbsp;будущие встречи вернутся ему полностью. Используйте, если
             участник нарушает правила круга.
           </p>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>

@@ -25,7 +25,7 @@ export function ProReviews() {
       <span id="reviews" style={{ display: "block", scrollMarginTop: 16 }} />
       <CardHead
         title="Отзывы клиентов"
-        sub="Отзыв может оставить только клиент после состоявшегося созвона. Вы можете ответить на каждый один раз"
+        sub="Отзыв может оставить только клиент после состоявшегося созвона. Вы&nbsp;можете ответить на&nbsp;каждый один раз"
       />
       {error ? (
         <p className={s.headNote}>{error}</p>
@@ -72,7 +72,7 @@ function ReplyBox({ r, onDone }: { r: Review; onDone: (r: Review) => void }) {
         maxLength={1500}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Поблагодарите или спокойно поясните. Не упоминайте детали созвонов: ответ видят все"
+        placeholder="Поблагодарите или&nbsp;спокойно поясните. Не&nbsp;упоминайте детали созвонов: ответ видят все"
       />
       <div className={s.actions}>
         <Button variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={busy}>

@@ -13,7 +13,7 @@ from .models import Conversation, ConversationMember, HiddenMessage, Message
 logger = logging.getLogger(__name__)
 
 AI_NAME = "Тиша"
-SUPPORT_NAME = "Поддержка aprosop"
+SUPPORT_NAME = "Поддержка Aprosop"
 SUPPORT_GROUP = "chat_support"
 # Роли сотрудников (если в модели пользователя появится staff_role), которым видна поддержка
 SUPPORT_STAFF_ROLES = {"owner", "admin", "support"}
@@ -90,7 +90,9 @@ def can_change_retention(role: str | None, conv: Conversation) -> bool:
 
 
 def can_send_files(role: str | None, conv: Conversation) -> bool:
-    return conv.kind != Kind.AI and role in ("specialist", "support")
+    from .rules import file_policy
+
+    return file_policy(role, conv)[0]
 
 
 def sender_role_for(role: str) -> str:
@@ -215,12 +217,25 @@ def serialize_conversation(conv: Conversation, user, role: str | None = None) ->
         "retention_changed_at": conv.retention_changed_at.isoformat() if conv.retention_changed_at else None,
         "can_change_retention": can_change_retention(role, conv),
         "screen_protect": conv.screen_protect,
-        "can_send_files": can_send_files(role, conv),
+        **_rules_payload(role, conv),
         "unread": unread_count(conv, user, role, m),
         "last_message": preview(last),
         "last_message_at": conv.last_message_at.isoformat() if conv.last_message_at else None,
         "peer_read_at": (lambda v: v.isoformat() if v else None)(peer_read_at(conv, role)),
         "created_at": conv.created_at.isoformat(),
+    }
+
+
+def _rules_payload(role: str | None, conv: Conversation) -> dict:
+    from .rules import contacts_locked, file_policy
+
+    allowed, reason = file_policy(role, conv)
+    return {
+        "can_send_files": allowed,
+        # Короткая подсказка, почему скрепка неактивна (None — скрепку не показывать)
+        "files_hint": reason,
+        # До первого завершённого созвона контакты в переписке запрещены
+        "contacts_locked": contacts_locked(conv),
     }
 
 
@@ -230,7 +245,7 @@ SYSTEM_TEXTS = {
     "retention:forever": "Исчезающие сообщения выключены. Новые сообщения хранятся, пока их не удалят участники.",
     "screen:on": "Включена защита от скриншотов: переписка скрывается, когда окно не активно, копирование отключено.",
     "screen:off": "Защита от скриншотов выключена.",
-    "support:hello": "Здравствуйте! Это поддержка aprosop. Опишите, что случилось, — ответим как можно скорее.",
+    "support:hello": "Здравствуйте! Это поддержка Aprosop. Опишите, что случилось, — ответим как можно скорее.",
 }
 
 
@@ -263,6 +278,8 @@ def serialize_message(msg: Message, viewer_id=None) -> dict:
                 "size": a.size,
                 "duration_ms": a.duration_ms,
                 "peaks": a.peaks or [],
+                "width": a.width,
+                "height": a.height,
             }
     raw = "" if deleted else decrypt_text(msg.text_enc)
     data = {

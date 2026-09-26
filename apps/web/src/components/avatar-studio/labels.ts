@@ -38,7 +38,7 @@ export const CHIN_RU: Record<ChinShape, string> = {
   soft: "Мягкий",
   pointed: "Острый",
   square: "Квадратный",
-  cleft: "С ямочкой",
+  cleft: "С\u00a0ямочкой",
 };
 
 export const AGE_RU: Record<AgeLook, string> = {
@@ -57,14 +57,14 @@ export const FRECKLES_RU: Record<Freckles, string> = {
 
 export const MOLE_RU: Record<Mole, string> = {
   none: "Нет",
-  cheek: "На щеке",
-  lip: "Над губой",
-  eye: "У глаза",
+  cheek: "На\u00a0щеке",
+  lip: "Над\u00a0губой",
+  eye: "У\u00a0глаза",
 };
 
 export const HAIR_RU: Record<HairStyle, string> = {
-  bald: "Без волос",
-  buzz: "Под машинку",
+  bald: "Без\u00a0волос",
+  buzz: "Под\u00a0машинку",
   crew: "Короткая",
   "side-part": "Боковой пробор",
   quiff: "Квифф",
@@ -74,13 +74,13 @@ export const HAIR_RU: Record<HairStyle, string> = {
   messy: "Небрежная",
   mohawk: "Ирокез",
   "curly-short": "Короткие кудри",
-  "fade-curls": "Кудри с фейдом",
+  "fade-curls": "Кудри с\u00a0фейдом",
   afro: "Афро",
   pixie: "Пикси",
   bob: "Каре",
   lob: "Длинное каре",
   shag: "Шэг",
-  "bangs-long": "Длинные с чёлкой",
+  "bangs-long": "Длинные с\u00a0чёлкой",
   "long-straight": "Длинные прямые",
   "long-wavy": "Длинные волны",
   "long-curly": "Длинные кудри",
@@ -89,7 +89,7 @@ export const HAIR_RU: Record<HairStyle, string> = {
   "high-ponytail": "Высокий хвост",
   bun: "Пучок",
   "double-buns": "Два пучка",
-  "man-bun": "Пучок на макушке",
+  "man-bun": "Пучок на\u00a0макушке",
   braids: "Косички",
   "box-braids": "Брейды",
   dreads: "Дреды",
@@ -104,17 +104,17 @@ export const BROW_RU: Record<BrowStyle, string> = {
   arched: "Дугой",
   straight: "Прямые",
   bushy: "Кустистые",
-  angled: "С изломом",
-  none: "Без бровей",
+  angled: "С\u00a0изломом",
+  none: "Без\u00a0бровей",
 };
 
 export const EYE_SHAPE_RU: Record<EyeShape, string> = {
   round: "Круглые",
   almond: "Миндалевидные",
-  hooded: "С нависшим веком",
+  hooded: "С\u00a0нависшим веком",
   upturned: "Приподнятые",
   downturned: "Опущенные",
-  monolid: "Без складки",
+  monolid: "Без\u00a0складки",
 };
 
 export const LASH_RU: Record<LashStyle, string> = {
@@ -132,7 +132,7 @@ export const NOSE_RU: Record<NoseShape, string> = {
   pointed: "Острый",
   round: "Круглый",
   long: "Длинный",
-  hooked: "С горбинкой",
+  hooked: "С\u00a0горбинкой",
 };
 
 export const PIERCING_RU: Record<NosePiercing, string> = {
@@ -186,13 +186,13 @@ export const FACIAL_HAIR_RU: Record<FacialHair, string> = {
 };
 
 export const EYEWEAR_RU: Record<Eyewear, string> = {
-  none: "Без очков",
+  none: "Без\u00a0очков",
   round: "Круглые",
   square: "Квадратные",
   aviator: "Авиаторы",
   "cat-eye": "Кошачий глаз",
   oversized: "Большие",
-  rimless: "Без оправы",
+  rimless: "Без\u00a0оправы",
   sport: "Спортивные",
 };
 

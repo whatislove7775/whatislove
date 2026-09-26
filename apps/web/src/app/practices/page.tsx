@@ -10,19 +10,20 @@ import { serverContent } from "@/lib/content/server";
 import { abs, alternates, ORG_ID, WEBSITE_ID } from "@/lib/seo";
 import s from "@/components/public/public.module.css";
 import { ogMeta } from "@/lib/og/sections";
+import { Breathing } from "@/components/illustrations";
 
 // Data comes from the 5-minute content cache; rendering per request keeps the list fresh after deploys.
 export const dynamic = "force-dynamic";
 
 const TITLE = "Практики самопомощи: дыхание, заземление, расслабление";
 const DESCRIPTION =
-  "Короткие упражнения, которые помогают справиться с тревогой и напряжением: дыхание с длинным выдохом, заземление 5-4-3-2-1, мышечное расслабление, дневник. С объяснением, почему это работает, и предостережениями.";
+  "Короткие упражнения, которые помогают справиться с\u00a0тревогой и\u00a0напряжением: дыхание с\u00a0длинным выдохом, заземление 5-4-3-2-1, мышечное расслабление, дневник. С\u00a0объяснением, почему это\u00a0работает, и\u00a0предостережениями.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: alternates("/practices"),
-  ...ogMeta("/practices", "Практики для себя", DESCRIPTION),
+  ...ogMeta("/practices", "Практики для\u00a0себя", DESCRIPTION),
 };
 
 export default async function PracticesPage() {
@@ -59,13 +60,14 @@ export default async function PracticesPage() {
       <header className={s.intro}>
         <div>
           <h1>Практики</h1>
-          <p>Короткие упражнения на 3–10 минут, чтобы немного успокоиться.</p>
+          <p>Короткие упражнения на&nbsp;3–10&nbsp;минут, чтобы немного успокоиться.</p>
         </div>
+        <Breathing className={s.introArt} />
       </header>
 
       {groups.length === 0 ? (
         <p className={s.empty}>
-          Практики скоро появятся. А пока загляните в <Link href="/articles">статьи</Link>.
+          Практики скоро появятся. А&nbsp;пока загляните в <Link href="/articles">статьи</Link>.
         </p>
       ) : (
         groups.map((g, i) => (
@@ -84,7 +86,7 @@ export default async function PracticesPage() {
         ))
       )}
 
-      <StartCta title="Если практики помогают не до конца" />
+      <StartCta title="Если практики помогают не&nbsp;до&nbsp;конца" />
     </PublicShell>
   );
 }

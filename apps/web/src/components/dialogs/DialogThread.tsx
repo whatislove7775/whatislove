@@ -78,7 +78,7 @@ export function DialogThread({
   if (!conv) {
     return (
       <div className={chat.center} style={{ flex: 1 }}>
-        {failed ? <p className={chat.placeholderText}>Не получилось открыть переписку.</p> : <Spinner />}
+        {failed ? <p className={chat.placeholderText}>Не&nbsp;получилось открыть переписку.</p> : <Spinner />}
       </div>
     );
   }

@@ -121,7 +121,7 @@ export function CallCard({ msg }: { msg: ChatMessage }) {
       const p = card.proposal;
       icon = <Sparkles size={20} strokeWidth={1.8} />;
       iconTone = "sun";
-      title = role === "specialist" ? "Вы предложили время" : "Специалист предлагает созвон";
+      title = role === "specialist" ? "Вы\u00a0предложили время" : "Специалист предлагает созвон";
       if (!p) {
         sub = "Предложение удалено";
         tone = "muted";
@@ -135,7 +135,7 @@ export function CallCard({ msg }: { msg: ChatMessage }) {
         actions = (
           <>
             <Button variant="primary" size="sm" loading={ctx.busy === p.id} onClick={() => ctx.accept(p)}>
-              Принять и оплатить
+              Принять и&nbsp;оплатить
             </Button>
             <Button variant="ghost" size="sm" onClick={() => ctx.openBook()}>
               Другое время

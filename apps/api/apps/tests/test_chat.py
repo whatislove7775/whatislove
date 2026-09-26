@@ -99,7 +99,7 @@ def test_specialist_can_start_chat_with_own_client_only(psychologist, client_use
 def test_support_chat_and_staff_inbox(client_user, admin_user, psychologist):
     c = auth_client(client_user)
     conv = c.post("/api/v1/chat/conversations/", {"with": "support"}, format="json").json()
-    assert conv["kind"] == "client_support" and conv["counterpart"]["name"] == "Поддержка aprosop"
+    assert conv["kind"] == "client_support" and conv["counterpart"]["name"] == "Поддержка Aprosop"
     c.post(f"/api/v1/chat/conversations/{conv['id']}/messages/", {"text": "Не могу оплатить"}, format="json")
 
     a = auth_client(admin_user)

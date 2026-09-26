@@ -93,7 +93,7 @@ export function ColorControl({
               className={s.swatch}
               style={{ ["--sw" as string]: p }}
               aria-pressed={selected}
-              aria-label={`Оттенок ${i + 1} из ${palette.length}`}
+              aria-label={`Оттенок ${i + 1} из\u00a0${palette.length}`}
               title={p}
               onClick={() => {
                 setBase(p);
@@ -127,7 +127,7 @@ export function ColorControl({
       {value && base && (
         <div className={s.shadeRow}>
           <label htmlFor={sliderId} className="visually-hidden">
-            {sliderLabel ?? `${label}: светлее или темнее`}
+            {sliderLabel ?? `${label}: светлее или\u00a0темнее`}
           </label>
           <input
             id={sliderId}

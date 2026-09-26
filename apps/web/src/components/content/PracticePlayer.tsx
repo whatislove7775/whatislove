@@ -71,7 +71,7 @@ export function BreathingCircle({ pattern, tone }: { pattern: BreathPattern; ton
           {done ? (
             <>
               <strong>Готово</strong>
-              <span>Как вы сейчас?</span>
+              <span>Как&nbsp;вы&nbsp;сейчас?</span>
             </>
           ) : idle ? (
             <>
@@ -157,7 +157,7 @@ export function StepPlayer({ practice }: { practice: Practice }) {
         </ol>
         <div className={s.controls} style={{ justifyContent: "flex-start" }}>
           <Button variant="primary" size="lg" onClick={() => setI(0)} icon={<Play size={18} strokeWidth={2} />}>
-            Пройти по шагам
+            Пройти по&nbsp;шагам
           </Button>
         </div>
       </div>
@@ -171,10 +171,10 @@ export function StepPlayer({ practice }: { practice: Practice }) {
           <span className={s.doneIcon} data-tone={practice.cover} aria-hidden>
             <Check size={28} strokeWidth={2.4} />
           </span>
-          <h2 className={s.stepTitle}>Вы прошли практику</h2>
+          <h2 className={s.stepTitle}>Вы&nbsp;прошли практику</h2>
           <p className={s.stepText}>
-            Отметьте, как вы себя чувствуете сейчас. Даже небольшое изменение — уже результат. Практики работают лучше, если
-            возвращаться к ним регулярно.
+            Отметьте, как&nbsp;вы&nbsp;себя чувствуете сейчас. Даже небольшое изменение&nbsp;— уже результат. Практики работают лучше, если
+            возвращаться к&nbsp;ним регулярно.
           </p>
         </div>
         <div className={s.controls} style={{ justifyContent: "flex-start" }}>

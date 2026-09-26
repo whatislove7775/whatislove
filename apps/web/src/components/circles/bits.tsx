@@ -18,6 +18,7 @@ import {
   type CircleTopic,
 } from "@/lib/api/circles";
 import s from "./circles.module.css";
+import { typo } from "@/lib/typography";
 
 export const cx = (...c: unknown[]) => c.filter((x) => typeof x === "string" && x).join(" ");
 
@@ -30,7 +31,7 @@ export const topicClass = (t: CircleTopic) => toneClass(TOPIC_TONE[t]);
 export function meetingsLine(c: Pick<CircleCard, "format" | "meetings_count" | "meeting_minutes">): string {
   const dur = `${c.meeting_minutes} мин`;
   if (c.format === "single") return `Одна встреча, ${dur}`;
-  return `${c.meetings_count} ${plural(c.meetings_count, "встреча", "встречи", "встреч")} раз в неделю, ${dur}`;
+  return `${c.meetings_count} ${plural(c.meetings_count, "встреча", "встречи", "встреч")} раз в\u00a0неделю, ${dur}`;
 }
 
 /** Decorative ring of «seats» (avatars as soft dots) for card tops. */
@@ -61,10 +62,10 @@ export function SeatsMeter({ capacity, taken, compact }: { capacity: number; tak
       </span>
       <span className={left === 0 ? s.seatsFull : undefined}>
         {left === 0
-          ? "Мест нет, можно в лист ожидания"
+          ? "Мест нет, можно в\u00a0лист ожидания"
           : compact
             ? `${left} ${plural(left, "место", "места", "мест")}`
-            : `Свободно ${left} ${plural(left, "место", "места", "мест")} из ${capacity}`}
+            : `Свободно ${left} ${plural(left, "место", "места", "мест")} из\u00a0${capacity}`}
       </span>
     </div>
   );
@@ -83,7 +84,7 @@ export function CircleCardView({ c, href }: { c: CircleCard; href?: string }) {
       </div>
       <div className={s.cardBody}>
         <h3 className={s.cardTitle}>{c.title}</h3>
-        <p className={s.cardSummary}>{c.summary}</p>
+        <p className={s.cardSummary}>{typo(c.summary)}</p>
         <div className={s.metaRow}>
           {when && (
             <span>
@@ -106,7 +107,7 @@ export function CircleCardView({ c, href }: { c: CircleCard; href?: string }) {
           </div>
           <div className={s.price}>
             {rubK0(c.price_kopecks)}
-            <small>{c.billing === "series" && c.format !== "single" ? "за весь цикл" : "за встречу"}</small>
+            <small>{c.billing === "series" && c.format !== "single" ? "за\u00a0весь цикл" : "за\u00a0встречу"}</small>
           </div>
         </div>
       </div>
@@ -154,7 +155,7 @@ export function AnonymityBanner({ title, children }: { title?: ReactNode; childr
           <AvatarThumb key={seed} config={null} seed={seed} size={26} />
         ))}
       </span>
-      <span>{children ?? title ?? "Новое имя в каждом круге, только аватар и маска голоса."}</span>
+      <span>{children ?? title ?? "Новое имя в\u00a0каждом круге, только аватар и\u00a0маска голоса."}</span>
     </p>
   );
 }

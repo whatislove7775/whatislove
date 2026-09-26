@@ -111,19 +111,8 @@
 
 /* horizontal scroller that bleeds to the page edges on phones */
 .scroller {
-  display: flex;
   gap: var(--s-3);
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
   padding-bottom: 2px;
-}
-.scroller::-webkit-scrollbar {
-  display: none;
-}
-.scroller > * {
-  flex: none;
-  scroll-snap-align: start;
 }
 .specItem {
   width: 176px;

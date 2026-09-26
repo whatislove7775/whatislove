@@ -3,14 +3,13 @@
 import { RatingPill } from "@/components/reviews/ReviewBits";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowDownUp, CalendarClock, ListChecks, Search, SearchX, X } from "lucide-react";
+import { CalendarClock, ListChecks, Search, SearchX, X } from "lucide-react";
 import { topicTone } from "@/lib/topicTone";
-import { Badge, Button, Card, EmptyState, Select, Skeleton } from "@/ui";
+import { Badge, Button, Card, EmptyState, Skeleton } from "@/ui";
 import { PageHeader } from "@/components/shell/AppShell";
 import { SpecialistPhoto } from "@/components/avatar/SpecialistPhoto";
 import { durationLabel } from "@/lib/api/availability";
 import {
-  activeFilters,
   queryToSearchParams,
   searchApi,
   searchParamsToQuery,
@@ -26,12 +25,9 @@ import { IntroChip } from "@/components/matching/IntroChip";
 import s from "./specialists.module.css";
 import { EmptyArt } from "@/components/illustrations";
 
-const SORTS: { value: SortOrder; label: string }[] = [
-  { value: "relevance", label: "Сначала подходящие" },
-  { value: "soon", label: "Сначала свободные раньше" },
-  { value: "price", label: "Сначала дешевле" },
-  { value: "experience", label: "Сначала опытнее" },
-];
+// Per-viewer convenience: the chosen sort order is remembered on this device (topics are not — privacy)
+const SORT_KEY = "aprosop.search.sort";
+const SORT_VALUES: SortOrder[] = ["price", "soon", "rating", "experience"];
 
 export default function SpecialistsPage() {
   // useSearchParams needs a Suspense boundary in the App Router
@@ -54,9 +50,30 @@ function Specialists() {
   const typing = useRef(false);
 
   const apply = (next: SpecialistQuery) => {
+    if (next.sort !== query.sort) {
+      try {
+        if (next.sort) localStorage.setItem(SORT_KEY, next.sort);
+        else localStorage.removeItem(SORT_KEY);
+      } catch {
+        /* storage unavailable */
+      }
+    }
     const qs = queryToSearchParams(next).toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   };
+
+  // Restore the remembered sort once, when the link doesn't set one
+  useEffect(() => {
+    if (query.sort) return;
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem(SORT_KEY);
+    } catch {
+      /* storage unavailable */
+    }
+    if (saved && SORT_VALUES.includes(saved as SortOrder)) apply({ ...query, sort: saved as SortOrder });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     searchApi.facets().then(setFacets).catch(() => undefined);
@@ -82,17 +99,7 @@ function Specialists() {
   const list = res.data ?? [];
 
   const selectedTopics = query.topics ?? [];
-  // Chips: chosen topics first, then the popular ones, then the rest — every chip leads somewhere
-  const chips = useMemo(() => {
-    const names = [...selectedTopics, ...(facets?.popular ?? []).map((x) => x.label), ...(facets?.topics ?? []).map((x) => x.label)];
-    return Array.from(new Set(names)).slice(0, Math.max(12, selectedTopics.length));
-  }, [facets, selectedTopics]);
-  const toggleTopic = (t: string) => {
-    const next = selectedTopics.includes(t) ? selectedTopics.filter((x) => x !== t) : [...selectedTopics, t];
-    apply({ ...query, topics: next.length ? next : undefined });
-  };
 
-  const filtered = !!(query.q || activeFilters(query));
   const reset = () => {
     typing.current = false;
     setQ("");
@@ -106,7 +113,7 @@ function Specialists() {
         action={
           // H1: quiz-based matching
           <Button variant="soft" size="sm" href="/app/match" icon={<ListChecks size={16} strokeWidth={1.8} />}>
-            Подобрать по анкете
+            Подобрать по&nbsp;анкете
           </Button>
         }
       />
@@ -139,34 +146,8 @@ function Specialists() {
               </button>
             )}
           </label>
-          <div className={s.sort}>
-            <Select<SortOrder>
-              size="sm"
-              aria-label="Порядок"
-              icon={<ArrowDownUp size={15} strokeWidth={1.9} />}
-              value={query.sort ?? "relevance"}
-              options={SORTS}
-              onChange={(v) => apply({ ...query, sort: v === "relevance" ? undefined : v })}
-            />
-          </div>
         </div>
-        <FilterBar value={query} onChange={apply} facets={facets} />
-        {chips.length > 0 && (
-          <div className={s.chips} role="group" aria-label="С чем работает">
-            {chips.map((x) => (
-              <button
-                key={x}
-                type="button"
-                className={s.chip}
-                data-tone={topicTone(x)}
-                aria-pressed={selectedTopics.includes(x)}
-                onClick={() => toggleTopic(x)}
-              >
-                {x}
-              </button>
-            ))}
-          </div>
-        )}
+        <FilterBar value={query} onChange={apply} facets={facets} count={res.data ? list.length : null} showSort />
       </Card>
 
       <div className={s.meta} aria-live="polite">
@@ -174,11 +155,6 @@ function Specialists() {
           ? "Ищем специалистов"
           : !res.error &&
             `${list.length} ${plural(list.length, "специалист", "специалиста", "специалистов")}`}
-        {filtered && !res.loading && (
-          <button type="button" className={s.resetLink} onClick={reset}>
-            Сбросить фильтры
-          </button>
-        )}
       </div>
 
       {res.error ? (
@@ -200,8 +176,8 @@ function Specialists() {
         <Card>
           <EmptyState art={<EmptyArt scene="search" />}
             icon={<SearchX size={24} strokeWidth={1.8} />}
-            title="Никого не нашли"
-            text="Попробуйте другое слово или уберите один из фильтров: тему, время или цену."
+            title="Никого не&nbsp;нашли"
+            text="Попробуйте другое слово или&nbsp;уберите один из&nbsp;фильтров: тему, время или&nbsp;цену."
             action={
               <Button variant="primary" onClick={reset}>
                 Показать всех специалистов
@@ -239,13 +215,13 @@ function Specialists() {
                     const d = query.duration ? p.booking?.durations.find((x) => x.minutes === query.duration) : undefined;
                     return (
                       <>
-                        <strong>{d ? rub(d.price_rub) : `от ${rub(p.session_rate_rub)}`}</strong>
+                        <strong>{d ? rub(d.price_rub) : `от\u00a0${rub(p.session_rate_rub)}`}</strong>
                         <span>за {durationLabel(d?.minutes ?? p.booking?.min_duration ?? 50)}</span>
                       </>
                     );
                   })()}
                 </div>
-                <div className={s.slot}>
+                <div className={s.slot} data-none={p.next_slot ? undefined : ""}>
                   <CalendarClock size={16} strokeWidth={1.8} aria-hidden />
                   {p.next_slot ? (
                     <>Свободно {lower(when(p.next_slot))}</>

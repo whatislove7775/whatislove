@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { KeyRound } from "lucide-react";
-import { Button, Card, CardHead, Input, Spinner, useToast } from "@/ui";
+import { Button, Card, CardHead, Input, PasswordInput, Spinner, useToast } from "@/ui";
 import { ApiError } from "@/lib/api/client";
 import { businessApi, type PortalMe } from "@/lib/api/business";
 import { useLoad } from "@/components/client/useLoad";
@@ -44,7 +44,7 @@ function ChangePassword({ onDone }: { onDone: () => void }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (next !== again) {
-      setError("Пароли не совпадают.");
+      setError("Пароли не\u00a0совпадают.");
       return;
     }
     setBusy(true);
@@ -54,7 +54,7 @@ function ChangePassword({ onDone }: { onDone: () => void }) {
       toast("Пароль сохранён");
       onDone();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось сменить пароль.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось сменить пароль.");
     } finally {
       setBusy(false);
     }
@@ -62,15 +62,14 @@ function ChangePassword({ onDone }: { onDone: () => void }) {
 
   return (
     <>
-      <PageHeader title="Добро пожаловать" sub="Вы вошли по одноразовому паролю от менеджера aprosop. Придумайте свой, чтобы продолжить." />
+      <PageHeader title="Добро пожаловать" sub="Вы&nbsp;вошли по&nbsp;одноразовому паролю от&nbsp;менеджера aprosop. Придумайте свой, чтобы продолжить." />
       <Card as="section" style={{ maxWidth: 520 }}>
-        <CardHead title="Новый пароль" icon={<KeyRound size={18} />} sub="Не короче 10 символов" />
+        <CardHead title="Новый пароль" icon={<KeyRound size={18} />} sub="Не&nbsp;короче 10&nbsp;символов" />
         <form className={s.form} onSubmit={submit}>
-          <Input label="Одноразовый пароль" type="password" value={old} onChange={(e) => setOld(e.target.value)} autoComplete="current-password" />
-          <Input label="Новый пароль" type="password" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
-          <Input
+          <PasswordInput label="Одноразовый пароль" value={old} onChange={(e) => setOld(e.target.value)} autoComplete="current-password" />
+          <PasswordInput label="Новый пароль" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
+          <PasswordInput
             label="Новый пароль ещё раз"
-            type="password"
             value={again}
             onChange={(e) => setAgain(e.target.value)}
             autoComplete="new-password"

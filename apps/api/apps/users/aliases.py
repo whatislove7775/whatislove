@@ -52,4 +52,5 @@ def generate_unique_alias(max_attempts: int = 50) -> str:
 
 
 def normalize_alias(value: str) -> str:
-    return (value or "").strip().lower().replace("ё", "е")
+    """Нижний регистр, «ё»→«е», одиночные пробелы — так ники хранятся и сравниваются."""
+    return " ".join((value or "").split()).lower().replace("ё", "е")

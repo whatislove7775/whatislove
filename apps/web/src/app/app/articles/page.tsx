@@ -18,11 +18,16 @@ function Articles() {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname() ?? "/app/articles";
-  const topic = params?.get("topic") ?? "";
+  const fromPros = params?.get("from") === "specialists";
+  const topic = fromPros ? "" : params?.get("topic") ?? "";
   const topics = useLoad(() => contentApi.topics());
-  const articles = useLoad(() => contentApi.articles({ topic: topic || undefined }), [topic]);
+  const pros = useLoad(() => contentApi.articles({ source: "specialists", sort: "top" }));
+  const articles = useLoad(
+    () => (fromPros ? contentApi.articles({ source: "specialists", sort: "top" }) : contentApi.articles({ topic: topic || undefined })),
+    [topic, fromPros],
+  );
 
-  const pick = (t: string) => router.replace(t ? `${pathname}?topic=${t}` : pathname, { scroll: false });
+  const pick = (t: string) => router.replace(t ? `${pathname}?${t === "specialists" ? "from" : "topic"}=${t}` : pathname, { scroll: false });
 
   return (
     <>
@@ -30,9 +35,15 @@ function Articles() {
       <UsefulTabs />
 
       <div className={s.chips} role="group" aria-label="Темы статей">
-        <button type="button" className={s.chip} aria-pressed={!topic} onClick={() => pick("")}>
+        <button type="button" className={s.chip} aria-pressed={!topic && !fromPros} onClick={() => pick("")}>
           Все
         </button>
+        {(pros.data?.length ?? 0) > 0 && (
+          <button type="button" className={s.chip} aria-pressed={fromPros} onClick={() => pick("specialists")}>
+            От&nbsp;специалистов
+            <span className={s.count}>{pros.data!.length}</span>
+          </button>
+        )}
         {(topics.data ?? []).map((t) => (
           <button key={t.value} type="button" className={s.chip} aria-pressed={topic === t.value} onClick={() => pick(t.value)}>
             {t.label}
@@ -53,7 +64,7 @@ function Articles() {
         <EmptyState art={<EmptyArt scene="moon" />}
           icon={<BookOpen size={28} strokeWidth={1.8} />}
           title="Здесь пока пусто"
-          text="Статьи на эту тему скоро появятся. Загляните в другие разделы."
+          text="Статьи на&nbsp;эту тему скоро появятся. Загляните в&nbsp;другие разделы."
         />
       ) : (
         <div className={`${c.articleGrid} ${c.articleRows}`} style={{ opacity: articles.loading ? 0.6 : 1 }}>

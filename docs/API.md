@@ -48,7 +48,9 @@ Session {
 
 | Метод | Путь | Тело | Ответ |
 |---|---|---|---|
-| POST | `anonymous/` | `{ password }` | `{ access, refresh, user, recovery_key }` — клиент **без email**; `alias` генерируется (`тихий-кит-4821`), `recovery_key` показывается один раз |
+| POST | `anonymous/` | `{ password, alias? }` | `{ access, refresh, user, recovery_key }` — клиент **без email**; `alias` — свой ник (правила см. `alias/check/`, 400 `{alias:[…]}`) или генерируется (`тихий-кит-4821`), `recovery_key` показывается один раз |
+| GET | `alias/suggest/` | — | `{ alias }` — свободный сгенерированный ник («Придумать другое»). Троттлинг `ALIAS_THROTTLE_RATE` (60/min) |
+| GET | `alias/check/?alias=` | — | `{ alias /* нормализованный: нижний регистр, ё→е, одиночные пробелы */, available, error }`. Правила: 3–32 символа, буквы/цифры/пробел/`-`/`_`, хотя бы одна буква, не почта/ссылка/@имя/телефон (≥7 цифр), не служебные слова (admin, поддержка…), базовый фильтр мата; уникальность без учёта регистра. С JWT свой текущий ник считается свободным |
 | POST | `register/psychologist/` | `{ email, password, display_name, bio, specializations[], session_rate_rub, experience_years }` | `{ access, refresh, user }` (status pending) |
 | POST | `login/` | `{ login, password, otp? }` — `login` = alias или email; `otp` — код TOTP для сотрудников с 2FA | `{ access, refresh, user }`; без/с неверным кодом → `400 { detail, otp_required: true }` |
 | POST | `recover/` | `{ alias, recovery_key, new_password }` | `{ access, refresh, user, recovery_key }` (новый ключ) |
@@ -56,6 +58,8 @@ Session {
 | GET | `me/` | — | `User` |
 | PATCH | `me/` | `{ avatar_config? }` | `User` |
 | POST | `me/password/` | `{ old_password, new_password }` | `204` |
+| GET | `me/alias/` | — | `{ alias, next_change_at /* ISO или null */ }` |
+| POST | `me/alias/` | `{ alias }` | только клиенты (иначе 403); раз в сутки (иначе `429 { detail, alias, next_change_at }`); `400 { alias: [...] }` на неверный/занятый; успех → `{ alias, next_change_at, user }`. Ник = логин: вход по новому нику. Прежний ник нигде не хранится (специалисты видят только текущий) |
 | POST | `me/delete/` | `{ password }` | `204` — полное удаление аккаунта, диалогов и созвонов |
 
 ## Специалисты
@@ -63,8 +67,8 @@ Session {
 | Метод | Путь | Ответ |
 |---|---|---|
 | GET | `psychologists/?<фильтры поиска>` | `PsychologistPublic[]` (только approved). Фильтры — как у `search/` (без `limit`); старые `specialization`, `max_rate` работают |
-| GET | `psychologists/search/?q=&topic=&topic=&approach=&max_rate=&when=&duration=&min_experience=&gender=&language=&sort=&tz=&limit=8` | `{ count, results: PsychologistPublic[] }` — палитра поиска. `q` — слова ищутся по началу слов в имени, темах, подходе, «о себе», языках (грубый стемминг: «тревожность» → «Тревога»; аббревиатуры подходов «кпт»; забытая раскладка «nhtdjuf» → «тревога»), все слова обязательны. `topic` (повтор или `topics=a,b`) — любая из тем. `approach` — ключ из `popular-requests.approaches`. `max_rate` — цена самой короткой сессии или выбранной `duration`. `when`: `today` \| `3days` \| `evening` (начало ≥ 18:00) \| `weekend` — в ближайшие 14 дней по поясу клиента `tz` (IANA, по умолчанию Москва). `duration` — специалист разрешает эту длительность; `next_slot` тогда считается для неё. `gender`: `female` \| `male`. `sort`: `relevance` (по умолчанию) \| `soon` \| `price` \| `experience`. Ближайшее время для всех считается пакетно (число SQL-запросов не зависит от числа специалистов). Запросы не сохраняются. Троттлинг `SEARCH_THROTTLE_RATE` (240/min). 400 с `detail` на неверный параметр |
-| GET | `psychologists/popular-requests/` | `{ popular: {label,count}[] /* «Часто ищут»: частые запросы, с которыми работают специалисты */, topics: {label,count}[], approaches: {value,label,count}[], languages: {label,count}[], durations: number[], genders: {value,count}[], price: {min,max}, when: {value,label}[] }` — кэш 5 минут, только по одобренным специалистам |
+| GET | `psychologists/search/?q=&topic=&topic=&approach=&min_rate=&max_rate=&when=&days=&times=&date_from=&date_to=&duration=&min_experience=&gender=&language=&sort=&tz=&limit=8` | `{ count, results: PsychologistPublic[] }` — палитра поиска. `q` — слова ищутся по началу слов в имени, темах, подходе, «о себе», языках (грубый стемминг: «тревожность» → «Тревога»; аббревиатуры подходов «кпт»; забытая раскладка «nhtdjuf» → «тревога»), все слова обязательны. `topic` (повтор или `topics=a,b`) — любая из тем. `approach` — ключ из `popular-requests.approaches`; несколько (повтор или через запятую) — любой из. `min_rate`/`max_rate` — диапазон цены самой короткой сессии или выбранной `duration`. `days` — дни недели `0,5,6` (0 — понедельник), `times` — `morning` (6–12) \| `day` (12–18) \| `evening` (18–24), `date_from`/`date_to` — `ГГГГ-ММ-ДД` включительно (смотрим расписание до `date_to`, не дальше 60 дней и горизонта записи); все временные условия должны выполниться для одного и того же окна, `next_slot` тогда — первое подходящее окно. `when`: `today` \| `3days` \| `evening` (начало ≥ 18:00) \| `weekend` — в ближайшие 14 дней по поясу клиента `tz` (IANA, по умолчанию Москва). `duration` — специалист разрешает эту длительность; `next_slot` тогда считается для неё. `gender`: `female` \| `male`. `sort`: `relevance` (по умолчанию) \| `soon` \| `price` \| `rating` (средняя оценка, без отзывов — в конце) \| `experience`. Ближайшее время для всех считается пакетно (число SQL-запросов не зависит от числа специалистов). Запросы не сохраняются. Троттлинг `SEARCH_THROTTLE_RATE` (240/min). 400 с `detail` на неверный параметр |
+| GET | `psychologists/popular-requests/` | `{ popular: {label,count}[] /* «Часто ищут»: частые запросы, с которыми работают специалисты */, topics: {label,count}[], approaches: {value,label,count}[], languages: {label,count}[], durations: number[], genders: {value,count}[], price: {min,max}, when: {value,label}[], times: {value,label,from,to}[] }` (`popular` оставлен для совместимости, в интерфейсе не показывается) — кэш 5 минут, только по одобренным специалистам |
 | GET | `psychologists/{id}/` | `PsychologistPublic` |
 | GET | `psychologists/{id}/available-starts/?duration=90&from=YYYY-MM-DD&to=YYYY-MM-DD` | `{ duration_minutes, price_rub, durations: {minutes, price_rub}[], horizon_until, starts: string[] /* UTC ISO */ }` — свободные начала для длительности: расписание (шаблоны, особые дни, отпуск) минус сессии ± буфер, с учётом минимального времени до записи и горизонта. Даты — в поясе специалиста; по умолчанию сегодня…горизонт, duration — самая короткая. 400 если длительность не разрешена |
 | GET | `psychologists/{id}/slots/?from=YYYY-MM-DD&days=14` | `Slot[]` — устарело: то же для самой короткой длительности |
@@ -73,7 +77,7 @@ Session {
 
 | Метод | Путь | Тело / Ответ |
 |---|---|---|
-| GET/PATCH | `profile/` | `PsychologistPrivate` (редактируемые: display_name, bio, approach, specializations, languages, experience_years, session_rate_rub) |
+| GET/PATCH | `profile/` | `PsychologistPrivate` (редактируемые: display_name, bio, approach, specializations, languages, experience_years, session_rate_rub). В `bio`/`approach` нельзя контакты (телефоны, @ники, мессенджеры, почта) → 400 по полю |
 | POST | `photo/` | multipart: `photo` (JPEG/PNG/WebP, ≤ 5 МБ, сторона ≥ 200 px), `crop?` = JSON `{x, y, size}` — доли: x/y — левый верхний угол от ширины/высоты, size — сторона от min(w, h), 0.1…1; без него центральный квадрат → `{ photo_url }`. Сервер поворачивает по EXIF, обрезает до квадрата, сжимает до 512×512 WebP и удаляет метаданные; старое фото удаляется. 400 `{detail}` на плохой файл, 30 загрузок в час |
 | DELETE | `photo/` | 204 (идемпотентно) |
 | GET/PUT | `schedule/` | устарело: `ScheduleRule[]` постоянного шаблона (PUT заменяет его правила) |
@@ -221,13 +225,42 @@ TimeOff { id; start_date; end_date; note }
 | Метод | Путь | Описание |
 |---|---|---|
 | GET, POST | `/content/manage/articles/` | Все статьи, включая черновики (+ `body, is_published, created_at, updated_at`); создание |
-| GET, PATCH, DELETE | `/content/manage/articles/<id>/` | При первой публикации `published_at` ставится автоматически |
+| GET, PATCH, DELETE | `/content/manage/articles/<id>/` | При первой публикации `published_at` ставится автоматически; редактор может задать его сам (ISO datetime) и поменять `author_name` («ред. …» в карточке). При создании с пустым `author_name` подставляется публичное имя сотрудника или «Редакция aprosop» |
 | GET, POST | `/content/manage/practices/` | Все практики (+ `order, is_published, …`) |
 | GET, PATCH, DELETE | `/content/manage/practices/<id>/` | |
 
 Стартовые материалы (12 статей, 8 практик) создаются миграцией `content/0002`; версии с источниками (`content/0004`) заменяют только нетронутые в CMS материалы (сверка по отпечаткам прежних стартовых текстов в `apps/content/seed_history.py`). Повторно — `manage.py seed_content [--overwrite]`. Проверенные источники — `apps/content/sources.py`.
 
 Публичные SEO-страницы Next.js (`/articles`, `/articles/<slug>`, `/practices`, `/practices/<slug>`, `/sitemap.xml`, `/llms.txt`, `/llms-full.txt`) читают этот API на сервере через `INTERNAL_API_URL` (в docker-compose — `http://api:8000/api/v1`, заголовок `Host: aprosop.ru`) и кэшируют ответы на 5 минут.
+
+### Статьи специалистов, обложки, «В топе» (L1)
+
+Список/деталь статей дополнительно отдают `cover_image` (`{id, url 1600×900, md 800×450, sm 480×270, width, height}` или null — тогда иллюстрация темы), `specialist` (`{id, name, photo_url}`; в детали ещё `bio` ≤220 зн., `specializations`, `experience_years`; null у статей редакции) и `is_featured`. Статьи специалиста публичны, только если модерация одобрена и профиль автора подтверждён. `GET /content/articles/?source=specialists|editorial&sort=top` — `sort=top`: сначала «В топе», дальше по прочтениям с поправкой на свежесть; без `sort` закреплённые идут первыми, остальные по дате.
+
+| Метод | Путь | Кто | Описание |
+|---|---|---|---|
+| POST | `/content/articles/<slug>/read/` | все | +1 прочтение (без cookie и личности), 204 |
+| POST | `/content/covers/` | редакция (content.edit) и специалисты | multipart `image` (JPG/PNG/WebP ≤5 МБ, кадр ≥640×360), `crop` = JSON `{x, y, w}` (доли исходника, 16:9). Ответ — `cover_image`. EXIF удаляется |
+| GET, POST | `/content/my/articles/` | специалист | мои статьи; POST `{title, summary, body, topic, sources?, cover_image_id?}` → черновик (`status: draft`) |
+| GET, PATCH, DELETE | `/content/my/articles/<id>/` | автор | править можно в `draft`/`rejected`; `cover_image_id` — только своя загрузка, `null` убирает обложку |
+| POST | `/content/my/articles/<id>/submit/` | автор (профиль подтверждён) | → `pending`; нужны заголовок, описание ≥20 зн., текст ≥150 слов (иначе 400 с полями) |
+| POST | `/content/my/articles/<id>/withdraw/` | автор | `pending`/`approved` → `draft` (снимается с публикации) |
+| GET | `/content/manage/articles/?source=specialists` | content.edit | очередь «От специалистов» (черновики не видны, `pending` первыми); `?source=editorial` — только редакция |
+| POST | `/content/manage/articles/<id>/moderate/` | content.publish | `{decision: approve\|reject, comment}` (для reject комментарий обязателен); в журнал |
+| POST | `/content/manage/articles/<id>/feature/` | content.publish | `{featured: bool}` — «В топе», только для опубликованных; в журнал |
+
+Поля статьи в `/content/manage/…`: `moderation` ("" у редакции, `draft|pending|approved|rejected`), `moderation_comment`, `submitted_at`, `moderated_at`, `reads`, `cover_image_id` (запись).
+
+### Селфи для проверки специалиста (L1) — `/psychologist/selfie/`, `/staff/specialists/<id>/selfie/`
+
+| Метод | Путь | Кто | Описание |
+|---|---|---|---|
+| GET | `/psychologist/selfie/` | специалист | `{taken_at, delete_after, retention_days, required, challenge: {code, text}}` — challenge живёт 15 мин |
+| POST | `/psychologist/selfie/` | специалист (не одобрен) | multipart `frame1`, `frame2` (кадры с камеры), `challenge` (код из GET). Кадры перекодируются в WebP без метаданных и хранятся зашифрованными (Fernet) в БД |
+| GET | `/staff/specialists/<id>/selfie/` | specialists.verify | есть ли селфи, когда удалится (без кадров) |
+| GET | `/staff/specialists/<id>/selfie/frames/` | specialists.verify | `{frames: [data:image/webp;base64…], challenge_text}`, `Cache-Control: no-store`; каждый просмотр → журнал `specialist.selfie.view` |
+
+Одобрить заявку (`decision: approve`) без селфи нельзя, пока `VERIFICATION_SELFIE_REQUIRED=true` (по умолчанию). Селфи удаляется через `VERIFICATION_SELFIE_RETENTION_DAYS` (30) дней после одобрения — `manage.py purge_selfies` в воркере + очистка при обращении.
 
 ## Чаты — `/chat/`
 
@@ -242,18 +275,20 @@ TimeOff { id; start_date; end_date; note }
 | GET/PATCH | `conversations/{id}/` PATCH `{retention?:"forever"\|"24h"\|"1h", screen_protect?:bool}` | «Исчезающие сообщения» (выкл / 1 день / 1 час, только для новых сообщений; истёкшие API не отдаёт сразу, `purge_chats` удаляет физически) и «Защита от скриншотов» для обеих сторон. Меняет клиент (в `specialist_support` — специалист); обе стороны видят системное сообщение (`retention:*`, `screen:on\|off`) |
 | POST | `conversations/{id}/read/`, `conversations/{id}/clear/` | прочитано; очистить историю у себя |
 | GET | `conversations/{id}/messages/?before=<msg id>&limit=40` | `{results: Message[] (по возрастанию), has_more}` |
-| POST | `conversations/{id}/messages/` JSON `{text}` или multipart `{kind:"voice", file, duration_ms, peaks(JSON)}` / `{kind:"file", file}` | файлы — только специалист/поддержка: pdf, doc(x), xls(x), pptx, odt, rtf, txt, png, jpg, webp, gif, mp3, ≤20 МБ; голосовые webm/ogg/mp4 ≤10 мин. Лимит `CHAT_SEND_RATE` |
-| PATCH | `messages/{id}/` `{text}` | только своё текстовое, ставит `edited_at` |
+| POST | `conversations/{id}/messages/` JSON `{text}` или multipart `{kind:"voice", file, duration_ms, peaks(JSON)}` / `{kind:"file", file}` | файлы: pdf, doc(x), xls(x), pptx, odt, rtf, txt, png, jpg, webp, gif, mp3, ≤20 МБ; голосовые webm/ogg/mp4 ≤10 мин. Лимит `CHAT_SEND_RATE`. Кто может слать файлы — `can_send_files` (R8): поддержка — всегда; специалист — после записанного созвона (paid/in_progress/completed); клиент — если специалист включил `accept_client_files` и есть записанный созвон; иначе 403. Изображения перекодируются на сервере (EXIF/метаданные удаляются, поворот применяется, ≤2560 px), в `attachment` — `width/height`. Пока `contacts_locked` — текст и имя файла с телефонами/@никами/ссылками на мессенджеры/почтой → **422** `{detail, code:"contacts_blocked", field:"text"\|"file", fragments:[{kind:"phone"\|"handle"\|"link"\|"email", start, end}]}` |
+| GET/PATCH | `settings/` `{accept_client_files: bool}` | только специалист: «Принимать файлы от клиентов» (по умолчанию false) |
+| PATCH | `messages/{id}/` `{text}` | только своё текстовое, ставит `edited_at`; та же проверка контактов (422) |
 | POST | `messages/{id}/delete/` `{for:"me"\|"all"}` | `all` — только своё: текст и файл стираются, остаётся `deleted: true` |
 | GET | `messages/{id}/attachment/` | расшифрованный файл, `Cache-Control: private, no-store` |
 | GET | `contacts/`, `unread/` | с кем можно начать чат; `{total, support}` |
 | POST | `ws-token/` | `{token}` для WebSocket (1 час) |
 | GET | `ai/` | `{name, enabled, consent, conversation_id, daily_limit, used_today, remaining_today}` |
 | POST/DELETE | `ai/consent/` | дать/отозвать согласие (создаёт разговор с приветствием) |
-| POST | `ai/reply/` `{text}` | `text/event-stream`: `user_message` → `delta`* → `done` (или `replace` при отказе, `error`). 503 `ai_unavailable` без ключа, 403 `consent_required`, 429 `ai_limit` |
+| POST | `ai/reply/` `{text}` | `text/event-stream`: `user_message` → `delta`* → `done` (или `replace` при отказе, `error`). 503 `ai_unavailable`, если провайдер (`AI_PROVIDER`: anthropic / gigachat / openai_compatible, см. docs/AI.md) не настроен, 403 `consent_required`, 429 `ai_limit` |
 
 `Conversation`: `{id, kind, my_role, counterpart{type,name,avatar_config,psychologist_id?}, retention, retention_changed_at,
-can_change_retention, screen_protect, can_send_files, unread, last_message{text,created_at,sender_role,kind}, last_message_at, peer_read_at}`.
+can_change_retention, screen_protect, can_send_files, files_hint (коротко, почему скрепка неактивна; null — не показывать),
+contacts_locked (клиент↔специалист до первого завершённого созвона), unread, last_message{text,created_at,sender_role,kind}, last_message_at, peer_read_at}`.
 `Message`: `{id, conversation, kind: text|voice|file|system, sender_role, text, system_code, card (карточка созвона для system «call:*», иначе null), attachment{name,mime,size,duration_ms,peaks}, created_at, edited_at, deleted, expires_at, mine}`.
 
 WebSocket `/ws/chat/?token=…`: сервер шлёт `ready`, `message.new`, `message.updated`, `message.hidden`, `conversation.updated`,
@@ -410,7 +445,7 @@ Proposal { id, status: "pending" | "accepted" | "declined" | "withdrawn" | "expi
 | Метод | Путь | Описание |
 |---|---|---|
 | GET | `options/` | варианты ответов, `weights`, `crisis_help` |
-| POST | `` | `{ topics: TopicKey[], duration?: weeks\|months\|year, intensity?: mild\|notable\|heavy, safety: no\|sometimes\|now, style?: support\|techniques\|depth, gender?: female\|male, min_experience?: 0\|3\|5\|10, budget?: ₽ за час\|null, times?: (morning\|day\|evening\|weekend)[], tz? }` → `{ crisis: {level: none\|some\|acute, help: {label, phone, note}[]}, weights, stored: false, count, results: {psychologist: карточка, score: 0–100, fits, summary, price_hour_rub, reasons: {key, ok, text, points, max}[]}[] }` (до 12, лучшие первыми) |
+| POST | `` | `{ topics: TopicKey[], duration?: weeks\|months\|year, intensity?: mild\|notable\|heavy, safety: no\|sometimes\|now, style?: support\|techniques\|depth, gender?: female\|male, min_experience?: 0–40 лет (0 — неважно), budget?: ₽ за час (≥500)\|null, times?: (morning\|day\|evening\|weekend)[], tz? }` → `{ crisis: {level: none\|some\|acute, help: {label, phone, note}[]}, weights, stored: false, count, results: {psychologist: карточка, score: 0–100, fits, summary, price_hour_rub, reasons: {key, ok, text, points, max}[]}[] }` (до 12, лучшие первыми) |
 
 Оценка из 100: темы 35 · стиль 20 (подход специалиста) · бюджет 15 (цена часа) · удобное время 15 (свободные окна
 в ближайшие 14 дней по поясу клиента) · опыт 10 · отзывы 5. Пол — жёсткое пожелание: неподходящие идут после всех
@@ -437,7 +472,7 @@ depression, panic, sleep, anger, addiction, crisis, family, loneliness. Трот
 за период (иначе `null` → «менее 5»), только закрытые месяцы, без статусов отдельных кодов.
 
 - `POST leads/` (публично) `{company_name, contact, contact_name?, employees?, message?}` → 201; 5/час с IP.
-- Клиент: `GET me/` → `{programs: [{company, program, services, period, amount_kopecks, calls_limit, rub_left_kopecks, calls_left, renews_on, expires_on, budget_ok}]}`;
+- Клиент: `GET me/` → `{programs: [{company, program, services, period, amount_kopecks, calls_limit, rub_left_kopecks, calls_left, renews_on, expires_on, budget_ok, available_kopecks /* min(rub_left, бюджет компании); null — без лимита в ₽ */}]}`;
   `POST redeem/ {code}` → 201 `{programs}`; `POST me/<id>/leave/`.
 - HR (роль `business`, одноразовый пароль → `portal/me/password/`, до смены — 403 `password_change_required`):
   `GET portal/me/`, `GET portal/dashboard/` (budget на 1-е число + пополнения месяца + флаг `low`, totals, codes, monthly, topics, satisfaction, `k_min`),

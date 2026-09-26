@@ -4,8 +4,8 @@ import { SpecialistSearchProvider } from "@/components/search/SpecialistSearch";
 
 /** Private area: never indexed; link previews use the generic card (opengraph-image.tsx). */
 export const metadata: Metadata = {
-  title: { default: "Кабинет", template: "%s | aprosop" },
-  description: "Раздел aprosop, который открывается после входа.",
+  title: { default: "Кабинет", template: "%s | Aprosop" },
+  description: "Раздел Aprosop, который открывается после входа.",
   robots: { index: false, follow: false },
 };
 

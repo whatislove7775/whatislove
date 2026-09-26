@@ -51,7 +51,11 @@
     ".next-21/types/**/*.ts",
     ".next-20/types/**/*.ts",
     ".next-22/types/**/*.ts",
-    ".next-23/types/**/*.ts"
+    ".next-23/types/**/*.ts",
+    ".next-24/types/**/*.ts",
+    ".next-26/types/**/*.ts",
+    ".next-25/types/**/*.ts",
+    ".next-27/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

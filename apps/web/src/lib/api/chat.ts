@@ -23,6 +23,9 @@ export interface ChatAttachment {
   size: number;
   duration_ms: number | null;
   peaks: number[];
+  /** images: size after server-side re-encode (EXIF stripped) */
+  width?: number | null;
+  height?: number | null;
 }
 
 export interface CallBrief {
@@ -85,6 +88,10 @@ export interface Conversation {
   /** «Защита от скриншотов» для обеих сторон (включает клиент) */
   screen_protect?: boolean;
   can_send_files: boolean;
+  /** why the paperclip is inactive (null — hide it) */
+  files_hint?: string | null;
+  /** client↔specialist before the first completed call: no phones/@handles/links/emails */
+  contacts_locked?: boolean;
   unread: number;
   last_message: { text: string; created_at: string; sender_role: SenderRole; kind: string } | null;
   last_message_at: string | null;
@@ -137,6 +144,10 @@ export const chatApi = {
   remove: (msgId: string, scope: "me" | "all") =>
     api<ChatMessage | undefined>(`/chat/messages/${msgId}/delete/`, { method: "POST", body: { for: scope } }),
   wsToken: () => api<{ token: string; expires_in: number }>("/chat/ws-token/", { method: "POST" }),
+  /** specialists: «Принимать файлы от клиентов» */
+  settings: () => api<{ accept_client_files: boolean }>("/chat/settings/"),
+  setSettings: (accept_client_files: boolean) =>
+    api<{ accept_client_files: boolean }>("/chat/settings/", { method: "PATCH", body: { accept_client_files } }),
   ai: () => api<AIStatus>("/chat/ai/"),
   aiConsent: () => api<AIStatus>("/chat/ai/consent/", { method: "POST" }),
   aiRevoke: () => api<AIStatus>("/chat/ai/consent/", { method: "DELETE" }),
@@ -160,13 +171,13 @@ async function authedFetch(path: string, init: RequestInit = {}): Promise<Respon
     }
   } catch (e) {
     if ((e as Error).name === "AbortError") throw e;
-    throw new ApiError(0, "Нет соединения с сервером. Проверьте интернет.");
+    throw new ApiError(0, "Нет соединения с\u00a0сервером. Проверьте интернет.");
   }
   return res;
 }
 
 async function errorFrom(res: Response): Promise<ApiError> {
-  let message = res.status === 413 ? "Файл слишком большой." : "Не получилось отправить.";
+  let message = res.status === 413 ? "Файл слишком большой." : "Не\u00a0получилось отправить.";
   let code: string | undefined;
   try {
     const data = await res.json();

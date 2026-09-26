@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock } from "lucide-react";
-import { ArticleCard, PracticeCard } from "@/components/content/Cards";
+import { ArticleByline, ArticleCard, PracticeCard } from "@/components/content/Cards";
+import { ArticleBanner } from "@/components/content/ArticleBanner";
+import { AuthorCard, ReadCounter } from "@/components/content/AuthorCard";
 import { EvidenceBadge, KeyFacts, SeekHelp, Sources } from "@/components/content/Evidence";
 import { Markdown } from "@/components/content/Markdown";
-import { TopicArt } from "@/components/illustrations/topics";
 import { Breadcrumbs } from "@/components/public/Breadcrumbs";
 import { JsonLd } from "@/components/public/JsonLd";
 import { PublicShell } from "@/components/public/PublicShell";
@@ -14,9 +15,8 @@ import { isSlug, serverContent } from "@/lib/content/server";
 import type { Article } from "@/lib/api/content";
 import { abs, alternates, ORG_ID, WEBSITE_ID } from "@/lib/seo";
 import { Button } from "@/ui";
-import art from "@/components/content/art.module.css";
-import c from "@/components/content/content.module.css";
 import s from "@/components/public/public.module.css";
+import { typo } from "@/lib/typography";
 
 // Rendered on first request, then served from cache and refreshed every 5 minutes (ISR).
 export const revalidate = 300;
@@ -30,7 +30,7 @@ async function load(slug: string): Promise<Article | null> {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const a = await load(params.slug);
-  if (!a) return { title: "Статья не найдена", robots: { index: false } };
+  if (!a) return { title: "Статья не\u00a0найдена", robots: { index: false } };
   const path = `/articles/${a.slug}`;
   return {
     title: a.title,
@@ -88,7 +88,10 @@ export default async function ArticlePage({ params }: Props) {
     mainEntityOfPage: { "@id": abs(path) },
     datePublished: a.published_at ?? undefined,
     dateModified: a.updated_at ?? a.published_at ?? undefined,
-    author: { "@type": "Organization", name: a.author_name || "Редакция aprosop", url: abs("/") },
+    author: a.specialist
+      ? { "@type": "Person", name: a.specialist.name, ...(a.specialist.photo_url ? { image: abs(a.specialist.photo_url) } : {}) }
+      : { "@type": "Organization", name: a.author_name || "Редакция Aprosop", url: abs("/") },
+    ...(a.cover_image ? { image: abs(a.cover_image.url) } : {}),
     publisher: { "@id": ORG_ID },
     isPartOf: { "@id": WEBSITE_ID },
     articleSection: a.topic_label,
@@ -134,9 +137,7 @@ export default async function ArticlePage({ params }: Props) {
       <div className={s.detail}>
         <article className={s.doc}>
           <header className={s.head}>
-            <div className={`${s.banner} ${c.tone}`} data-tone={a.cover} aria-hidden>
-              <TopicArt topic={a.topic} className={art.bannerArt} />
-            </div>
+            <ArticleBanner a={a} className={s.banner} />
             <div className={s.meta}>
               <Link href={`/articles?topic=${a.topic}`}>{a.topic_label}</Link>
               <span>
@@ -145,8 +146,8 @@ export default async function ArticlePage({ params }: Props) {
               </span>
               <EvidenceBadge level={a.evidence_level} />
             </div>
-            <h1 className={s.title}>{a.title}</h1>
-            {a.summary && <p className={s.lead}>{a.summary}</p>}
+            <h1 className={s.title}>{typo(a.title)}</h1>
+            {a.summary && <p className={s.lead}>{typo(a.summary)}</p>}
           </header>
 
           <KeyFacts facts={a.key_facts} />
@@ -155,18 +156,21 @@ export default async function ArticlePage({ params }: Props) {
             text={a.when_to_seek_help}
             cta={
               <Button href="/start" variant="primary" size="sm">
-                Поговорить с психологом анонимно
+                Поговорить с&nbsp;психологом анонимно
               </Button>
             }
           />
           <Sources sources={sources} level={a.evidence_level} reviewedAt={a.reviewed_at} />
+          <ArticleByline a={a} />
+          {a.specialist && <AuthorCard specialist={a.specialist} />}
+          <ReadCounter slug={a.slug} />
         </article>
 
-        <aside className={s.aside} aria-label="Ещё по теме">
+        <aside className={s.aside} aria-label="Ещё по&nbsp;теме">
           <StartCta compact />
           {related.length > 0 && (
             <section>
-              <h2 className={s.asideTitle}>Ещё по теме</h2>
+              <h2 className={s.asideTitle}>Ещё по&nbsp;теме</h2>
               <ul className={s.asideList}>
                 {related.map((r) => (
                   <li key={r.id}>

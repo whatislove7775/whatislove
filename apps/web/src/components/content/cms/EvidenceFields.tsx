@@ -9,7 +9,7 @@ import s from "./cms.module.css";
 import e from "./evidenceFields.module.css";
 
 const LEVEL_OPTIONS = [
-  { value: "", label: "Не указан" },
+  { value: "", label: "Не\u00a0указан" },
   ...EVIDENCE_LEVELS.map((l) => ({ value: l.value, label: l.label })),
 ];
 
@@ -28,9 +28,14 @@ export function EvidenceFields({
   onFacts,
   errors,
   children,
+  title = "Доказательность",
+  sub = "Ссылайтесь в\u00a0тексте на\u00a0источники как\u00a0[1] или\u00a0[1, 2]. Добавляйте только то, что\u00a0вы\u00a0открыли и\u00a0проверили: название, авторы и\u00a0год должны совпадать с\u00a0записью по\u00a0ссылке.",
 }: {
-  level: EvidenceLevel;
-  onLevel: (v: EvidenceLevel) => void;
+  /** Without onLevel the evidence level select is hidden (specialist editor: sources only). */
+  level?: EvidenceLevel;
+  onLevel?: (v: EvidenceLevel) => void;
+  title?: string;
+  sub?: string;
   sources: Source[];
   onSources: (v: Source[]) => void;
   facts?: KeyFact[];
@@ -46,23 +51,22 @@ export function EvidenceFields({
 
   return (
     <Card as="section">
-      <CardHead
-        title="Доказательность"
-        sub="Ссылайтесь в тексте на источники как [1] или [1, 2]. Добавляйте только то, что вы открыли и проверили: название, авторы и год должны совпадать с записью по ссылке."
-      />
+      <CardHead title={title} sub={sub} />
       <div className={e.stack}>
-        <Select
-          label="Сила доказательств"
-          value={level}
-          onChange={(v) => onLevel(v as EvidenceLevel)}
-          options={LEVEL_OPTIONS}
-          error={errors("evidence_level")}
-        />
+        {onLevel && (
+          <Select
+            label="Сила доказательств"
+            value={level ?? ""}
+            onChange={(v) => onLevel(v as EvidenceLevel)}
+            options={LEVEL_OPTIONS}
+            error={errors("evidence_level")}
+          />
+        )}
         {children}
 
         {facts && onFacts && (
           <fieldset className={e.group}>
-            <legend>Главное из исследований</legend>
+            <legend>Главное из&nbsp;исследований</legend>
             {facts.map((f, i) => (
               <div key={i} className={e.factRow}>
                 <Input
@@ -140,7 +144,7 @@ export function EvidenceFields({
                   onChange={(ev) => setSource(i, { year: parseInt(ev.target.value, 10) || undefined })}
                 />
                 <Input
-                  label="Журнал или организация"
+                  label="Журнал или&nbsp;организация"
                   value={src.publisher ?? ""}
                   onChange={(ev) => setSource(i, { publisher: ev.target.value })}
                 />

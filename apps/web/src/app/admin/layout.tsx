@@ -3,8 +3,8 @@ import { AdminShell } from "@/components/admin/AdminShell";
 
 /** Private area: never indexed; link previews use the generic card (opengraph-image.tsx). */
 export const metadata: Metadata = {
-  title: { default: "Администрирование", template: "%s | aprosop" },
-  description: "Раздел aprosop, который открывается после входа.",
+  title: { default: "Администрирование", template: "%s | Aprosop" },
+  description: "Раздел Aprosop, который открывается после входа.",
   robots: { index: false, follow: false },
 };
 

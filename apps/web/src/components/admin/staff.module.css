@@ -115,6 +115,31 @@
   border-radius: 6px;
   word-break: break-all;
 }
+.idLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.idLine .code {
+  word-break: normal;
+  white-space: nowrap;
+}
+.idCopy {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--c-muted);
+  cursor: pointer;
+}
+.idCopy:hover {
+  background: var(--c-raised);
+  color: var(--c-text);
+}
 .subhead {
   font-size: var(--t-13);
   font-weight: 600;

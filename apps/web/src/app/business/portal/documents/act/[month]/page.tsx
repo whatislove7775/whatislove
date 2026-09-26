@@ -13,7 +13,7 @@ export default function ActPage({ params }: { params: { month: string } }) {
   if (docs.error) return <ErrorBlock message={docs.error} onRetry={docs.reload} />;
   if (!docs.data) return <Skeleton height={480} radius={22} />;
   const act = docs.data.acts.find((a) => a.month === params.month);
-  if (!act) return <ErrorBlock message="Акт за этот месяц не найден." onRetry={docs.reload} />;
+  if (!act) return <ErrorBlock message="Акт за&nbsp;этот месяц не&nbsp;найден." onRetry={docs.reload} />;
   const c = docs.data.company;
   const req = docs.data.requisites;
   const k = docs.data.k_min;
@@ -50,11 +50,11 @@ export default function ActPage({ params }: { params: { month: string } }) {
         </tbody>
       </table>
       <div>
-        <strong>Итого: {rubK(act.amount_kopecks, { cents: true })}</strong>, списано из предоплаченного бюджета.
+        <strong>Итого: {rubK(act.amount_kopecks, { cents: true })}</strong>, списано из&nbsp;предоплаченного бюджета.
       </div>
       <div className={s.paperStamp}>
-        Образец. Акт не содержит данных о сотрудниках: услуги оказаны анонимно, количество показывается только при {k} и более
-        участниках. Реквизиты и подпись появятся после оформления юрлица.
+        Образец. Акт не&nbsp;содержит данных о&nbsp;сотрудниках: услуги оказаны анонимно, количество показывается только при {k} и&nbsp;более
+        участниках. Реквизиты и&nbsp;подпись появятся после оформления юрлица.
       </div>
     </Paper>
   );

@@ -368,12 +368,8 @@
 }
 .cardIcon {
   flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
   display: grid;
   place-items: center;
-  background: var(--a-cyan-soft);
   color: var(--a-cyan-ink);
 }
 .cardIcon[data-tone="mint"] {
@@ -530,10 +526,8 @@ button.row:focus-visible {
   flex: none;
   width: 32px;
   height: 32px;
-  border-radius: 10px;
   display: grid;
   place-items: center;
-  background: var(--c-raised);
   color: var(--c-muted);
 }
 .rowMain {

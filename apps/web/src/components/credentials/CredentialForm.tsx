@@ -52,8 +52,8 @@ export interface PickedFile {
 }
 
 export function checkFile(f: File): string | null {
-  if (f.size > CREDENTIAL_MAX_BYTES) return `«${f.name}» больше 10 МБ. Сожмите скан или разбейте на части.`;
-  if (f.type && !CREDENTIAL_TYPES.includes(f.type)) return `«${f.name}»: подойдёт PDF, JPG, PNG или WebP.`;
+  if (f.size > CREDENTIAL_MAX_BYTES) return `«${f.name}» больше 10\u00a0МБ. Сожмите скан или\u00a0разбейте на\u00a0части.`;
+  if (f.type && !CREDENTIAL_TYPES.includes(f.type)) return `«${f.name}»: подойдёт PDF, JPG, PNG или\u00a0WebP.`;
   return null;
 }
 
@@ -109,11 +109,11 @@ export function CredentialForm({
     const year = f.year ? Number(f.year) : null;
     const yearEnd = f.year_end ? Number(f.year_end) : null;
     const now = new Date().getFullYear();
-    if (year !== null && (!Number.isInteger(year) || year < 1950 || year > now + 1)) e.year = `Год от 1950 до ${now}`;
-    if (yearEnd !== null && (!Number.isInteger(yearEnd) || yearEnd < (year ?? 1950) || yearEnd > now + 1)) e.year_end = "Не раньше начала";
+    if (year !== null && (!Number.isInteger(year) || year < 1950 || year > now + 1)) e.year = `Год от\u00a01950\u00a0до\u00a0${now}`;
+    if (yearEnd !== null && (!Number.isInteger(yearEnd) || yearEnd < (year ?? 1950) || yearEnd > now + 1)) e.year_end = "Не\u00a0раньше начала";
     const hours = f.hours ? Number(f.hours) : null;
     if (hours !== null && (!Number.isInteger(hours) || hours < 1)) e.hours = "Целое число часов";
-    if (!item && f.kind !== "publication" && !files.length && !f.url.trim()) e.files = "Приложите скан или фото документа: без него сотрудник не сможет проверить пункт";
+    if (!item && f.kind !== "publication" && !files.length && !f.url.trim()) e.files = "Приложите скан или\u00a0фото документа: без\u00a0него сотрудник не\u00a0сможет проверить пункт";
     setErrors(e);
     if (Object.keys(e).length) return;
 
@@ -137,7 +137,7 @@ export function CredentialForm({
         try {
           await credentialsApi.upload(saved.id, p.file, p.isPublic);
         } catch (err) {
-          warning = err instanceof ApiError ? err.message : `Не получилось загрузить «${p.file.name}».`;
+          warning = err instanceof ApiError ? err.message : `Не\u00a0получилось загрузить «${p.file.name}».`;
         }
       }
       if (files.length) saved = (await credentialsApi.mine()).find((x) => x.id === saved.id) ?? saved;
@@ -159,7 +159,7 @@ export function CredentialForm({
     <Modal open={open} onClose={() => !busy && onClose()} title={item ? "Изменить документ" : "Добавить документ"} width={600}>
       <div className={s.form}>
         <Select<CredentialKind>
-          label="Что это"
+          label="Что&nbsp;это"
           value={f.kind}
           onChange={(v) => set("kind", v)}
           disabled={!!item}
@@ -190,7 +190,7 @@ export function CredentialForm({
             label="Супервизор"
             value={f.supervisor}
             maxLength={120}
-            placeholder="Фамилия и инициалы"
+            placeholder="Фамилия и&nbsp;инициалы"
             onChange={(e) => set("supervisor", e.target.value)}
             error={errors.supervisor}
           />
@@ -246,7 +246,7 @@ export function CredentialForm({
             value={f.number}
             maxLength={60}
             placeholder="Необязательно"
-            hint="Клиенты увидят только последние 4 символа. Полный номер знает только сотрудник, который проверяет документ."
+            hint="Клиенты увидят только последние 4&nbsp;символа. Полный номер знает только сотрудник, который проверяет документ."
             onChange={(e) => set("number", e.target.value)}
           />
         )}
@@ -257,7 +257,7 @@ export function CredentialForm({
             value={f.url}
             maxLength={500}
             placeholder="https://"
-            hint={f.kind === "membership" ? "Страница в реестре ассоциации, если есть" : "Где можно прочитать или проверить"}
+            hint={f.kind === "membership" ? "Страница в\u00a0реестре ассоциации, если есть" : "Где можно прочитать или\u00a0проверить"}
             onChange={(e) => set("url", e.target.value)}
             error={errors.url}
           />
@@ -277,7 +277,7 @@ export function CredentialForm({
           <div className={s.picked}>
             <label className={s.addTile} style={{ width: "100%", height: "auto", minHeight: 72, gridAutoFlow: "column", justifyContent: "center", gap: 10 }}>
               <Paperclip size={18} aria-hidden />
-              <span>Приложить скан или фото: PDF, JPG, PNG, WebP до 10 МБ</span>
+              <span>Приложить скан или&nbsp;фото: PDF, JPG, PNG, WebP до&nbsp;10&nbsp;МБ</span>
               <input
                 ref={inputRef}
                 type="file"
@@ -299,7 +299,7 @@ export function CredentialForm({
                   onClick={() => setFiles((xs) => xs.map((x, j) => (j === i ? { ...x, isPublic: !x.isPublic } : x)))}
                 >
                   {p.isPublic ? <Eye size={13} /> : <EyeOff size={13} />}
-                  {p.isPublic ? "Показывать публично" : "Только для проверки"}
+                  {p.isPublic ? "Показывать публично" : "Только для\u00a0проверки"}
                 </button>
                 <button
                   type="button"
@@ -319,9 +319,9 @@ export function CredentialForm({
         <div className={s.privacy}>
           <ShieldCheck size={18} aria-hidden />
           <span>
-            Файлы хранятся зашифрованными. Их видит только сотрудник, который проверяет документ. Клиентам покажем лишь те файлы,
-            что вы отметили «Показывать публично», и только после проверки. Из фото удаляем геометку и данные камеры.
-            {approvedEdit && " Если измените подтверждённый пункт, он снова уйдёт на проверку."}
+            Файлы хранятся зашифрованными. Их&nbsp;видит только сотрудник, который проверяет документ. Клиентам покажем лишь те&nbsp;файлы,
+            что&nbsp;вы&nbsp;отметили «Показывать публично», и&nbsp;только после проверки. Из&nbsp;фото удаляем геометку и&nbsp;данные камеры.
+            {approvedEdit && " Если измените подтверждённый пункт, он\u00a0снова уйдёт на\u00a0проверку."}
           </span>
         </div>
         <div className={s.actions}>
@@ -329,7 +329,7 @@ export function CredentialForm({
             Отмена
           </Button>
           <Button variant="primary" loading={busy} onClick={submit}>
-            {item ? "Сохранить" : "Отправить на проверку"}
+            {item ? "Сохранить" : "Отправить на\u00a0проверку"}
           </Button>
         </div>
       </div>

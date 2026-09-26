@@ -14,10 +14,12 @@ import s from "./business.module.css";
 /** «осталось 3 000 ₽ и 2 созвона до 1 ноября» */
 export function allowanceText(p: MyProgram): string {
   const parts: string[] = [];
-  if (p.rub_left_kopecks !== null) parts.push(rubK(p.rub_left_kopecks));
+  // Never promise more than the company budget can actually cover
+  const rubLeft = p.available_kopecks != null ? p.available_kopecks : p.rub_left_kopecks;
+  if (rubLeft !== null) parts.push(rubK(rubLeft));
   if (p.calls_left !== null) parts.push(`${p.calls_left} ${plural(p.calls_left, "созвон", "созвона", "созвонов")}`);
-  const left = parts.length ? parts.join(" и ") : "без лимита";
-  const until = p.renews_on ? `до ${dateRu(p.renews_on)}` : p.expires_on ? `до ${dateRu(p.expires_on)}` : "";
+  const left = parts.length ? parts.join(" и ") : "без\u00a0лимита";
+  const until = p.renews_on ? `до\u00a0${dateRu(p.renews_on)}` : p.expires_on ? `до\u00a0${dateRu(p.expires_on)}` : "";
   return `Осталось ${left}${until ? ` ${until}` : ""}`;
 }
 
@@ -25,9 +27,10 @@ function ProgramRow({ p }: { p: MyProgram }) {
   const limits: string[] = [];
   if (p.amount_kopecks !== null) limits.push(rubK(p.amount_kopecks));
   if (p.calls_limit !== null) limits.push(`${p.calls_limit} ${plural(p.calls_limit, "созвон", "созвона", "созвонов")}`);
+  const rubLeft = p.available_kopecks != null ? p.available_kopecks : p.rub_left_kopecks;
   const pct =
-    p.amount_kopecks && p.rub_left_kopecks !== null
-      ? p.rub_left_kopecks / p.amount_kopecks
+    p.amount_kopecks && rubLeft !== null
+      ? rubLeft / p.amount_kopecks
       : p.calls_limit && p.calls_left !== null
         ? p.calls_left / p.calls_limit
         : 1;
@@ -44,11 +47,16 @@ function ProgramRow({ p }: { p: MyProgram }) {
           </span>
         </span>
       </div>
-      <div className={s.allowanceLeft}>{allowanceText(p)}</div>
-      <div className={s.meter} role="presentation">
-        <span style={{ width: `${Math.max(0, Math.min(1, pct)) * 100}%` }} />
-      </div>
-      {!p.budget_ok && <div className={b.hint}>Бюджет компании на этот период закончился. Созвоны пока оплачиваются с баланса.</div>}
+      {p.budget_ok ? (
+        <>
+          <div className={s.allowanceLeft}>{allowanceText(p)}</div>
+          <div className={s.meter} role="presentation">
+            <span style={{ width: `${Math.max(0, Math.min(1, pct)) * 100}%` }} />
+          </div>
+        </>
+      ) : (
+        <div className={s.allowanceLeft}>Компания ещё не&nbsp;пополнила бюджет&nbsp;— пока созвоны оплачиваются с&nbsp;вашего баланса</div>
+      )}
       {p.expires_on && p.renews_on && <div className={b.hint}>Программа действует до {dateRu(p.expires_on, { day: "numeric", month: "long", year: "numeric" })}.</div>}
     </div>
   );
@@ -76,7 +84,7 @@ export function CompanyAllowance({ onChanged }: { onChanged?: () => void }) {
       notifyBalanceChanged();
       onChanged?.();
     } catch (err) {
-      setError(err instanceof ApiError ? (err.status === 429 ? "Слишком много попыток. Подождите минуту." : err.message) : "Не получилось проверить код.");
+      setError(err instanceof ApiError ? (err.status === 429 ? "Слишком много попыток. Подождите минуту." : err.message) : "Не\u00a0получилось проверить код.");
     } finally {
       setBusy(false);
     }
@@ -85,7 +93,7 @@ export function CompanyAllowance({ onChanged }: { onChanged?: () => void }) {
   return (
     <CollapsibleCard
       key={programs.length ? "on" : "off"}
-      title={programs.length ? "Программа компании" : "Код от работодателя"}
+      title={programs.length ? "Программа компании" : "Код от\u00a0работодателя"}
       icon={<Building2 size={18} />}
       defaultOpen={programs.length > 0}
     >
@@ -101,7 +109,7 @@ export function CompanyAllowance({ onChanged }: { onChanged?: () => void }) {
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="BIZ-XXXX-XXXX-XXXX"
-            aria-label="Код от работодателя"
+            aria-label="Код от&nbsp;работодателя"
             autoComplete="off"
             spellCheck={false}
             maxLength={24}
@@ -113,7 +121,7 @@ export function CompanyAllowance({ onChanged }: { onChanged?: () => void }) {
         </form>
         <div className={s.anonNote}>
           <ShieldCheck size={16} aria-hidden />
-          <span>Компания не узнает, что это вы.</span>
+          <span>Компания не&nbsp;узнает, что&nbsp;это&nbsp;вы.</span>
         </div>
       </div>
     </CollapsibleCard>

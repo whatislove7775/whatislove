@@ -86,10 +86,10 @@ function AuditPage() {
     <>
       <PageHeader
         title="Журнал действий"
-        sub="Кто, что, когда и откуда"
+        sub="Кто, что, когда и&nbsp;откуда"
       />
       <Toolbar>
-        <SearchBox value={q} onChange={setQ} placeholder="Сотрудник, объект или ID" label="Поиск в журнале" />
+        <SearchBox value={q} onChange={setQ} placeholder="Сотрудник, объект или&nbsp;ID" label="Поиск в&nbsp;журнале" />
         <SelectBox<Cat> label="Раздел" value={cat} onChange={setCat} options={CATS} />
       </Toolbar>
       {error && <LoadError text={error} onRetry={load} />}
@@ -145,7 +145,7 @@ function AuditPage() {
                           </div>
                         ))}
                         <div>
-                          <dt>IP и браузер</dt>
+                          <dt>IP и&nbsp;браузер</dt>
                           <dd>
                             {e.ip ?? "нет данных"}
                             {e.user_agent ? `, ${e.user_agent}` : ""}
@@ -160,7 +160,7 @@ function AuditPage() {
             <Pager page={data.page} pages={data.pages} count={data.count} onPage={setPage} noun={["запись", "записи", "записей"]} />
           </>
         ) : (
-          <EmptyState art={<EmptyArt scene="moon" />} icon={<ScrollText size={22} />} title="Записей нет" text="Здесь появятся действия сотрудников: блокировки, решения по заявкам, возвраты." />
+          <EmptyState art={<EmptyArt scene="moon" />} icon={<ScrollText size={22} />} title="Записей нет" text="Здесь появятся действия сотрудников: блокировки, решения по&nbsp;заявкам, возвраты." />
         )}
       </Card>
     </>

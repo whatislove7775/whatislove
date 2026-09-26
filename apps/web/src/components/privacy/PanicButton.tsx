@@ -25,7 +25,7 @@ export function PanicButton({ docked, inline }: { docked?: boolean; inline?: boo
         if (e.pointerType !== "mouse") panicExit();
       }}
       aria-label="Быстрый выход: открыть нейтральный сайт"
-      title="Быстрый выход (или дважды Esc)"
+      title="Быстрый выход (или&nbsp;дважды Esc)"
     >
       <EyeOff size={docked ? 22 : 20} strokeWidth={inline ? 1.8 : 2} />
     </button>

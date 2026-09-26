@@ -368,3 +368,21 @@ def test_public_lead_and_hr_login(api, admin_user):
     admin, password = svc.invite_admin(c, login="hr-login")
     r = api.post("/api/v1/auth/login/", {"login": "hr-login", "password": password}, format="json")
     assert r.status_code == 200 and r.json()["user"]["role"] == "business"
+
+
+@pytest.mark.django_db
+def test_my_programs_when_company_budget_is_empty_or_low(client_user):
+    """Бюджет не пополнен: не обещаем «Осталось 5 000 ₽», доступно 0; мало бюджета — доступно не больше него."""
+    c, p = make_company(budget_rub=0, amount_rub=20_000)
+    code = codes_for(c, p)[0]
+    api = auth_client(client_user)
+    assert api.post("/api/v1/business/redeem/", {"code": code}, format="json").status_code in (200, 201)
+    [prog] = api.get("/api/v1/business/me/").json()["programs"]
+    assert prog["budget_ok"] is False
+    assert prog["rub_left_kopecks"] == 2_000_000
+    assert prog["available_kopecks"] == 0
+
+    svc.mark_invoice_paid(svc.issue_invoice(c, 10_000 * 100))
+    [prog] = api.get("/api/v1/business/me/").json()["programs"]
+    assert prog["budget_ok"] is True
+    assert prog["available_kopecks"] == 1_000_000  # 10 000 ₽ бюджета < 20 000 ₽ лимита

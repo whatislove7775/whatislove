@@ -19,7 +19,9 @@ from apps.users.models import PsychologistProfile, User
 
 from . import conf, services
 from .crypto import decrypt_bytes, decrypt_text, encrypt_bytes, encrypt_text
-from .models import Attachment, Conversation, Message
+from .images import IMAGE_EXTS, sanitize_image
+from .models import Attachment, Conversation, Message, SpecialistChatSettings
+from .rules import check_contacts, file_policy
 from .uploads import validate_file, validate_voice
 
 Kind = Conversation.Kind
@@ -297,15 +299,22 @@ class MessageListView(APIView):
                 raise ValidationError({"text": "Сообщение пустое."})
             if len(text) > MAX_TEXT:
                 raise ValidationError({"text": f"Не больше {MAX_TEXT} символов."})
+            check_contacts(conv, text)
             msg = services.create_message(conv, sender=user, sender_role=sender_role, text=text)
         elif kind in (Message.Kind.VOICE, Message.Kind.FILE):
             upload = request.FILES.get("file")
             if upload is None:
                 raise ValidationError({"file": "Прикрепите файл."})
+            width = height = None
             if kind == Message.Kind.FILE:
-                if not services.can_send_files(role, conv):
-                    raise PermissionDenied("Файлы могут отправлять только специалисты и поддержка.")
+                allowed, reason = file_policy(role, conv)
+                if not allowed:
+                    raise PermissionDenied(reason or "В этот чат нельзя отправлять файлы.")
                 data, mime, name = validate_file(upload)
+                check_contacts(conv, name.rsplit(".", 1)[0], field="file")
+                ext = name.rsplit(".", 1)[-1].lower()
+                if ext in IMAGE_EXTS:
+                    data, width, height = sanitize_image(data, ext)
                 duration, peaks = None, []
             else:
                 data, mime, duration, peaks = validate_voice(
@@ -315,7 +324,7 @@ class MessageListView(APIView):
                 msg = services.create_message(conv, sender=user, sender_role=sender_role, kind=kind)
                 Attachment.objects.create(
                     message=msg, name_enc=encrypt_text(name), mime=mime, size=len(data),
-                    duration_ms=duration, peaks=peaks, data_enc=encrypt_bytes(data),
+                    duration_ms=duration, peaks=peaks, width=width, height=height, data_enc=encrypt_bytes(data),
                 )
         else:
             raise ValidationError({"kind": "Неизвестный тип сообщения."})
@@ -346,6 +355,7 @@ class MessageDetailView(APIView):
             raise ValidationError({"text": "Сообщение пустое."})
         if len(text) > MAX_TEXT:
             raise ValidationError({"text": f"Не больше {MAX_TEXT} символов."})
+        check_contacts(conv, text)
         msg.text_enc = encrypt_text(text)
         msg.edited_at = timezone.now()
         msg.save(update_fields=["text_enc", "edited_at"])
@@ -397,3 +407,24 @@ class AttachmentView(APIView):
         resp["X-Content-Type-Options"] = "nosniff"
         resp["Content-Security-Policy"] = "default-src 'none'; sandbox"
         return resp
+
+
+class SpecialistChatSettingsView(APIView):
+    """GET/PATCH /chat/settings/ — настройки чатов специалиста: {"accept_client_files": bool}."""
+
+    def _profile(self, request):
+        if not services.is_specialist(request.user):
+            raise PermissionDenied("Настройки чатов доступны специалистам.")
+        return request.user.psychologist_profile
+
+    def get(self, request):
+        obj = SpecialistChatSettings.objects.filter(specialist=self._profile(request)).first()
+        return Response({"accept_client_files": bool(obj and obj.accept_client_files)})
+
+    def patch(self, request):
+        profile = self._profile(request)
+        value = request.data.get("accept_client_files")
+        if not isinstance(value, bool):
+            raise ValidationError({"accept_client_files": "Ожидается true или false."})
+        SpecialistChatSettings.objects.update_or_create(specialist=profile, defaults={"accept_client_files": value})
+        return Response({"accept_client_files": value})

@@ -58,5 +58,65 @@ def ai_daily_limit() -> int:
     return _get("AI_DAILY_LIMIT", 40)
 
 
+def ai_provider() -> str:
+    """anthropic (по умолчанию) | gigachat | openai_compatible."""
+    return str(_get("AI_PROVIDER", "anthropic")).strip().lower() or "anthropic"
+
+
+# ── GigaChat (Сбер) ── см. docs/AI.md
+def gigachat_auth_key() -> str:
+    """«Ключ авторизации» из личного кабинета (base64 от client_id:client_secret)."""
+    return _get("GIGACHAT_AUTH_KEY", "")
+
+
+def gigachat_client_id() -> str:
+    return _get("GIGACHAT_CLIENT_ID", "")
+
+
+def gigachat_client_secret() -> str:
+    return _get("GIGACHAT_CLIENT_SECRET", "")
+
+
+def gigachat_scope() -> str:
+    # GIGACHAT_API_PERS — физлица (Freemium), GIGACHAT_API_B2B / GIGACHAT_API_CORP — юрлица
+    return _get("GIGACHAT_SCOPE", "GIGACHAT_API_PERS")
+
+
+def gigachat_model() -> str:
+    return _get("GIGACHAT_MODEL", "GigaChat-2")
+
+
+def gigachat_auth_url() -> str:
+    return _get("GIGACHAT_AUTH_URL", "https://ngw.devices.sberbank.ru:9443/api/v2/oauth")
+
+
+def gigachat_base_url() -> str:
+    return _get("GIGACHAT_BASE_URL", "https://api.giga.chat/v1")
+
+
+def gigachat_ca_bundle() -> str:
+    """Путь к сертификату «Russian Trusted Root CA» (НУЦ Минцифры) в формате PEM."""
+    return _get("GIGACHAT_CA_BUNDLE", "")
+
+
+# ── OpenAI-совместимые (OpenRouter, YandexGPT, Ollama…) ──
+def openai_base_url() -> str:
+    return _get("OPENAI_BASE_URL", "")
+
+
+def openai_api_key() -> str:
+    return _get("OPENAI_API_KEY", "")
+
+
+def openai_model() -> str:
+    return _get("OPENAI_MODEL", "")
+
+
+def openai_ca_bundle() -> str:
+    return _get("OPENAI_CA_BUNDLE", "")
+
+
 def ai_enabled() -> bool:
-    return bool(ai_api_key())
+    from .ai import enabled
+
+    return enabled()

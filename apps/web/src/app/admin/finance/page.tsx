@@ -106,20 +106,20 @@ function Overview({ onTab }: { onTab: (t: Tab) => void }) {
         <div className={s.notice}>
           <AlertTriangle size={18} aria-hidden style={{ flex: "none" }} />
           <span style={{ flex: 1 }}>
-            ЮKassa не подключена: работает тестовая касса, настоящие деньги не принимаются. Как подключить — docs/PAYMENTS.md.
+            ЮKassa не&nbsp;подключена: работает тестовая касса, настоящие деньги не&nbsp;принимаются. Как&nbsp;подключить&nbsp;— docs/PAYMENTS.md.
           </span>
         </div>
       )}
       <div className={s.cards} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
-        <Stat label="На балансах клиентов" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.clients_kopecks)}</span>} />
-        <Stat label="Заморожено под созвоны" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.holds_kopecks)}</span>} note={`${data.active_holds} ${plural(data.active_holds, "созвон", "созвона", "созвонов")}`} />
+        <Stat label="На&nbsp;балансах клиентов" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.clients_kopecks)}</span>} />
+        <Stat label="Заморожено под&nbsp;созвоны" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.holds_kopecks)}</span>} note={`${data.active_holds} ${plural(data.active_holds, "созвон", "созвона", "созвонов")}`} />
         <Stat label="Специалистам: ожидает" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.spec_pending_kopecks)}</span>} />
-        <Stat label="Специалистам: к выплате" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.spec_available_kopecks + data.spec_payout_kopecks)}</span>} note={`${data.open_payouts} ${plural(data.open_payouts, "заявка", "заявки", "заявок")}`} tone={data.open_payouts ? "warning" : undefined} />
-        <Stat label="Комиссия сервиса" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.platform_fee_kopecks)}</span>} note={`за 30 дней ${rubK(data.fee_month_kopecks)}`} tone="success" />
+        <Stat label="Специалистам: к&nbsp;выплате" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.spec_available_kopecks + data.spec_payout_kopecks)}</span>} note={`${data.open_payouts} ${plural(data.open_payouts, "заявка", "заявки", "заявок")}`} tone={data.open_payouts ? "warning" : undefined} />
+        <Stat label="Комиссия сервиса" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.platform_fee_kopecks)}</span>} note={`за\u00a030\u00a0дней ${rubK(data.fee_month_kopecks)}`} tone="success" />
         <Stat label="Выплачено специалистам" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.payouts_sent_kopecks)}</span>} />
-        <Stat label="Пополнения ЮKassa" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.topups_live_kopecks)}</span>} note={`за 30 дней ${rubK(data.topups_month_kopecks)}`} />
+        <Stat label="Пополнения ЮKassa" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.topups_live_kopecks)}</span>} note={`за\u00a030\u00a0дней ${rubK(data.topups_month_kopecks)}`} />
         <Stat label="Тестовые пополнения" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.topups_test_kopecks)}</span>} />
-        <Stat label="Коды: не погашено" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.gifts_outstanding_kopecks)}</span>} note={`погашено ${rubK(data.gifts_redeemed_kopecks)}`} />
+        <Stat label="Коды: не&nbsp;погашено" value={<span style={{ whiteSpace: "nowrap" }}>{rubK(data.gifts_outstanding_kopecks)}</span>} note={`погашено ${rubK(data.gifts_redeemed_kopecks)}`} />
       </div>
       <Card as="section">
         <CardHead title="Настройки" icon={<Scale size={18} />} sub="Меняются переменными окружения, см. docs/PAYMENTS.md" />
@@ -128,10 +128,10 @@ function Overview({ onTab }: { onTab: (t: Tab) => void }) {
             ["Приём денег", p.yookassa_live ? "ЮKassa" : "Тестовая касса"],
             ["Тестовая касса", p.mock_enabled ? "Включена" : "Выключена"],
             ["Выплаты", p.payout_rail === "yookassa" ? "ЮKassa Выплаты" : "Вручную (бухгалтерия)"],
-            ["Чеки через ЮKassa", p.receipts_enabled ? "Передаём данные для чека" : "Выключено"],
+            ["Чеки через ЮKassa", p.receipts_enabled ? "Передаём данные для\u00a0чека" : "Выключено"],
             ["Комиссия", `${p.fee_percent}%`],
-            ["Бесплатная отмена", `за ${p.free_cancel_hours} ч, позже удерживаем ${p.late_cancel_penalty_percent}%`],
-            ["Заработок доступен через", `${p.earnings_hold_hours} ч после созвона`],
+            ["Бесплатная отмена", `за\u00a0${p.free_cancel_hours} ч, позже удерживаем ${p.late_cancel_penalty_percent}%`],
+            ["Заработок доступен через", `${p.earnings_hold_hours} ч\u00a0после созвона`],
             [
               "Журнал проводок",
               data.ledger_ok ? (
@@ -156,7 +156,7 @@ const PAYOUT_STATUS: Record<string, { label: string; tone: "neutral" | "success"
   processing: { label: "Отправляется", tone: "warning" },
   paid: { label: "Выплачена", tone: "success" },
   rejected: { label: "Отклонена", tone: "danger" },
-  failed: { label: "Не прошла", tone: "danger" },
+  failed: { label: "Не\u00a0прошла", tone: "danger" },
 };
 
 function Payouts() {
@@ -308,8 +308,8 @@ function Payouts() {
       <ReasonModal
         open={dialog === "reject"}
         title="Отклонить выплату?"
-        text="Сумма вернётся в «доступно к выплате». Специалист увидит ваш комментарий."
-        reasonLabel="Комментарий для специалиста"
+        text="Сумма вернётся в&nbsp;«доступно к&nbsp;выплате». Специалист увидит ваш комментарий."
+        reasonLabel="Комментарий для&nbsp;специалиста"
         confirm="Отклонить"
         variant="danger"
         busy={busy}
@@ -319,8 +319,8 @@ function Payouts() {
       <ReasonModal
         open={dialog === "paid"}
         title="Деньги переведены?"
-        text="Отмечайте только после перевода. Специалист увидит выплату как выполненную."
-        reasonLabel="Номер платёжки или комментарий"
+        text="Отмечайте только после перевода. Специалист увидит выплату как&nbsp;выполненную."
+        reasonLabel="Номер платёжки или&nbsp;комментарий"
         requireReason={false}
         confirm="Да, выплачено"
         busy={busy}
@@ -347,9 +347,9 @@ const REASON: Record<string, string> = {
   client_cancel: "клиент отменил заранее",
   late_cancel: "поздняя отмена клиентом",
   specialist_cancel: "специалист отменил",
-  specialist_no_show: "специалист не пришёл",
-  client_no_show: "клиент не пришёл",
-  no_show_both: "никто не пришёл",
+  specialist_no_show: "специалист не\u00a0пришёл",
+  client_no_show: "клиент не\u00a0пришёл",
+  no_show_both: "никто не\u00a0пришёл",
   staff_cancel: "отмена командой",
   staff_refund: "возврат командой",
   staff_capture: "списано командой",
@@ -442,7 +442,7 @@ function Calls() {
             ))}
           </div>
         ) : (
-          <EmptyState art={<EmptyArt scene="calendar" />} title="Пусто" text="Созвонов с таким статусом оплаты нет." />
+          <EmptyState art={<EmptyArt scene="calendar" />} title="Пусто" text="Созвонов с&nbsp;таким статусом оплаты нет." />
         )}
       </Card>
 
@@ -483,7 +483,7 @@ function Calls() {
                   </>
                 ) : ["captured", "partial"].includes(open.status) ? (
                   <Button variant="danger" icon={<Undo2 size={18} />} onClick={() => setAction("refund")}>
-                    Вернуть деньги на баланс
+                    Вернуть деньги на&nbsp;баланс
                   </Button>
                 ) : null}
               </div>
@@ -500,12 +500,12 @@ function Calls() {
               ? "Вернуть всю сумму клиенту?"
               : action === "penalty"
                 ? "Удержать часть суммы?"
-                : "Вернуть деньги за состоявшийся созвон?"
+                : "Вернуть деньги за\u00a0состоявшийся созвон?"
         }
         text={
           action === "refund"
-            ? "Сумма вернётся на баланс клиента, заработок специалиста и комиссия уменьшатся. Если заработок уже выплачен, используйте корректировку."
-            : "Решение перекрывает автоматические правила и записывается в журнал."
+            ? "Сумма вернётся на\u00a0баланс клиента, заработок специалиста и\u00a0комиссия уменьшатся. Если заработок уже выплачен, используйте корректировку."
+            : "Решение перекрывает автоматические правила и\u00a0записывается в\u00a0журнал."
         }
         confirm="Подтвердить"
         variant={action === "refund" ? "danger" : "primary"}
@@ -514,7 +514,7 @@ function Calls() {
         onConfirm={act}
       >
         {action === "penalty" && (
-          <Input label="Удержать, % (уйдёт специалисту за вычетом комиссии)" inputMode="numeric" value={percent} onChange={(e) => setPercent(e.target.value.replace(/\D/g, ""))} />
+          <Input label="Удержать, % (уйдёт специалисту за&nbsp;вычетом комиссии)" inputMode="numeric" value={percent} onChange={(e) => setPercent(e.target.value.replace(/\D/g, ""))} />
         )}
       </ReasonModal>
     </>
@@ -579,7 +579,7 @@ function Balances() {
               <div key={b.user_id} role="listitem" className={s.rowBtn} style={{ cursor: "default" }}>
                 <span className={s.rowMain}>
                   <span className={s.rowTitle}>{b.alias}</span>
-                  <span className={s.rowSub}>{b.held_kopecks ? `заморожено ${rubK(b.held_kopecks)}` : "без заморозок"}</span>
+                  <span className={s.rowSub}>{b.held_kopecks ? `заморожено ${rubK(b.held_kopecks)}` : "без\u00a0заморозок"}</span>
                 </span>
                 <span className={s.rowMeta}>
                   <span className={s.amount}>{rubK(b.balance_kopecks)}</span>
@@ -593,13 +593,13 @@ function Balances() {
             ))}
           </div>
         ) : (
-          <EmptyState art={<EmptyArt scene="search" />} title="Никого не нашли" text="Здесь клиенты с деньгами на балансе. Найдите нужного по псевдониму." />
+          <EmptyState art={<EmptyArt scene="search" />} title="Никого не&nbsp;нашли" text="Здесь клиенты с&nbsp;деньгами на&nbsp;балансе. Найдите нужного по&nbsp;псевдониму." />
         )}
       </Card>
       <ReasonModal
         open={!!adjust}
         title={`Корректировка: ${adjust?.alias ?? ""}`}
-        text="Например, возврат за сбой связи на баланс. Каждая корректировка — отдельная проводка в журнале."
+        text="Например, возврат за&nbsp;сбой связи на&nbsp;баланс. Каждая корректировка&nbsp;— отдельная проводка в&nbsp;журнале."
         confirm={sign === "credit" ? "Зачислить" : "Списать"}
         busy={busy}
         onClose={() => setAdjust(null)}
@@ -628,7 +628,7 @@ const TOPUP_STATUS: Record<string, { label: string; tone: "neutral" | "success" 
   pending: { label: "Ожидает", tone: "warning" },
   succeeded: { label: "Зачислено", tone: "success" },
   canceled: { label: "Отменено", tone: "neutral" },
-  refunded: { label: "Возвращено на карту", tone: "danger" },
+  refunded: { label: "Возвращено на\u00a0карту", tone: "danger" },
 };
 
 function TopUps() {
@@ -695,18 +695,18 @@ function TopUps() {
                   <span className={s.rowSub}>
                     {dateTime(t.created_at)}
                     {t.provider_payment_id ? `, ${t.provider_payment_id}` : ""}
-                    {t.with_receipt ? ", с чеком" : ""}
+                    {t.with_receipt ? ", с\u00a0чеком" : ""}
                   </span>
                 </span>
                 <span className={s.rowMeta}>
                   <Badge tone={TOPUP_STATUS[t.status].tone}>{TOPUP_STATUS[t.status].label}</Badge>
                   <span className={s.amount}>{rubK(t.amount_kopecks)}</span>
                   {can("finance.manage") && t.status === "pending" && t.provider !== "mock" && (
-                    <Button size="sm" variant="ghost" iconOnly aria-label="Проверить статус в ЮKassa" icon={<RefreshCw size={16} />} onClick={() => sync(t)} />
+                    <Button size="sm" variant="ghost" iconOnly aria-label="Проверить статус в&nbsp;ЮKassa" icon={<RefreshCw size={16} />} onClick={() => sync(t)} />
                   )}
                   {can("finance.manage") && t.status === "succeeded" && (
                     <Button size="sm" variant="secondary" onClick={() => setRefund(t)}>
-                      Вернуть на карту
+                      Вернуть на&nbsp;карту
                     </Button>
                   )}
                 </span>
@@ -717,14 +717,14 @@ function TopUps() {
           <EmptyState art={<EmptyArt scene="sparkles" />} title="Пополнений нет" />
         )}
       </Card>
-      <Modal open={!!refund} onClose={() => !busy && setRefund(null)} title="Вернуть пополнение на карту?" width={460}>
+      <Modal open={!!refund} onClose={() => !busy && setRefund(null)} title="Вернуть пополнение на&nbsp;карту?" width={460}>
         <p className={s.modalText}>
-          {refund && rubK(refund.amount_kopecks)} спишутся с баланса {refund?.alias} и вернутся на карту через платёжный сервис. Если
-          часть денег уже потрачена, возврат не пройдёт.
+          {refund && rubK(refund.amount_kopecks)} спишутся с&nbsp;баланса {refund?.alias} и&nbsp;вернутся на&nbsp;карту через платёжный сервис. Если
+          часть денег уже потрачена, возврат не&nbsp;пройдёт.
         </p>
         <div className={s.modalActions}>
           <Button variant="ghost" onClick={() => setRefund(null)} disabled={busy}>
-            Не возвращать
+            Не&nbsp;возвращать
           </Button>
           <Button variant="danger" loading={busy} onClick={doRefund}>
             Вернуть
@@ -795,11 +795,11 @@ function Gifts() {
               <div key={b.id} role="listitem" className={s.rowBtn} style={{ cursor: "default" }}>
                 <span className={s.rowMain}>
                   <span className={s.rowTitle}>
-                    {b.label || "Без названия"} {b.revoked && <Badge tone="danger">отозвана</Badge>}
+                    {b.label || "Без\u00a0названия"} {b.revoked && <Badge tone="danger">отозвана</Badge>}
                   </span>
                   <span className={s.rowSub}>
                     {dateTime(b.created_at)}, погашено {b.redeemed} из {b.count}
-                    {b.expires_at ? `, до ${dateTime(b.expires_at)}` : ""}
+                    {b.expires_at ? `, до\u00a0${dateTime(b.expires_at)}` : ""}
                   </span>
                 </span>
                 <span className={s.rowMeta}>
@@ -817,7 +817,7 @@ function Gifts() {
           <EmptyState
             art={<EmptyArt scene="heart" />}
             title="Кодов ещё нет"
-            text="Подарочные коды — предоплата, которую может купить кто угодно: клиент активирует код у себя в балансе."
+            text="Подарочные коды&nbsp;— предоплата, которую может купить кто угодно: клиент активирует код у&nbsp;себя в&nbsp;балансе."
           />
         )}
       </Card>
@@ -825,10 +825,10 @@ function Gifts() {
       <Modal open={form} onClose={() => !busy && setForm(false)} title="Новая партия кодов" width={480}>
         <div className={s.stack}>
           <Input label="Номинал, ₽" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} />
-          <Input label="Сколько кодов (до 1000)" inputMode="numeric" value={count} onChange={(e) => setCount(e.target.value.replace(/\D/g, ""))} />
-          <Input label="Название партии" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Например, партнёр или акция" />
-          <Input label="Действует до (необязательно)" type="date" value={expires} onChange={(e) => setExpires(e.target.value)} />
-          <p className={s.modalText}>Коды покажем один раз — сразу скачайте их. В базе хранится только их отпечаток.</p>
+          <Input label="Сколько кодов (до&nbsp;1000)" inputMode="numeric" value={count} onChange={(e) => setCount(e.target.value.replace(/\D/g, ""))} />
+          <Input label="Название партии" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Например, партнёр или&nbsp;акция" />
+          <Input label="Действует до&nbsp;(необязательно)" type="date" value={expires} onChange={(e) => setExpires(e.target.value)} />
+          <p className={s.modalText}>Коды покажем один раз&nbsp;— сразу скачайте их. В&nbsp;базе хранится только их&nbsp;отпечаток.</p>
           <div className={s.modalActions}>
             <Button variant="ghost" onClick={() => setForm(false)} disabled={busy}>
               Отмена
@@ -842,7 +842,7 @@ function Gifts() {
 
       <Modal open={!!codes} onClose={() => setCodes(null)} title={`Коды: ${codes?.length ?? 0}`} width={520}>
         <div className={s.stack}>
-          <p className={s.modalText}>Сохраните их сейчас: после закрытия окна увидеть коды снова нельзя.</p>
+          <p className={s.modalText}>Сохраните их&nbsp;сейчас: после закрытия окна увидеть коды снова нельзя.</p>
           <div className={s.miniList} style={{ maxHeight: 260, overflow: "auto", fontFamily: "ui-monospace, monospace" }}>
             {codes?.map((c) => <div key={c}>{c}</div>)}
           </div>
@@ -867,7 +867,7 @@ function Gifts() {
       <ReasonModal
         open={!!revoke}
         title="Отозвать непогашенные коды?"
-        text="Уже активированные коды останутся на балансах. Остальные перестанут работать."
+        text="Уже активированные коды останутся на&nbsp;балансах. Остальные перестанут работать."
         confirm="Отозвать"
         variant="danger"
         requireReason={false}
@@ -916,7 +916,7 @@ function ReconcileTab() {
           icon={<Scale size={18} />}
           action={
             <Button size="sm" variant="secondary" icon={<Download size={16} />} onClick={exportCsv}>
-              CSV за месяц
+              CSV за&nbsp;месяц
             </Button>
           }
         />
@@ -926,15 +926,15 @@ function ReconcileTab() {
             ["Сумма всех проводок", rubK(l.total_kopecks)],
             ["Несбалансированные операции", String(l.unbalanced_transactions.length)],
             ["Расхождение кэша балансов", String(l.cache_drift.length)],
-            ["Счета клиентов в минусе", String(l.negative_user_accounts.length)],
+            ["Счета клиентов в\u00a0минусе", String(l.negative_user_accounts.length)],
           ]}
         />
       </Card>
       <Card as="section">
         <CardHead
-          title="Сверка с ЮKassa за 7 дней"
+          title="Сверка с&nbsp;ЮKassa за&nbsp;7&nbsp;дней"
           icon={<Wallet size={18} />}
-          sub={data.provider.checked ? `Платежей у ЮKassa: ${data.provider.count}` : data.provider.error ?? "ЮKassa не подключена — сверять не с чем."}
+          sub={data.provider.checked ? `Платежей у\u00a0ЮKassa: ${data.provider.count}` : data.provider.error ?? "ЮKassa не\u00a0подключена\u00a0— сверять не\u00a0с\u00a0чем."}
         />
         {data.mismatches.length ? (
           <div className={s.rows}>
@@ -943,8 +943,8 @@ function ReconcileTab() {
                 <span className={s.rowMain}>
                   <span className={s.rowTitle}>{m.problem}</span>
                   <span className={s.rowSub}>
-                    {m.payment_id}, у ЮKassa: {m.provider_status}
-                    {m.our_status ? `, у нас: ${m.our_status}` : ""}
+                    {m.payment_id}, у&nbsp;ЮKassa: {m.provider_status}
+                    {m.our_status ? `, у\u00a0нас: ${m.our_status}` : ""}
                   </span>
                 </span>
               </div>
@@ -970,7 +970,7 @@ function ReconcileTab() {
             ))}
           </ol>
         ) : (
-          <p className={s.muted}>Уведомлений ещё не было.</p>
+          <p className={s.muted}>Уведомлений ещё не&nbsp;было.</p>
         )}
       </Card>
     </div>

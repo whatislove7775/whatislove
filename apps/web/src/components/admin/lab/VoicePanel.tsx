@@ -92,7 +92,7 @@ export function VoicePanel() {
       mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
     } catch (e) {
       setRecState("error");
-      setError(`Микрофон недоступен: ${(e as DOMException)?.name || "ошибка"}. Разрешите доступ в браузере.`);
+      setError(`Микрофон недоступен: ${(e as DOMException)?.name || "ошибка"}. Разрешите доступ в\u00a0браузере.`);
       return;
     }
     const c = ctx();
@@ -129,7 +129,7 @@ export function VoicePanel() {
         setRecState("ready");
       } catch {
         setRecState("error");
-        setError("Не получилось разобрать запись. Попробуйте ещё раз или в другом браузере.");
+        setError("Не\u00a0получилось разобрать запись. Попробуйте ещё раз или\u00a0в\u00a0другом браузере.");
       }
     };
     recStop.current = () => {
@@ -200,7 +200,7 @@ export function VoicePanel() {
         <CardHead
           icon={<Waves size={20} />}
           title="Фильтр голоса"
-          sub="Запишите фразу и прослушайте её с каждым фильтром. Звук проходит через тот же код, что и в звонке, и не уходит с устройства."
+          sub="Запишите фразу и&nbsp;прослушайте её&nbsp;с&nbsp;каждым фильтром. Звук проходит через тот&nbsp;же код, что&nbsp;и&nbsp;в&nbsp;звонке, и&nbsp;не&nbsp;уходит с&nbsp;устройства."
         />
         <div className={s.voiceRec}>
           {recState === "recording" ? (
@@ -216,7 +216,7 @@ export function VoicePanel() {
             {recState === "recording" ? (
               <Meter value={level} tone="success" />
             ) : (
-              <span className={s.muted}>Например: «Здравствуйте, это проверка голоса. Раз, два, три».</span>
+              <span className={s.muted}>Например: «Здравствуйте, это&nbsp;проверка голоса. Раз, два, три».</span>
             )}
           </div>
         </div>
@@ -253,12 +253,12 @@ export function VoicePanel() {
         <CardHead
           icon={<Ear size={20} />}
           title="Живое прослушивание"
-          sub="Слышите себя с фильтром в реальном времени. Наденьте наушники, иначе микрофон подхватит динамик."
+          sub="Слышите себя с&nbsp;фильтром в&nbsp;реальном времени. Наденьте наушники, иначе микрофон подхватит динамик."
           action={live ? <Badge tone="success" dot>Идёт</Badge> : undefined}
         />
         <div className={s.controlsRow}>
           <Switch checked={live} onChange={toggleLive} label="Слушать себя" />
-          <Segmented value={preset} onChange={setPreset} options={PRESETS.map(({ value, label }) => ({ value, label }))} ariaLabel="Фильтр для живого прослушивания" />
+          <Segmented value={preset} onChange={setPreset} options={PRESETS.map(({ value, label }) => ({ value, label }))} ariaLabel="Фильтр для&nbsp;живого прослушивания" />
         </div>
       </Card>
       <audio ref={audioRef} hidden />

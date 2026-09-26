@@ -22,6 +22,7 @@ import { EmptyArt } from "@/components/illustrations";
 import { PublicCredentials, VerifiedBadge } from "@/components/credentials/PublicCredentials";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { RatingPill } from "@/components/reviews/ReviewBits";
+import { typo } from "@/lib/typography";
 
 export default function SpecialistProfile() {
   const params = useParams<{ id: string }>();
@@ -54,8 +55,8 @@ export default function SpecialistProfile() {
           <Card>
             <EmptyState art={<EmptyArt scene="cozy" />}
               icon={<UserX size={24} strokeWidth={1.8} />}
-              title="Специалист сейчас не принимает"
-              text="Возможно, профиль скрыт или ссылка устарела. Выберите другого психолога из списка."
+              title="Специалист сейчас не&nbsp;принимает"
+              text="Возможно, профиль скрыт или&nbsp;ссылка устарела. Выберите другого психолога из&nbsp;списка."
               action={
                 <Button variant="primary" href="/app/specialists">
                   Посмотреть специалистов
@@ -113,7 +114,7 @@ export default function SpecialistProfile() {
                   <IntroChip psy={p} withPrice />
                 </div>
                 <h1 className={s.name}>{p.display_name}</h1>
-                <p className={s.bio}>{p.bio}</p>
+                <p className={s.bio}>{typo(p.bio)}</p>
                 <dl className={s.facts}>
                   <div>
                     <dt>Опыт</dt>
@@ -133,7 +134,7 @@ export default function SpecialistProfile() {
                   <div>
                     <dt>Стоимость</dt>
                     <dd>
-                      {p.booking ? `${rub(p.booking.hourly_rate_rub)} за час` : rub(p.session_rate_rub)}
+                      {p.booking ? `${rub(p.booking.hourly_rate_rub)} за\u00a0час` : rub(p.session_rate_rub)}
                     </dd>
                   </div>
                 </dl>
@@ -148,7 +149,7 @@ export default function SpecialistProfile() {
                         const d = await dialogsApi.startWithSpecialist(p.id);
                         router.push(`/app/dialogs?d=${encodeURIComponent(d.id)}`);
                       } catch (e) {
-                        toast(e instanceof ApiError ? e.message : "Не получилось начать диалог", { error: true });
+                        toast(e instanceof ApiError ? e.message : "Не\u00a0получилось начать диалог", { error: true });
                         setStarting(false);
                       }
                     }}
@@ -183,7 +184,7 @@ export default function SpecialistProfile() {
               </div>
             )}
             <div className={s.section}>
-              <h2>С чем работает</h2>
+              <h2>С&nbsp;чем&nbsp;работает</h2>
               <div className={s.badges}>
                 {p.specializations.map((x) => (
                   <Badge key={x}>{x}</Badge>

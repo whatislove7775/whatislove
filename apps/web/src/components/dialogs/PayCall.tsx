@@ -37,7 +37,7 @@ export function PayCall({
         >
           Оплатить {rub(amountRub)}
         </Button>
-        <span className={s.payHint}>Откроется защищённая страница оплаты. Мы не видим данные карты.</span>
+        <span className={s.payHint}>Откроется защищённая страница оплаты. Мы&nbsp;не&nbsp;видим данные карты.</span>
       </div>
     );
   }

@@ -20,13 +20,12 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import { Button, Modal, Segmented, Select, Skeleton, useToast } from "@/ui";
+import { Button, Modal, Segmented, Skeleton, useToast } from "@/ui";
 import { SpecialistPhoto } from "@/components/avatar/SpecialistPhoto";
 import { RatingPill } from "@/components/reviews/ReviewBits";
 import { ApiError } from "@/lib/api/client";
 import { dialogsApi } from "@/lib/api/dialogs";
 import {
-  BUDGETS,
   DURATIONS,
   EMPTY_ANSWERS,
   INTENSITY,
@@ -43,11 +42,11 @@ import {
   type MatchResult,
 } from "@/lib/api/matching";
 import { useAuth } from "@/lib/auth/store";
-import { dayLabel, rub, time } from "@/lib/format";
+import { dayLabel, plural, rub, time } from "@/lib/format";
 import { IntroChip } from "./IntroChip";
 import s from "./matching.module.css";
 
-const STEPS = ["Что беспокоит", "Как давно", "Стиль работы", "Пожелания", "Время"] as const;
+const STEPS = ["Что\u00a0беспокоит", "Как\u00a0давно", "Стиль работы", "Пожелания", "Время"] as const;
 const PAGE = 3;
 const nf = new Intl.NumberFormat("ru-RU");
 
@@ -75,7 +74,7 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
     try {
       setData(await matchingApi.match(a));
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Не получилось подобрать специалистов. Попробуйте ещё раз.");
+      setError(e instanceof ApiError ? e.message : "Не\u00a0получилось подобрать специалистов. Попробуйте ещё раз.");
     } finally {
       setLoading(false);
     }
@@ -117,7 +116,7 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
   };
   const forget = () => {
     clearQuiz();
-    toast("Ответы стёрты с этого устройства");
+    toast("Ответы стёрты с\u00a0этого устройства");
     setAnswers(EMPTY_ANSWERS);
     setData(null);
     setStep(0);
@@ -134,7 +133,7 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
       router.push(`/app/dialogs?d=${encodeURIComponent(d.id)}`);
     } catch (e) {
       // e.g. «написать можно после записи» — then the booking is the way in
-      toast(e instanceof ApiError ? e.message : "Не получилось начать диалог", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось начать диалог", { error: true });
       router.push(`/app/specialists/${r.psychologist.id}#booking`);
     } finally {
       setBusyId(null);
@@ -158,7 +157,7 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
           <div>
             <h2 className={s.resTitle}>{list.length ? "Кто вам может подойти" : "Подбор"}</h2>
             <p className={s.resSub}>
-              Оценка складывается из понятных частей: темы, стиль работы, бюджет, удобное время, опыт и отзывы.
+              Оценка складывается из&nbsp;понятных частей: темы, стиль работы, бюджет, удобное время, опыт и&nbsp;отзывы.
             </p>
           </div>
           <div className={s.resTools}>
@@ -216,11 +215,10 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
         <Modal open={!!gate} onClose={() => setGate(null)} title="Нужен анонимный аккаунт" width={460}>
           <div className={s.gate}>
             <p>
-              Чтобы написать {gate?.psychologist.display_name ? `специалисту ${gate.psychologist.display_name}` : "специалисту"} или
-              записаться, создайте аккаунт. Это минута: без почты и телефона, только пароль.
+              Чтобы написать {gate?.psychologist.display_name ? `специалисту ${gate.psychologist.display_name}` : "специалисту"} или&nbsp;записаться, создайте аккаунт. Это&nbsp;минута: без&nbsp;почты и&nbsp;телефона, только пароль.
             </p>
             <p className={s.gateNote}>
-              <ShieldCheck size={16} strokeWidth={1.8} aria-hidden /> Ответы анкеты останутся на этом устройстве, и после входа
+              <ShieldCheck size={16} strokeWidth={1.8} aria-hidden /> Ответы анкеты останутся на&nbsp;этом устройстве, и&nbsp;после входа
               подбор откроется снова.
             </p>
             <div className={s.gateActions}>
@@ -253,8 +251,8 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
 
         {step === 0 && (
           <fieldset className={s.step}>
-            <legend className={s.q}>Что привело вас сюда?</legend>
-            <p className={s.qHint}>Можно выбрать несколько. Если сложно назвать — отметьте то, что ближе всего.</p>
+            <legend className={s.q}>Что&nbsp;привело вас сюда?</legend>
+            <p className={s.qHint}>Можно выбрать несколько. Если сложно назвать&nbsp;— отметьте то, что&nbsp;ближе всего.</p>
             <div className={s.chips}>
               {TOPICS.map((t) => (
                 <button
@@ -274,11 +272,11 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
 
         {step === 1 && (
           <fieldset className={s.step}>
-            <legend className={s.q}>Как давно это с вами и насколько тяжело?</legend>
+            <legend className={s.q}>Как&nbsp;давно это&nbsp;с&nbsp;вами и&nbsp;насколько тяжело?</legend>
             <div className={s.row}>
-              <span className={s.rowLabel}>Как давно</span>
+              <span className={s.rowLabel}>Как&nbsp;давно</span>
               <Segmented<string>
-                ariaLabel="Как давно"
+                ariaLabel="Как&nbsp;давно"
                 value={answers.duration}
                 onChange={(v) => set("duration", v as MatchAnswers["duration"])}
                 options={DURATIONS}
@@ -295,11 +293,11 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
             </div>
             <div className={s.safety}>
               <span className={s.rowLabel}>
-                Бывают ли у вас мысли причинить себе вред или что не хочется жить?
+                Бывают&nbsp;ли у&nbsp;вас мысли причинить себе вред или&nbsp;что&nbsp;не&nbsp;хочется жить?
               </span>
-              <p className={s.qHint}>Спрашиваем, чтобы вовремя подсказать, где помогут прямо сейчас. Ответ никуда не сохраняется.</p>
+              <p className={s.qHint}>Спрашиваем, чтобы вовремя подсказать, где помогут прямо сейчас. Ответ никуда не&nbsp;сохраняется.</p>
               <Segmented<string>
-                ariaLabel="Мысли о самоповреждении"
+                ariaLabel="Мысли о&nbsp;самоповреждении"
                 value={answers.safety}
                 onChange={(v) => set("safety", v as MatchAnswers["safety"])}
                 options={SAFETY}
@@ -329,14 +327,14 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
               ))}
             </div>
             <button type="button" className={s.link} onClick={() => { set("style", ""); setStep(3); }}>
-              Пока не знаю — подскажет специалист
+              Пока не&nbsp;знаю&nbsp;— подскажет специалист
             </button>
           </fieldset>
         )}
 
         {step === 3 && (
           <fieldset className={s.step}>
-            <legend className={s.q}>Есть пожелания к специалисту?</legend>
+            <legend className={s.q}>Есть пожелания к&nbsp;специалисту?</legend>
             <div className={s.row}>
               <span className={s.rowLabel}>Пол специалиста</span>
               <Segmented<string>
@@ -350,35 +348,35 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
                 ]}
               />
             </div>
-            <div className={s.grid2}>
-              <Select<number>
-                label="Опыт"
-                value={answers.min_experience}
-                onChange={(v) => set("min_experience", v as MatchAnswers["min_experience"])}
-                options={[
-                  { value: 0, label: "Неважно" },
-                  { value: 3, label: "От 3 лет" },
-                  { value: 5, label: "От 5 лет" },
-                  { value: 10, label: "От 10 лет" },
-                ]}
-              />
-              <Select<number>
-                label="Бюджет за час"
-                value={answers.budget ?? 0}
-                onChange={(v) => set("budget", v || null)}
-                options={[
-                  { value: 0, label: "Неважно" },
-                  ...BUDGETS.map((b) => ({ value: b, label: `До ${nf.format(b)} ₽` })),
-                ]}
-              />
-            </div>
+            <RangeField
+              label="Опыт"
+              min={0}
+              max={20}
+              step={1}
+              value={answers.min_experience}
+              onChange={(v) => set("min_experience", v)}
+              format={(v) => (v === 0 ? "Неважно" : v >= 20 ? "От\u00a020\u00a0лет" : `От\u00a0${v} ${plural(v, "года", "лет", "лет")}`)}
+              marks={[0, 3, 5, 10]}
+              markLabel={(v) => (v === 0 ? "Неважно" : `${v}+`)}
+            />
+            <RangeField
+              label="Бюджет за&nbsp;час"
+              min={1000}
+              max={10000}
+              step={500}
+              value={answers.budget ?? 10000}
+              onChange={(v) => set("budget", v >= 10000 ? null : v)}
+              format={(v) => (v >= 10000 ? "Неважно" : `До\u00a0${nf.format(v)} ₽`)}
+              marks={[2000, 3000, 5000, 10000]}
+              markLabel={(v) => (v >= 10000 ? "Неважно" : `${nf.format(v)}`)}
+            />
           </fieldset>
         )}
 
         {step === 4 && (
           <fieldset className={s.step}>
             <legend className={s.q}>Когда вам удобно созваниваться?</legend>
-            <p className={s.qHint}>По вашему времени. Можно выбрать несколько или пропустить.</p>
+            <p className={s.qHint}>По&nbsp;вашему времени. Можно выбрать несколько или&nbsp;пропустить.</p>
             <div className={s.times}>
               {TIMES.map((t) => (
                 <button
@@ -406,7 +404,7 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
           )}
           {step < STEPS.length - 1 ? (
             <Button variant="primary" disabled={!canNext} onClick={() => setStep(step + 1)}>
-              {step === 0 && !canNext ? "Выберите хотя бы одно" : "Дальше"}
+              {step === 0 && !canNext ? "Выберите хотя\u00a0бы одно" : "Дальше"}
             </Button>
           ) : (
             <Button variant="primary" icon={<Sparkles size={16} strokeWidth={1.8} />} onClick={finish}>
@@ -418,7 +416,7 @@ export function MatchQuiz({ mode }: { mode: "app" | "public" }) {
       <PrivacyNote onForget={forget} compact />
       {mode === "public" && (
         <p className={s.footNote}>
-          Можно без регистрации. Написать специалисту или записаться — после анонимного входа, ответы сохранятся.
+          Можно без&nbsp;регистрации. Написать специалисту или&nbsp;записаться&nbsp;— после анонимного входа, ответы сохранятся.
         </p>
       )}
     </div>
@@ -461,9 +459,9 @@ function ResultCard({
             <RatingPill rating={p.rating} count={p.reviews_count} compact />
             <IntroChip psy={p} />
           </div>
-          <p className={s.why}>{r.summary || "Подходит по части ваших ответов — подробности ниже."}</p>
+          <p className={s.why}>{r.summary || "Подходит по\u00a0части ваших ответов\u00a0— подробности ниже."}</p>
           <div className={s.facts}>
-            <span>{rub(r.price_hour_rub)} за час</span>
+            <span>{rub(r.price_hour_rub)} за&nbsp;час</span>
             {p.next_slot && (
               <span>
                 <CalendarClock size={14} strokeWidth={1.8} aria-hidden /> {dayLabel(p.next_slot)} в {time(p.next_slot)}
@@ -475,7 +473,7 @@ function ResultCard({
       </div>
 
       <button type="button" className={s.explain} aria-expanded={open} onClick={() => setOpen((x) => !x)}>
-        Как посчитали <ChevronDown size={15} strokeWidth={2} aria-hidden />
+        Как&nbsp;посчитали <ChevronDown size={15} strokeWidth={2} aria-hidden />
       </button>
       {open && (
         <ul className={s.reasons}>
@@ -516,7 +514,7 @@ function ScoreRing({ value }: { value: number }) {
   const r = 22;
   const c = 2 * Math.PI * r;
   return (
-    <div className={s.score} role="img" aria-label={`Совпадение ${value} из 100`}>
+    <div className={s.score} role="img" aria-label={`Совпадение ${value} из\u00a0100`}>
       <svg viewBox="0 0 56 56" width="56" height="56" aria-hidden>
         <circle cx="28" cy="28" r={r} className={s.ringBg} />
         <circle
@@ -529,7 +527,7 @@ function ScoreRing({ value }: { value: number }) {
         />
       </svg>
       <span className={s.scoreNum}>{value}</span>
-      <span className={s.scoreLbl}>из 100</span>
+      <span className={s.scoreLbl}>из&nbsp;100</span>
     </div>
   );
 }
@@ -552,8 +550,8 @@ function CrisisCard({
       <p className={s.crisisText}>
         <LifeBuoy size={16} strokeWidth={1.9} aria-hidden />
         {level === "acute"
-          ? "Если вы в опасности, позвоните сейчас — там помогут сразу."
-          : "Если станет тяжелее, позвоните — бесплатно и анонимно."}
+          ? "Если вы\u00a0в\u00a0опасности, позвоните сейчас\u00a0— там помогут сразу."
+          : "Если станет тяжелее, позвоните\u00a0— бесплатно и\u00a0анонимно."}
       </p>
       <div className={s.crisisPhones}>
         {items.map((h) => (
@@ -572,12 +570,64 @@ function PrivacyNote({ onForget, compact }: { onForget: () => void; compact?: bo
     <p className={s.privacy} data-compact={compact || undefined}>
       <ShieldCheck size={16} strokeWidth={1.8} aria-hidden />
       <span>
-        Ответы не сохраняются на сервере: мы считаем подбор и сразу их забываем. Чтобы вы могли вернуться, они хранятся
-        только в этом браузере.{" "}
+        Ответы не&nbsp;сохраняются на&nbsp;сервере: мы&nbsp;считаем подбор и&nbsp;сразу их&nbsp;забываем. Чтобы вы&nbsp;могли вернуться, они хранятся
+        только в&nbsp;этом браузере.{" "}
         <button type="button" className={s.link} onClick={onForget}>
           <Trash2 size={13} strokeWidth={1.8} aria-hidden /> Стереть ответы
         </button>
       </span>
     </p>
+  );
+}
+
+/** Slider with quick marks — custom values instead of fixed dropdown options. */
+function RangeField({
+  label,
+  min,
+  max,
+  step,
+  value,
+  onChange,
+  format,
+  marks,
+  markLabel,
+}: {
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  onChange: (v: number) => void;
+  format: (v: number) => string;
+  marks: number[];
+  markLabel: (v: number) => string;
+}) {
+  const pct = ((value - min) / (max - min)) * 100;
+  return (
+    <div className={s.range}>
+      <div className={s.rangeHead}>
+        <span className={s.rowLabel}>{label}</span>
+        <strong aria-live="polite">{format(value)}</strong>
+      </div>
+      <input
+        type="range"
+        className={s.rangeInput}
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        aria-label={label}
+        aria-valuetext={format(value)}
+        style={{ ["--p" as string]: `${pct}%` }}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+      <div className={s.rangeMarks} role="group" aria-label={`${label}: быстрый выбор`}>
+        {marks.map((m) => (
+          <button key={m} type="button" className={s.chip} aria-pressed={value === m} onClick={() => onChange(m)}>
+            {markLabel(m)}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

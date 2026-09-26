@@ -144,7 +144,7 @@ export function durationLabel(min: number): string {
   if (min < 60) return `${min} мин`;
   if (min % 60 === 0) return `${min / 60} ч`;
   if (min % 30 === 0) return `${String(min / 60).replace(".", ",")} ч`;
-  return `${Math.floor(min / 60)} ч ${min % 60} мин`;
+  return `${Math.floor(min / 60)} ч\u00a0${min % 60} мин`;
 }
 
 /** Price for a duration from the hourly rate, rounded to 10 ₽ (same rule as the backend). */

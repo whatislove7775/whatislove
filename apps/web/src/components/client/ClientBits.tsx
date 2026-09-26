@@ -12,7 +12,7 @@ import s from "./client.module.css";
 export function ErrorBlock({
   message,
   onRetry,
-  title = "Не получилось загрузить",
+  title = "Не\u00a0получилось загрузить",
 }: {
   message: string;
   onRetry?: () => void;

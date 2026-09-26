@@ -15,6 +15,7 @@ import s from "../../articles/articles.module.css";
 import { EmptyArt } from "@/components/illustrations";
 import { TopicArt } from "@/components/illustrations/topics";
 import art from "@/components/content/art.module.css";
+import { typo } from "@/lib/typography";
 
 export default function PracticePage() {
   const params = useParams<{ slug: string }>();
@@ -35,8 +36,8 @@ export default function PracticePage() {
         {/не найден|not found|No .* matches/i.test(practice.error) ? (
           <EmptyState art={<EmptyArt scene="lost" />}
             icon={<Leaf size={28} strokeWidth={1.8} />}
-            title="Практика не найдена"
-            text="Возможно, её убрали или ссылка неполная."
+            title="Практика не&nbsp;найдена"
+            text="Возможно, её&nbsp;убрали или&nbsp;ссылка неполная."
             action={<Button href="/app/practices">Все практики</Button>}
           />
         ) : (
@@ -87,19 +88,19 @@ export default function PracticePage() {
                   </span>
                   <EvidenceBadge level={p.evidence_level} />
                 </div>
-                <h1 className={s.title}>{p.title}</h1>
-                {p.summary && <p className={s.lead}>{p.summary}</p>}
+                <h1 className={s.title}>{typo(p.title)}</h1>
+                {p.summary && <p className={s.lead}>{typo(p.summary)}</p>}
               </header>
               {p.pattern ? (
                 <>
                   <BreathingCircle pattern={p.pattern} tone={p.cover} />
                   {p.steps.length > 0 && (
                     <details className={s.howto}>
-                      <summary>Как выполнять</summary>
+                      <summary>Как&nbsp;выполнять</summary>
                       <ol>
                         {p.steps.map((st, i) => (
                           <li key={i}>
-                            <strong>{st.title}</strong> {st.text}
+                            <strong>{typo(st.title)}</strong> {typo(st.text)}
                           </li>
                         ))}
                       </ol>

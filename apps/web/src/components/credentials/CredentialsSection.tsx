@@ -48,8 +48,8 @@ export function CredentialsSection() {
     <Card as="section">
       <span id="documents" style={{ display: "block", scrollMarginTop: 16 }} />
       <CardHead
-        title="Документы и квалификация"
-        sub="Дипломы, переподготовка, супервизия, публикации. Каждый пункт проверяет сотрудник aprosop, подтверждённые видны клиентам на вашей странице"
+        title="Документы и&nbsp;квалификация"
+        sub="Дипломы, переподготовка, супервизия, публикации. Каждый пункт проверяет сотрудник Aprosop, подтверждённые видны клиентам на&nbsp;вашей странице"
         action={
           items && items.length > 0 ? (
             <Button variant="soft" size="sm" icon={<Plus size={16} />} onClick={() => setForm({ item: null })}>
@@ -76,8 +76,8 @@ export function CredentialsSection() {
       ) : items.length === 0 ? (
         <EmptyState
           art={<EmptyArt scene="shield" />}
-          title="Расскажите о своём образовании"
-          text="Клиенты чаще выбирают специалистов с проверенными документами. Начните с диплома, затем добавьте переподготовку, супервизию и публикации."
+          title="Расскажите о&nbsp;своём образовании"
+          text="Клиенты чаще выбирают специалистов с&nbsp;проверенными документами. Начните с&nbsp;диплома, затем добавьте переподготовку, супервизию и&nbsp;публикации."
           action={
             <Button variant="primary" icon={<Plus size={18} />} onClick={() => setForm({ item: null })}>
               Добавить документ
@@ -110,15 +110,15 @@ export function CredentialsSection() {
         onSaved={(c, warning) => {
           replace(c);
           setForm(null);
-          toast(warning ?? (c.status === "pending" ? "Отправили на проверку. Обычно это занимает до двух рабочих дней" : "Сохранено"), {
+          toast(warning ?? (c.status === "pending" ? "Отправили на\u00a0проверку. Обычно это\u00a0занимает до\u00a0двух рабочих дней" : "Сохранено"), {
             error: !!warning,
           });
         }}
       />
       <Modal open={!!removing} onClose={() => !busy && setRemoving(null)} title="Удалить документ?">
         <p className={s.hint} style={{ marginBottom: 20 }}>
-          «{removing?.title}» и все его файлы удалятся без возможности восстановления.
-          {removing?.status === "approved" ? " Пункт пропадёт с вашей страницы." : ""}
+          «{removing?.title}» и&nbsp;все его файлы удалятся без&nbsp;возможности восстановления.
+          {removing?.status === "approved" ? " Пункт пропадёт с\u00a0вашей страницы." : ""}
         </p>
         <div className={s.actions}>
           <Button variant="ghost" onClick={() => setRemoving(null)} disabled={busy}>
@@ -186,9 +186,9 @@ function Item({
         await credentialsApi.upload(c.id, file, false);
       }
       await refresh();
-      if (c.status === "approved") toast("Файл добавлен, пункт снова на проверке");
+      if (c.status === "approved") toast("Файл добавлен, пункт снова на\u00a0проверке");
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось загрузить файл", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось загрузить файл", { error: true });
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -220,7 +220,7 @@ function Item({
     try {
       onChange(await credentialsApi.reply(c.id, reply.trim()));
       setReply("");
-      toast("Ответ отправлен, пункт снова на проверке");
+      toast("Ответ отправлен, пункт снова на\u00a0проверке");
     } catch (e) {
       toast((e as Error).message, { error: true });
     } finally {
@@ -266,16 +266,16 @@ function Item({
         <div className={s.alert}>
           <X size={16} />
           <span>
-            <b>Отклонено:</b> {c.reject_reason}. Исправьте данные или приложите другой файл, и пункт снова уйдёт на проверку.
+            <b>Отклонено:</b> {c.reject_reason}. Исправьте данные или&nbsp;приложите другой файл, и&nbsp;пункт снова уйдёт на&nbsp;проверку.
           </span>
         </div>
       )}
 
       {(c.status === "needs_info" || staffNotes.length > 0) && (
-        <div className={s.thread} aria-label="Переписка с сотрудником">
+        <div className={s.thread} aria-label="Переписка с&nbsp;сотрудником">
           {c.notes.map((n) => (
             <div key={n.id} className={s.note} data-role={n.author_role}>
-              {n.author_role !== "system" && <span className={s.noteWho}>{n.author_role === "staff" ? "Команда aprosop" : "Вы"}</span>}
+              {n.author_role !== "system" && <span className={s.noteWho}>{n.author_role === "staff" ? "Команда Aprosop" : "Вы"}</span>}
               {n.text}
             </div>
           ))}
@@ -286,7 +286,7 @@ function Item({
                 rows={2}
                 maxLength={2000}
                 value={reply}
-                placeholder={c.status === "needs_info" ? "Ответьте на вопрос или приложите файл ниже" : "Комментарий для сотрудника"}
+                placeholder={c.status === "needs_info" ? "Ответьте на\u00a0вопрос или\u00a0приложите файл ниже" : "Комментарий для\u00a0сотрудника"}
                 onChange={(e) => setReply(e.target.value)}
               />
               <Button variant="primary" iconOnly aria-label="Отправить" icon={<Send size={18} />} loading={sending} disabled={!reply.trim()} onClick={send} />
@@ -317,7 +317,7 @@ function Item({
           </DocTile>
         ))}
         {c.files.length < 6 && (
-          <label className={s.addTile}>
+          <label className={s.addTile} title="PDF, JPG, PNG или&nbsp;WebP, до&nbsp;10&nbsp;МБ">
             <Plus size={18} aria-hidden />
             <span>{uploading ? "Загружаем…" : "Файл"}</span>
             <input
@@ -334,7 +334,7 @@ function Item({
       </div>
       {c.files.length === 0 && c.kind !== "publication" && (
         <p className={s.hint}>
-          <MessageCircleQuestion size={14} style={{ verticalAlign: "-2px" }} aria-hidden /> Без скана сотрудник не сможет подтвердить документ.
+          <MessageCircleQuestion size={14} style={{ verticalAlign: "-2px" }} aria-hidden /> Без&nbsp;скана сотрудник не&nbsp;сможет подтвердить документ. PDF, JPG, PNG или&nbsp;WebP, до&nbsp;10&nbsp;МБ.
         </p>
       )}
       <DocViewer files={c.files} index={viewer} onClose={() => setViewer(null)} caption={c.title} />

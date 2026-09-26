@@ -4,7 +4,7 @@ import l from "@/components/landing/legal.module.css";
 /** Visibly marked gap in a legal document. Never replace with invented details. */
 export function Tbd({ what }: { what?: string }) {
   return (
-    <mark className={l.tbd} title="Текст готовится вместе с юристом">
+    <mark className={l.tbd} title="Текст готовится вместе с&nbsp;юристом">
       {what ? `${what}: ` : ""}
       {TBD}
     </mark>

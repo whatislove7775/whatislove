@@ -18,7 +18,7 @@ from django.conf import settings
 
 STEP = 30
 DIGITS = 6
-ISSUER = "aprosop"
+ISSUER = "Aprosop"
 
 
 def generate_secret() -> str:

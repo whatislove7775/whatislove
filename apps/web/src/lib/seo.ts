@@ -1,11 +1,11 @@
 /** Shared SEO constants and JSON-LD builders (schema.org). Safe for server and client. */
 
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://aprosop.ru").replace(/\/$/, "");
-export const SITE_NAME = "aprosop";
+export const SITE_NAME = "Aprosop";
 export const ORG_ID = `${SITE_URL}/#organization`;
 export const WEBSITE_ID = `${SITE_URL}/#website`;
 export const SITE_DESCRIPTION =
-  "Анонимные диалоги и видеосозвоны с психологом. Регистрация без почты и телефона, вместо лица — ваш 3D-аватар, который повторяет мимику. Видео идёт напрямую между вами и специалистом в зашифрованном виде.";
+  "Анонимные диалоги и\u00a0видеосозвоны с\u00a0психологом. Регистрация без\u00a0почты и\u00a0телефона, вместо лица\u00a0— ваш 3D-аватар, который повторяет мимику. Видео идёт напрямую между вами и\u00a0специалистом в\u00a0зашифрованном виде.";
 
 export function abs(path: string): string {
   return path.startsWith("http") ? path : `${SITE_URL}${path.startsWith("/") ? "" : "/"}${path}`;

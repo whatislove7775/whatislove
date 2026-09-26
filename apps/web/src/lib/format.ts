@@ -42,7 +42,7 @@ export function dayLabel(iso: string | Date): string {
 
 /** "Сегодня в 18:00" */
 export function when(iso: string | Date): string {
-  return `${dayLabel(iso)} в ${time(iso)}`;
+  return `${dayLabel(iso)} в\u00a0${time(iso)}`;
 }
 
 /** "через 2 часа", "через 5 минут", "началась" */

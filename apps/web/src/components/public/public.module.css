@@ -65,6 +65,16 @@
   line-height: 1.55;
   max-width: 56ch;
 }
+.intro .introArt {
+  width: 150px;
+  height: auto;
+  margin: -24px 24px -12px 0;
+}
+@media (max-width: 760px) {
+  .intro .introArt {
+    display: none;
+  }
+}
 
 .search {
   display: flex;

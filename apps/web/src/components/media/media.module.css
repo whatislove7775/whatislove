@@ -1,0 +1,244 @@
+/* Shared media inputs: crop editor, camera capture, image uploaders (L1). */
+
+.cropper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+.view {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--c-raised);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.view:active {
+  cursor: grabbing;
+}
+.view img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: none;
+  pointer-events: none;
+}
+.frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+.view[data-mask="circle"] .frame {
+  border-radius: 50%;
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.45);
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: -2px;
+}
+.zoom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  color: var(--c-muted);
+}
+.zoom input {
+  flex: 1;
+  accent-color: var(--c-primary);
+}
+
+/* ── Camera ─────────────────────────────────────────────────────────── */
+.cam {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.camView {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  aspect-ratio: 3 / 4;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #0b0d18;
+}
+.camView video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* mirror, like a mirror; the captured frame is not mirrored */
+}
+.camView[data-flash]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0.7;
+  animation: flash 180ms ease-out forwards;
+}
+@keyframes flash {
+  to {
+    opacity: 0;
+  }
+}
+.camGuide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.camHint {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(8, 10, 20, 0.6);
+  color: #fff;
+  font-size: var(--t-15);
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.camHint span {
+  font-size: var(--t-12);
+  font-weight: 500;
+  opacity: 0.75;
+}
+.camCount {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  color: #fff;
+  font-size: 64px;
+  font-weight: 700;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+}
+.camActions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.camMsg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 8px;
+  text-align: center;
+  color: var(--c-muted);
+}
+.camMsg p {
+  margin: 0;
+  font-size: var(--t-15);
+  line-height: 1.5;
+}
+
+/* ── Uploaders ──────────────────────────────────────────────────────── */
+.hint {
+  margin: 0;
+  color: var(--c-muted);
+  font-size: var(--t-12);
+  line-height: 1.45;
+}
+.error {
+  margin: 0;
+  color: var(--c-danger);
+  font-size: var(--t-13);
+}
+.modal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cover {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.coverBox {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  height: 96px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--c-raised);
+  border: 1px dashed var(--c-line-strong);
+  display: grid;
+  place-items: center;
+  color: var(--c-muted);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  transition: border-color var(--dur) var(--ease);
+}
+.coverBox:hover {
+  border-color: var(--c-primary);
+}
+.coverBox[data-filled] {
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-style: solid;
+  border-color: var(--c-line);
+}
+.coverBox img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.coverEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--t-13);
+}
+.coverActions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.previewRow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+.previewRow figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--c-faint);
+  font-size: var(--t-12);
+}
+.previewRow img {
+  display: block;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--c-raised);
+}

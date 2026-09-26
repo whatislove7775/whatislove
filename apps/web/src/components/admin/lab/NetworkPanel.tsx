@@ -7,7 +7,7 @@
  */
 import { useState } from "react";
 import { Globe, Play, Plug, Radio, Server } from "lucide-react";
-import { Badge, Button, Card, CardHead, Input } from "@/ui";
+import { Badge, Button, Card, CardHead, Input, PasswordInput } from "@/ui";
 import { getIceServers } from "@/hooks/useP2PCall";
 import { StatGrid } from "./shared";
 import s from "./lab.module.css";
@@ -102,12 +102,12 @@ function checkSignaling(): Promise<{ ok: boolean; text: string; ms: number }> {
     }
     const timer = setTimeout(() => {
       ws.close();
-      finish(false, "Нет ответа за 6 секунд");
+      finish(false, "Нет ответа за\u00a06\u00a0секунд");
     }, 6000);
     ws.onclose = (e) => {
       clearTimeout(timer);
-      if (e.code === 4001) finish(true, "Сервер ответил и отклонил пробный токен, как и должен");
-      else finish(false, `Соединение закрыто с кодом ${e.code}`);
+      if (e.code === 4001) finish(true, "Сервер ответил и\u00a0отклонил пробный токен, как\u00a0и\u00a0должен");
+      else finish(false, `Соединение закрыто с\u00a0кодом ${e.code}`);
     };
     ws.onerror = () => undefined;
   });
@@ -144,8 +144,8 @@ export function NetworkPanel() {
       <Card as="section">
         <CardHead
           icon={<Radio size={20} />}
-          title="STUN и TURN"
-          sub="Собираем ICE-кандидаты с теми же серверами, что использует звонок. Relay-кандидат от TURN значит, что наш coturn доступен и пароль подходит."
+          title="STUN и&nbsp;TURN"
+          sub="Собираем ICE-кандидаты с&nbsp;теми&nbsp;же серверами, что&nbsp;использует звонок. Relay-кандидат от&nbsp;TURN значит, что&nbsp;наш coturn доступен и&nbsp;пароль подходит."
           action={
             <Button variant="primary" icon={<Play size={16} />} loading={running} onClick={() => run(servers)}>
               Проверить
@@ -155,14 +155,14 @@ export function NetworkPanel() {
         {finished && (
           <div className={s.verdicts}>
             <Badge tone={stunOk ? "success" : "danger"} dot>
-              {stunOk ? "STUN работает" : "STUN не ответил"}
+              {stunOk ? "STUN работает" : "STUN не\u00a0ответил"}
             </Badge>
             <Badge tone={turnOk ? "success" : "danger"} dot>
-              {turnOk ? "TURN выдаёт relay-кандидаты" : "TURN не выдал relay-кандидатов"}
+              {turnOk ? "TURN выдаёт relay-кандидаты" : "TURN не\u00a0выдал relay-кандидатов"}
             </Badge>
             {ws && (
               <Badge tone={ws.ok ? "success" : "warning"} dot>
-                {ws.ok ? "Сигнальный сервер на связи" : "Сигнальный сервер не ответил"}
+                {ws.ok ? "Сигнальный сервер на\u00a0связи" : "Сигнальный сервер не\u00a0ответил"}
               </Badge>
             )}
           </div>
@@ -178,8 +178,8 @@ export function NetworkPanel() {
                 {p.found.length > 0 && <div className={s.muted}>{p.kind === "turn" ? "Relay" : "Публичный адрес"}: {p.found.join(", ")}</div>}
                 {p.state === "fail" && (
                   <div className={s.errorText}>
-                    {p.errors.length ? p.errors.join("; ") : "Кандидатов нет: сервер недоступен или порт закрыт."}
-                    {p.errors.some((e) => e.startsWith("401")) && " Похоже, неверный логин или пароль TURN."}
+                    {p.errors.length ? p.errors.join("; ") : "Кандидатов нет: сервер недоступен или\u00a0порт закрыт."}
+                    {p.errors.some((e) => e.startsWith("401")) && " Похоже, неверный логин или\u00a0пароль TURN."}
                   </div>
                 )}
               </div>
@@ -191,7 +191,7 @@ export function NetworkPanel() {
                 ) : p.state === "fail" ? (
                   <Badge tone="danger">Нет</Badge>
                 ) : (
-                  <Badge>Не проверен</Badge>
+                  <Badge>Не&nbsp;проверен</Badge>
                 )}
               </span>
             </li>
@@ -200,7 +200,7 @@ export function NetworkPanel() {
         {ws && (
           <StatGrid
             items={[
-              ["Сигнальный сервер (WebSocket)", ws.ok ? "на связи" : "нет ответа"],
+              ["Сигнальный сервер (WebSocket)", ws.ok ? "на\u00a0связи" : "нет ответа"],
               ["Ответ", ws.text],
               ["Время", `${ws.ms} мс`],
             ]}
@@ -208,19 +208,18 @@ export function NetworkPanel() {
         )}
         {finished && !turnOk && (
           <p className={s.notice}>
-            Без TURN звонок не соединится у тех, кто за строгим NAT (часть мобильных операторов, корпоративные сети). Проверьте, что контейнер coturn
-            запущен, порты 3478 UDP и TCP и диапазон relay-портов открыты в файрволе, а логин и пароль в TURN_USER и TURN_PASSWORD совпадают с
-            NEXT_PUBLIC_TURN_USER и NEXT_PUBLIC_TURN_PASSWORD при сборке сайта.
+            Без&nbsp;TURN звонок не&nbsp;соединится у&nbsp;тех, кто за&nbsp;строгим NAT (часть мобильных операторов, корпоративные сети). Проверьте, что&nbsp;контейнер coturn
+            запущен, порты 3478&nbsp;UDP и&nbsp;TCP и&nbsp;диапазон relay-портов открыты в&nbsp;файрволе, а&nbsp;логин и&nbsp;пароль в&nbsp;TURN_USER и&nbsp;TURN_PASSWORD совпадают с&nbsp;NEXT_PUBLIC_TURN_USER и&nbsp;NEXT_PUBLIC_TURN_PASSWORD при&nbsp;сборке сайта.
           </p>
         )}
       </Card>
 
       <Card as="section">
-        <CardHead icon={<Plug size={20} />} title="Другой сервер" sub="Проверить произвольный STUN или TURN, например перед переездом coturn." />
+        <CardHead icon={<Plug size={20} />} title="Другой сервер" sub="Проверить произвольный STUN или&nbsp;TURN, например перед переездом coturn." />
         <div className={s.customGrid}>
           <Input label="Адрес" placeholder="turn:example.ru:3478?transport=udp" value={custom.urls} onChange={(e) => setCustom({ ...custom, urls: e.target.value })} />
           <Input label="Логин" value={custom.username} autoComplete="off" onChange={(e) => setCustom({ ...custom, username: e.target.value })} />
-          <Input label="Пароль" type="password" autoComplete="new-password" value={custom.credential} onChange={(e) => setCustom({ ...custom, credential: e.target.value })} />
+          <PasswordInput label="Пароль" autoComplete="new-password" value={custom.credential} onChange={(e) => setCustom({ ...custom, credential: e.target.value })} />
         </div>
         <Button
           variant="secondary"

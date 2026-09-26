@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, CalendarClock, Hourglass } from "lucide-react";
+import { ArrowRight, CalendarClock, Hourglass, Tag } from "lucide-react";
 import { Badge, Card, CardHead, EmptyState, Skeleton } from "@/ui";
 import { PageHeader } from "@/components/shell/AppShell";
 import { useLoad } from "@/components/client/useLoad";
 import { ErrorBlock } from "@/components/client/ClientBits";
-import { AnonymityBanner, CircleCardView, TopicChips, topicClass } from "@/components/circles/bits";
+import { CircleCardView, topicClass } from "@/components/circles/bits";
+import { CheckList } from "@/components/search/FilterBar";
+import { FilterPopover } from "@/components/search/FilterPopover";
+import f from "@/components/search/filters.module.css";
 import { EmptyArt } from "@/components/illustrations";
 import { AvatarThumb } from "@/components/avatar/AvatarThumb";
 import { circlesApi } from "@/lib/api/circles";
@@ -27,9 +30,8 @@ export default function CirclesPage() {
     <div className={s.page}>
       <PageHeader
         title="Круги"
-        sub="Группы поддержки на 5–8 человек с психологом"
+        sub="Группы поддержки на&nbsp;5–8&nbsp;человек с&nbsp;психологом"
       />
-      <AnonymityBanner />
 
       {mine.data && mine.data.results.length > 0 && (
         <Card>
@@ -42,9 +44,9 @@ export default function CirclesPage() {
                   <b>{c.title}</b>
                   <small>
                     {c.me.status === "waitlist"
-                      ? `Лист ожидания, вы ${c.me.waitlist_position}-й`
+                      ? `Лист ожидания, вы\u00a0${c.me.waitlist_position}-й`
                       : c.next_meeting
-                        ? `${dayLabel(c.next_meeting.starts_at)} в ${time(c.next_meeting.starts_at)}, ${untilLabel(c.next_meeting.starts_at)}`
+                        ? `${dayLabel(c.next_meeting.starts_at)} в\u00a0${time(c.next_meeting.starts_at)}, ${untilLabel(c.next_meeting.starts_at)}`
                         : "Встреч больше нет"}
                   </small>
                 </span>
@@ -65,7 +67,27 @@ export default function CirclesPage() {
         </Card>
       )}
 
-      <TopicChips value={topic} onChange={setTopic} topics={topics} />
+      {topics.length > 0 && (
+        <div className={f.bar}>
+          <div className={f.row} role="group" aria-label="Фильтры">
+            <FilterPopover
+              label={topic ? topics.find((t) => t.id === topic)?.label ?? "Тема" : "Тема"}
+              icon={<Tag size={15} strokeWidth={1.9} aria-hidden />}
+              active={!!topic}
+              title="Тема круга"
+              noun={["круг", "круга", "кругов"]}
+              count={list.data ? list.data.results.length : null}
+              onReset={() => setTopic("")}
+            >
+              <CheckList
+                options={topics.map((t) => ({ value: t.id, label: t.label, count: t.count }))}
+                selected={topic ? [topic] : []}
+                onToggle={(v) => setTopic(topic === v ? "" : v)}
+              />
+            </FilterPopover>
+          </div>
+        </div>
+      )}
 
       {list.error && <ErrorBlock message={list.error} onRetry={list.reload} />}
       {list.loading && !list.data && (
@@ -79,7 +101,7 @@ export default function CirclesPage() {
         <Card>
           <EmptyState
             art={<EmptyArt scene="search" />}
-            title={topic ? "По этой теме пока нет кругов" : "Круги скоро появятся"}
+            title={topic ? "По\u00a0этой теме пока нет кругов" : "Круги скоро появятся"}
             text="Загляните через несколько дней."
           />
         </Card>

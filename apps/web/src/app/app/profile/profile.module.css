@@ -39,6 +39,26 @@
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
+.editNick {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-left: 6px;
+  vertical-align: 3px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--c-faint);
+  cursor: pointer;
+  transition: color var(--dur), background var(--dur);
+}
+.editNick:hover,
+.editNick:focus-visible {
+  outline: none;
+  color: var(--c-text);
+  background: var(--c-raised);
+}
 .since {
   color: var(--c-muted);
   font-size: var(--t-13);
@@ -125,13 +145,10 @@
   font-size: var(--t-13);
 }
 .rowIcon {
-  width: 36px;
-  height: 36px;
+  width: 24px;
   flex: none;
-  border-radius: 50%;
   display: grid;
   place-items: center;
-  background: var(--c-raised);
   color: var(--c-muted);
 }
 .go {

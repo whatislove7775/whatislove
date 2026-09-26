@@ -5,7 +5,7 @@ export type Service = "calls" | "circles" | "ai";
 export type Period = "month" | "quarter" | "year";
 
 export const SERVICE_LABEL: Record<Service, string> = {
-  calls: "Созвоны со специалистом",
+  calls: "Созвоны со\u00a0специалистом",
   circles: "Групповые «Круги»",
   ai: "ИИ-помощник",
 };
@@ -27,6 +27,8 @@ export interface MyProgram {
   expires_on: string | null;
   active: boolean;
   budget_ok: boolean;
+  /** what the company will actually cover now: min(personal left, company budget); null — no ₽ limit */
+  available_kopecks?: number | null;
 }
 
 /* ── shared shapes ──────────────────────────────────────────────── */
@@ -185,7 +187,7 @@ export interface ProgramInput {
 /** Download a CSV that needs the bearer token. */
 async function downloadCsv(path: string, filename: string) {
   const res = await fetch(`${API_BASE}${path}`, { headers: tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {} });
-  if (!res.ok) throw new ApiError(res.status, "Не получилось скачать файл.");
+  if (!res.ok) throw new ApiError(res.status, "Не\u00a0получилось скачать файл.");
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

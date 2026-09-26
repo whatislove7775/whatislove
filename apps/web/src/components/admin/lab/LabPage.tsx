@@ -15,7 +15,7 @@ type Tab = "call" | "avatar" | "voice" | "devices" | "network";
 
 const TABS: { id: Tab; label: string; icon: LucideIcon; tone: string }[] = [
   { id: "call", label: "Тестовый звонок", icon: PhoneCall, tone: "sky" },
-  { id: "avatar", label: "Аватар и маска", icon: ScanFace, tone: "lilac" },
+  { id: "avatar", label: "Аватар и\u00a0маска", icon: ScanFace, tone: "lilac" },
   { id: "voice", label: "Голос", icon: Waves, tone: "peach" },
   { id: "devices", label: "Устройства", icon: Camera, tone: "mint" },
   { id: "network", label: "Сеть", icon: Radio, tone: "butter" },
@@ -53,7 +53,7 @@ export function LabPage() {
     <>
       <PageHeader
         title="Лаборатория"
-        sub="Ничего не записывается"
+        sub="Ничего не&nbsp;записывается"
       />
       <div className={s.lab}>
         <LabGuide

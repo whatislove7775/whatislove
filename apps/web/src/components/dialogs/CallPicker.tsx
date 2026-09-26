@@ -65,7 +65,7 @@ export function CallPicker({
     dialogsApi
       .starts(dialogId, minutes)
       .then((d) => alive && setData(d))
-      .catch((e) => alive && setError(e instanceof ApiError ? e.message : "Не получилось загрузить свободное время"));
+      .catch((e) => alive && setError(e instanceof ApiError ? e.message : "Не\u00a0получилось загрузить свободное время"));
     return () => {
       alive = false;
     };
@@ -139,7 +139,7 @@ export function CallPicker({
               >
                 <Handshake size={16} strokeWidth={1.8} aria-hidden />
                 <span>
-                  Сначала познакомиться — {INTRO_MINUTES} мин {intro!.price_rub ? `за ${rub(intro!.price_rub)}` : "бесплатно"}
+                  Сначала познакомиться&nbsp;— {INTRO_MINUTES} мин {intro!.price_rub ? `за\u00a0${rub(intro!.price_rub)}` : "бесплатно"}
                 </span>
               </button>
             )}
@@ -164,8 +164,8 @@ export function CallPicker({
             <strong>Нет свободного времени</strong>
             <span>
               {options.length > 1 && !fixedMinutes
-                ? "Попробуйте другую длительность или напишите в диалоге, какое время вам удобно."
-                : "Напишите в диалоге, какое время вам удобно, — специалист может открыть дополнительные часы."}
+                ? "Попробуйте другую длительность или\u00a0напишите в\u00a0диалоге, какое время вам удобно."
+                : "Напишите в\u00a0диалоге, какое время вам удобно,\u00a0— специалист может открыть дополнительные часы."}
             </span>
           </div>
         ) : data ? (
@@ -216,7 +216,7 @@ export function CallPicker({
 
         <div className={s.pickerFoot}>
           <div className={s.pickerTotal}>
-            <span>{chosen ? `${dayLabel(chosen)} в ${time(chosen)}, ${durationLabel(minutes)}` : "Выберите время"}</span>
+            <span>{chosen ? `${dayLabel(chosen)} в\u00a0${time(chosen)}, ${durationLabel(minutes)}` : "Выберите время"}</span>
             <strong>{rub(price)}</strong>
           </div>
           <Button variant="primary" onClick={submit} disabled={!chosen} loading={busy}>

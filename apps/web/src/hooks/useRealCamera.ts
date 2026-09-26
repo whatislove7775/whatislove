@@ -30,18 +30,18 @@ export function explainMediaError(e: unknown): { state: CameraState; message: st
   if (name === "NotAllowedError" || name === "SecurityError")
     return {
       state: "denied",
-      message: "Доступ к камере запрещён. Разрешите камеру и микрофон в настройках браузера и попробуйте ещё раз.",
+      message: "Доступ к\u00a0камере запрещён. Разрешите камеру и\u00a0микрофон в\u00a0настройках браузера и\u00a0попробуйте ещё раз.",
     };
   if (name === "NotFoundError" || name === "OverconstrainedError")
-    return { state: "error", message: "Камера или микрофон не найдены. Подключите устройство и попробуйте ещё раз." };
+    return { state: "error", message: "Камера или\u00a0микрофон не\u00a0найдены. Подключите устройство и\u00a0попробуйте ещё раз." };
   if (name === "NotReadableError" || name === "AbortError")
     return {
       state: "error",
-      message: "Камера занята другой программой. Закройте другие звонки и вкладки с камерой и попробуйте ещё раз.",
+      message: "Камера занята другой программой. Закройте другие звонки и\u00a0вкладки с\u00a0камерой и\u00a0попробуйте ещё раз.",
     };
   return {
     state: "error",
-    message: "Не получилось включить камеру. Откройте страницу в свежей версии Chrome, Safari или Firefox и попробуйте ещё раз.",
+    message: "Не\u00a0получилось включить камеру. Откройте страницу в\u00a0свежей версии Chrome, Safari или\u00a0Firefox и\u00a0попробуйте ещё раз.",
   };
 }
 

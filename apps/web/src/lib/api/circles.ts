@@ -20,11 +20,11 @@ export const TOPIC_LABEL: Record<CircleTopic, string> = {
   anxiety: "Тревога",
   burnout: "Выгорание",
   breakup: "Расставание",
-  grief: "Горе и утрата",
+  grief: "Горе и\u00a0утрата",
   parenting: "Родительство",
   self_esteem: "Самооценка",
   loneliness: "Одиночество",
-  relocation: "Переезд и эмиграция",
+  relocation: "Переезд и\u00a0эмиграция",
 };
 
 /** One topic = always one colour (design system accents). */
@@ -41,7 +41,7 @@ export const TOPIC_TONE: Record<CircleTopic, Tone> = {
 
 export const STATUS_LABEL: Record<CircleStatus, string> = {
   draft: "Черновик",
-  pending: "На проверке",
+  pending: "На\u00a0проверке",
   rejected: "Нужны правки",
   recruiting: "Набор",
   running: "Идёт",
@@ -248,7 +248,7 @@ export function rubK0(kopecks: number): string {
 
 /** «900 ₽ за встречу» / «4 800 ₽ за цикл из 6 встреч» */
 export function priceLine(c: Pick<CircleCard, "billing" | "price_kopecks" | "meetings_count" | "format">): string {
-  if (c.format === "single") return `${rubK0(c.price_kopecks)} за встречу`;
-  if (c.billing === "series") return `${rubK0(c.price_kopecks)} за весь цикл`;
-  return `${rubK0(c.price_kopecks)} за встречу`;
+  if (c.format === "single") return `${rubK0(c.price_kopecks)} за\u00a0встречу`;
+  if (c.billing === "series") return `${rubK0(c.price_kopecks)} за\u00a0весь цикл`;
+  return `${rubK0(c.price_kopecks)} за\u00a0встречу`;
 }

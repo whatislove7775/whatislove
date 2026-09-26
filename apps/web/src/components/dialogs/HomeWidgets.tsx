@@ -27,7 +27,7 @@ export function useDialogsSummary() {
         setItems(x);
         setError(null);
       })
-      .catch(() => setError("Не получилось загрузить диалоги"));
+      .catch(() => setError("Не\u00a0получилось загрузить диалоги"));
   }, []);
   useEffect(() => {
     load();
@@ -91,19 +91,19 @@ export function NextCallCard({ item, loading, role }: { item: DialogItem | null;
         </div>
         <p className={r.lead}>
           {role === "client"
-            ? "Выберите специалиста и напишите ему или сразу назначьте созвон. Вместо лица специалист увидит ваш аватар."
-            : "Клиенты назначают созвоны в диалогах по вашему расписанию. Вы тоже можете предложить время в диалоге."}
+            ? "Выберите специалиста и\u00a0напишите ему или\u00a0сразу назначьте созвон. Вместо лица специалист увидит ваш аватар."
+            : "Клиенты назначают созвоны в\u00a0диалогах по\u00a0вашему расписанию. Вы\u00a0тоже можете предложить время в\u00a0диалоге."}
         </p>
         <div className={r.rows}>
           <Row
             icon={<MessagesSquare size={18} strokeWidth={1.8} />}
-            title="Один диалог на пару"
-            sub="Переписка, созвоны и файлы в одном месте"
+            title="Один диалог на&nbsp;пару"
+            sub="Переписка, созвоны и&nbsp;файлы в&nbsp;одном месте"
           />
           <Row
             icon={<CalendarDays size={18} strokeWidth={1.8} />}
-            title="От 50 минут до 3 часов"
-            sub="Длительность выбирается при записи, цена зависит от неё"
+            title="От&nbsp;50&nbsp;минут до&nbsp;3&nbsp;часов"
+            sub="Длительность выбирается при&nbsp;записи, цена зависит от&nbsp;неё"
           />
         </div>
         {role === "client" ? (
@@ -152,13 +152,13 @@ export function NextCallCard({ item, loading, role }: { item: DialogItem | null;
         {call.can_join ? (
           <Row
             icon={<ShieldCheck size={18} strokeWidth={1.8} />}
-            title={role === "client" ? "Вы будете аватаром" : "Клиент будет аватаром"}
-            sub="Лицо клиента не передаётся, звонок зашифрован"
+            title={role === "client" ? "Вы\u00a0будете аватаром" : "Клиент будет аватаром"}
+            sub="Лицо клиента не&nbsp;передаётся, звонок зашифрован"
           />
         ) : role === "client" ? (
           <details className={r.tips}>
             <summary>
-              <strong>Как подготовиться</strong>
+              <strong>Как&nbsp;подготовиться</strong>
               <ChevronDown size={16} strokeWidth={2} aria-hidden className={r.tipsChevron} />
             </summary>
             <ul>
@@ -166,10 +166,10 @@ export function NextCallCard({ item, loading, role }: { item: DialogItem | null;
                 <Lamp size={16} strokeWidth={1.8} aria-hidden /> Свет спереди, чтобы аватар точнее повторял мимику
               </li>
               <li>
-                <Headphones size={16} strokeWidth={1.8} aria-hidden /> Наушники и место, где вас не услышат
+                <Headphones size={16} strokeWidth={1.8} aria-hidden /> Наушники и&nbsp;место, где вас не&nbsp;услышат
               </li>
               <li>
-                <Sparkles size={16} strokeWidth={1.8} aria-hidden /> Пара мыслей о том, с чем хотите прийти
+                <Sparkles size={16} strokeWidth={1.8} aria-hidden /> Пара мыслей о&nbsp;том, с&nbsp;чем&nbsp;хотите прийти
               </li>
             </ul>
           </details>
@@ -211,8 +211,8 @@ export function RecentDialogs({ items, role, loading }: { items: DialogItem[]; r
       ) : items.length === 0 ? (
         <p className={s.muted}>
           {role === "client"
-            ? "Здесь появятся ваши диалоги со специалистами. Начните с профиля специалиста — написать можно и без записи."
-            : "Когда клиент напишет вам или назначит созвон, диалог появится здесь."}
+            ? "Здесь появятся ваши диалоги со\u00a0специалистами. Начните с\u00a0профиля специалиста\u00a0— написать можно и\u00a0без\u00a0записи."
+            : "Когда клиент напишет вам или\u00a0назначит созвон, диалог появится здесь."}
         </p>
       ) : (
         <div className={s.recent}>
@@ -227,7 +227,7 @@ export function RecentDialogs({ items, role, loading }: { items: DialogItem[]; r
                     {d.last_message && <span className={s.noteMeta}>{fmtTime(d.last_message.created_at)}</span>}
                   </span>
                   <span className={s.recentPreview} style={{ display: "block" }}>
-                    {d.next_call ? `Созвон ${weekdayDay(d.next_call.scheduled_at)} в ${hm(d.next_call.scheduled_at)}. ` : ""}
+                    {d.next_call ? `Созвон ${weekdayDay(d.next_call.scheduled_at)} в\u00a0${hm(d.next_call.scheduled_at)}. ` : ""}
                     {preview}
                   </span>
                 </span>

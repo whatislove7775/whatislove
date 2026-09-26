@@ -5,11 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
 import { loginWithOtp, OtpRequiredError } from "@/lib/api/staff";
 import { homeFor, useAuth } from "@/lib/auth/store";
-import { Button, Input } from "@/ui";
+import { Button, Input, PasswordInput } from "@/ui";
 import { DoorWelcome } from "@/components/illustrations";
 import { AuthCard, AuthLinks, AuthShell, safeNext } from "./AuthShell";
 import { FormError } from "./FormError";
-import { PasswordInput } from "./PasswordInput";
 import s from "./auth.module.css";
 
 export function LoginForm() {
@@ -39,7 +38,7 @@ export function LoginForm() {
     e.preventDefault();
     setError(null);
     if (!login.trim() || !password) {
-      setError("Введите имя или почту и пароль.");
+      setError("Введите имя или\u00a0почту и\u00a0пароль.");
       return;
     }
     setBusy(true);
@@ -55,7 +54,7 @@ export function LoginForm() {
         setBusy(false);
         return;
       }
-      setError(err instanceof ApiError ? err.message : "Не получилось войти. Попробуйте ещё раз.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось войти. Попробуйте ещё раз.");
       setBusy(false);
     }
   };
@@ -66,14 +65,13 @@ export function LoginForm() {
         title="Вход"
         sub={
           <>
-            Клиенты входят по имени вроде <span style={{ whiteSpace: "nowrap" }}>«тихий-кит-4821»</span>, специалисты по
-            почте.
+            Клиенты входят по&nbsp;имени вроде <span style={{ whiteSpace: "nowrap" }}>«тихий-кит-4821»</span>, специалисты по&nbsp;почте.
           </>
         }
       >
         <form className={s.form} onSubmit={submit} noValidate>
           <Input
-            label="Имя или почта"
+            label="Имя или&nbsp;почта"
             value={login}
             onChange={(e) => setLogin(e.target.value)}
             autoComplete="username"
@@ -93,8 +91,8 @@ export function LoginForm() {
           />
           {otpStep && (
             <Input
-              label="Код из приложения-аутентификатора"
-              hint="Шесть цифр. Код обновляется каждые 30 секунд."
+              label="Код из&nbsp;приложения-аутентификатора"
+              hint="Шесть цифр. Код обновляется каждые 30&nbsp;секунд."
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
               inputMode="numeric"

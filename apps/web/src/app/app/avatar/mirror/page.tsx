@@ -134,7 +134,7 @@ function VoicePreview({ stream }: { stream: MediaStream | null }) {
       onClick={state === "idle" ? record : stop}
       icon={state === "idle" ? <Play size={16} /> : <Square size={14} />}
     >
-      {state === "rec" ? `Говорите… ${left}` : state === "play" ? "Слушаем запись" : "Записать и послушать"}
+      {state === "rec" ? `Говорите… ${left}` : state === "play" ? "Слушаем запись" : "Записать и\u00a0послушать"}
     </Button>
   );
 }
@@ -167,13 +167,13 @@ export default function CheckPage() {
   const light = cam.light;
   const lightOk = light !== null && light >= 70 && light <= 215;
   const lightNote =
-    light === null ? null : light < 70 ? "Темновато. Включите свет перед собой" : light > 215 ? "Очень ярко. Отодвиньтесь от лампы" : "Света достаточно";
+    light === null ? null : light < 70 ? "Темновато. Включите свет перед собой" : light > 215 ? "Очень ярко. Отодвиньтесь от\u00a0лампы" : "Света достаточно";
   const faceOk = live && cam.tracking && cam.faceVisible;
 
   const TIPS = [
-    { key: "light", icon: Lamp, title: "Свет спереди", text: lightNote ?? "Лампа или окно перед вами, а не за спиной", auto: lightOk },
-    { key: "face", icon: ScanFace, title: "Лицо в кадре", text: "Голова по центру, камера примерно на уровне глаз", auto: faceOk },
-    { key: "phones", icon: Headphones, title: "Наушники", text: "Так вас не услышат соседи, а звук не даст эха", auto: false },
+    { key: "light", icon: Lamp, title: "Свет спереди", text: lightNote ?? "Лампа или\u00a0окно перед вами, а\u00a0не\u00a0за\u00a0спиной", auto: lightOk },
+    { key: "face", icon: ScanFace, title: "Лицо в\u00a0кадре", text: "Голова по\u00a0центру, камера примерно на\u00a0уровне глаз", auto: faceOk },
+    { key: "phones", icon: Headphones, title: "Наушники", text: "Так вас не\u00a0услышат соседи, а\u00a0звук не\u00a0даст эха", auto: false },
   ];
   const done = TIPS.filter((t) => ticks[t.key] || t.auto).length;
 
@@ -182,10 +182,10 @@ export default function CheckPage() {
     : !cam.tracking
       ? { tone: "wait", text: "Подключаем распознавание мимики" }
       : cam.calibrating
-        ? { tone: "wait", text: "Запоминаем спокойное лицо. Смотрите в камеру" }
+        ? { tone: "wait", text: "Запоминаем спокойное лицо. Смотрите в\u00a0камеру" }
         : cam.faceVisible
           ? { tone: "ok", text: "Лицо найдено, аватар повторяет мимику" }
-          : { tone: "warn", text: "Лицо не видно. Сядьте ближе и включите свет" };
+          : { tone: "warn", text: "Лицо не\u00a0видно. Сядьте ближе и\u00a0включите свет" };
 
   const failed = cam.state === "denied" || cam.state === "error";
 
@@ -193,12 +193,12 @@ export default function CheckPage() {
     <>
       <PageHeader
         title="Зеркало"
-        sub="Так вас увидит специалист. Камера никуда не отправляется"
+        sub="Так вас увидит специалист. Камера никуда не&nbsp;отправляется"
       />
       <WithRail
         rail={
           <Card as="section">
-            <CardHead title="Перед созвоном" sub={`Готово ${done} из ${TIPS.length}`} />
+            <CardHead title="Перед созвоном" sub={`Готово ${done} из\u00a0${TIPS.length}`} />
             <ul className={s.tips}>
               {TIPS.map((t) => {
                 const on = !!ticks[t.key] || t.auto;
@@ -223,7 +223,7 @@ export default function CheckPage() {
                 );
               })}
             </ul>
-            <p className={s.tipHint}>Свет и лицо мы проверим сами, остальное отметьте, когда будет готово.</p>
+            <p className={s.tipHint}>Свет и&nbsp;лицо мы&nbsp;проверим сами, остальное отметьте, когда будет готово.</p>
             <MirrorAvatar className={illSize.md} />
           </Card>
         }
@@ -256,7 +256,7 @@ export default function CheckPage() {
                       <span className={s.placeholderIcon}>
                         <VideoOff size={26} strokeWidth={1.8} />
                       </span>
-                      <strong>Камера не включилась</strong>
+                      <strong>Камера не&nbsp;включилась</strong>
                       <span>{cam.error}</span>
                       <Button variant="primary" onClick={cam.start}>
                         Попробовать снова
@@ -265,8 +265,8 @@ export default function CheckPage() {
                   ) : (
                     <>
                       <AvatarThumb config={avatar} size={140} framing="portrait" background="transparent" />
-                      <strong>Посмотрите на себя глазами специалиста</strong>
-                      <span>Камера нужна, чтобы аватар повторял вашу мимику. Её изображение обрабатывается только на этом устройстве.</span>
+                      <strong>Посмотрите на&nbsp;себя глазами специалиста</strong>
+                      <span>Камера нужна, чтобы аватар повторял вашу мимику. Её&nbsp;изображение обрабатывается только на&nbsp;этом устройстве.</span>
                       <Button variant="primary" size="lg" onClick={cam.start} icon={<Camera size={18} />}>
                         Включить камеру
                       </Button>
@@ -280,13 +280,13 @@ export default function CheckPage() {
               <div className={s.group}>
                 <div className={s.groupHead}>Фон</div>
                 <BackdropPicker value={backdrop} onChange={setBackdrop} />
-                <p className={s.hint}>Этот фон увидит специалист во время созвона.</p>
+                <p className={s.hint}>Этот фон увидит специалист во&nbsp;время созвона.</p>
               </div>
 
               <div className={s.group}>
                 <div className={s.groupHead}>Мимика</div>
                 <p className={s.hint}>
-                  Если аватар хмурится или улыбается, когда вы спокойны, расслабьте лицо, смотрите в камеру и откалибруйте заново.
+                  Если аватар хмурится или&nbsp;улыбается, когда вы&nbsp;спокойны, расслабьте лицо, смотрите в&nbsp;камеру и&nbsp;откалибруйте заново.
                 </p>
                 <Button
                   variant="secondary"
@@ -311,7 +311,7 @@ export default function CheckPage() {
                     <div className={s.micHead}>
                       <strong>Микрофон</strong>
                       <span>
-                        {!live ? "Проверим вместе с камерой" : !cam.audioStream ? "Микрофон не найден" : heard ? "Слышим вас хорошо" : "Скажите пару слов"}
+                        {!live ? "Проверим вместе с\u00a0камерой" : !cam.audioStream ? "Микрофон не\u00a0найден" : heard ? "Слышим вас хорошо" : "Скажите пару слов"}
                       </span>
                     </div>
                     <div className={s.meter} role="presentation">

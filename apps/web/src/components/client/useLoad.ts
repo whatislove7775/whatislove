@@ -45,5 +45,5 @@ export function useLoad<T>(
 
 export function errorText(e: unknown): string {
   if (e instanceof ApiError) return e.message;
-  return "Не получилось загрузить данные. Проверьте интернет и попробуйте ещё раз.";
+  return "Не\u00a0получилось загрузить данные. Проверьте интернет и\u00a0попробуйте ещё раз.";
 }

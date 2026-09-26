@@ -24,7 +24,7 @@ const PAYOUT_STATUS: Record<string, { label: string; tone: "neutral" | "success"
   processing: { label: "Отправляется", tone: "warning" },
   paid: { label: "Выплачена", tone: "success" },
   rejected: { label: "Отклонена", tone: "danger" },
-  failed: { label: "Не прошла", tone: "danger" },
+  failed: { label: "Не\u00a0прошла", tone: "danger" },
 };
 
 export default function EarningsPage() {
@@ -48,7 +48,7 @@ export default function EarningsPage() {
           rail={
             <>
               <Card as="section">
-                <CardHead title="Реквизиты для выплат" icon={<Landmark size={18} />} />
+                <CardHead title="Реквизиты для&nbsp;выплат" icon={<Landmark size={18} />} />
                 {e.method ? (
                   <div className={s.stack}>
                     <div className={s.item} style={{ padding: 0 }}>
@@ -75,7 +75,7 @@ export default function EarningsPage() {
               </Card>
               <CollapsibleCard title="Налоги" icon={<Receipt size={18} />} defaultOpen={false}>
                 <ul className={s.rules}>
-                  <li>Самозанятым: после выплаты сформируйте чек в «Мой налог».</li>
+                  <li>Самозанятым: после выплаты сформируйте чек в&nbsp;«Мой налог».</li>
                   <li>Комиссия сервиса {e.fee_percent}% уже вычтена.</li>
                 </ul>
               </CollapsibleCard>
@@ -94,7 +94,7 @@ export default function EarningsPage() {
                   <dd>{rubK(e.pending_kopecks)}</dd>
                 </div>
                 <div>
-                  <dt>В выплате</dt>
+                  <dt>В&nbsp;выплате</dt>
                   <dd>{rubK(e.in_payout_kopecks)}</dd>
                 </div>
                 <div>
@@ -119,13 +119,13 @@ export default function EarningsPage() {
                 </Button>
               </div>
               <div className={s.hint}>
-                От {rubK(e.payout_min_kopecks)}, {e.payout_rail === "manual" ? "до 3 рабочих дней" : "обычно в течение часа"}.
+                От {rubK(e.payout_min_kopecks)}, {e.payout_rail === "manual" ? "до\u00a03\u00a0рабочих дней" : "обычно в\u00a0течение часа"}.
               </div>
             </div>
           </Card>
 
           <Card as="section">
-            <CardHead title="По созвонам" icon={<Wallet size={18} />} />
+            <CardHead title="По&nbsp;созвонам" icon={<Wallet size={18} />} />
             {e.calls.length === 0 ? (
               <p className={s.hint}>Пока нет оплаченных созвонов.</p>
             ) : (
@@ -157,7 +157,7 @@ export default function EarningsPage() {
           <Card as="section">
             <CardHead title="Выплаты" icon={<Banknote size={18} />} />
             {e.payouts.length === 0 ? (
-              <p className={s.hint}>Выплат ещё не было.</p>
+              <p className={s.hint}>Выплат ещё не&nbsp;было.</p>
             ) : (
               <div className={s.list}>
                 {e.payouts.map((p) => {
@@ -227,14 +227,14 @@ function MethodModal({ open, current, onClose, onSaved }: { open: boolean; curre
       setF({});
       onSaved();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Не получилось сохранить.");
+      setError(e instanceof ApiError ? e.message : "Не\u00a0получилось сохранить.");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Реквизиты для выплат" width={520}>
+    <Modal open={open} onClose={onClose} title="Реквизиты для&nbsp;выплат" width={520}>
       <div className={s.stack}>
         <Segmented<TaxStatus>
           ariaLabel="Налоговый статус"
@@ -250,25 +250,25 @@ function MethodModal({ open, current, onClose, onSaved }: { open: boolean; curre
           value={kind}
           onChange={setKind}
           options={[
-            { value: "sbp", label: "СБП по телефону" },
-            { value: "bank_account", label: "Счёт в банке" },
+            { value: "sbp", label: "СБП по\u00a0телефону" },
+            { value: "bank_account", label: "Счёт в\u00a0банке" },
           ]}
         />
         {kind === "sbp" ? (
           <>
-            <Input label="Телефон, привязанный к СБП" type="tel" value={f.phone ?? ""} onChange={set("phone")} placeholder="+7 900 000-00-00" autoComplete="off" />
+            <Input label="Телефон, привязанный к&nbsp;СБП" type="tel" value={f.phone ?? ""} onChange={set("phone")} placeholder="+7 900 000-00-00" autoComplete="off" />
             <Input label="Банк" value={f.bank_name ?? ""} onChange={set("bank_name")} placeholder="Например, Т-Банк" autoComplete="off" />
           </>
         ) : (
           <>
-            <Input label="Получатель, как в банке" value={f.recipient ?? ""} onChange={set("recipient")} autoComplete="off" />
-            <Input label="Номер счёта" inputMode="numeric" value={f.account ?? ""} onChange={set("account")} placeholder="20 цифр" autoComplete="off" />
-            <Input label="БИК" inputMode="numeric" value={f.bik ?? ""} onChange={set("bik")} placeholder="9 цифр" autoComplete="off" />
+            <Input label="Получатель, как&nbsp;в&nbsp;банке" value={f.recipient ?? ""} onChange={set("recipient")} autoComplete="off" />
+            <Input label="Номер счёта" inputMode="numeric" value={f.account ?? ""} onChange={set("account")} placeholder="20&nbsp;цифр" autoComplete="off" />
+            <Input label="БИК" inputMode="numeric" value={f.bik ?? ""} onChange={set("bik")} placeholder="9&nbsp;цифр" autoComplete="off" />
           </>
         )}
-        <Input label="ИНН (необязательно)" inputMode="numeric" value={f.inn ?? ""} onChange={set("inn")} placeholder="12 цифр" autoComplete="off" hint="Нужен для чеков самозанятого и отчётности." />
+        <Input label="ИНН (необязательно)" inputMode="numeric" value={f.inn ?? ""} onChange={set("inn")} placeholder="12&nbsp;цифр" autoComplete="off" hint="Нужен для&nbsp;чеков самозанятого и&nbsp;отчётности." />
         {error && <div className={s.error} role="alert">{error}</div>}
-        <div className={s.hint}>Реквизиты шифруются, доступ к ним записывается в журнал.</div>
+        <div className={s.hint}>Реквизиты шифруются, доступ к&nbsp;ним записывается в&nbsp;журнал.</div>
         <Button variant="primary" size="lg" block loading={busy} onClick={save}>
           Сохранить
         </Button>
@@ -289,7 +289,7 @@ function PayoutModal({ open, e, onClose, onDone }: { open: boolean; e: Earnings;
       await billingApi.requestPayout(v * 100 >= e.available_kopecks ? undefined : v);
       onDone();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось запросить выплату.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось запросить выплату.");
     } finally {
       setBusy(false);
     }

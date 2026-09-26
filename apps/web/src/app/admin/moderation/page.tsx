@@ -23,7 +23,7 @@ const STATUS_TONE: Record<ReportStatus, "warning" | "primary" | "success" | "neu
 };
 
 const ACTION_LABEL: Record<ReportAction, string> = {
-  none: "Без мер",
+  none: "Без\u00a0мер",
   warn: "Предупреждение",
   block_user: "Заблокировать аккаунт",
   suspend_specialist: "Приостановить специалиста",
@@ -31,7 +31,7 @@ const ACTION_LABEL: Record<ReportAction, string> = {
 };
 
 const TARGET_ICON = { user: UserRound, specialist: UserRound, session: Video, message: MessageSquare, review: Star };
-const TARGET_LABEL = { user: "Аккаунт", specialist: "Специалист", session: "Созвон", message: "Сообщение в чате", review: "Отзыв" };
+const TARGET_LABEL = { user: "Аккаунт", specialist: "Специалист", session: "Созвон", message: "Сообщение в\u00a0чате", review: "Отзыв" };
 
 export default function Page_() {
   return (
@@ -62,7 +62,7 @@ function ModerationPage() {
   const take = async (r: StaffReport) => {
     try {
       await staffApi.assignReport(r.id);
-      toast(`Жалоба №${r.id} у вас в работе`);
+      toast(`Жалоба №${r.id} у\u00a0вас в\u00a0работе`);
       load();
     } catch (e) {
       toast((e as Error).message, { error: true });
@@ -74,7 +74,7 @@ function ModerationPage() {
     <>
       <PageHeader
         title="Жалобы"
-        sub="Переписка команде не видна"
+        sub="Переписка команде не&nbsp;видна"
       />
       <div className={s.tabsRow}>
         <Segmented<Tab>
@@ -137,7 +137,7 @@ function ModerationPage() {
                   </div>
                   <div className={s.reason}>
                     <strong>{r.reason_label}</strong>
-                    {r.comment ? <p>{r.comment}</p> : <p className={s.muted}>Без комментария</p>}
+                    {r.comment ? <p>{r.comment}</p> : <p className={s.muted}>Без&nbsp;комментария</p>}
                   </div>
                   <div className={s.reportMeta}>
                     <span>От: {r.reporter.alias}</span>
@@ -147,10 +147,10 @@ function ModerationPage() {
                       </span>
                     )}
                     {r.target.message_id && r.target_type === "review" && (
-                      <a href="/admin/reviews?status=reported">Отзыв №{r.target.message_id}, решить в разделе «Отзывы»</a>
+                      <a href="/admin/reviews?status=reported">Отзыв №{r.target.message_id}, решить в&nbsp;разделе «Отзывы»</a>
                     )}
                     {r.target.message_id && r.target_type !== "review" && <span>Сообщение №{r.target.message_id.slice(0, 8)}</span>}
-                    {r.assignee && <span>В работе у {r.assignee === me.alias ? "вас" : r.assignee}</span>}
+                    {r.assignee && <span>В&nbsp;работе у {r.assignee === me.alias ? "вас" : r.assignee}</span>}
                   </div>
                   {r.resolved_at && (
                     <div className={s.resolution}>
@@ -166,7 +166,7 @@ function ModerationPage() {
                   <div className={s.cardActions}>
                     {r.status === "open" && (
                       <Button variant="ghost" onClick={() => take(r)}>
-                        Взять в работу
+                        Взять в&nbsp;работу
                       </Button>
                     )}
                     <Button variant="primary" onClick={() => setResolving(r)}>
@@ -261,8 +261,8 @@ function ResolveModal({ report, onClose, onDone }: { report: StaffReport | null;
           </fieldset>
         )}
         <Textarea
-          label="Комментарий к решению"
-          hint="Для команды и журнала действий. Минимум 3 символа."
+          label="Комментарий к&nbsp;решению"
+          hint="Для&nbsp;команды и&nbsp;журнала действий. Минимум 3&nbsp;символа."
           rows={3}
           value={note}
           onChange={(e) => setNote(e.target.value)}

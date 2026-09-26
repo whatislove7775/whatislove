@@ -54,7 +54,7 @@ export function BackdropPicker({
       ))}
       {PHOTO_BACKDROPS.length > 0 && (
         <a className={s.credit} href="/backdrops/CREDITS.txt" target="_blank" rel="noopener">
-          Фото пейзажей: Unsplash и Pexels, авторы
+          Фото пейзажей: Unsplash и&nbsp;Pexels, авторы
         </a>
       )}
     </div>

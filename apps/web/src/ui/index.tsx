@@ -244,6 +244,9 @@ export function Segmented<T extends string>({
   );
 }
 
+export { PasswordInput, type PasswordInputProps } from "./PasswordInput";
+export { ScrollRow } from "./ScrollRow";
+
 // ── Badge ─────────────────────────────────────────────────────────────────────
 
 export function Badge({

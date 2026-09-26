@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "apps.matching",  # H1: подбор специалиста по анкете (без моделей)
     "apps.circles",  # H2: групповые «Круги»
     "apps.business",  # H3: программы для компаний (B2B)
+    "apps.verification",  # L1: живое селфи для проверки специалиста
 ]
 
 MIDDLEWARE = [
@@ -158,6 +159,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         # Регистрация / вход / восстановление — защита от перебора
         "auth": env("AUTH_THROTTLE_RATE", default="20/min"),
+        # Ник: живая проверка при вводе, «Придумать другое», смена в профиле
+        "alias": env("ALIAS_THROTTLE_RATE", default="60/min"),
         # Живой поиск специалистов (палитра): запрос на каждую паузу в наборе
         "search": env("SEARCH_THROTTLE_RATE", default="240/min"),
     },
@@ -206,6 +209,11 @@ YOOKASSA_RETURN_URL = env("YOOKASSA_RETURN_URL", default="https://aprosop.ru/ses
 # Соль для хеширования email. Старые аккаунты (legacy-константа) продолжают
 # входить: поиск идёт по обоим хешам, см. apps/users/security.py
 EMAIL_HASH_SALT = env("EMAIL_HASH_SALT", default="ANON_PSY_EMAIL_SALT_v1")
+
+# Селфи для проверки специалиста: удаляется через N дней после одобрения профиля.
+# REQUIRED — без селфи заявку нельзя одобрить.
+VERIFICATION_SELFIE_RETENTION_DAYS = env.int("VERIFICATION_SELFIE_RETENTION_DAYS", default=30)
+VERIFICATION_SELFIE_REQUIRED = env.bool("VERIFICATION_SELFIE_REQUIRED", default=True)
 
 # Расписание психологов задаётся в московском времени
 SCHEDULE_TIME_ZONE = env("SCHEDULE_TIME_ZONE", default="Europe/Moscow")

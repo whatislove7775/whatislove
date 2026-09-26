@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ArticleCard, PracticeCard } from "@/components/content/Cards";
 import { serverContent } from "@/lib/content/server";
+import { ScrollRow } from "@/ui";
 import s from "./featured.module.css";
 import l from "./landing.module.css";
 
@@ -16,22 +17,22 @@ export async function FeaturedContent() {
           <h2 id="useful-title" className={l.sectionTitle}>
             Полезное
           </h2>
-          <p className={l.sectionSub}>Статьи с источниками и короткие практики. Без регистрации.</p>
+          <p className={l.sectionSub}>Статьи с&nbsp;источниками и&nbsp;короткие практики. Без&nbsp;регистрации.</p>
         </div>
         <Link href="/articles" className={l.more}>
           Все статьи
           <ArrowRight size={16} strokeWidth={2} aria-hidden />
         </Link>
       </div>
-      <ul className={s.row}>
+      <ScrollRow className={s.bleed} trackClassName={s.row} label="Статьи и&nbsp;практики">
         {articles.map((a) => (
-          <li key={a.id} className={s.item}>
+          <div key={a.id} role="listitem" className={s.item}>
             <ArticleCard a={a} base="" />
-          </li>
+          </div>
         ))}
         {practices.length > 0 && (
-          <li className={`${s.item} ${s.practices}`}>
-            <h3 className={s.subTitle}>Практики на 3–10 минут</h3>
+          <div role="listitem" className={`${s.item} ${s.practices}`}>
+            <h3 className={s.subTitle}>Практики на&nbsp;3–10&nbsp;минут</h3>
             <ul>
               {practices.slice(0, 3).map((p) => (
                 <li key={p.id}>
@@ -43,9 +44,9 @@ export async function FeaturedContent() {
               Все практики
               <ArrowRight size={14} strokeWidth={2} aria-hidden />
             </Link>
-          </li>
+          </div>
         )}
-      </ul>
+      </ScrollRow>
     </section>
   );
 }

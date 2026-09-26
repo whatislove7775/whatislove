@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { Button } from "@/ui";
 import s from "./status.module.css";
 
-export const metadata: Metadata = { title: "Страница не найдена", robots: { index: false } };
+export const metadata: Metadata = { title: "Страница не\u00a0найдена", robots: { index: false } };
 
 export default function NotFound() {
   return (
@@ -19,13 +19,13 @@ export default function NotFound() {
           <LostBubble className={s.art} />
           <span className={s.code}>Ошибка 404</span>
           <h1 className={s.title}>Такой страницы нет</h1>
-          <p className={s.text}>Возможно, ссылка устарела или в адресе опечатка. Давайте вернёмся туда, где всё знакомо.</p>
+          <p className={s.text}>Возможно, ссылка устарела или&nbsp;в&nbsp;адресе опечатка. Давайте вернёмся туда, где всё знакомо.</p>
           <div className={s.actions}>
             <Button href="/" variant="primary">
-              На главную
+              На&nbsp;главную
             </Button>
             <Button href="/app" variant="secondary">
-              В кабинет
+              В&nbsp;кабинет
             </Button>
           </div>
         </div>

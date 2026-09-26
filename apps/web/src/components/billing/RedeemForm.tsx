@@ -26,7 +26,7 @@ export function RedeemForm({ onRedeemed }: { onRedeemed?: () => void }) {
       notifyBalanceChanged();
       onRedeemed?.();
     } catch (err) {
-      setError(err instanceof ApiError ? (err.status === 429 ? "Слишком много попыток. Подождите минуту." : err.message) : "Не получилось проверить код.");
+      setError(err instanceof ApiError ? (err.status === 429 ? "Слишком много попыток. Подождите минуту." : err.message) : "Не\u00a0получилось проверить код.");
     } finally {
       setBusy(false);
     }
@@ -48,7 +48,7 @@ export function RedeemForm({ onRedeemed }: { onRedeemed?: () => void }) {
       <Button type="submit" variant="soft" icon={<Gift size={18} />} loading={busy} disabled={!code.trim()}>
         Активировать код
       </Button>
-      <div className={s.hint}>Код может купить для вас кто угодно — так оплата совсем не связана с вами.</div>
+      <div className={s.hint}>Код может купить для&nbsp;вас кто угодно&nbsp;— так оплата совсем не&nbsp;связана с&nbsp;вами.</div>
     </form>
   );
 }

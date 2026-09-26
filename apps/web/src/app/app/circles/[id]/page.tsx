@@ -43,6 +43,7 @@ import {
 } from "@/lib/api/circles";
 import { day, dayLabel, dayShort, plural, time, untilLabel } from "@/lib/format";
 import s from "@/components/circles/circles.module.css";
+import { typo } from "@/lib/typography";
 
 export default function CirclePage() {
   const { id } = useParams<{ id: string }>();
@@ -66,10 +67,10 @@ export default function CirclePage() {
           <div className={s.heroTags}>
             <Badge tone={TOPIC_TONE[c.topic]}>{c.topic_label}</Badge>
             <Badge tone={STATUS_TONE[c.status]}>{STATUS_LABEL[c.status]}</Badge>
-            {member && <Badge tone="success">Вы в круге</Badge>}
+            {member && <Badge tone="success">Вы&nbsp;в&nbsp;круге</Badge>}
           </div>
           <h1 className={s.heroTitle}>{c.title}</h1>
-          <p className={s.heroLead}>{c.description}</p>
+          <p className={s.heroLead}>{typo(c.description)}</p>
           <div className={s.heroFacts}>
             {c.first_meeting_at && (
               <span>
@@ -81,7 +82,7 @@ export default function CirclePage() {
               {c.format === "single" ? <Clock size={16} /> : <Repeat size={16} />} {meetingsLine(c)}
             </span>
             <span>
-              <Users size={16} /> До {c.capacity} участников и ведущий
+              <Users size={16} /> До {c.capacity} участников и&nbsp;ведущий
             </span>
           </div>
         </div>
@@ -93,25 +94,25 @@ export default function CirclePage() {
           <Card className={s.mobileJoin}>
             <div className={s.joinPrice} style={{ fontSize: "var(--t-20)" }}>
               {rubK0(c.price_kopecks)}
-              <small>{c.billing === "series" && c.format !== "single" ? "за весь цикл" : "за встречу"}</small>
+              <small>{c.billing === "series" && c.format !== "single" ? "за\u00a0весь цикл" : "за\u00a0встречу"}</small>
             </div>
             <Button variant="primary" href="#join">
-              {c.seats_left === 0 ? "В лист ожидания" : "Записаться"}
+              {c.seats_left === 0 ? "В\u00a0лист ожидания" : "Записаться"}
             </Button>
           </Card>
         )}
         {(member || c.my_role === "host") && (
           <Card>
-            <CardHead title="Чат круга" icon={<MessagesSquare size={18} />} sub="Здесь можно познакомиться, задать вопрос ведущему и поддержать друг друга" />
+            <CardHead title="Чат круга" icon={<MessagesSquare size={18} />} sub="Здесь можно познакомиться, задать вопрос ведущему и&nbsp;поддержать друг друга" />
             <GroupChat circleId={c.id} hostPhoto={c.host.photo_url} />
           </Card>
         )}
         <Card>
-          <CardHead title="Расписание" icon={<CalendarDays size={18} />} sub="Время указано по вашему часовому поясу" />
+          <CardHead title="Расписание" icon={<CalendarDays size={18} />} sub="Время указано по&nbsp;вашему часовому поясу" />
           <Schedule meetings={c.meetings} />
         </Card>
         <Card>
-          <CardHead title="Правила круга" icon={<HeartHandshake size={18} />} sub="Их принимает каждый участник — так в круге безопасно" />
+          <CardHead title="Правила круга" icon={<HeartHandshake size={18} />} sub="Их&nbsp;принимает каждый участник&nbsp;— так в&nbsp;круге безопасно" />
           <ul className={s.rules}>
             {c.rules.map((r) => (
               <li key={r}>
@@ -121,20 +122,20 @@ export default function CirclePage() {
           </ul>
         </Card>
         <Card tone="minor">
-          <CardHead title="Как проходит встреча" icon={<Video size={16} />} />
+          <CardHead title="Как&nbsp;проходит встреча" icon={<Video size={16} />} />
           <ul className={s.rules}>
             <li>
-              <Check size={16} /> За 10 минут до начала на этой странице появится кнопка «Войти во встречу».
+              <Check size={16} /> За&nbsp;10&nbsp;минут до&nbsp;начала на&nbsp;этой странице появится кнопка «Войти во&nbsp;встречу».
             </li>
             <li>
-              <Check size={16} /> Все участники видят вас как 3D-аватар, который повторяет вашу мимику. Изображение с камеры не покидает устройство
-              {c.allow_real_faces ? ", а показать лицо можно только по своему желанию." : "."}
+              <Check size={16} /> Все участники видят вас как&nbsp;3D-аватар, который повторяет вашу мимику. Изображение с&nbsp;камеры не&nbsp;покидает устройство
+              {c.allow_real_faces ? ", а\u00a0показать лицо можно только по\u00a0своему желанию." : "."}
             </li>
             <li>
-              <Check size={16} /> Голос можно изменить фильтром ещё до входа. Если захотите что-то сказать, поднимите руку.
+              <Check size={16} /> Голос можно изменить фильтром ещё до&nbsp;входа. Если захотите что-то сказать, поднимите руку.
             </li>
             <li>
-              <Check size={16} /> Встречу ведёт психолог. Он видит вас так же, как все: по псевдониму и в аватаре.
+              <Check size={16} /> Встречу ведёт психолог. Он&nbsp;видит вас так&nbsp;же, как&nbsp;все: по&nbsp;псевдониму и&nbsp;в&nbsp;аватаре.
             </li>
           </ul>
         </Card>
@@ -159,10 +160,10 @@ function NextMeeting({ meeting }: { meeting: CircleMeeting }) {
           <h2 style={{ marginTop: 10 }}>
             {dayLabel(meeting.starts_at)} в {time(meeting.starts_at)}
           </h2>
-          <p>{live ? "Можно войти прямо сейчас" : `Начнётся ${untilLabel(meeting.starts_at)}. Комната откроется за 10 минут.`}</p>
+          <p>{live ? "Можно войти прямо сейчас" : `Начнётся ${untilLabel(meeting.starts_at)}. Комната откроется за\u00a010\u00a0минут.`}</p>
         </div>
         <Button variant="white" size="lg" href={open ? `/circle-room/${meeting.id}` : undefined} disabled={!open} icon={<Video size={18} />}>
-          Войти во встречу
+          Войти во&nbsp;встречу
         </Button>
       </div>
     </Card>
@@ -180,7 +181,7 @@ function Schedule({ meetings }: { meetings: CircleMeeting[] }) {
             <span className={s.schedNum}>{m.index}</span>
             <span className={s.schedWhen}>
               {dayShort(m.starts_at)}, {time(m.starts_at)}–{time(m.ends_at)}
-              {m.status === "missed" && <small>Не состоялась, деньги вернулись</small>}
+              {m.status === "missed" && <small>Не&nbsp;состоялась, деньги вернулись</small>}
             </span>
             {m.id === nextId ? <Badge tone="primary">Следующая</Badge> : past ? <Badge>Прошла</Badge> : null}
           </li>
@@ -195,7 +196,7 @@ function Rail({ c, reload, setData }: { c: CircleDetail; reload: () => void; set
     <>
       {c.my_role === "host" ? (
         <Card>
-          <CardHead title="Это ваш круг" />
+          <CardHead title="Это&nbsp;ваш круг" />
           <Button variant="primary" block href={`/pro/circles/${c.id}`}>
             Управлять кругом
           </Button>
@@ -224,9 +225,9 @@ function Rail({ c, reload, setData }: { c: CircleDetail; reload: () => void; set
                 </Badge>
               )}
             </div>
-            {c.host.bio && <p>{c.host.bio}</p>}
+            {c.host.bio && <p>{typo(c.host.bio)}</p>}
             <Link className={s.hostLink} href={`/app/specialists/${c.host.id}`}>
-              Профиль и дипломы
+              Профиль и&nbsp;дипломы
             </Link>
           </div>
         </div>
@@ -254,13 +255,13 @@ function Membership({ c, reload, setData }: { c: CircleDetail; reload: () => voi
       setData(r.circle);
       setConfirm(false);
       notifyBalanceChanged();
-      toast(r.waitlisted ? "Вы в листе ожидания. Как только освободится место, запишем автоматически." : `Вы в круге как ${r.circle.me?.pseudonym}`);
+      toast(r.waitlisted ? "Вы\u00a0в\u00a0листе ожидания. Как\u00a0только освободится место, запишем автоматически." : `Вы\u00a0в\u00a0круге как\u00a0${r.circle.me?.pseudonym}`);
     } catch (e) {
       if (isInsufficient(e)) {
         const summary = await billingApi.summary().catch(() => null);
         if (summary) setTopup({ summary, shortfall: Math.max(10000, c.amount_due_kopecks - summary.balance_kopecks) });
-        else setError(e instanceof ApiError ? e.message : "Не хватает денег на балансе.");
-      } else setError(e instanceof ApiError ? e.message : "Не получилось записаться. Попробуйте ещё раз.");
+        else setError(e instanceof ApiError ? e.message : "Не\u00a0хватает денег на\u00a0балансе.");
+      } else setError(e instanceof ApiError ? e.message : "Не\u00a0получилось записаться. Попробуйте ещё раз.");
     } finally {
       setBusy(false);
     }
@@ -272,9 +273,9 @@ function Membership({ c, reload, setData }: { c: CircleDetail; reload: () => voi
       setData(await circlesApi.leave(c.id));
       setLeave(false);
       notifyBalanceChanged();
-      toast("Вы вышли из круга");
+      toast("Вы\u00a0вышли из\u00a0круга");
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : "Не получилось выйти.", { error: true });
+      toast(e instanceof ApiError ? e.message : "Не\u00a0получилось выйти.", { error: true });
     } finally {
       setBusy(false);
     }
@@ -284,24 +285,24 @@ function Membership({ c, reload, setData }: { c: CircleDetail; reload: () => voi
     const terms = me.leave_terms;
     return (
       <Card>
-        <CardHead title={me.status === "waitlist" ? "Вы в листе ожидания" : "Вы в круге"} />
+        <CardHead title={me.status === "waitlist" ? "Вы\u00a0в\u00a0листе ожидания" : "Вы\u00a0в\u00a0круге"} />
         <div className={s.pseudo}>
           <AvatarThumb config={null} seed={me.handle} size={48} />
           <div>
             <b>{me.pseudonym}</b>
-            <small>Так вас видят в этом круге</small>
+            <small>Так вас видят в&nbsp;этом круге</small>
           </div>
         </div>
         <div className={s.joinBox} style={{ marginTop: 12 }}>
           {me.status === "waitlist" ? (
             <p className={s.note}>
-              Вы {me.waitlist_position}-й в очереди. Когда освободится место, мы запишем вас и заморозим оплату с баланса.
-              {me.promote_failed && " В прошлый раз на балансе не хватило денег — пополните его, чтобы не пропустить место."}
+              Вы {me.waitlist_position}-й в&nbsp;очереди. Когда освободится место, мы&nbsp;запишем вас и&nbsp;заморозим оплату с&nbsp;баланса.
+              {me.promote_failed && " В\u00a0прошлый раз на\u00a0балансе не\u00a0хватило денег\u00a0— пополните его, чтобы не\u00a0пропустить место."}
             </p>
           ) : (
             me.payments && (
               <dl className={s.kv}>
-                <dt>Заморожено под встречи</dt>
+                <dt>Заморожено под&nbsp;встречи</dt>
                 <dd>{rubK0(me.payments.held_kopecks)}</dd>
                 <dt>Оплачено</dt>
                 <dd>{rubK0(me.payments.paid_kopecks)}</dd>
@@ -314,38 +315,38 @@ function Membership({ c, reload, setData }: { c: CircleDetail; reload: () => voi
               </dl>
             )
           )}
-          {me.chat_muted && <p className={s.fine}>Ведущий временно выключил вам сообщения в чате.</p>}
+          {me.chat_muted && <p className={s.fine}>Ведущий временно выключил вам сообщения в&nbsp;чате.</p>}
           <Button variant="ghost" icon={<LogOut size={16} />} onClick={() => setLeave(true)}>
-            {me.status === "waitlist" ? "Выйти из очереди" : "Выйти из круга"}
+            {me.status === "waitlist" ? "Выйти из\u00a0очереди" : "Выйти из\u00a0круга"}
           </Button>
         </div>
-        <Modal open={leave} onClose={() => setLeave(false)} title="Выйти из круга?">
+        <Modal open={leave} onClose={() => setLeave(false)} title="Выйти из&nbsp;круга?">
           <div className={s.joinBox}>
             {me.status === "waitlist" || !terms ? (
-              <p className={s.note}>Вы потеряете место в очереди. Денег за ожидание мы не замораживали.</p>
+              <p className={s.note}>Вы&nbsp;потеряете место в&nbsp;очереди. Денег за&nbsp;ожидание мы&nbsp;не&nbsp;замораживали.</p>
             ) : (
               <>
                 <p className={s.note}>
-                  Правила те же, что у созвонов: встречи, до которых больше {freeHours} {plural(freeHours, "часа", "часов", "часов")}, возвращаются
-                  полностью, за более близкую — удерживается {c.cancel_rules.late_cancel_penalty_percent}%.
+                  Правила те&nbsp;же, что&nbsp;у&nbsp;созвонов: встречи, до&nbsp;которых больше {freeHours} {plural(freeHours, "часа", "часов", "часов")}, возвращаются
+                  полностью, за&nbsp;более близкую&nbsp;— удерживается {c.cancel_rules.late_cancel_penalty_percent}%.
                 </p>
                 <dl className={s.kv}>
-                  <dt>Вернётся на баланс</dt>
+                  <dt>Вернётся на&nbsp;баланс</dt>
                   <dd>{rubK0(terms.refund_kopecks)}</dd>
                   {terms.penalty_kopecks > 0 && (
                     <>
-                      <dt>Удержим за позднюю отмену</dt>
+                      <dt>Удержим за&nbsp;позднюю отмену</dt>
                       <dd>{rubK0(terms.penalty_kopecks)}</dd>
                     </>
                   )}
                   {terms.kept_kopecks > 0 && (
                     <>
-                      <dt>Уже идущая или начатая часть</dt>
+                      <dt>Уже идущая или&nbsp;начатая часть</dt>
                       <dd>{rubK0(terms.kept_kopecks)}</dd>
                     </>
                   )}
                 </dl>
-                <p className={s.fine}>Ваш псевдоним и сообщения останутся в чате, но писать и заходить на встречи вы больше не сможете.</p>
+                <p className={s.fine}>Ваш псевдоним и&nbsp;сообщения останутся в&nbsp;чате, но&nbsp;писать и&nbsp;заходить на&nbsp;встречи вы&nbsp;больше не&nbsp;сможете.</p>
               </>
             )}
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
@@ -363,7 +364,7 @@ function Membership({ c, reload, setData }: { c: CircleDetail; reload: () => voi
   }
 
   const removed = c.me?.status === "removed";
-  const closed = c.join_closed_reason || (removed ? "Ведущий исключил вас из этого круга." : null);
+  const closed = c.join_closed_reason || (removed ? "Ведущий исключил вас из\u00a0этого круга." : null);
   return (
     <Card>
       <div className={s.joinBox} id="join">
@@ -371,10 +372,10 @@ function Membership({ c, reload, setData }: { c: CircleDetail; reload: () => voi
           {rubK0(c.price_kopecks)}
           <small>
             {c.billing === "series" && c.format !== "single"
-              ? `за весь цикл из ${c.meetings_count} ${plural(c.meetings_count, "встречи", "встреч", "встреч")}`
+              ? `за\u00a0весь цикл из\u00a0${c.meetings_count} ${plural(c.meetings_count, "встречи", "встреч", "встреч")}`
               : c.format === "single"
-                ? "за встречу"
-                : `за встречу, всего ${rubK0(c.total_kopecks)} за ${c.meetings_count} ${plural(c.meetings_count, "встречу", "встречи", "встреч")}`}
+                ? "за\u00a0встречу"
+                : `за\u00a0встречу, всего ${rubK0(c.total_kopecks)} за\u00a0${c.meetings_count} ${plural(c.meetings_count, "встречу", "встречи", "встреч")}`}
           </small>
         </div>
         <SeatsMeter capacity={c.capacity} taken={c.seats_taken} />
@@ -382,19 +383,19 @@ function Membership({ c, reload, setData }: { c: CircleDetail; reload: () => voi
           <p className={s.note}>{closed}</p>
         ) : (
           <Button variant="primary" size="lg" block onClick={() => setConfirm(true)} icon={full ? <Hourglass size={18} /> : undefined}>
-            {full ? "Встать в лист ожидания" : "Записаться"}
+            {full ? "Встать в\u00a0лист ожидания" : "Записаться"}
           </Button>
         )}
         <p className={s.fine}>
-          Оплата с анонимного баланса. Отмена бесплатно не позже чем за {freeHours} {plural(freeHours, "час", "часа", "часов")} до встречи.
+          Оплата с&nbsp;анонимного баланса. Отмена бесплатно не&nbsp;позже чем&nbsp;за {freeHours} {plural(freeHours, "час", "часа", "часов")} до&nbsp;встречи.
         </p>
       </div>
-      <Modal open={confirm} onClose={() => { setConfirm(false); setTopup(null); }} title={full ? "Лист ожидания" : "Записаться в круг"} width={520}>
+      <Modal open={confirm} onClose={() => { setConfirm(false); setTopup(null); }} title={full ? "Лист ожидания" : "Записаться в\u00a0круг"} width={520}>
         {topup ? (
           <div className={s.joinBox}>
             <p className={s.note}>
               <Wallet size={15} style={{ verticalAlign: -2, marginRight: 6 }} />
-              На балансе не хватает {rubK0(topup.shortfall)}. Пополните баланс — после оплаты вернётесь на эту страницу и запишетесь.
+              На&nbsp;балансе не&nbsp;хватает {rubK0(topup.shortfall)}. Пополните баланс&nbsp;— после оплаты вернётесь на&nbsp;эту страницу и&nbsp;запишетесь.
             </p>
             <TopUpForm settings={topup.summary.topup} suggestRub={topup.shortfall / 100} returnTo={`/app/circles/${c.id}`} onDone={() => { setTopup(null); reload(); }} />
           </div>
@@ -403,28 +404,28 @@ function Membership({ c, reload, setData }: { c: CircleDetail; reload: () => voi
             <div className={s.pseudo}>
               <AvatarThumb config={null} seed={`preview-${c.id}`} size={48} />
               <div>
-                <b>Вы получите новое имя</b>
-                <small>Например, «Участник-Лиса». Ваш аккаунт никто в круге не увидит.</small>
+                <b>Вы&nbsp;получите новое имя</b>
+                <small>Например, «Участник-Лиса». Ваш аккаунт никто в&nbsp;круге не&nbsp;увидит.</small>
               </div>
             </div>
             <ul className={s.rules}>
               <li>
-                <ShieldCheck size={16} /> На встречах — только аватар, камера не показывает ваше лицо
+                <ShieldCheck size={16} /> На&nbsp;встречах&nbsp;— только аватар, камера не&nbsp;показывает ваше лицо
               </li>
               <li>
                 <Mic size={16} /> Голос можно изменить фильтром
               </li>
               <li>
-                <Check size={16} /> Вы принимаете правила круга
+                <Check size={16} /> Вы&nbsp;принимаете правила круга
               </li>
             </ul>
             {full ? (
               <p className={s.note}>
-                Сейчас все места заняты. Когда кто-то выйдет, мы запишем вас автоматически и заморозим оплату с баланса — если её хватит.
+                Сейчас все места заняты. Когда кто-то выйдет, мы&nbsp;запишем вас автоматически и&nbsp;заморозим оплату с&nbsp;баланса&nbsp;— если её&nbsp;хватит.
               </p>
             ) : (
               <dl className={s.kv}>
-                <dt>Заморозим на балансе сейчас</dt>
+                <dt>Заморозим на&nbsp;балансе сейчас</dt>
                 <dd>{rubK0(c.amount_due_kopecks)}</dd>
                 <dt>Списание</dt>
                 <dd>{c.billing === "series" ? "после первой встречи" : "после каждой встречи"}</dd>
@@ -436,7 +437,7 @@ function Membership({ c, reload, setData }: { c: CircleDetail; reload: () => voi
               </p>
             )}
             <Button variant="primary" size="lg" block loading={busy} onClick={join}>
-              {full ? "Встать в очередь" : `Записаться за ${rubK0(c.amount_due_kopecks)}`}
+              {full ? "Встать в\u00a0очередь" : `Записаться за\u00a0${rubK0(c.amount_due_kopecks)}`}
             </Button>
           </div>
         )}

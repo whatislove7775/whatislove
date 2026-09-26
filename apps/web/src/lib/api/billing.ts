@@ -313,7 +313,7 @@ export const financeApi = {
     const r = await fetch(`${API_BASE}/billing/staff/export/?days=${days}`, {
       headers: tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {},
     });
-    if (!r.ok) throw new ApiError(r.status, "Не получилось выгрузить операции.");
+    if (!r.ok) throw new ApiError(r.status, "Не\u00a0получилось выгрузить операции.");
     return r.blob();
   },
 };

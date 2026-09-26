@@ -16,14 +16,14 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
       <main className={s.main}>
         <div className={s.card}>
           <SleepingMoon className={s.art} />
-          <h1 className={s.title}>Что-то пошло не так</h1>
-          <p className={s.text}>Страница не загрузилась. Попробуйте ещё раз: чаще всего помогает. Ваши данные в безопасности.</p>
+          <h1 className={s.title}>Что-то пошло не&nbsp;так</h1>
+          <p className={s.text}>Страница не&nbsp;загрузилась. Попробуйте ещё раз: чаще всего помогает. Ваши данные в&nbsp;безопасности.</p>
           <div className={s.actions}>
             <Button variant="primary" onClick={reset}>
               Попробовать снова
             </Button>
             <Button href="/" variant="secondary">
-              На главную
+              На&nbsp;главную
             </Button>
           </div>
         </div>

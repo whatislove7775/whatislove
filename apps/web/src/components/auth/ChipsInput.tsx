@@ -14,7 +14,7 @@ export function ChipsInput({
   onChange,
   suggestions = [],
   max = 8,
-  placeholder = "Добавьте тему и нажмите Enter",
+  placeholder = "Добавьте тему и\u00a0нажмите Enter",
 }: {
   label: string;
   hint?: string;
@@ -51,7 +51,7 @@ export function ChipsInput({
   const rest = suggestions.filter((t) => !has(t));
 
   return (
-    <Field label={label} hint={full ? `Можно выбрать до ${max} тем` : hint} error={error} htmlFor={id}>
+    <Field label={label} hint={full ? `Можно выбрать до\u00a0${max} тем` : hint} error={error} htmlFor={id}>
       <div className={s.chipsBox} onClick={() => inputRef.current?.focus()}>
         {value.map((t) => (
           <span key={t} className={s.chip}>

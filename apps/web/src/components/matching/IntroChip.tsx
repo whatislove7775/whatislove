@@ -9,7 +9,7 @@ export function IntroChip({ psy, withPrice = false }: { psy: Pick<PsychologistPu
   if (!intro?.enabled) return null;
   const price = intro.price_rub ? rub(intro.price_rub) : "бесплатно";
   return (
-    <span title={`Можно начать с короткого знакомства: ${intro.minutes} мин, ${price}`}>
+    <span title={`Можно начать с\u00a0короткого знакомства: ${intro.minutes} мин, ${price}`}>
       <Badge tone="mint">
         <Handshake size={13} strokeWidth={2} aria-hidden /> Знакомство {intro.minutes} мин{withPrice ? `, ${price}` : ""}
       </Badge>

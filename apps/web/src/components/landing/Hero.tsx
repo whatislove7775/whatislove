@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Shuffle } from "lucide-react";
+import { ArrowRight, RefreshCw } from "lucide-react";
 import { AvatarView, type AvatarViewHandle } from "@/components/avatar/AvatarView";
 import { randomAvatar } from "@/lib/avatar/schema";
 import { Button } from "@/ui";
@@ -149,20 +149,20 @@ export function Hero() {
     <section className={`${s.wrap} ${s.hero}`} aria-labelledby="hero-title">
       <div className={s.heroText}>
         <h1 id="hero-title" className={s.heroTitle}>
-          Психолог онлайн, <span className={s.heroAccent}>и никто не узнает, кто вы</span>
+          Психолог онлайн, <span className={s.heroAccent}>и&nbsp;никто не&nbsp;узнает, кто вы</span>
         </h1>
-        <p className={s.heroLead}>Без почты и телефона. Вместо имени псевдоним, вместо лица 3D-аватар с вашей мимикой.</p>
+        <p className={s.heroLead}>Без&nbsp;почты и&nbsp;телефона. Вместо имени псевдоним, вместо лица 3D-аватар с&nbsp;вашей мимикой.</p>
         <div className={s.heroActions}>
           <Button href="/start" variant="primary" size="lg">
             Начать анонимно
           </Button>
           <Button href="/join" variant="ghost" size="lg" className={s.heroSecondary}>
-            Я специалист
+            Я&nbsp;специалист
           </Button>
         </div>
         {/* H1: public matching quiz, works without login */}
         <Link href="/match" className={s.heroQuiz}>
-          Не знаете, к кому идти? <span>Подобрать по анкете</span>
+          Не&nbsp;знаете, к&nbsp;кому идти? <span>Подобрать по&nbsp;анкете</span>
           <ArrowRight size={15} strokeWidth={2} aria-hidden />
         </Link>
       </div>
@@ -173,11 +173,10 @@ export function Hero() {
             <AvatarView ref={viewRef} config={config} framing="portrait" interactive={false} deferLoad />
           </div>
           <figcaption className={s.nameTag} aria-live="polite">
-            <span className={s.liveDot} aria-hidden />
             {current.alias}
           </figcaption>
           <button type="button" className={s.shuffle} aria-label="Показать другой аватар" title="Другой аватар" onClick={shuffle}>
-            <Shuffle size={16} strokeWidth={2} aria-hidden />
+            <RefreshCw size={16} strokeWidth={2} aria-hidden />
           </button>
         </div>
       </figure>

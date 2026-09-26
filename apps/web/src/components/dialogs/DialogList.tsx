@@ -38,12 +38,12 @@ function callChip(d: DialogItem, now: number) {
       : start.toDateString() === tomorrow.toDateString()
         ? "завтра"
         : weekdayDay(call.scheduled_at);
-  return { tone: "call", text: `Созвон ${day} в ${hm(call.scheduled_at)}` };
+  return { tone: "call", text: `Созвон ${day} в\u00a0${hm(call.scheduled_at)}` };
 }
 
 const PRIVACY = {
-  client: "Специалист видит только псевдоним и аватар.",
-  specialist: "Вы видите только псевдоним и аватар клиента.",
+  client: "Специалист видит только псевдоним и\u00a0аватар.",
+  specialist: "Вы\u00a0видите только псевдоним и\u00a0аватар клиента.",
 };
 
 export function DialogList({
@@ -90,9 +90,9 @@ export function DialogList({
     const preview =
       (d.last_message?.card ? cardPreview(d.last_message.card) : d.last_message?.text) ||
       (d.kind === "ai"
-        ? "ИИ-помощник: поддержка и практики"
+        ? "ИИ-помощник: поддержка и\u00a0практики"
         : d.kind === "support"
-          ? "Вопросы по оплате, созвонам и работе сервиса"
+          ? "Вопросы по\u00a0оплате, созвонам и\u00a0работе сервиса"
           : d.conversation_id
             ? "Нет сообщений"
             : "");
@@ -143,8 +143,8 @@ export function DialogList({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={mode === "client" ? "Найти по имени" : "Найти по псевдониму"}
-          aria-label="Поиск по диалогам"
+          placeholder={mode === "client" ? "Найти по\u00a0имени" : "Найти по\u00a0псевдониму"}
+          aria-label="Поиск по&nbsp;диалогам"
         />
       </label>
       <div className={s.filters}>
@@ -154,7 +154,7 @@ export function DialogList({
           onChange={setFilter}
           options={[
             { value: "all", label: "Все" },
-            { value: "calls", label: "С созвоном" },
+            { value: "calls", label: "С\u00a0созвоном" },
             { value: "unread", label: unreadTotal ? `Новые ${unreadTotal > 99 ? "99+" : unreadTotal}` : "Новые" },
           ]}
         />
@@ -173,7 +173,7 @@ export function DialogList({
         ) : pinned.length + rest.length === 0 ? (
           query || filter !== "all" ? (
             <p className={s.emptyFilter}>
-              {filter === "unread" ? "Все сообщения прочитаны." : filter === "calls" ? "Назначенных созвонов нет." : "Никого не нашлось."}
+              {filter === "unread" ? "Все сообщения прочитаны." : filter === "calls" ? "Назначенных созвонов нет." : "Никого не\u00a0нашлось."}
             </p>
           ) : (
             <EmptyState
@@ -181,8 +181,8 @@ export function DialogList({
               title="Диалогов пока нет"
               text={
                 mode === "client"
-                  ? "Выберите специалиста и напишите ему — созвон можно назначить прямо в диалоге."
-                  : "Когда клиент напишет вам или назначит созвон, диалог появится здесь."
+                  ? "Выберите специалиста и\u00a0напишите ему\u00a0— созвон можно назначить прямо в\u00a0диалоге."
+                  : "Когда клиент напишет вам или\u00a0назначит созвон, диалог появится здесь."
               }
             />
           )
@@ -194,7 +194,7 @@ export function DialogList({
             {mode === "client" && rest.length === 0 && filter === "all" && !query && (
               <div style={{ padding: "12px 10px" }}>
                 <p className={s.muted} style={{ marginBottom: 10 }}>
-                  С каждым специалистом у вас будет один диалог: переписка, созвоны и файлы в одном месте.
+                  С&nbsp;каждым специалистом у&nbsp;вас будет один диалог: переписка, созвоны и&nbsp;файлы в&nbsp;одном месте.
                 </p>
                 <SearchTrigger variant="secondary" size="sm">
                   Выбрать специалиста

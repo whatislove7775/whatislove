@@ -86,10 +86,10 @@ export function dayErrors(d: DayPlan, minDuration = 50): (string | null)[] {
       if (j === i) continue;
       const o = d.ranges[j];
       if (toMin(r.from) < toMin(o.to) && toMin(o.from) < toMin(r.to)) {
-        return `Пересекается с интервалом ${o.from}–${o.to}. Сдвиньте время или удалите один из них`;
+        return `Пересекается с\u00a0интервалом ${o.from}–${o.to}. Сдвиньте время или\u00a0удалите один из\u00a0них`;
       }
     }
-    if (toMin(r.to) - toMin(r.from) < minDuration) return `Короче самого короткого созвона (${minDuration} мин), запись сюда не попадёт`;
+    if (toMin(r.to) - toMin(r.from) < minDuration) return `Короче самого короткого созвона (${minDuration} мин), запись сюда не\u00a0попадёт`;
     return null;
   });
 }

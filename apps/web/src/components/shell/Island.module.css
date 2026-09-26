@@ -117,14 +117,9 @@
   width: 100% !important;
   height: 100% !important;
 }
+/* active avatar: no ring — the soft pill behind and the dot under it are enough */
 .item[aria-current="page"] .art {
-  box-shadow: 0 0 0 2px var(--c-primary);
-}
-.item[aria-current="page"]:has(.art)::after {
-  display: none;
-}
-.item[aria-current="page"] .icon:has(.art) {
-  transform: none;
+  box-shadow: none;
 }
 .badge {
   position: absolute;

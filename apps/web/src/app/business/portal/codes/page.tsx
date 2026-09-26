@@ -34,7 +34,7 @@ export default function CodesPage() {
       setLabel("");
       data.reload();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось выпустить коды.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось выпустить коды.");
     } finally {
       setBusy(false);
     }
@@ -44,10 +44,10 @@ export default function CodesPage() {
     if (!confirmBatch) return;
     try {
       await businessApi.revokeBatch(confirmBatch.id);
-      toast("Неиспользованные коды партии больше не действуют");
+      toast("Неиспользованные коды партии больше не\u00a0действуют");
       data.reload();
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : "Не получилось отозвать.", { error: true });
+      toast(err instanceof ApiError ? err.message : "Не\u00a0получилось отозвать.", { error: true });
     }
     setConfirmBatch(null);
   };
@@ -57,7 +57,7 @@ export default function CodesPage() {
     <>
       <PageHeader
         title="Коды сотрудников"
-        sub="Одноразовые коды: раздайте их сотрудникам любым удобным способом. Сотрудник активирует код в своём анонимном аккаунте."
+        sub="Одноразовые коды: раздайте их&nbsp;сотрудникам любым удобным способом. Сотрудник активирует код в&nbsp;своём анонимном аккаунте."
       />
       {data.error ? (
         <ErrorBlock message={data.error} onRetry={data.reload} />
@@ -89,15 +89,15 @@ export default function CodesPage() {
                 )}
               </Card>
               <Card as="section">
-                <CardHead title="Почему без статусов" icon={<ShieldCheck size={18} />} />
+                <CardHead title="Почему без&nbsp;статусов" icon={<ShieldCheck size={18} />} />
                 <p className={s.muted}>
-                  Мы не показываем, какой именно код активирован, и обновляем счётчик раз в месяц. Иначе по коду, выданному
-                  конкретному человеку, можно было бы понять, что он обратился за помощью.
+                  Мы&nbsp;не&nbsp;показываем, какой именно код активирован, и&nbsp;обновляем счётчик раз в&nbsp;месяц. Иначе по&nbsp;коду, выданному
+                  конкретному человеку, можно было&nbsp;бы понять, что&nbsp;он&nbsp;обратился за&nbsp;помощью.
                 </p>
               </Card>
               <Card as="section">
                 <CardHead title="Сотрудник ушёл" icon={<Ban size={18} />} />
-                <p className={s.muted}>Отзовите его код: если он был активирован, программа для этого аккаунта закончится.</p>
+                <p className={s.muted}>Отзовите его код: если он&nbsp;был активирован, программа для&nbsp;этого аккаунта закончится.</p>
                 <div style={{ marginTop: 12 }}>
                   <Button variant="soft" onClick={() => setRevokeOpen(true)}>
                     Отозвать код
@@ -108,7 +108,7 @@ export default function CodesPage() {
           }
         >
           <Card as="section">
-            <CardHead title="Выпустить коды" icon={<PlusCircle size={18} />} sub="Коды покажем сразу и сохраним для повторной выгрузки" />
+            <CardHead title="Выпустить коды" icon={<PlusCircle size={18} />} sub="Коды покажем сразу и&nbsp;сохраним для&nbsp;повторной выгрузки" />
             <form className={s.form} onSubmit={generate}>
               <div className={s.form2}>
                 <Input
@@ -121,7 +121,7 @@ export default function CodesPage() {
                   onChange={(e) => setCount(e.target.value)}
                   error={error ?? undefined}
                 />
-                <Input label="Подпись для себя" placeholder="Например, «Отдел продаж, октябрь»" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={80} />
+                <Input label="Подпись для&nbsp;себя" placeholder="Например, «Отдел продаж, октябрь»" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={80} />
               </div>
               <div>
                 <Button type="submit" variant="primary" icon={<KeyRound size={18} />} loading={busy} disabled={!Number(count)}>
@@ -136,7 +136,7 @@ export default function CodesPage() {
             {!d ? (
               <Skeleton height={120} radius={14} />
             ) : d.batches.length === 0 ? (
-              <EmptyState art={<EmptyArt scene="sparkles" />} title="Кодов пока нет" text="Выпустите первую партию — например, по одному коду на каждого сотрудника." />
+              <EmptyState art={<EmptyArt scene="sparkles" />} title="Кодов пока нет" text="Выпустите первую партию&nbsp;— например, по&nbsp;одному коду на&nbsp;каждого сотрудника." />
             ) : (
               <div className={s.list}>
                 {d.batches.map((b) => (
@@ -146,14 +146,14 @@ export default function CodesPage() {
                     </span>
                     <span className={s.itemMain}>
                       <span className={s.itemTitle}>
-                        {b.label || "Без подписи"} {b.revoked && <Badge tone="neutral">отозвана</Badge>}
+                        {b.label || "Без\u00a0подписи"} {b.revoked && <Badge tone="neutral">отозвана</Badge>}
                       </span>
                       <span className={s.itemSub}>
                         {b.count} {plural(b.count, "код", "кода", "кодов")}, {monthRu(b.created_month).toLowerCase()}
                       </span>
                     </span>
                     <span className={s.row}>
-                      <Button variant="ghost" size="sm" icon={<Download size={16} />} onClick={() => businessApi.exportBatch(b.id).catch(() => toast("Не получилось скачать.", { error: true }))}>
+                      <Button variant="ghost" size="sm" icon={<Download size={16} />} onClick={() => businessApi.exportBatch(b.id).catch(() => toast("Не\u00a0получилось скачать.", { error: true }))}>
                         CSV
                       </Button>
                       {!b.revoked && (
@@ -174,8 +174,7 @@ export default function CodesPage() {
         {fresh && (
           <div className={s.form}>
             <p className={s.muted}>
-              Раздайте по одному коду каждому сотруднику. Код одноразовый: после активации он привязывается к анонимному аккаунту, а
-              вы этого не увидите.
+              Раздайте по&nbsp;одному коду каждому сотруднику. Код одноразовый: после активации он&nbsp;привязывается к&nbsp;анонимному аккаунту, а&nbsp;вы&nbsp;этого не&nbsp;увидите.
             </p>
             <div className={s.codes}>
               {fresh.codes.map((c) => (
@@ -204,7 +203,7 @@ export default function CodesPage() {
       <Modal open={!!confirmBatch} onClose={() => setConfirmBatch(null)} title="Отозвать партию?" width={460}>
         <div className={s.form}>
           <p className={s.muted}>
-            Неиспользованные коды из партии «{confirmBatch?.label || "Без подписи"}» перестанут действовать. У тех, кто уже
+            Неиспользованные коды из&nbsp;партии «{confirmBatch?.label || "Без\u00a0подписи"}» перестанут действовать. У&nbsp;тех, кто уже
             активировал код, программа продолжит работать.
           </p>
           <div className={s.row}>
@@ -236,7 +235,7 @@ function RevokeCode({ open, onClose }: { open: boolean; onClose: () => void }) {
       setCode("");
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Не получилось отозвать код.");
+      setError(err instanceof ApiError ? err.message : "Не\u00a0получилось отозвать код.");
     } finally {
       setBusy(false);
     }
@@ -253,7 +252,7 @@ function RevokeCode({ open, onClose }: { open: boolean; onClose: () => void }) {
           autoComplete="off"
           spellCheck={false}
         />
-        <p className={s.muted}>Ответ будет одинаковым, был код активирован или нет: так сохраняется анонимность сотрудника.</p>
+        <p className={s.muted}>Ответ будет одинаковым, был код активирован или&nbsp;нет: так сохраняется анонимность сотрудника.</p>
         <Button type="submit" variant="danger" loading={busy} disabled={!code.trim()}>
           Отозвать
         </Button>

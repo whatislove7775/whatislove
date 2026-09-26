@@ -1,3 +1,6 @@
+import uuid
+
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -22,8 +25,62 @@ class EvidenceLevel(models.TextChoices):
     PRACTICE = "practice", "Практический опыт"
 
 
+def _cover_path(instance, filename):
+    # Random name: nothing about the author leaks through the URL.
+    return f"covers/{uuid.uuid4().hex}.webp"
+
+
+class ArticleCover(models.Model):
+    """Своя обложка статьи: 16:9, WebP в трёх размерах, без EXIF (см. covers.py).
+
+    Загружается до сохранения статьи (редактор сначала выбирает кадр), поэтому это отдельная
+    запись; статья ссылается на неё через Article.cover_image. Раздаётся nginx по /media/."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    image = models.ImageField(upload_to=_cover_path)  # до 1600×900
+    image_md = models.ImageField(upload_to=_cover_path)  # 800×450
+    image_sm = models.ImageField(upload_to=_cover_path)  # 480×270
+    width = models.PositiveIntegerField(default=0)
+    height = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "content_article_cover"
+
+    def delete_files(self):
+        for f in (self.image, self.image_md, self.image_sm):
+            if f and f.name:
+                f.storage.delete(f.name)
+
+    def as_json(self):
+        return {
+            "id": str(self.id),
+            "url": self.image.url,
+            "md": self.image_md.url,
+            "sm": self.image_sm.url,
+            "width": self.width,
+            "height": self.height,
+        }
+
+
+class Moderation(models.TextChoices):
+    """Статус статьи специалиста. У статей редакции — пусто (публикует сам сотрудник)."""
+
+    NONE = "", "Редакция"
+    DRAFT = "draft", "Черновик"
+    PENDING = "pending", "На модерации"
+    APPROVED = "approved", "Опубликована"
+    REJECTED = "rejected", "Отклонена"
+
+
 class Article(models.Model):
-    """Psychology article written in Markdown, managed in /admin/content."""
+    """Psychology article written in Markdown, managed in /admin/content.
+
+    Статьи пишут и специалисты (/pro/articles): тогда `specialist` заполнен, а публикует
+    статью сотрудник с правом content.publish после модерации (`moderation`)."""
 
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=120, unique=True)
@@ -35,7 +92,7 @@ class Article(models.Model):
     cover = models.CharField(max_length=16, default="sky")
     emoji = models.CharField(max_length=8, blank=True)
     reading_minutes = models.PositiveSmallIntegerField(default=5)
-    author_name = models.CharField(max_length=120, blank=True, default="Редакция aprosop")
+    author_name = models.CharField(max_length=120, blank=True, default="Редакция Aprosop")
     # Evidence-based layer (see docs/API.md, «Материалы»). Citation markers like [1] in `body`
     # and in `key_facts[].refs` point to 1-based positions in `sources`.
     evidence_level = models.CharField(max_length=16, choices=EvidenceLevel.choices, blank=True, default="")
@@ -48,6 +105,25 @@ class Article(models.Model):
     reviewed_at = models.DateField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
     published_at = models.DateTimeField(null=True, blank=True)
+    # Своя обложка (картинка); без неё карточка рисует иллюстрацию темы на цвете `cover`
+    cover_image = models.ForeignKey(
+        ArticleCover, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    # Статьи специалистов
+    specialist = models.ForeignKey(
+        "users.PsychologistProfile", null=True, blank=True, on_delete=models.SET_NULL, related_name="articles"
+    )
+    moderation = models.CharField(max_length=10, choices=Moderation.choices, blank=True, default="", db_index=True)
+    moderation_comment = models.TextField(max_length=1000, blank=True, default="")
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    moderated_at = models.DateTimeField(null=True, blank=True)
+    moderated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    # «В топе»: сотрудник закрепляет статью первой в ленте
+    is_featured = models.BooleanField(default=False, db_index=True)
+    # Прочтения (без привязки к читателю) — для ранжирования «От специалистов»
+    reads = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

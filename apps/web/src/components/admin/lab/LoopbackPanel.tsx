@@ -132,7 +132,7 @@ export function LoopbackPanel() {
         await b.setLocalDescription(answer);
         await a.setRemoteDescription(answer);
       } catch (e) {
-        if (alive) setError(`Не получилось согласовать соединение: ${(e as Error).message}`);
+        if (alive) setError(`Не\u00a0получилось согласовать соединение: ${(e as Error).message}`);
       }
     })();
 
@@ -212,8 +212,8 @@ export function LoopbackPanel() {
     <Card as="section">
       <CardHead
         icon={<Repeat size={20} />}
-        title="Проверка на одном устройстве"
-        sub="Звонок самому себе: слева то, что уходит в сеть, справа то, что получит собеседник, со статистикой соединения."
+        title="Проверка на&nbsp;одном устройстве"
+        sub="Звонок самому себе: слева то, что&nbsp;уходит в&nbsp;сеть, справа то, что&nbsp;получит собеседник, со&nbsp;статистикой соединения."
         action={
           running ? (
             <Button variant="secondary" icon={<Square size={16} />} onClick={stop}>
@@ -250,13 +250,13 @@ export function LoopbackPanel() {
         )}
       </div>
       <div className={s.controlsRow}>
-        <Switch checked={relayOnly} onChange={setRelayOnly} label="Только через TURN" hint="Медиа пойдёт через наш coturn. Если видео не появилось, TURN не работает." />
-        <Switch checked={listen} onChange={setListen} label="Слушать, что слышит собеседник" hint="Лучше в наушниках, иначе будет эхо." />
+        <Switch checked={relayOnly} onChange={setRelayOnly} label="Только через TURN" hint="Медиа пойдёт через наш coturn. Если видео не&nbsp;появилось, TURN не&nbsp;работает." />
+        <Switch checked={listen} onChange={setListen} label="Слушать, что&nbsp;слышит собеседник" hint="Лучше в&nbsp;наушниках, иначе будет эхо." />
       </div>
       {!isPro && (
         <div className={s.controlsRow}>
           <div>
-            <div className={s.label}>Фон за аватаром</div>
+            <div className={s.label}>Фон за&nbsp;аватаром</div>
             <BackdropPicker value={backdrop} onChange={setBackdrop} size="sm" />
           </div>
         </div>
@@ -271,11 +271,11 @@ export function LoopbackPanel() {
               <div className={s.tilePlaceholder}>{camState === "starting" ? "Включаем камеру" : camError ?? "Нажмите «Запустить»"}</div>
             )}
           </div>
-          <figcaption>Уходит в сеть</figcaption>
+          <figcaption>Уходит в&nbsp;сеть</figcaption>
         </figure>
         <figure className={s.loopTile}>
           <div className={s.tileStage} data-wide={isPro || undefined}>
-            <StreamVideo stream={remote} muted={!listen} label="Что получает собеседник" />
+            <StreamVideo stream={remote} muted={!listen} label="Что&nbsp;получает собеседник" />
             {!remote && (
               <div className={s.tilePlaceholder}>{!running ? "Здесь появится видео собеседника" : relayOnly ? "Соединяемся через TURN" : "Соединяемся"}</div>
             )}
@@ -287,13 +287,13 @@ export function LoopbackPanel() {
       </div>
       {error && <p className={s.errorText}>{error}</p>}
       {running && stats.ice === "failed" && relayOnly && (
-        <p className={s.errorText}>Соединение через TURN не установилось. Проверьте вкладку «Сеть»: там видно, выдаёт ли coturn relay-кандидаты.</p>
+        <p className={s.errorText}>Соединение через TURN не&nbsp;установилось. Проверьте вкладку «Сеть»: там видно, выдаёт&nbsp;ли coturn relay-кандидаты.</p>
       )}
       <StatGrid
         items={[
           ["Отправка видео", kbps(stats.sendBitrate)],
           ["Приём видео", kbps(stats.recvBitrate)],
-          ["Кадров в секунду", `${stats.sendFps ?? "—"} → ${stats.recvFps ?? "—"}`],
+          ["Кадров в\u00a0секунду", `${stats.sendFps ?? "—"} → ${stats.recvFps ?? "—"}`],
           ["Разрешение", `${stats.sendRes} → ${stats.recvRes}`],
           ["Задержка (RTT)", stats.rtt != null ? `${Math.round(stats.rtt)} мс` : "—"],
           ["Джиттер", stats.jitter != null ? `${Math.round(stats.jitter)} мс` : "—"],
@@ -302,7 +302,7 @@ export function LoopbackPanel() {
           ["Кодек", stats.codec],
           ["Ограничение качества", stats.limit],
           ["Путь", stats.path],
-          ["Лимит кодера", isPro ? "1,5 Мбит/с" : "900 кбит/с"],
+          ["Лимит кодера", isPro ? "1,5\u00a0Мбит/с" : "900\u00a0кбит/с"],
         ]}
       />
     </Card>

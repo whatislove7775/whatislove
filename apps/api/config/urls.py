@@ -7,6 +7,7 @@ from django.urls import include, path
 from apps.circles import urls as circles_urls
 from apps.credentials import urls as credentials_urls
 from apps.reviews import urls as reviews_urls
+from apps.verification import urls as verification_urls
 
 
 def health(request):
@@ -53,6 +54,9 @@ urlpatterns = [
     path("api/v1/circles/", include("apps.circles.urls")),
     path("api/v1/business/", include("apps.business.urls")),  # H3: B2B
     path("api/v1/staff/circles/", include(circles_urls.urlpatterns_staff)),
+    # L1: живое селфи для проверки профиля специалиста
+    path("api/v1/psychologist/selfie/", include(verification_urls.urlpatterns_cabinet)),
+    path("api/v1/staff/specialists/<int:pk>/selfie/", include(verification_urls.urlpatterns_staff)),
 ]
 
 if settings.DEBUG:  # production: nginx serves /media/ from the "media" volume

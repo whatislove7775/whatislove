@@ -83,30 +83,110 @@ def _topic_label(value):
 
 class ArticleListSerializer(serializers.ModelSerializer):
     topic_label = serializers.SerializerMethodField()
+    cover_image = serializers.SerializerMethodField()
+    specialist = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
         fields = (
             "id", "slug", "title", "summary", "topic", "topic_label", "tags", "cover", "emoji",
             "reading_minutes", "author_name", "published_at", "updated_at", "evidence_level",
+            "cover_image", "specialist", "is_featured",
         )
 
     def get_topic_label(self, obj):
         return _topic_label(obj.topic)
+
+    def get_cover_image(self, obj):
+        return obj.cover_image.as_json() if obj.cover_image_id and obj.cover_image else None
+
+    def get_specialist(self, obj):
+        # Карточка: только имя и фото — метка «От специалиста»
+        return specialist_brief(obj.specialist) if obj.specialist_id else None
+
+
+def specialist_brief(profile, full: bool = False):
+    if profile is None:
+        return None
+    from apps.photos.utils import photo_url
+
+    data = {"id": profile.pk, "name": profile.display_name, "photo_url": photo_url(profile)}
+    if full:
+        bio = " ".join((profile.bio or "").split())
+        if len(bio) > 220:
+            bio = bio[:220].rsplit(" ", 1)[0].rstrip(",.;:—-") + "…"
+        data.update({
+            "bio": bio,
+            "specializations": list(profile.specializations or [])[:3],
+            "experience_years": profile.experience_years,
+        })
+    return data
 
 
 class ArticleDetailSerializer(ArticleListSerializer):
     class Meta(ArticleListSerializer.Meta):
         fields = ArticleListSerializer.Meta.fields + ("body", "key_facts", "when_to_seek_help", "sources", "reviewed_at")
 
+    def get_specialist(self, obj):
+        # Страница статьи: имя, фото, коротко о себе — и ссылка на профиль / «Начать диалог»
+        return specialist_brief(obj.specialist, full=True) if obj.specialist_id else None
 
-class ArticleManageSerializer(ArticleListSerializer):
+
+class CoverImageMixin(serializers.Serializer):
+    """Запись `cover_image_id` (UUID загруженной обложки или null — убрать обложку).
+    Специалист может прикрепить только свою загрузку; старая обложка удаляется с диска."""
+
+    cover_image_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+
+    def validate_cover_image_id(self, value):
+        if value is None:
+            return None
+        from .models import ArticleCover
+
+        cover = ArticleCover.objects.filter(pk=value).first()
+        request = self.context.get("request")
+        own_only = getattr(self, "own_covers_only", False)
+        if cover is None or (own_only and cover.uploaded_by_id != getattr(request.user, "pk", None)):
+            raise serializers.ValidationError("Обложка не найдена. Загрузите её ещё раз.")
+        return cover
+
+    def _apply_cover(self, validated_data):
+        if "cover_image_id" not in validated_data:
+            return None
+        new = validated_data.pop("cover_image_id")
+        old = self.instance.cover_image if self.instance is not None else None
+        validated_data["cover_image"] = new
+        return old if old is not None and (new is None or old.pk != new.pk) else None
+
+    def create(self, validated_data):
+        self._apply_cover(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        old = self._apply_cover(validated_data)
+        instance = super().update(instance, validated_data)
+        if old is not None and not Article.objects.filter(cover_image=old).exists():
+            old.delete_files()
+            old.delete()
+        return instance
+
+
+class ArticleManageSerializer(CoverImageMixin, ArticleListSerializer):
+    specialist = serializers.SerializerMethodField()
+
     class Meta(ArticleListSerializer.Meta):
         fields = ArticleListSerializer.Meta.fields + (
             "body", "key_facts", "when_to_seek_help", "sources", "reviewed_at", "is_published", "created_at",
+            "cover_image_id", "moderation", "moderation_comment", "submitted_at", "moderated_at", "reads",
         )
-        read_only_fields = ("created_at", "updated_at")
+        read_only_fields = (
+            "created_at", "updated_at", "is_featured", "moderation", "moderation_comment",
+            "submitted_at", "moderated_at", "reads",
+        )
         extra_kwargs = {"published_at": {"required": False, "allow_null": True}}
+
+    def get_specialist(self, obj):
+        return specialist_brief(obj.specialist, full=True) if obj.specialist_id else None
 
     def validate_cover(self, value):
         if value not in COVERS:
@@ -132,6 +212,19 @@ class ArticleManageSerializer(ArticleListSerializer):
         if not 1 <= value <= 90:
             raise serializers.ValidationError("От 1 до 90 минут.")
         return value
+
+    def create(self, validated_data):
+        # Редактор по умолчанию — сотрудник, который создаёт статью (его публичное имя, если оно есть).
+        if not (validated_data.get("author_name") or "").strip():
+            validated_data["author_name"] = _editor_name(self.context.get("request"))
+        return super().create(validated_data)
+
+
+def _editor_name(request) -> str:
+    user = getattr(request, "user", None)
+    profile = getattr(user, "psychologist_profile", None) if user is not None else None
+    name = (getattr(profile, "display_name", "") or "").strip()
+    return name or "Редакция Aprosop"
 
 
 class PracticeListSerializer(serializers.ModelSerializer):

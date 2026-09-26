@@ -13,12 +13,12 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
   if (docs.error) return <ErrorBlock message={docs.error} onRetry={docs.reload} />;
   if (!docs.data) return <Skeleton height={480} radius={22} />;
   const inv = docs.data.invoices.find((i) => i.id === params.id);
-  if (!inv) return <ErrorBlock message="Счёт не найден." onRetry={docs.reload} />;
+  if (!inv) return <ErrorBlock message="Счёт не&nbsp;найден." onRetry={docs.reload} />;
   const c = docs.data.company;
   const req = docs.data.requisites;
   return (
     <Paper>
-      <h2>Счёт на оплату № {inv.number}</h2>
+      <h2>Счёт на&nbsp;оплату № {inv.number}</h2>
       <div>от {dateRu(inv.created_at, { day: "numeric", month: "long", year: "numeric" })}</div>
       <div className={s.paperMeta}>
         <span>Исполнитель</span>
@@ -50,11 +50,11 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         </tbody>
       </table>
       <div>
-        <strong>Итого: {rubK(inv.amount_kopecks, { cents: true })}</strong>, без НДС (заглушка).
+        <strong>Итого: {rubK(inv.amount_kopecks, { cents: true })}</strong>, без&nbsp;НДС (заглушка).
       </div>
       <div>Статус: {inv.status_label.toLowerCase()}</div>
       <div className={s.paperStamp}>
-        Образец. Реквизиты, банковские данные и подпись появятся после оформления юрлица. Документ сформирован автоматически.
+        Образец. Реквизиты, банковские данные и&nbsp;подпись появятся после оформления юрлица. Документ сформирован автоматически.
       </div>
     </Paper>
   );

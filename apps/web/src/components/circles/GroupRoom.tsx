@@ -121,7 +121,7 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
     circlesApi
       .joinMeeting(meetingId)
       .then(setInfo)
-      .catch((e) => setError(e instanceof ApiError ? e.message : "Не получилось открыть встречу."));
+      .catch((e) => setError(e instanceof ApiError ? e.message : "Не\u00a0получилось открыть встречу."));
   }, [meetingId]);
   useEffect(() => {
     if (authStatus === "authed") load();
@@ -259,11 +259,11 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
         <div className={s.center}>
           <div className={s.centerBox}>
             <Together className={s.centerArt} />
-            <h1>{removed ? "Ведущий попросил вас покинуть круг" : call.status === "ended" ? "Встреча закончилась" : "Вы вышли из встречи"}</h1>
+            <h1>{removed ? "Ведущий попросил вас покинуть круг" : call.status === "ended" ? "Встреча закончилась" : "Вы\u00a0вышли из\u00a0встречи"}</h1>
             <p>
               {removed
-                ? "Деньги за будущие встречи вернулись на баланс. Если что-то пошло не так, напишите в поддержку."
-                : "Спасибо, что были в круге. Поделиться мыслями после встречи можно в чате круга."}
+                ? "Деньги за\u00a0будущие встречи вернулись на\u00a0баланс. Если что-то пошло не\u00a0так, напишите в\u00a0поддержку."
+                : "Спасибо, что\u00a0были в\u00a0круге. Поделиться мыслями после встречи можно в\u00a0чате круга."}
             </p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
               {phase === "left" && call.status !== "ended" && !removed && (
@@ -272,7 +272,7 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
                 </Button>
               )}
               <Button variant="primary" href={backHref}>
-                {isHost ? "К управлению кругом" : "К странице круга"}
+                {isHost ? "К\u00a0управлению кругом" : "К\u00a0странице круга"}
               </Button>
             </div>
           </div>
@@ -319,7 +319,7 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
             </div>
           </div>
           <div className={s.lobbyPanel}>
-            <h1>{isHost ? "Вы ведёте встречу" : "Перед входом"}</h1>
+            <h1>{isHost ? "Вы\u00a0ведёте встречу" : "Перед входом"}</h1>
             <div className={s.me}>
               {isHost ? (
                 <SpecialistPhoto url={info.host.photo_url} name={info.host.name} size={46} />
@@ -328,7 +328,7 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
               )}
               <div>
                 <b>{info.self.name}</b>
-                <small>{isHost ? "Участники видят ваше лицо и имя" : "Так вас увидят и услышат в круге"}</small>
+                <small>{isHost ? "Участники видят ваше лицо и\u00a0имя" : "Так вас увидят и\u00a0услышат в\u00a0круге"}</small>
               </div>
             </div>
             {!isHost && (
@@ -340,12 +340,12 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
                     value={ownAvatar ? "own" : "circle"}
                     onChange={(v) => setOwnAvatar(v === "own")}
                     options={[
-                      { value: "circle", label: "Новый для круга" },
+                      { value: "circle", label: "Новый для\u00a0круга" },
                       { value: "own", label: "Мой аватар" },
                     ]}
                   />
                   <p style={{ marginTop: 6 }}>
-                    {ownAvatar ? "Ваш обычный аватар: его может узнать специалист, с которым вы общаетесь в диалогах." : "Отдельный аватар только для этого круга — так вас точно не узнать."}
+                    {ownAvatar ? "Ваш обычный аватар: его может узнать специалист, с\u00a0которым вы\u00a0общаетесь в\u00a0диалогах." : "Отдельный аватар только для\u00a0этого круга\u00a0— так вас точно не\u00a0узнать."}
                   </p>
                 </div>
                 <div>
@@ -359,13 +359,13 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
               <span>
                 Только звук
                 <br />
-                <span style={{ color: "var(--c-muted)" }}>Для слабого интернета: видео не отправляется и не принимается.</span>
+                <span style={{ color: "var(--c-muted)" }}>Для&nbsp;слабого интернета: видео не&nbsp;отправляется и&nbsp;не&nbsp;принимается.</span>
               </span>
             </label>
             <Button variant="primary" size="lg" block onClick={enter} disabled={camState !== "ready" || !audioTrack}>
-              Войти во встречу
+              Войти во&nbsp;встречу
             </Button>
-            <p>Встречу не записываем. Звук и видео идут напрямую между участниками и не проходят через наш сервер.</p>
+            <p>Встречу не&nbsp;записываем. Звук и&nbsp;видео идут напрямую между участниками и&nbsp;не&nbsp;проходят через наш сервер.</p>
           </div>
         </div>
       </div>
@@ -391,12 +391,12 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
         <div className={s.topTitle}>
           <b>{info.circle.title}</b>
           <small>
-            {tiles} {tiles === 1 ? "участник" : tiles < 5 ? "участника" : "участников"} в комнате
+            {tiles} {tiles === 1 ? "участник" : tiles < 5 ? "участника" : "участников"} в&nbsp;комнате
             {hands.length > 0 && isHost ? `, руку подняли: ${hands.length}` : ""}
           </small>
         </div>
         {call.tier !== "high" && (
-          <span className={cx(s.pill, s.pillWarn)} title="Качество подстроено под интернет">
+          <span className={cx(s.pill, s.pillWarn)} title="Качество подстроено под&nbsp;интернет">
             <Wifi size={14} /> {call.tier === "audio" ? "Только звук" : "Экономим трафик"}
           </span>
         )}
@@ -455,7 +455,7 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
         {side && (
           <aside className={s.side} aria-label={side === "chat" ? "Чат круга" : side === "people" ? "Участники" : "Голос"}>
             <div className={s.sideHead}>
-              <h2>{side === "chat" ? "Чат круга" : side === "people" ? "В комнате" : "Маска голоса"}</h2>
+              <h2>{side === "chat" ? "Чат круга" : side === "people" ? "В\u00a0комнате" : "Маска голоса"}</h2>
               <Button variant="ghost" size="sm" iconOnly aria-label="Закрыть" onClick={() => setSide(null)} icon={<X size={18} />} />
             </div>
             <div className={s.sideBody}>
@@ -467,7 +467,7 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
                     {isHost ? <SpecialistPhoto url={info.host.photo_url} name={info.self.name} size={34} /> : <AvatarThumb config={avatarCfg} size={34} />}
                     <span>
                       {info.self.name}
-                      <small>Это вы</small>
+                      <small>Это&nbsp;вы</small>
                     </span>
                   </li>
                   {call.peers.map((p) => (
@@ -487,7 +487,7 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
                             </Button>
                           )}
                           <Button size="sm" variant="ghost" iconOnly aria-label={`Выключить микрофон: ${p.name}`} onClick={() => call.hostAction("mute", p.id)} icon={<MicOff size={16} />} />
-                          <Button size="sm" variant="ghost" iconOnly aria-label={`Удалить из круга: ${p.name}`} onClick={() => setConfirm({ kind: "remove", peer: p })} icon={<LogOut size={16} />} />
+                          <Button size="sm" variant="ghost" iconOnly aria-label={`Удалить из\u00a0круга: ${p.name}`} onClick={() => setConfirm({ kind: "remove", peer: p })} icon={<LogOut size={16} />} />
                         </>
                       )}
                     </li>
@@ -527,13 +527,13 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
         {isHost && <Ctl label="Выйти" onClick={() => setPhase("left")} icon={<LogOut size={22} />} />}
       </nav>
 
-      <Modal open={!!confirm} onClose={() => setConfirm(null)} title={confirm?.kind === "remove" ? "Удалить участника?" : confirm?.kind === "end" ? "Завершить встречу для всех?" : "Выйти из встречи?"}>
+      <Modal open={!!confirm} onClose={() => setConfirm(null)} title={confirm?.kind === "remove" ? "Удалить участника?" : confirm?.kind === "end" ? "Завершить встречу для\u00a0всех?" : "Выйти из\u00a0встречи?"}>
         <p style={{ margin: "0 0 16px", color: "var(--c-muted)", lineHeight: 1.55 }}>
           {confirm?.kind === "remove"
-            ? `${confirm.peer?.name} покинет круг и больше не сможет заходить на встречи и писать в чат. Деньги за будущие встречи вернутся ему полностью.`
+            ? `${confirm.peer?.name} покинет круг и\u00a0больше не\u00a0сможет заходить на\u00a0встречи и\u00a0писать в\u00a0чат. Деньги за\u00a0будущие встречи вернутся ему полностью.`
             : confirm?.kind === "end"
-              ? "Комната закроется у всех участников, а оплата за эту встречу спишется. Используйте, когда встреча действительно закончилась."
-              : "Вы сможете вернуться, пока встреча идёт."}
+              ? "Комната закроется у\u00a0всех участников, а\u00a0оплата за\u00a0эту встречу спишется. Используйте, когда встреча действительно закончилась."
+              : "Вы\u00a0сможете вернуться, пока встреча идёт."}
         </p>
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <Button variant="ghost" onClick={() => setConfirm(null)}>
@@ -554,11 +554,11 @@ export function GroupRoom({ meetingId }: { meetingId: string }) {
       </Modal>
       <Modal open={askFace} onClose={() => setAskFace(false)} title="Показать настоящее лицо?">
         <p style={{ margin: "0 0 16px", color: "var(--c-muted)", lineHeight: 1.55 }}>
-          Все участники круга и ведущий увидят изображение с вашей камеры вместо аватара. Встречи не записываются, но скриншот сделать может любой. Вернуться к аватару можно одной кнопкой.
+          Все участники круга и&nbsp;ведущий увидят изображение с&nbsp;вашей камеры вместо аватара. Встречи не&nbsp;записываются, но&nbsp;скриншот сделать может любой. Вернуться к&nbsp;аватару можно одной кнопкой.
         </p>
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <Button variant="ghost" onClick={() => setAskFace(false)}>
-            Остаться в аватаре
+            Остаться в&nbsp;аватаре
           </Button>
           <Button
             variant="primary"
@@ -667,7 +667,7 @@ function PeerTile({
         <div className={s.placeholder}>
           <span className={s.placeholderInner}>
             {host ? <SpecialistPhoto url={hostPhoto} name={peer.name} size={72} /> : <AvatarThumb config={null} seed={`circle-${peer.id}`} size={72} />}
-            <span>{peer.connection === "connected" ? "Без видео" : "Подключается"}</span>
+            <span>{peer.connection === "connected" ? "Без\u00a0видео" : "Подключается"}</span>
           </span>
         </div>
       )}
@@ -691,7 +691,7 @@ function PeerTile({
                 </Button>
               )}
               <Button size="sm" variant="ghost" onClick={() => { onRemove(); setMenu(false); }} icon={<LogOut size={15} />}>
-                Удалить из круга
+                Удалить из&nbsp;круга
               </Button>
             </div>
           )}

@@ -3,25 +3,60 @@ import { Clock } from "lucide-react";
 import type { ArticleCard as TArticle, PracticeCard as TPractice } from "@/lib/api/content";
 import { Skeleton } from "@/ui";
 import { TopicArt } from "@/components/illustrations/topics";
+import { byline } from "./byline";
 import art from "./art.module.css";
 import s from "./content.module.css";
+import { typo } from "@/lib/typography";
 
 export function ArticleCard({ a, base = "/app", compact }: { a: TArticle; base?: string; compact?: boolean }) {
   return (
     <Link href={`${base}/articles/${a.slug}`} className={s.article} data-compact={compact || undefined}>
-      <span className={`${s.cover} ${s.tone}`} data-tone={a.cover} aria-hidden>
-        <TopicArt topic={a.topic} className={art.coverArt} />
-      </span>
+      {a.cover_image ? (
+        <span className={`${s.cover} ${s.coverPhoto}`} aria-hidden>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={compact ? a.cover_image.sm : a.cover_image.md} alt="" loading="lazy" decoding="async" />
+        </span>
+      ) : (
+        <span className={`${s.cover} ${s.tone}`} data-tone={a.cover} aria-hidden>
+          <TopicArt topic={a.topic} className={art.coverArt} />
+        </span>
+      )}
       <span className={s.articleBody}>
-        <span className={s.kicker}>{a.topic_label}</span>
-        <span className={s.articleTitle}>{a.title}</span>
-        {!compact && a.summary && <span className={s.articleSummary}>{a.summary}</span>}
-        <span className={s.meta}>
-          <Clock size={14} strokeWidth={1.8} aria-hidden />
-          {a.reading_minutes} мин чтения
+        <span className={s.kicker}>
+          {a.topic_label}
+          {a.specialist && <span className={s.fromPro}>От&nbsp;специалиста</span>}
+        </span>
+        <span className={s.articleTitle}>{typo(a.title)}</span>
+        {!compact && a.summary && <span className={s.articleSummary}>{typo(a.summary)}</span>}
+        <span className={s.metaClip}>
+          <span className={`${s.meta} ${s.articleMeta}`}>
+            <span className={s.metaItem}>
+              <Clock size={14} strokeWidth={1.8} aria-hidden />
+              {a.reading_minutes}&nbsp;мин
+            </span>
+            {byline(a).map((x) => (
+              <span key={x} className={s.metaItem}>
+                {x}
+              </span>
+            ))}
+          </span>
         </span>
       </span>
     </Link>
+  );
+}
+
+/** Quiet closing line of an article page: «25 сент. 2026 · ред. Анна Соколова». */
+export function ArticleByline({ a }: { a: Pick<TArticle, "published_at" | "author_name" | "specialist"> }) {
+  const parts = byline(a);
+  if (!parts.length) return null;
+  return (
+    <p className={s.byline}>
+      {a.published_at && <time dateTime={a.published_at}>{parts[0]}</time>}
+      {parts.slice(a.published_at ? 1 : 0).map((x) => (
+        <span key={x}>{x}</span>
+      ))}
+    </p>
   );
 }
 
@@ -45,7 +80,7 @@ export function PracticeCard({ p, base = "/app" }: { p: TPractice; base?: string
         <TopicArt topic={p.kind} className={art.practiceArt} />
       </span>
       <span className={s.practiceText}>
-        <span className={s.practiceTitle}>{p.title}</span>
+        <span className={s.practiceTitle}>{typo(p.title)}</span>
         <span className={s.meta}>
           {p.kind_label}, {p.duration_minutes} мин
         </span>

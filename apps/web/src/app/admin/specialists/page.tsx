@@ -6,6 +6,7 @@ import { BadgeCheck, Check, ChevronDown, Pencil, X } from "lucide-react";
 import { Badge, Button, Card, EmptyState, Input, Modal, Segmented, Skeleton, Textarea, useToast } from "@/ui";
 import { PageHeader } from "@/components/shell/AppShell";
 import { SpecialistPhoto } from "@/components/avatar/SpecialistPhoto";
+import { SelfieReview } from "@/components/verification/SelfieReview";
 import { RequirePerm, useStaff } from "@/components/admin/AdminShell";
 import { dateOnly, KV, Pager, ReasonModal, SearchBox, Toolbar, useDebounced, ago } from "@/components/admin/kit";
 import { LoadError } from "@/components/pro/controls";
@@ -17,8 +18,8 @@ import s from "@/components/admin/staff.module.css";
 import { EmptyArt } from "@/components/illustrations";
 
 const TABS: { value: VerificationStatus; label: string; empty: string }[] = [
-  { value: "pending", label: "На проверке", empty: "Новых заявок нет. Когда специалист зарегистрируется, его анкета появится здесь." },
-  { value: "approved", label: "В каталоге", empty: "Одобренных специалистов пока нет." },
+  { value: "pending", label: "На\u00a0проверке", empty: "Новых заявок нет. Когда специалист зарегистрируется, его анкета появится здесь." },
+  { value: "approved", label: "В\u00a0каталоге", empty: "Одобренных специалистов пока нет." },
   { value: "suspended", label: "Приостановлены", empty: "Приостановленных специалистов нет." },
   { value: "rejected", label: "Отклонены", empty: "Отклонённых заявок нет." },
 ];
@@ -37,7 +38,7 @@ const DECISION: Record<
   approve: {
     button: "Одобрить",
     title: "Одобрить специалиста?",
-    text: "Карточка сразу появится в каталоге, клиенты смогут записываться в свободные часы.",
+    text: "Карточка сразу появится в\u00a0каталоге, клиенты смогут записываться в\u00a0свободные часы.",
     done: "Специалист одобрен",
     variant: "primary",
     perm: "specialists.verify",
@@ -46,7 +47,7 @@ const DECISION: Record<
   reject: {
     button: "Отклонить",
     title: "Отклонить заявку?",
-    text: "Специалист увидит причину в кабинете. Позже заявку можно одобрить на вкладке «Отклонены».",
+    text: "Специалист увидит причину в\u00a0кабинете. Позже заявку можно одобрить на\u00a0вкладке «Отклонены».",
     done: "Заявка отклонена",
     variant: "danger",
     perm: "specialists.verify",
@@ -55,17 +56,17 @@ const DECISION: Record<
   suspend: {
     button: "Приостановить",
     title: "Приостановить специалиста?",
-    text: "Карточка пропадёт из каталога, новые записи станут недоступны. Уже оплаченные созвоны не отменятся, проверьте их в разделе «Созвоны».",
+    text: "Карточка пропадёт из\u00a0каталога, новые записи станут недоступны. Уже оплаченные созвоны не\u00a0отменятся, проверьте их\u00a0в\u00a0разделе «Созвоны».",
     done: "Специалист приостановлен",
     variant: "danger",
     perm: "specialists.suspend",
     reason: true,
   },
   reinstate: {
-    button: "Вернуть в каталог",
-    title: "Вернуть специалиста в каталог?",
+    button: "Вернуть в\u00a0каталог",
+    title: "Вернуть специалиста в\u00a0каталог?",
     text: "Карточка снова станет видна клиентам.",
-    done: "Специалист снова в каталоге",
+    done: "Специалист снова в\u00a0каталоге",
     variant: "primary",
     perm: "specialists.verify",
     reason: false,
@@ -136,7 +137,7 @@ function SpecialistsPage() {
       setOpen(null);
       load();
     } catch (e) {
-      toast(`${(e as Error).message} Статус не изменился.`, { error: true });
+      toast(`${(e as Error).message} Статус не\u00a0изменился.`, { error: true });
     } finally {
       setBusy(false);
     }
@@ -186,11 +187,11 @@ function SpecialistsPage() {
                           {p.display_name}
                         </span>
                         <span className={a.meta} style={{ display: "block" }}>
-                          {tab === "pending" ? `Ждёт ${ago(p.created_at).replace(" назад", "")}` : p.specializations.join(", ") || "Специализации не указаны"}
+                          {tab === "pending" ? `Ждёт ${ago(p.created_at).replace(" назад", "")}` : p.specializations.join(", ") || "Специализации не\u00a0указаны"}
                         </span>
                       </span>
                       <span className={a.rate}>
-                        {p.hourly_rate_rub ? `${rub(p.hourly_rate_rub)} в час` : `от ${rub(p.session_rate_rub)}`}
+                        {p.hourly_rate_rub ? `${rub(p.hourly_rate_rub)} в\u00a0час` : `от\u00a0${rub(p.session_rate_rub)}`}
                         <small>
                           опыт {p.experience_years} {plural(p.experience_years, "год", "года", "лет")}
                         </small>
@@ -206,10 +207,10 @@ function SpecialistsPage() {
                           </div>
                         )}
                         <dl className={a.dl}>
-                          <dt>О себе</dt>
-                          <dd>{(d ?? p).bio || <span className={a.missing}>Не заполнено</span>}</dd>
+                          <dt>О&nbsp;себе</dt>
+                          <dd>{(d ?? p).bio || <span className={a.missing}>Не&nbsp;заполнено</span>}</dd>
                           <dt>Подход</dt>
-                          <dd>{p.approach || <span className={a.missing}>Не заполнено</span>}</dd>
+                          <dd>{p.approach || <span className={a.missing}>Не&nbsp;заполнено</span>}</dd>
                           <dt>Специализации</dt>
                           <dd>
                             {p.specializations.length ? (
@@ -219,15 +220,15 @@ function SpecialistsPage() {
                                 ))}
                               </span>
                             ) : (
-                              <span className={a.missing}>Не указаны</span>
+                              <span className={a.missing}>Не&nbsp;указаны</span>
                             )}
                           </dd>
                           <dt>Цена</dt>
                           <dd>
-                            {p.hourly_rate_rub ? `${rub(p.hourly_rate_rub)} в час, ` : ""}самый короткий созвон {rub(p.session_rate_rub)}
+                            {p.hourly_rate_rub ? `${rub(p.hourly_rate_rub)} в\u00a0час, ` : ""}самый короткий созвон {rub(p.session_rate_rub)}
                           </dd>
                           <dt>Языки</dt>
-                          <dd>{p.languages.join(", ") || "Не указаны"}</dd>
+                          <dd>{p.languages.join(", ") || "Не\u00a0указаны"}</dd>
                           <dt>Документы</dt>
                           <dd>
                             <span className={s.docs}>
@@ -237,6 +238,14 @@ function SpecialistsPage() {
                               <Doc ok={p.documents.phone} label="Телефон" />
                             </span>
                           </dd>
+                          {can("specialists.verify") && (
+                            <>
+                              <dt>Селфи</dt>
+                              <dd>
+                                <SelfieReview profileId={p.id} />
+                              </dd>
+                            </>
+                          )}
                           <dt>Заявка</dt>
                           <dd>
                             {dateOnly(p.created_at)}, аккаунт {p.alias}
@@ -255,7 +264,7 @@ function SpecialistsPage() {
                                 ) : null}
                               </dd>
                               <dt>Расписание</dt>
-                              <dd>{d.schedule_rules ? `${d.schedule_rules} ${plural(d.schedule_rules, "правило", "правила", "правил")}` : <span className={a.missing}>Не заполнено</span>}</dd>
+                              <dd>{d.schedule_rules ? `${d.schedule_rules} ${plural(d.schedule_rules, "правило", "правила", "правил")}` : <span className={a.missing}>Не&nbsp;заполнено</span>}</dd>
                             </>
                           )}
                         </dl>
@@ -282,7 +291,7 @@ function SpecialistsPage() {
             <Pager page={data.page} pages={data.pages} count={data.count} onPage={setPage} noun={["специалист", "специалиста", "специалистов"]} />
           </>
         ) : (
-          <EmptyState art={<EmptyArt scene="specialist" />} icon={<BadgeCheck size={22} />} title={tab === "pending" ? "Очередь пуста" : "Здесь пока никого"} text={q ? "По этому запросу никого нет." : current.empty} />
+          <EmptyState art={<EmptyArt scene="specialist" />} icon={<BadgeCheck size={22} />} title={tab === "pending" ? "Очередь пуста" : "Здесь пока никого"} text={q ? "По\u00a0этому запросу никого нет." : current.empty} />
         )}
       </Card>
 
@@ -293,8 +302,8 @@ function SpecialistsPage() {
         confirm={confirm ? DECISION[confirm.d].button : ""}
         variant={confirm ? DECISION[confirm.d].variant : "primary"}
         requireReason={confirm ? DECISION[confirm.d].reason : false}
-        reasonLabel={confirm && DECISION[confirm.d].reason ? "Причина для специалиста" : "Комментарий"}
-        reasonHint={confirm && DECISION[confirm.d].reason ? "Специалист увидит её в кабинете. Пишите спокойно и по делу." : undefined}
+        reasonLabel={confirm && DECISION[confirm.d].reason ? "Причина для\u00a0специалиста" : "Комментарий"}
+        reasonHint={confirm && DECISION[confirm.d].reason ? "Специалист увидит её\u00a0в\u00a0кабинете. Пишите спокойно и\u00a0по\u00a0делу." : undefined}
         busy={busy}
         onClose={() => setConfirm(null)}
         onConfirm={decide}
@@ -369,15 +378,15 @@ function EditModal({ p, onClose, onSaved }: { p: StaffSpecialist | null; onClose
   return (
     <Modal open={!!p} onClose={() => !busy && onClose()} title="Профиль специалиста" width={600}>
       <div className={s.form}>
-        <Input label="Имя в каталоге" value={form.display_name} onChange={set("display_name")} maxLength={80} />
+        <Input label="Имя в&nbsp;каталоге" value={form.display_name} onChange={set("display_name")} maxLength={80} />
         <div className={s.formRow}>
-          <Input label="Цена часа, ₽" hint="Цена созвона считается от неё по длительности" inputMode="numeric" value={form.hourly_rate_rub} onChange={set("hourly_rate_rub")} />
+          <Input label="Цена часа, ₽" hint="Цена созвона считается от&nbsp;неё по&nbsp;длительности" inputMode="numeric" value={form.hourly_rate_rub} onChange={set("hourly_rate_rub")} />
           <Input label="Опыт, лет" inputMode="numeric" value={form.experience_years} onChange={set("experience_years")} />
         </div>
         <Input label="Специализации" hint="Через запятую" value={form.specializations} onChange={set("specializations")} />
-        <Textarea label="О себе" rows={4} value={form.bio} onChange={set("bio")} maxLength={1200} />
+        <Textarea label="О&nbsp;себе" rows={4} value={form.bio} onChange={set("bio")} maxLength={1200} />
         <Textarea label="Подход" rows={3} value={form.approach} onChange={set("approach")} maxLength={2000} error={error ?? undefined} />
-        <p className={s.muted}>Изменения попадут в журнал действий. Специалист увидит их в своём профиле.</p>
+        <p className={s.muted}>Изменения попадут в&nbsp;журнал действий. Специалист увидит их&nbsp;в&nbsp;своём профиле.</p>
         <div className={s.modalActions}>
           <Button variant="ghost" onClick={onClose} disabled={busy}>
             Отмена

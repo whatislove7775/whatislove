@@ -13,11 +13,11 @@ import s from "@/components/admin/staff.module.css";
 
 const ROLE_HINT: Record<StaffRole, string> = {
   owner: "Всё, включая управление администраторами.",
-  admin: "Всё, кроме владельца: команда, деньги, возвраты, решения по специалистам.",
+  admin: "Всё, кроме владельца: команда, деньги, возвраты, решения по\u00a0специалистам.",
   moderator: "Жалобы, блокировки, приостановка специалистов.",
-  support: "Обращения в поддержку, просмотр аккаунтов и созвонов, отмена без возврата.",
-  developer: "Состояние системы и журнал действий. Без доступа к пользователям.",
-  editor: "Статьи и практики.",
+  support: "Обращения в\u00a0поддержку, просмотр аккаунтов и\u00a0созвонов, отмена без\u00a0возврата.",
+  developer: "Состояние системы и\u00a0журнал действий. Без\u00a0доступа к\u00a0пользователям.",
+  editor: "Статьи и\u00a0практики.",
 };
 
 type Action = "deactivate" | "activate" | "reset-password" | "reset-2fa";
@@ -123,7 +123,7 @@ function StaffPage() {
                       {m.totp_enabled ? (
                         <Badge tone="success">2FA</Badge>
                       ) : (
-                        <Badge tone="warning">Без 2FA</Badge>
+                        <Badge tone="warning">Без&nbsp;2FA</Badge>
                       )}
                       {m.must_change_password && <Badge>Ждёт первого входа</Badge>}
                       {editable ? (
@@ -159,7 +159,7 @@ function StaffPage() {
 
         {data && (
           <Card as="section">
-            <CardHead title="Права ролей" sub="Проверяются на сервере. Личная переписка клиентов со специалистами недоступна никому из команды." />
+            <CardHead title="Права ролей" sub="Проверяются на&nbsp;сервере. Личная переписка клиентов со&nbsp;специалистами недоступна никому из&nbsp;команды." />
             <div className={s.matrixWrap}>
               <table className={s.matrix}>
                 <thead>
@@ -215,7 +215,7 @@ function StaffPage() {
             <p className={s.modalText}>{ACTIONS[confirm.a].text}</p>
             <div className={s.modalActions}>
               <Button variant="ghost" onClick={() => setConfirm(null)} disabled={busy}>
-                Не менять
+                Не&nbsp;менять
               </Button>
               <Button variant={confirm.a === "activate" ? "primary" : "danger"} loading={busy} onClick={runAction}>
                 {ACTIONS[confirm.a].button}
@@ -232,26 +232,26 @@ function StaffPage() {
 
 const ACTIONS: Record<Action, { title: (a: string) => string; text: string; button: string; done: string }> = {
   deactivate: {
-    title: (a) => `Отключить доступ для ${a}?`,
-    text: "Сотрудник сразу выйдет со всех устройств и не сможет войти. Записи в журнале останутся.",
+    title: (a) => `Отключить доступ для\u00a0${a}?`,
+    text: "Сотрудник сразу выйдет со\u00a0всех устройств и\u00a0не\u00a0сможет войти. Записи в\u00a0журнале останутся.",
     button: "Отключить",
     done: "Доступ отключён",
   },
   activate: {
     title: (a) => `Вернуть доступ ${a}?`,
-    text: "Сотрудник снова сможет войти со своим паролем и ролью.",
+    text: "Сотрудник снова сможет войти со\u00a0своим паролем и\u00a0ролью.",
     button: "Вернуть доступ",
     done: "Доступ возвращён",
   },
   "reset-password": {
     title: (a) => `Сбросить пароль ${a}?`,
-    text: "Текущий пароль перестанет работать, все сеансы завершатся. Вы получите одноразовый пароль, чтобы передать его сотруднику.",
+    text: "Текущий пароль перестанет работать, все сеансы завершатся. Вы\u00a0получите одноразовый пароль, чтобы передать его сотруднику.",
     button: "Сбросить пароль",
     done: "Пароль сброшен",
   },
   "reset-2fa": {
-    title: (a) => `Сбросить 2FA для ${a}?`,
-    text: "Используйте, если сотрудник потерял телефон. Он войдёт по паролю и настроит защиту заново.",
+    title: (a) => `Сбросить 2FA для\u00a0${a}?`,
+    text: "Используйте, если сотрудник потерял телефон. Он\u00a0войдёт по\u00a0паролю и\u00a0настроит защиту заново.",
     button: "Сбросить 2FA",
     done: "2FA сброшена",
   },
@@ -300,7 +300,7 @@ function InviteModal({
       <div className={s.form}>
         <Input
           label="Логин"
-          hint="Латиница или кириллица, цифры, точка и дефис. Например, olga.support"
+          hint="Латиница или&nbsp;кириллица, цифры, точка и&nbsp;дефис. Например, olga.support"
           value={login}
           onChange={(e) => setLogin(e.target.value.toLowerCase())}
           autoCapitalize="off"
@@ -319,7 +319,7 @@ function InviteModal({
             </label>
           ))}
         </fieldset>
-        <Input label="Заметка" hint="Необязательно. Например, имя или зона ответственности" value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} />
+        <Input label="Заметка" hint="Необязательно. Например, имя или&nbsp;зона ответственности" value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} />
         <div className={s.modalActions}>
           <Button variant="ghost" onClick={onClose} disabled={busy}>
             Отмена
@@ -341,13 +341,13 @@ function SecretModal({ secret, onClose }: { secret: { alias: string; password: s
       await navigator.clipboard.writeText(text);
       toast("Скопировано");
     } catch {
-      toast("Не получилось скопировать. Выделите текст вручную.", { error: true });
+      toast("Не\u00a0получилось скопировать. Выделите текст вручную.", { error: true });
     }
   };
   return (
-    <Modal open={!!secret} onClose={onClose} title="Передайте данные для входа">
+    <Modal open={!!secret} onClose={onClose} title="Передайте данные для&nbsp;входа">
       <p className={s.modalText}>
-        Пароль показывается один раз. Передайте его лично или в защищённом мессенджере. При первом входе сотрудник придумает свой пароль.
+        Пароль показывается один раз. Передайте его лично или&nbsp;в&nbsp;защищённом мессенджере. При&nbsp;первом входе сотрудник придумает свой пароль.
       </p>
       <div className={s.secret}>
         <code>

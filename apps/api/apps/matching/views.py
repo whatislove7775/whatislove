@@ -25,7 +25,8 @@ class AnswersSerializer(serializers.Serializer):
     safety = serializers.ChoiceField(choices=list(scoring.SAFETY), required=False, default="no")
     style = serializers.ChoiceField(choices=list(scoring.STYLES), required=False, allow_blank=True)
     gender = serializers.ChoiceField(choices=list(scoring.GENDERS), required=False, allow_blank=True)
-    min_experience = serializers.ChoiceField(choices=list(scoring.EXPERIENCE), required=False, default=0)
+    # любое число лет (слайдер 0–20+), 0 — неважно
+    min_experience = serializers.IntegerField(min_value=0, max_value=40, required=False, default=0)
     budget = serializers.IntegerField(min_value=500, max_value=100_000, required=False, allow_null=True)
     times = serializers.ListField(
         child=serializers.ChoiceField(choices=list(scoring.TIMES)), required=False, max_length=len(scoring.TIMES),

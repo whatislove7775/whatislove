@@ -37,7 +37,7 @@ export function saveRealFacePref(on: boolean) {
 /** Lobby: how the specialist will see you — avatar (default) or real face (asks first). */
 export function FaceChoice({ real, onAsk, onAvatar }: { real: boolean; onAsk: () => void; onAvatar: () => void }) {
   return (
-    <div className={r.choice} role="radiogroup" aria-label="Как вас увидит специалист">
+    <div className={r.choice} role="radiogroup" aria-label="Как&nbsp;вас увидит специалист">
       <button type="button" role="radio" aria-checked={!real} className={r.option} onClick={onAvatar}>
         <Smile size={18} aria-hidden />
         <span>Аватар</span>
@@ -69,10 +69,10 @@ export function RealFaceConfirm({
         </span>
         <ul className={r.points}>
           <li>
-            <strong>Специалист увидит ваше лицо</strong> с камеры вместо аватара.
+            <strong>Специалист увидит ваше лицо</strong> с&nbsp;камеры вместо аватара.
           </li>
-          <li>Вернуться к аватару можно в любой момент, одной кнопкой.</li>
-          <li>Видео не записывается и нигде не сохраняется. Фильтр голоса продолжит работать, если он включён.</li>
+          <li>Вернуться к&nbsp;аватару можно в&nbsp;любой момент, одной кнопкой.</li>
+          <li>Видео не&nbsp;записывается и&nbsp;нигде не&nbsp;сохраняется. Фильтр голоса продолжит работать, если он&nbsp;включён.</li>
         </ul>
       </div>
       <div className={r.actions}>
@@ -92,7 +92,7 @@ export function RealFaceConfirm({
       </div>
       <label className={r.remember}>
         <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-        Запомнить выбор на этом устройстве
+        Запомнить выбор на&nbsp;этом устройстве
       </label>
     </Modal>
   );

@@ -81,7 +81,7 @@ export function cardPreview(card: import("@/lib/api/chat").DialogCard): string {
       case "booked":
         return `Знакомство назначено: ${w}`;
       case "rescheduled":
-        return `Знакомство перенесено на ${w}`;
+        return `Знакомство перенесено на\u00a0${w}`;
       case "cancelled":
         return `Знакомство ${w} отменено`;
       case "started":
@@ -94,7 +94,7 @@ export function cardPreview(card: import("@/lib/api/chat").DialogCard): string {
     case "booked":
       return `Созвон назначен: ${w}`;
     case "rescheduled":
-      return `Созвон перенесён на ${w}`;
+      return `Созвон перенесён на\u00a0${w}`;
     case "cancelled":
       return `Созвон ${w} отменён`;
     case "started":

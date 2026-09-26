@@ -6,6 +6,7 @@ urlpatterns = [
     path("ws-token/", views.WsTokenView.as_view()),
     path("unread/", views.UnreadView.as_view()),
     path("contacts/", views.ContactsView.as_view()),
+    path("settings/", views.SpecialistChatSettingsView.as_view()),
     path("conversations/", views.ConversationListView.as_view()),
     path("conversations/<uuid:pk>/", views.ConversationDetailView.as_view()),
     path("conversations/<uuid:pk>/messages/", views.MessageListView.as_view()),

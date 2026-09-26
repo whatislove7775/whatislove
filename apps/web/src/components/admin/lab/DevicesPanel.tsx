@@ -106,12 +106,12 @@ export function DevicesPanel() {
       const name = (e as DOMException)?.name;
       setError(
         name === "NotAllowedError"
-          ? "Браузер запретил доступ к камере и микрофону. Разрешите их в настройках сайта."
+          ? "Браузер запретил доступ к\u00a0камере и\u00a0микрофону. Разрешите их\u00a0в\u00a0настройках сайта."
           : name === "NotReadableError"
-            ? "Устройство занято другой программой или вкладкой."
+            ? "Устройство занято другой программой или\u00a0вкладкой."
             : name === "OverconstrainedError"
-              ? "Выбранное устройство не поддерживает такие параметры. Выберите другое."
-              : `Не получилось включить устройства (${name || "ошибка"}).`,
+              ? "Выбранное устройство не\u00a0поддерживает такие параметры. Выберите другое."
+              : `Не\u00a0получилось включить устройства (${name || "ошибка"}).`,
       );
     }
   };
@@ -157,7 +157,7 @@ export function DevicesPanel() {
       <Card as="section">
         <CardHead
           icon={<Camera size={20} />}
-          title="Камера и микрофон"
+          title="Камера и&nbsp;микрофон"
           sub={named ? `Найдено: камер ${cams.length}, микрофонов ${mics.length}, динамиков ${outs.length}.` : "Названия устройств появятся после разрешения доступа."}
           action={
             stream ? (
@@ -172,9 +172,9 @@ export function DevicesPanel() {
           }
         />
         <div className={s.stackSm}>
-          {select("Камера", camId, setCamId, cams, "По умолчанию")}
-          {select("Микрофон", micId, setMicId, mics, "По умолчанию")}
-          <Switch checked={hd} onChange={setHd} label="Запросить 1280×720" hint="По умолчанию звонок просит 640×480: для аватара этого достаточно." />
+          {select("Камера", camId, setCamId, cams, "По\u00a0умолчанию")}
+          {select("Микрофон", micId, setMicId, mics, "По\u00a0умолчанию")}
+          <Switch checked={hd} onChange={setHd} label="Запросить 1280×720" hint="По&nbsp;умолчанию звонок просит 640×480: для&nbsp;аватара этого достаточно." />
           {stream && (
             <Button variant="ghost" size="sm" icon={<RefreshCw size={16} />} onClick={start}>
               Применить выбор
@@ -188,7 +188,7 @@ export function DevicesPanel() {
         <CardHead icon={<Mic size={20} />} title="Уровень звука" action={stream ? <Badge tone={peak > 0.15 ? "success" : "warning"}>{peak > 0.15 ? "Слышно" : "Скажите что-нибудь"}</Badge> : undefined} />
         <Meter value={level} tone={level > 0.8 ? "warning" : "success"} />
         <p className={s.muted} style={{ marginTop: 8 }}>
-          Пик: <span className="num">{Math.round(peak * 100)}%</span>. Нормальная речь — 20–70%.
+          Пик: <span className="num">{Math.round(peak * 100)}%</span>. Нормальная речь&nbsp;— 20–70%.
         </p>
         <StatGrid items={Object.entries(info.a)} />
       </Card>
@@ -196,22 +196,22 @@ export function DevicesPanel() {
       <Card as="section">
         <CardHead icon={<Camera size={20} />} title="Картинка" sub="Реальные параметры, которые отдал браузер." />
         <StatGrid items={Object.entries(info.v)} />
-        <Switch checked={showVideo} onChange={setShowVideo} label="Показать изображение (только в лаборатории)" />
+        <Switch checked={showVideo} onChange={setShowVideo} label="Показать изображение (только в&nbsp;лаборатории)" />
         {showVideo && stream && (
           <div className={s.devicePreview}>
-            <StreamVideo stream={stream} mirror label="Изображение с камеры" />
+            <StreamVideo stream={stream} mirror label="Изображение с&nbsp;камеры" />
           </div>
         )}
       </Card>
 
       <Card as="section">
-        <CardHead icon={<MonitorSpeaker size={20} />} title="Динамики" sub="Короткий сигнал в выбранное устройство." />
+        <CardHead icon={<MonitorSpeaker size={20} />} title="Динамики" sub="Короткий сигнал в&nbsp;выбранное устройство." />
         <div className={s.stackSm}>
-          {canPickOutput && outs.length > 0 && select("Динамик", outId, setOutId, outs, "По умолчанию")}
+          {canPickOutput && outs.length > 0 && select("Динамик", outId, setOutId, outs, "По\u00a0умолчанию")}
           <Button variant="secondary" icon={<Volume2 size={16} />} onClick={beep}>
             Проиграть сигнал
           </Button>
-          {!canPickOutput && <p className={s.muted}>Этот браузер не умеет выбирать динамик, звук пойдёт в системный.</p>}
+          {!canPickOutput && <p className={s.muted}>Этот браузер не&nbsp;умеет выбирать динамик, звук пойдёт в&nbsp;системный.</p>}
         </div>
       </Card>
     </div>

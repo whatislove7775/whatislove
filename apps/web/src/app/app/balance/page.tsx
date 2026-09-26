@@ -59,9 +59,9 @@ export default function BalancePage() {
       try {
         const t = await billingApi.topUp(id);
         if (t.status === "succeeded") {
-          toast(`Баланс пополнен на ${rubK(t.amount_kopecks)}`);
+          toast(`Баланс пополнен на\u00a0${rubK(t.amount_kopecks)}`);
         } else if (t.status === "canceled") {
-          toast("Оплата не прошла. Деньги не списаны.", { error: true });
+          toast("Оплата не\u00a0прошла. Деньги не\u00a0списаны.", { error: true });
         } else if (++tries < 10) {
           setTimeout(poll, 2500);
           return;
@@ -101,14 +101,14 @@ export default function BalancePage() {
                 <RedeemForm onRedeemed={refresh} />
               </CollapsibleCard>
               {sm && (
-                <CollapsibleCard title="Как возвращаются деньги" icon={<Undo2 size={18} />} defaultOpen={false}>
+                <CollapsibleCard title="Как&nbsp;возвращаются деньги" icon={<Undo2 size={18} />} defaultOpen={false}>
                   <ul className={s.rules}>
-                    <li>Отмена за {sm.cancel_rules.free_cancel_hours} ч и раньше — вся сумма на баланс.</li>
+                    <li>Отмена за {sm.cancel_rules.free_cancel_hours} ч&nbsp;и&nbsp;раньше&nbsp;— вся сумма на&nbsp;баланс.</li>
                     {sm.cancel_rules.late_cancel_penalty_percent > 0 && (
-                      <li>Отмена позже — возвращается {100 - sm.cancel_rules.late_cancel_penalty_percent}%.</li>
+                      <li>Отмена позже&nbsp;— возвращается {100 - sm.cancel_rules.late_cancel_penalty_percent}%.</li>
                     )}
-                    <li>Специалист отменил или не пришёл — возвращаем всё.</li>
-                    <li>Остаток можно вернуть на карту через поддержку.</li>
+                    <li>Специалист отменил или&nbsp;не&nbsp;пришёл&nbsp;— возвращаем всё.</li>
+                    <li>Остаток можно вернуть на&nbsp;карту через поддержку.</li>
                   </ul>
                 </CollapsibleCard>
               )}
@@ -118,13 +118,13 @@ export default function BalancePage() {
           <section className={s.hero} aria-label="Баланс">
             <div>
               <div className={s.heroLabel}>
-                <Wallet size={18} aria-hidden /> На балансе
+                <Wallet size={18} aria-hidden /> На&nbsp;балансе
               </div>
               <div className={s.heroAmount}>{sm ? rubK(sm.balance_kopecks) : "…"}</div>
               <div className={s.heroMeta}>
                 {sm && sm.held_kopecks > 0 && (
                   <span className={s.heroPill}>
-                    <Snowflake size={14} aria-hidden /> {rubK(sm.held_kopecks)} заморожено под созвоны
+                    <Snowflake size={14} aria-hidden /> {rubK(sm.held_kopecks)} заморожено под&nbsp;созвоны
                   </span>
                 )}
                 {sm?.topup.test_mode && <span className={s.heroPill}>Тестовый режим</span>}
@@ -137,7 +137,7 @@ export default function BalancePage() {
             </div>
           </section>
 
-          <p className={s.quiet}>Мы храним только сумму — без имени и карты. Специалист получает оплату после созвона.</p>
+          <p className={s.quiet}>Мы&nbsp;храним только сумму&nbsp;— без&nbsp;имени и&nbsp;карты. Специалист получает оплату после созвона.</p>
 
           {hs && hs.holds.length > 0 && (
             <Card as="section">

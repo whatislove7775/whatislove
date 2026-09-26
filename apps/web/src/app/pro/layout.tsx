@@ -3,8 +3,8 @@ import { AppShell } from "@/components/shell/AppShell";
 
 /** Private area: never indexed; link previews use the generic card (opengraph-image.tsx). */
 export const metadata: Metadata = {
-  title: { default: "Кабинет специалиста", template: "%s | aprosop" },
-  description: "Раздел aprosop, который открывается после входа.",
+  title: { default: "Кабинет специалиста", template: "%s | Aprosop" },
+  description: "Раздел Aprosop, который открывается после входа.",
   robots: { index: false, follow: false },
 };
 

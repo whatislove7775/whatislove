@@ -1,7 +1,8 @@
 "use client";
 
-import { Check, Mic, Paperclip, Pencil, Send, Square, Trash2, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Check, Mic, Paperclip, Pencil, Send, ShieldAlert, Square, Trash2, X } from "lucide-react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { describeContacts, findContacts, type ContactHit } from "@/lib/chat/contacts";
 import { Segmented } from "@/ui";
 import { MI, Morph } from "@/components/ui/Morph";
 import type { VoicePreset } from "@/hooks/useVoiceTransform";
@@ -10,7 +11,7 @@ import { useVoiceRecorder, type VoiceClip } from "./useVoiceRecorder";
 import s from "./chat.module.css";
 
 const MASKS: { value: VoicePreset; label: string }[] = [
-  { value: "off", label: "Без маски" },
+  { value: "off", label: "Без\u00a0маски" },
   { value: "lower", label: "Ниже" },
   { value: "higher", label: "Выше" },
 ];
@@ -24,6 +25,10 @@ export function Composer({
   onTyping,
   allowVoice = true,
   allowFiles = false,
+  filesHint,
+  guardContacts = false,
+  blockedMessage,
+  onBlockedClear,
   disabled,
   placeholder = "Сообщение",
   editing,
@@ -36,6 +41,13 @@ export function Composer({
   onTyping?: () => void;
   allowVoice?: boolean;
   allowFiles?: boolean;
+  /** attach is not allowed here: show a muted paperclip with this short reason */
+  filesHint?: string | null;
+  /** client↔specialist before the first call: pre-check for phones, @handles, links, emails */
+  guardContacts?: boolean;
+  /** server rejected the last message for contacts (422) */
+  blockedMessage?: string | null;
+  onBlockedClear?: () => void;
   disabled?: boolean;
   placeholder?: string;
   editing?: { id: string; text: string } | null;
@@ -44,6 +56,9 @@ export function Composer({
 }) {
   const [text, setText] = useState("");
   const [sendingVoice, setSendingVoice] = useState(false);
+  const [tipOpen, setTipOpen] = useState(false);
+  const hits = useMemo(() => (guardContacts ? findContacts(text) : []), [guardContacts, text]);
+  const blocked = hits.length > 0;
   const area = useRef<HTMLTextAreaElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const rec = useVoiceRecorder();
@@ -64,7 +79,7 @@ export function Composer({
 
   const submit = async () => {
     const value = text.trim();
-    if (!value || disabled || busy) return;
+    if (!value || disabled || busy || blocked) return;
     const res = await onSendText(value);
     if (res !== false) setText("");
   };
@@ -150,8 +165,8 @@ export function Composer({
                       {rec.phase === "opening"
                         ? "Включаем микрофон…"
                         : rec.preset === "off"
-                          ? "Голос будет записан как есть"
-                          : "Голос изменится ещё на вашем устройстве — оригинал никуда не уходит"}
+                          ? "Голос будет записан как\u00a0есть"
+                          : "Голос изменится ещё на\u00a0вашем устройстве\u00a0— оригинал никуда не\u00a0уходит"}
                     </span>
                   )}
                 </div>
@@ -179,8 +194,20 @@ export function Composer({
   }
 
   const hasText = text.trim().length > 0;
+  const blockText = blocked
+    ? `До\u00a0первого созвона нельзя делиться контактами\u00a0— уберите ${describeContacts(hits)}.`
+    : blockedMessage;
   return (
     <div className={s.composer}>
+      {blockText && (
+        <div className={s.blockNote} role="alert">
+          <ShieldAlert size={15} aria-hidden />
+          <span>
+            {blockText}
+            {blocked && <Excerpt text={text} hits={hits} />}
+          </span>
+        </div>
+      )}
       {editing && (
         <div className={s.editBar}>
           <Pencil size={16} />
@@ -199,6 +226,26 @@ export function Composer({
         </div>
       )}
       <div className={s.composerRow}>
+        {!allowFiles && filesHint && !editing && (
+          <span className={s.attachTipWrap}>
+            <button
+              type="button"
+              className={`${s.iconBtn} ${s.attachOff}`}
+              aria-disabled="true"
+              aria-label={`Прикрепить файл: ${filesHint}`}
+              onClick={() => {
+                setTipOpen(true);
+                window.setTimeout(() => setTipOpen(false), 2600);
+              }}
+              onBlur={() => setTipOpen(false)}
+            >
+              <Paperclip size={20} />
+            </button>
+            <span className={s.attachTip} role="tooltip" data-open={tipOpen || undefined}>
+              {filesHint}
+            </span>
+          </span>
+        )}
         {allowFiles && !editing && (
           <>
             <button
@@ -225,7 +272,8 @@ export function Composer({
         )}
         <textarea
           ref={area}
-          className={s.textarea}
+          className={`${s.textarea} ${blocked || blockedMessage ? s.textareaBlocked : ""}`}
+          aria-invalid={blocked || !!blockedMessage || undefined}
           rows={1}
           value={text}
           placeholder={placeholder}
@@ -233,6 +281,7 @@ export function Composer({
           disabled={disabled}
           onChange={(e) => {
             setText(e.target.value);
+            if (blockedMessage) onBlockedClear?.();
             onTyping?.();
           }}
           onKeyDown={onKey}
@@ -243,7 +292,7 @@ export function Composer({
             type="button"
             className={s.sendBtn}
             onClick={submit}
-            disabled={!hasText || disabled || busy}
+            disabled={!hasText || disabled || busy || blocked}
             aria-label={editing ? "Сохранить" : "Отправить"}
           >
             {busy ? <span className={s.miniSpin} /> : editing ? <Check size={20} /> : <Send size={20} />}
@@ -255,7 +304,7 @@ export function Composer({
             className={`${s.sendBtn} ${s.morphBtn}`}
             data-mode={hasText ? "send" : "mic"}
             onClick={hasText ? submit : rec.open}
-            disabled={hasText ? disabled || busy : disabled}
+            disabled={hasText ? disabled || busy || blocked : disabled}
             aria-label={hasText ? "Отправить" : "Записать голосовое"}
           >
             {busy ? <span className={s.miniSpin} /> : <Morph icon={hasText ? MI.Send : MI.Mic} size={20} />}
@@ -263,5 +312,26 @@ export function Composer({
         )}
       </div>
     </div>
+  );
+}
+
+/** A short excerpt around the offending fragments, each one highlighted. */
+function Excerpt({ text, hits }: { text: string; hits: ContactHit[] }) {
+  const from = Math.max(0, hits[0].start - 16);
+  const to = Math.min(text.length, hits[hits.length - 1].end + 16);
+  const parts: React.ReactNode[] = [];
+  let pos = from;
+  hits.forEach((h, i) => {
+    if (h.start > pos) parts.push(<Fragment key={`t${i}`}>{text.slice(pos, h.start)}</Fragment>);
+    parts.push(<mark key={`m${i}`}>{text.slice(h.start, h.end)}</mark>);
+    pos = h.end;
+  });
+  if (pos < to) parts.push(<Fragment key="tail">{text.slice(pos, to)}</Fragment>);
+  return (
+    <span className={s.blockExcerpt}>
+      {from > 0 && "…"}
+      {parts}
+      {to < text.length && "…"}
+    </span>
   );
 }

@@ -1,0 +1,77 @@
+/* /pro/articles (L1) — builds on the CMS editor styles (cms.module.css). */
+.fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.fieldset:disabled {
+  opacity: 0.7;
+}
+.comment {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--r-control);
+  background: var(--c-danger-soft);
+  color: var(--c-text);
+  font-size: var(--t-15);
+  line-height: 1.5;
+}
+.note {
+  margin: 0;
+  color: var(--c-muted);
+  font-size: var(--t-13);
+  line-height: 1.5;
+}
+.intro {
+  margin: -8px 0 var(--s-5);
+  color: var(--c-muted);
+  font-size: var(--t-15);
+  max-width: 60ch;
+}
+.thumb {
+  flex: none;
+  width: 64px;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--c-raised);
+}
+.rowComment {
+  color: var(--c-danger) !important;
+}
+@media (max-width: 560px) {
+  .date {
+    display: none;
+  }
+}
+.thumbTone {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.thumbArt {
+  height: 30px;
+  width: auto;
+}
+.mStatus {
+  display: none;
+  font-style: normal;
+  font-size: var(--t-12);
+  font-weight: 600;
+  color: var(--c-muted);
+}
+.mStatus[data-s="pending"] {
+  color: var(--c-warning);
+}
+.mStatus[data-s="approved"] {
+  color: var(--c-success);
+}
+.mStatus[data-s="rejected"] {
+  color: var(--c-danger);
+}
+@media (max-width: 640px) {
+  .mStatus {
+    display: block;
+  }
+}

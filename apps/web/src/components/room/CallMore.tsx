@@ -120,7 +120,7 @@ export function CallMore({
           {onAmbient && (
             <button type="button" className={s.moreItem} role="switch" aria-checked={!!ambient} onClick={onAmbient}>
               <ImageIcon size={18} />
-              <span className={s.moreGrow}>Размытый пейзаж на фоне</span>
+              <span className={s.moreGrow}>Размытый пейзаж на&nbsp;фоне</span>
               <span className={s.moreState}>{ambient ? "Вкл" : "Выкл"}</span>
             </button>
           )}
@@ -129,7 +129,7 @@ export function CallMore({
       <div className={s.moreGroup}>
         <button type="button" className={s.moreItem} onClick={onFullscreen}>
           {fullscreen ? <Shrink size={18} /> : <Expand size={18} />}
-          {fullscreen ? "Выйти из полноэкранного режима" : "На весь экран"}
+          {fullscreen ? "Выйти из\u00a0полноэкранного режима" : "На\u00a0весь экран"}
         </button>
         {!isPro && onRecalibrate && (
           <button type="button" className={s.moreItem} onClick={onRecalibrate} disabled={recalibrating}>
@@ -144,12 +144,12 @@ export function CallMore({
         {onNotes && (
           <button type="button" className={s.moreItem} onClick={onNotes}>
             <NotebookPen size={18} />
-            Заметки к звонку
+            Заметки к&nbsp;звонку
           </button>
         )}
         <button type="button" className={s.moreItem} onClick={onReport}>
           <Flag size={18} />
-          Сообщить о проблеме со связью
+          Сообщить о&nbsp;проблеме со&nbsp;связью
         </button>
       </div>
     </div>

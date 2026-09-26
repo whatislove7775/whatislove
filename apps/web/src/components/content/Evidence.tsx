@@ -33,7 +33,7 @@ export function EvidenceBadge({ level, compact }: { level?: EvidenceLevel | null
   );
 }
 
-export function KeyFacts({ facts, title = "Главное из исследований" }: { facts?: KeyFact[]; title?: string }) {
+export function KeyFacts({ facts, title = "Главное из\u00a0исследований" }: { facts?: KeyFact[]; title?: string }) {
   if (!facts?.length) return null;
   return (
     <section className={s.facts} aria-labelledby="key-facts">
@@ -74,7 +74,7 @@ export function Mechanism({ text }: { text?: string }) {
     <section className={s.block} aria-labelledby="mechanism">
       <h2 id="mechanism" className={s.sectionTitle}>
         <HeartHandshake size={18} strokeWidth={1.9} aria-hidden />
-        Почему это может помочь
+        Почему это&nbsp;может помочь
       </h2>
       <Markdown source={text} className={s.blockText} />
     </section>
@@ -87,7 +87,7 @@ export function Cautions({ text }: { text?: string }) {
     <section className={`${s.block} ${s.caution}`} aria-labelledby="cautions">
       <h2 id="cautions" className={s.sectionTitle}>
         <AlertTriangle size={18} strokeWidth={1.9} aria-hidden />
-        Когда остановиться или пропустить
+        Когда остановиться или&nbsp;пропустить
       </h2>
       <Markdown source={text} className={s.blockText} />
     </section>

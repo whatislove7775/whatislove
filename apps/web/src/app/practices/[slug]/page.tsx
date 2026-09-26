@@ -15,6 +15,7 @@ import { abs, alternates, ORG_ID, WEBSITE_ID } from "@/lib/seo";
 import art from "@/components/content/art.module.css";
 import c from "@/components/content/content.module.css";
 import s from "@/components/public/public.module.css";
+import { typo } from "@/lib/typography";
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -27,10 +28,10 @@ async function load(slug: string): Promise<Practice | null> {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await load(params.slug);
-  if (!p) return { title: "Практика не найдена", robots: { index: false } };
+  if (!p) return { title: "Практика не\u00a0найдена", robots: { index: false } };
   const path = `/practices/${p.slug}`;
   return {
-    title: `${p.title}: практика на ${p.duration_minutes} мин`,
+    title: `${p.title}: практика на\u00a0${p.duration_minutes} мин`,
     description: p.summary,
     alternates: alternates(path),
     openGraph: { type: "article", url: path, title: p.title, description: p.summary },
@@ -110,8 +111,8 @@ export default async function PracticePage({ params }: Props) {
               </span>
               <EvidenceBadge level={p.evidence_level} />
             </div>
-            <h1 className={s.title}>{p.title}</h1>
-            {p.summary && <p className={s.lead}>{p.summary}</p>}
+            <h1 className={s.title}>{typo(p.title)}</h1>
+            {p.summary && <p className={s.lead}>{typo(p.summary)}</p>}
           </header>
 
           <div className={s.player}>
@@ -120,13 +121,13 @@ export default async function PracticePage({ params }: Props) {
 
           {p.steps.length > 0 && (
             <section className={s.steps} aria-labelledby="steps-title">
-              <h2 id="steps-title">Как выполнять</h2>
+              <h2 id="steps-title">Как&nbsp;выполнять</h2>
               {rhythm && <p className={s.disclaimer} style={{ marginTop: 0, marginBottom: 12 }}>{rhythm}</p>}
               <ol>
                 {p.steps.map((st, i) => (
                   <li key={i} id={`step-${i + 1}`}>
-                    <strong>{st.title}</strong>
-                    <span>{st.text}</span>
+                    <strong>{typo(st.title)}</strong>
+                    <span>{typo(st.text)}</span>
                   </li>
                 ))}
               </ol>

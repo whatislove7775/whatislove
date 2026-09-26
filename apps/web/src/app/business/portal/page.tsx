@@ -20,7 +20,7 @@ export default function PortalDashboard() {
     <>
       <PageHeader
         title={me.company.name}
-        sub="Сводка программы заботы о сотрудниках. Только общие цифры: кто пользуется программой, не видит никто."
+        sub="Сводка программы заботы о&nbsp;сотрудниках. Только общие цифры: кто пользуется программой, не&nbsp;видит никто."
         action={
           <Button href="/business/portal/codes" variant="primary" icon={<KeyRound size={18} />}>
             Выпустить коды
@@ -57,8 +57,8 @@ function Body({ d }: { d: Dashboard }) {
         <EyeOff size={22} aria-hidden />
         <span>
           <strong>Сотрудники анонимны</strong>
-          Мы показываем цифры, только когда программой воспользовались не меньше {k} человек за период, и не раньше, чем месяц
-          закончится. В отчётах нет имён, дат и специалистов по отдельным людям.
+          Мы&nbsp;показываем цифры, только когда программой воспользовались не&nbsp;меньше {k} человек за&nbsp;период, и&nbsp;не&nbsp;раньше, чем&nbsp;месяц
+          закончится. В&nbsp;отчётах нет имён, дат и&nbsp;специалистов по&nbsp;отдельным людям.
         </span>
       </div>
 
@@ -70,8 +70,8 @@ function Body({ d }: { d: Dashboard }) {
           <span className={s.kpiValue}>{rubK(d.budget.available_kopecks)}</span>
           <span className={s.kpiSub}>
             {d.budget.topups_this_month_kopecks > 0
-              ? `включая пополнение ${rubK(d.budget.topups_this_month_kopecks)} в этом месяце`
-              : "остаток на начало месяца"}
+              ? `включая пополнение ${rubK(d.budget.topups_this_month_kopecks)} в\u00a0этом месяце`
+              : "остаток на\u00a0начало месяца"}
           </span>
           {d.budget.low && (
             <span className={s.warn}>
@@ -84,7 +84,7 @@ function Body({ d }: { d: Dashboard }) {
             <BarChart3 size={16} aria-hidden /> Потрачено
           </span>
           <span className={s.kpiValue}>{rubK(d.totals.spent_kopecks)}</span>
-          <span className={s.kpiSub}>за закрытые месяцы</span>
+          <span className={s.kpiSub}>за&nbsp;закрытые месяцы</span>
         </div>
         <div className={s.kpi}>
           <span className={s.kpiLabel}>
@@ -101,7 +101,7 @@ function Body({ d }: { d: Dashboard }) {
           </span>
           {d.satisfaction.average !== null ? (
             <>
-              <span className={s.kpiValue}>{d.satisfaction.average.toFixed(1)} из 5</span>
+              <span className={s.kpiValue}>{d.satisfaction.average.toFixed(1)} из&nbsp;5</span>
               <span className={s.kpiSub}>
                 {d.satisfaction.count} {plural(d.satisfaction.count ?? 0, "оценка", "оценки", "оценок")} участников
               </span>
@@ -109,22 +109,22 @@ function Body({ d }: { d: Dashboard }) {
           ) : (
             <>
               <span className={s.kpiHidden}>Пока скрыто</span>
-              <span className={s.kpiSub}>появится, когда оценят не меньше {k} человек</span>
+              <span className={s.kpiSub}>появится, когда оценят не&nbsp;меньше {k} человек</span>
             </>
           )}
         </div>
       </div>
 
       <Card as="section">
-        <CardHead title="По месяцам" icon={<CalendarRange size={18} />} sub="Текущий месяц появится, когда закончится" />
+        <CardHead title="По&nbsp;месяцам" icon={<CalendarRange size={18} />} sub="Текущий месяц появится, когда закончится" />
         {d.monthly.length === 0 ? (
           <EmptyState
             art={<EmptyArt scene="sparkles" />}
             title="Пока нечего показать"
-            text="Раздайте коды сотрудникам. Первые цифры появятся после окончания месяца, в котором ими воспользовались."
+            text="Раздайте коды сотрудникам. Первые цифры появятся после окончания месяца, в&nbsp;котором ими воспользовались."
             action={
               <Button href="/business/portal/codes" variant="soft">
-                К кодам
+                К&nbsp;кодам
               </Button>
             }
           />
@@ -134,10 +134,10 @@ function Body({ d }: { d: Dashboard }) {
       </Card>
 
       <Card as="section">
-        <CardHead title="С чем приходят" icon={<BarChart3 size={18} />} sub="Доля созвонов по направлению специалиста за 12 месяцев" />
+        <CardHead title="С&nbsp;чем&nbsp;приходят" icon={<BarChart3 size={18} />} sub="Доля созвонов по&nbsp;направлению специалиста за&nbsp;12&nbsp;месяцев" />
         {!d.topics.visible ? (
           <p className={s.muted}>
-            Скрыто: программой воспользовались меньше {k} человек. Так никто не сможет догадаться, с чем пришёл конкретный
+            Скрыто: программой воспользовались меньше {k} человек. Так никто не&nbsp;сможет догадаться, с&nbsp;чем&nbsp;пришёл конкретный
             сотрудник.
           </p>
         ) : (
@@ -146,7 +146,7 @@ function Body({ d }: { d: Dashboard }) {
               <TopicBar key={r.topic} label={r.label} share={r.share} />
             ))}
             {!!d.topics.other_share && <TopicBar label="Другие темы" share={d.topics.other_share} muted />}
-            <p className={s.muted}>Тема показывается отдельно, только если к ней обращались не меньше {k} человек.</p>
+            <p className={s.muted}>Тема показывается отдельно, только если к&nbsp;ней обращались не&nbsp;меньше {k} человек.</p>
           </div>
         )}
       </Card>
@@ -163,9 +163,9 @@ function Body({ d }: { d: Dashboard }) {
             }
           />
           <p className={s.muted}>
-            {p.name}: {limits.join(" и ") || "без лимита"} на сотрудника в {PERIOD_LABEL[p.period]}.{" "}
+            {p.name}: {limits.join(" и ") || "без\u00a0лимита"} на&nbsp;сотрудника в {PERIOD_LABEL[p.period]}.{" "}
             {p.services.map((x) => SERVICE_LABEL[x]).join(", ")}.
-            {p.expires_on ? ` Действует до ${dateRu(p.expires_on, { day: "numeric", month: "long", year: "numeric" })}.` : ""}
+            {p.expires_on ? ` Действует до\u00a0${dateRu(p.expires_on, { day: "numeric", month: "long", year: "numeric" })}.` : ""}
           </p>
         </Card>
       )}

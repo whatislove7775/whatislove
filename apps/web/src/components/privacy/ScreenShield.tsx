@@ -80,7 +80,7 @@ export function ScreenShield({ active, children }: { active: boolean; children: 
       {hide && (
         <div className={s.veil} role="status">
           <EyeOff size={22} />
-          <span>Переписка скрыта, пока окно не активно</span>
+          <span>Переписка скрыта, пока окно не&nbsp;активно</span>
         </div>
       )}
     </div>
