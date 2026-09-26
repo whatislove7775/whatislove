@@ -38,6 +38,9 @@ services:
   coturn:
     image: coturn/coturn:4.6
     network_mode: host
+    # Образ по умолчанию работает от nobody и не может прочитать privkey.pem
+    # (в certbot-conf он доступен только root) — без этого TLS на 5349 не поднимается.
+    user: "0:0"
     restart: unless-stopped
     volumes:
       - certbot-conf:/etc/letsencrypt:ro
