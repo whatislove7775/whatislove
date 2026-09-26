@@ -301,8 +301,11 @@ export class KitRenderer implements AvatarRendererApi {
     rim.position.set(0.5, 3, -5);
     const hemi = new THREE.HemisphereLight("#ffffff", "#8a7c78", 0.8);
     this.scene.add(key, fill, rim, hemi);
-    this.headPivot.position.y = -0.55;
-    this.head.position.y = 0.55;
+    // Rotate around a point just below the head's centre (not the neck base):
+    // a floating head turning around a low pivot swings across the frame and
+    // reads as the head moving in space rather than just turning.
+    this.headPivot.position.y = -0.12;
+    this.head.position.y = 0.12;
     this.headPivot.add(this.head);
     this.root.add(this.headPivot);
     this.scene.add(this.root);
